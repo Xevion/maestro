@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.command.argparser;
 
 import baritone.api.command.argparser.IArgParser;
@@ -36,7 +19,8 @@ public enum ArgParserManager implements IArgParserManager {
     @Override
     public <T> IArgParser.Stateless<T> getParserStateless(Class<T> type) {
         //noinspection unchecked
-        return this.registry.descendingStream()
+        return this.registry
+                .descendingStream()
                 .filter(IArgParser.Stateless.class::isInstance)
                 .map(IArgParser.Stateless.class::cast)
                 .filter(parser -> parser.getTarget().isAssignableFrom(type))
@@ -47,7 +31,8 @@ public enum ArgParserManager implements IArgParserManager {
     @Override
     public <T, S> IArgParser.Stated<T, S> getParserStated(Class<T> type, Class<S> stateKlass) {
         //noinspection unchecked
-        return this.registry.descendingStream()
+        return this.registry
+                .descendingStream()
                 .filter(IArgParser.Stated.class::isInstance)
                 .map(IArgParser.Stated.class::cast)
                 .filter(parser -> parser.getTarget().isAssignableFrom(type))
@@ -58,7 +43,8 @@ public enum ArgParserManager implements IArgParserManager {
     }
 
     @Override
-    public <T> T parseStateless(Class<T> type, ICommandArgument arg) throws CommandInvalidTypeException {
+    public <T> T parseStateless(Class<T> type, ICommandArgument arg)
+            throws CommandInvalidTypeException {
         IArgParser.Stateless<T> parser = this.getParserStateless(type);
         if (parser == null) {
             throw new CommandNoParserForTypeException(type);
@@ -71,7 +57,8 @@ public enum ArgParserManager implements IArgParserManager {
     }
 
     @Override
-    public <T, S> T parseStated(Class<T> type, Class<S> stateKlass, ICommandArgument arg, S state) throws CommandInvalidTypeException {
+    public <T, S> T parseStated(Class<T> type, Class<S> stateKlass, ICommandArgument arg, S state)
+            throws CommandInvalidTypeException {
         IArgParser.Stated<T, S> parser = this.getParserStated(type, stateKlass);
         if (parser == null) {
             throw new CommandNoParserForTypeException(type);

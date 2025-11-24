@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.calc;
 
 import baritone.api.pathing.calc.IPath;
@@ -28,10 +11,8 @@ import baritone.pathing.movement.Moves;
 import baritone.pathing.path.CutoffPath;
 import baritone.utils.pathing.PathBase;
 import com.google.common.collect.Lists;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -41,19 +22,15 @@ import java.util.List;
  */
 class Path extends PathBase {
 
-    /**
-     * The start position of this path
-     */
+    /** The start position of this path */
     private final BetterBlockPos start;
 
-    /**
-     * The end position of this path
-     */
+    /** The end position of this path */
     private final BetterBlockPos end;
 
     /**
-     * The blocks on the path. Guaranteed that path.get(0) equals start and
-     * path.get(path.size()-1) equals end
+     * The blocks on the path. Guaranteed that path.get(0) equals start and path.get(path.size()-1)
+     * equals end
      */
     private final List<BetterBlockPos> path;
 
@@ -69,7 +46,13 @@ class Path extends PathBase {
 
     private volatile boolean verified;
 
-    Path(BetterBlockPos realStart, PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
+    Path(
+            BetterBlockPos realStart,
+            PathNode start,
+            PathNode end,
+            int numNodes,
+            Goal goal,
+            CalculationContext context) {
         this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
         this.movements = new ArrayList<>();
@@ -86,7 +69,8 @@ class Path extends PathBase {
         }
 
         // If the position the player is at is different from the position we told A* to start from,
-        // and A* gave us no movements, then add a fake node that will allow a movement to be created
+        // and A* gave us no movements, then add a fake node that will allow a movement to be
+        // created
         // that gets us to the single position in the path.
         // See PathingBehavior#createPathfinder and https://github.com/cabaletta/baritone/pull/4519
         var startNodePos = new BetterBlockPos(start.x, start.y, start.z);
@@ -130,15 +114,23 @@ class Path extends PathBase {
         for (Moves moves : Moves.values()) {
             Movement move = moves.apply0(context, src);
             if (move.getDest().equals(dest)) {
-                // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
-                // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two
+                // have to calculate the cost at calculation time so we can accurately judge whether
+                // a cost increase happened between cached calculation and real execution
+                // however, taking into account possible favoring that could skew the node cost, we
+                // really want the stricter limit of the two
                 // so we take the minimum of the path node cost difference, and the calculated cost
                 move.override(Math.min(move.calculateCost(context), cost));
                 return move;
             }
         }
         // this is no longer called from bestPathSoFar, now it's in postprocessing
-        Helper.HELPER.logDebug("Movement became impossible during calculation " + src + " " + dest + " " + dest.subtract(src));
+        Helper.HELPER.logDebug(
+                "Movement became impossible during calculation "
+                        + src
+                        + " "
+                        + dest
+                        + " "
+                        + dest.subtract(src));
         return null;
     }
 

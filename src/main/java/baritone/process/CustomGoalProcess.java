@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.process;
 
 import baritone.Baritone;
@@ -31,14 +14,10 @@ import baritone.utils.BaritoneProcessHelper;
  */
 public final class CustomGoalProcess extends BaritoneProcessHelper implements ICustomGoalProcess {
 
-    /**
-     * The current goal
-     */
+    /** The current goal */
     private Goal goal;
 
-    /**
-     * The most recent goal. Not invalidated upon {@link #onLostControl()}
-     */
+    /** The most recent goal. Not invalidated upon {@link #onLostControl()} */
     private Goal mostRecentGoal;
 
     /**
@@ -94,7 +73,9 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
                 return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             case PATH_REQUESTED:
                 // return FORCE_REVALIDATE_GOAL_AND_PATH just once
-                PathingCommand ret = new PathingCommand(this.goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+                PathingCommand ret =
+                        new PathingCommand(
+                                this.goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
                 this.state = State.EXECUTING;
                 return ret;
             case EXECUTING:
@@ -102,7 +83,9 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
                     onLostControl();
                     return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
-                if (this.goal == null || (this.goal.isInGoal(ctx.playerFeet()) && this.goal.isInGoal(baritone.getPathingBehavior().pathStart()))) {
+                if (this.goal == null
+                        || (this.goal.isInGoal(ctx.playerFeet())
+                                && this.goal.isInGoal(baritone.getPathingBehavior().pathStart()))) {
                     onLostControl(); // we're there xd
                     if (Baritone.settings().disconnectOnArrival.value) {
                         ctx.world().disconnect();

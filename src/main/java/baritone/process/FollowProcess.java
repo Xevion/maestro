@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.process;
 
 import baritone.Baritone;
@@ -28,14 +11,13 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.BetterBlockPos;
 import baritone.utils.BaritoneProcessHelper;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Follow an entity
@@ -64,7 +46,11 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         if (Baritone.settings().followOffsetDistance.value == 0 || into) {
             pos = following.blockPosition();
         } else {
-            GoalXZ g = GoalXZ.fromDirection(following.position(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
+            GoalXZ g =
+                    GoalXZ.fromDirection(
+                            following.position(),
+                            Baritone.settings().followOffsetDirection.value,
+                            Baritone.settings().followOffsetDistance.value);
             pos = new BetterBlockPos(g.getX(), following.position().y, g.getZ());
         }
         if (into) {
@@ -72,7 +58,6 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         }
         return new GoalNear(pos, Baritone.settings().followRadius.value);
     }
-
 
     private boolean followable(Entity entity) {
         if (entity == null) {
@@ -92,11 +77,12 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     }
 
     private void scanWorld() {
-        cache = ctx.entitiesStream()
-                .filter(this::followable)
-                .filter(this.filter)
-                .distinct()
-                .collect(Collectors.toList());
+        cache =
+                ctx.entitiesStream()
+                        .filter(this::followable)
+                        .filter(this.filter)
+                        .distinct()
+                        .collect(Collectors.toList());
     }
 
     @Override

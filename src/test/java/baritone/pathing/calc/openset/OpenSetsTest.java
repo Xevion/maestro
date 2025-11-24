@@ -1,31 +1,13 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.calc.openset;
+
+import static org.junit.Assert.*;
 
 import baritone.api.pathing.goals.Goal;
 import baritone.pathing.calc.PathNode;
+import java.util.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.util.*;
-
-import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class OpenSetsTest {
@@ -40,17 +22,18 @@ public class OpenSetsTest {
     public static Collection<Object[]> data() {
         ArrayList<Object[]> testSizes = new ArrayList<>();
         for (int size = 1; size < 20; size++) {
-            testSizes.add(new Object[]{size});
+            testSizes.add(new Object[] {size});
         }
         for (int size = 100; size <= 1000; size += 100) {
-            testSizes.add(new Object[]{size});
+            testSizes.add(new Object[] {size});
         }
-        testSizes.add(new Object[]{5000});
-        testSizes.add(new Object[]{10000});
+        testSizes.add(new Object[] {5000});
+        testSizes.add(new Object[] {10000});
         return testSizes;
     }
 
-    private static void removeAndTest(int amount, IOpenSet[] test, Collection<PathNode> mustContain) {
+    private static void removeAndTest(
+            int amount, IOpenSet[] test, Collection<PathNode> mustContain) {
         double[][] results = new double[test.length][amount];
         for (int i = 0; i < test.length; i++) {
             long before = System.nanoTime() / 1000000L;
@@ -76,9 +59,10 @@ public class OpenSetsTest {
     @Test
     public void testSize() {
         System.out.println("Testing size " + size);
-        // Include LinkedListOpenSet even though it's not performant because I absolutely trust that it behaves properly
+        // Include LinkedListOpenSet even though it's not performant because I absolutely trust that
+        // it behaves properly
         // I'm really testing the heap implementations against it as the ground truth
-        IOpenSet[] test = new IOpenSet[]{new BinaryHeapOpenSet(), new LinkedListOpenSet()};
+        IOpenSet[] test = new IOpenSet[] {new BinaryHeapOpenSet(), new LinkedListOpenSet()};
         for (IOpenSet set : test) {
             assertTrue(set.isEmpty());
         }
@@ -89,17 +73,22 @@ public class OpenSetsTest {
             // can't use an existing goal
             // because they use Baritone.settings()
             // and we can't do that because Minecraft itself isn't initted
-            PathNode pn = new PathNode(0, 0, 0, new Goal() {
-                @Override
-                public boolean isInGoal(int x, int y, int z) {
-                    return false;
-                }
+            PathNode pn =
+                    new PathNode(
+                            0,
+                            0,
+                            0,
+                            new Goal() {
+                                @Override
+                                public boolean isInGoal(int x, int y, int z) {
+                                    return false;
+                                }
 
-                @Override
-                public double heuristic(int x, int y, int z) {
-                    return 0;
-                }
-            });
+                                @Override
+                                public double heuristic(int x, int y, int z) {
+                                    return 0;
+                                }
+                            });
             pn.combinedCost = Math.random();
             toInsert[i] = pn;
         }
@@ -117,11 +106,11 @@ public class OpenSetsTest {
         System.out.println("Insertion");
         for (IOpenSet set : test) {
             long before = System.nanoTime() / 1000000L;
-            for (int i = 0; i < size; i++)
-                set.insert(toInsert[i]);
+            for (int i = 0; i < size; i++) set.insert(toInsert[i]);
             System.out.println(set.getClass() + " " + (System.nanoTime() / 1000000L - before));
-            //all three take either 0 or 1ms to insert up to 10,000 nodes
-            //linkedlist takes 0ms most often (because there's no array resizing or allocation there, just pointer shuffling)
+            // all three take either 0 or 1ms to insert up to 10,000 nodes
+            // linkedlist takes 0ms most often (because there's no array resizing or allocation
+            // there, just pointer shuffling)
         }
 
         // all opensets should now be full
@@ -139,13 +128,15 @@ public class OpenSetsTest {
         }
         int cnt = 0;
         for (int i = 0; cnt < size / 2 && i < size; i++) {
-            if (lowestQuarter.contains(toInsert[i])) { // these were already removed and can't be updated to test
+            if (lowestQuarter.contains(
+                    toInsert[i])) { // these were already removed and can't be updated to test
                 continue;
             }
             toInsert[i].combinedCost *= Math.random();
             // multiplying it by a random number between 0 and 1 is guaranteed to decrease it
             for (IOpenSet set : test) {
-                // it's difficult to benchmark these individually because if you modify all at once then update then
+                // it's difficult to benchmark these individually because if you modify all at once
+                // then update then
                 // it breaks the internal consistency of the heaps.
                 // you have to call update every time you modify a node.
                 set.update(toInsert[i]);
@@ -153,7 +144,7 @@ public class OpenSetsTest {
             cnt++;
         }
 
-        //still shouldn't be empty
+        // still shouldn't be empty
         for (IOpenSet set : test) {
             assertFalse(set.isEmpty());
         }

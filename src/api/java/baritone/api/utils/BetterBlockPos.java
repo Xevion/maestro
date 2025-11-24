@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.utils;
 
 import javax.annotation.Nonnull;
@@ -25,10 +8,12 @@ import net.minecraft.util.Mth;
 
 /**
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)
- * <p>
- * Is it really faster to subclass BlockPos and calculate a hash in the constructor like this, taking everything into account?
- * Yes. 20% faster actually. It's called BETTER BlockPos for a reason. Source:
- * <a href="https://docs.google.com/spreadsheets/d/1GWjOjOZINkg_0MkRgKRPH1kUzxjsnEROD9u3UFh_DJc">Benchmark Spreadsheet</a>
+ *
+ * <p>Is it really faster to subclass BlockPos and calculate a hash in the constructor like this,
+ * taking everything into account? Yes. 20% faster actually. It's called BETTER BlockPos for a
+ * reason. Source: <a
+ * href="https://docs.google.com/spreadsheets/d/1GWjOjOZINkg_0MkRgKRPH1kUzxjsnEROD9u3UFh_DJc">Benchmark
+ * Spreadsheet</a>
  *
  * @author leijurv
  */
@@ -65,7 +50,8 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     /**
-     * Like constructor but returns null if pos is null, good if you just need to possibly censor coordinates
+     * Like constructor but returns null if pos is null, good if you just need to possibly censor
+     * coordinates
      *
      * @param pos The BlockPos, possibly null, to convert
      * @return A BetterBlockPos or null if pos was null
@@ -129,9 +115,11 @@ public final class BetterBlockPos extends BlockPos {
         // that literally calls
         // this.up(1)
         // which calls this.offset(Direction.UP, 1)
-        // which does return n == 0 ? this : new BlockPos(this.getX() + facing.getXOffset() * n, this.getY() + facing.getYOffset() * n, this.getZ() + facing.getZOffset() * n);
+        // which does return n == 0 ? this : new BlockPos(this.getX() + facing.getXOffset() * n,
+        // this.getY() + facing.getYOffset() * n, this.getZ() + facing.getZOffset() * n);
 
-        // how many function calls is that? up(), up(int), offset(Direction, int), new BlockPos, getX, getXOffset, getY, getYOffset, getZ, getZOffset
+        // how many function calls is that? up(), up(int), offset(Direction, int), new BlockPos,
+        // getX, getXOffset, getY, getYOffset, getZ, getZOffset
         // that's ten.
         // this is one function call.
         return new BetterBlockPos(x, y + 1, z);
@@ -167,7 +155,8 @@ public final class BetterBlockPos extends BlockPos {
             return this;
         }
         Vec3i vec = dir.getUnitVec3i();
-        return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
+        return new BetterBlockPos(
+                x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
     }
 
     @Override
@@ -231,12 +220,13 @@ public final class BetterBlockPos extends BlockPos {
                 "BetterBlockPos{x=%s,y=%s,z=%s}",
                 SettingsUtil.maybeCensor(x),
                 SettingsUtil.maybeCensor(y),
-                SettingsUtil.maybeCensor(z)
-        );
+                SettingsUtil.maybeCensor(z));
     }
 
     public static long serializeToLong(final int x, final int y, final int z) {
-        return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK);
+        return ((long) x & X_MASK) << X_SHIFT
+                | ((long) y & Y_MASK) << Y_SHIFT
+                | ((long) z & Z_MASK);
     }
 
     public static BetterBlockPos deserializeFromLong(final long serialized) {

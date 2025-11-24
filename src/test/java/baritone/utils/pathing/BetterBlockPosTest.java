@@ -1,33 +1,17 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils.pathing;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class BetterBlockPosTest {
 
-    // disabled since this is a benchmark, not really a test. also including it makes the tests take 50 seconds for no reason
+    // disabled since this is a benchmark, not really a test. also including it makes the tests take
+    // 50 seconds for no reason
     /*@Test
     public void benchMulti() {
         System.out.println("Benching up()");
@@ -43,9 +27,7 @@ public class BetterBlockPosTest {
         }
     }*/
 
-    /**
-     * Make sure BetterBlockPos behaves just like BlockPos
-     */
+    /** Make sure BetterBlockPos behaves just like BlockPos */
     @Test
     public void testSimple() {
         BlockPos pos = new BlockPos(1, 2, 3);

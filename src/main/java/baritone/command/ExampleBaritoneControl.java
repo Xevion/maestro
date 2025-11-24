@@ -1,21 +1,6 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.command;
+
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
@@ -33,19 +18,14 @@ import baritone.behavior.Behavior;
 import baritone.command.argument.ArgConsumer;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
-import baritone.utils.accessor.IGuiScreen;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Tuple;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Stream;
-
-import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class ExampleBaritoneControl extends Behavior implements Helper {
 
@@ -64,11 +44,14 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         boolean forceRun = msg.startsWith(FORCE_COMMAND_PREFIX);
         if ((settings.prefixControl.value && msg.startsWith(prefix)) || forceRun) {
             event.cancel();
-            String commandStr = msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
+            String commandStr =
+                    msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
-                new CommandNotFoundException(CommandManager.expand(commandStr).getA()).handle(null, null);
+                new CommandNotFoundException(CommandManager.expand(commandStr).getA())
+                        .handle(null, null);
             }
-        } else if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
+        } else if ((settings.chatControl.value || settings.chatControlAnyway.value)
+                && runCommand(msg)) {
             event.cancel();
         }
     }
@@ -78,16 +61,18 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
             MutableComponent component = Component.literal(String.format("> %s", toDisplay));
-            component.setStyle(component.getStyle()
-                    .withColor(ChatFormatting.WHITE)
-                    .withHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            Component.literal("Click to rerun command")
-                    ))
-                    .withClickEvent(new ClickEvent(
-                            ClickEvent.Action.RUN_COMMAND,
-                            FORCE_COMMAND_PREFIX + msg
-                    )));
+            component.setStyle(
+                    component
+                            .getStyle()
+                            .withColor(ChatFormatting.WHITE)
+                            .withHoverEvent(
+                                    new HoverEvent(
+                                            HoverEvent.Action.SHOW_TEXT,
+                                            Component.literal("Click to rerun command")))
+                            .withClickEvent(
+                                    new ClickEvent(
+                                            ClickEvent.Action.RUN_COMMAND,
+                                            FORCE_COMMAND_PREFIX + msg)));
             logDirect(component);
         }
     }
@@ -99,7 +84,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
             try {
                 Util.getPlatform().openUri("https://www.dominos.com/en/pages/order/");
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return false;
         }
         if (msg.isEmpty()) {
@@ -128,8 +114,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 if (setting.getName().equalsIgnoreCase(pair.getA())) {
                     logRanCommand(command, rest);
                     try {
-                        this.manager.execute(String.format("set %s %s", setting.getName(), argc.getString()));
-                    } catch (CommandNotEnoughArgumentsException ignored) {} // The operation is safe
+                        this.manager.execute(
+                                String.format("set %s %s", setting.getName(), argc.getString()));
+                    } catch (CommandNotEnoughArgumentsException ignored) {
+                    } // The operation is safe
                     return true;
                 }
             }
@@ -169,12 +157,13 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             if (argc.hasAtMost(2)) {
                 if (argc.hasExactly(1)) {
                     return new TabCompleteHelper()
-                            .addCommands(this.manager)
-                            .addSettings()
-                            .filterPrefix(argc.getString())
-                            .stream();
+                                    .addCommands(this.manager)
+                                    .addSettings()
+                                    .filterPrefix(argc.getString())
+                                    .stream();
                 }
-                Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
+                Settings.Setting setting =
+                        settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
                 if (setting != null && !setting.isJavaOnly()) {
                     if (setting.getValueClass() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
@@ -190,7 +179,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
             }
             return this.manager.tabComplete(msg);
-        } catch (CommandNotEnoughArgumentsException ignored) { // Shouldn't happen, the operation is safe
+        } catch (
+                CommandNotEnoughArgumentsException
+                        ignored) { // Shouldn't happen, the operation is safe
             return Stream.empty();
         }
     }

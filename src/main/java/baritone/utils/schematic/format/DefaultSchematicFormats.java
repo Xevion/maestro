@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils.schematic.format;
 
 import baritone.api.schematic.IStaticSchematic;
@@ -22,16 +5,15 @@ import baritone.api.schematic.format.ISchematicFormat;
 import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import baritone.utils.schematic.format.defaults.MCEditSchematic;
 import baritone.utils.schematic.format.defaults.SpongeSchematic;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.NbtIo;
-import org.apache.commons.io.FilenameUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * Default implementations of {@link ISchematicFormat}
@@ -41,9 +23,7 @@ import java.util.List;
  */
 public enum DefaultSchematicFormats implements ISchematicFormat {
 
-    /**
-     * The MCEdit schematic specification. Commonly denoted by the ".schematic" file extension.
-     */
+    /** The MCEdit schematic specification. Commonly denoted by the ".schematic" file extension. */
     MCEDIT("schematic") {
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
@@ -54,7 +34,8 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
     /**
      * The SpongePowered Schematic Specification. Commonly denoted by the ".schem" file extension.
      *
-     * @see <a href="https://github.com/SpongePowered/Schematic-Specification">Sponge Schematic Specification</a>
+     * @see <a href="https://github.com/SpongePowered/Schematic-Specification">Sponge Schematic
+     *     Specification</a>
      */
     SPONGE("schem") {
         @Override
@@ -66,7 +47,8 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
                 case 2:
                     return new SpongeSchematic(nbt);
                 default:
-                    throw new UnsupportedOperationException("Unsupported Version of a Sponge Schematic");
+                    throw new UnsupportedOperationException(
+                            "Unsupported Version of a Sponge Schematic");
             }
         }
     },
@@ -80,15 +62,16 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
             CompoundTag nbt = NbtIo.readCompressed(input, NbtAccounter.unlimitedHeap());
             int version = nbt.getInt("Version");
             switch (version) {
-                case 4: //1.12
-                case 5: //1.13-1.17
+                case 4: // 1.12
+                case 5: // 1.13-1.17
                     throw new UnsupportedOperationException("This litematic Version is too old.");
-                case 6: //1.18-1.20
+                case 6: // 1.18-1.20
                     throw new UnsupportedOperationException("This litematic Version is too old.");
-                case 7: //1.21+
+                case 7: // 1.21+
                     return new LitematicaSchematic(nbt);
                 default:
-                    throw new UnsupportedOperationException("Unsuported Version of a Litematica Schematic");
+                    throw new UnsupportedOperationException(
+                            "Unsuported Version of a Litematica Schematic");
             }
         }
     };

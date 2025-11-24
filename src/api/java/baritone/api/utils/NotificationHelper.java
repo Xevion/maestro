@@ -1,30 +1,12 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.utils;
-
-import org.apache.commons.lang3.SystemUtils;
 
 import java.awt.*;
 import java.io.IOException;
+import org.apache.commons.lang3.SystemUtils;
 
 /**
- * This class is not called from the main game thread.
- * Do not refer to any Minecraft classes, it wouldn't be thread safe.
+ * This class is not called from the main game thread. Do not refer to any Minecraft classes, it
+ * wouldn't be thread safe.
  *
  * @author aUniqueUser
  */
@@ -55,7 +37,10 @@ public class NotificationHelper {
                     tray.add(trayIcon);
                 }
 
-                trayIcon.displayMessage("Baritone", text, error ? TrayIcon.MessageType.ERROR : TrayIcon.MessageType.INFO);
+                trayIcon.displayMessage(
+                        "Baritone",
+                        text,
+                        error ? TrayIcon.MessageType.ERROR : TrayIcon.MessageType.INFO);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -66,7 +51,8 @@ public class NotificationHelper {
 
     private static void mac(String text) {
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("osascript", "-e", "display notification \"" + text + "\" with title \"Baritone\"");
+        processBuilder.command(
+                "osascript", "-e", "display notification \"" + text + "\" with title \"Baritone\"");
         try {
             processBuilder.start();
         } catch (IOException e) {

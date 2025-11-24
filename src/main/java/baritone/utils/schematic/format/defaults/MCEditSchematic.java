@@ -1,25 +1,7 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils.schematic.format.defaults;
 
 import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -43,7 +25,7 @@ public final class MCEditSchematic extends StaticSchematic {
         this.y = schematic.getInt("Height");
         this.z = schematic.getInt("Length");
         byte[] blocks = schematic.getByteArray("Blocks");
-//        byte[] metadata = schematic.getByteArray("Data");
+        //        byte[] metadata = schematic.getByteArray("Data");
 
         byte[] additional = null;
         if (schematic.contains("AddBlocks")) {
@@ -65,15 +47,18 @@ public final class MCEditSchematic extends StaticSchematic {
                         // additional is 0 through 15 inclusive since it's & 0xF above
                         blockID |= additional[blockInd] << 8;
                     }
-                    ResourceLocation blockKey = ResourceLocation.tryParse(ItemIdFix.getItem(blockID));
-                    Block block = blockKey == null
-                        ? Blocks.AIR
-                        : BuiltInRegistries.BLOCK.get(blockKey)
-                            .map(Holder.Reference::value)
-                            .orElse(Blocks.AIR);
+                    ResourceLocation blockKey =
+                            ResourceLocation.tryParse(ItemIdFix.getItem(blockID));
+                    Block block =
+                            blockKey == null
+                                    ? Blocks.AIR
+                                    : BuiltInRegistries.BLOCK
+                                            .get(blockKey)
+                                            .map(Holder.Reference::value)
+                                            .orElse(Blocks.AIR);
 
-//                    int meta = metadata[blockInd] & 0xFF;
-//                    this.states[x][z][y] = block.getStateFromMeta(meta);
+                    //                    int meta = metadata[blockInd] & 0xFF;
+                    //                    this.states[x][z][y] = block.getStateFromMeta(meta);
                     this.states[x][z][y] = block.defaultBlockState();
                 }
             }

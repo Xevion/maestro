@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils.pathing;
 
 import baritone.Baritone;
@@ -67,16 +50,42 @@ public class Avoidance {
         double mobSpawnerCoeff = Baritone.settings().mobSpawnerAvoidanceCoefficient.value;
         double mobCoeff = Baritone.settings().mobAvoidanceCoefficient.value;
         if (mobSpawnerCoeff != 1.0D) {
-            ctx.worldData().getCachedWorld().getLocationsOf("mob_spawner", 1, ctx.playerFeet().x, ctx.playerFeet().z, 2)
-                    .forEach(mobspawner -> res.add(new Avoidance(mobspawner, mobSpawnerCoeff, Baritone.settings().mobSpawnerAvoidanceRadius.value)));
+            ctx.worldData()
+                    .getCachedWorld()
+                    .getLocationsOf("mob_spawner", 1, ctx.playerFeet().x, ctx.playerFeet().z, 2)
+                    .forEach(
+                            mobspawner ->
+                                    res.add(
+                                            new Avoidance(
+                                                    mobspawner,
+                                                    mobSpawnerCoeff,
+                                                    Baritone.settings()
+                                                            .mobSpawnerAvoidanceRadius
+                                                            .value)));
         }
         if (mobCoeff != 1.0D) {
             ctx.entitiesStream()
                     .filter(entity -> entity instanceof Mob)
-                    .filter(entity -> (!(entity instanceof Spider)) || ctx.player().getLightLevelDependentMagicValue() < 0.5)
-                    .filter(entity -> !(entity instanceof ZombifiedPiglin) || ((ZombifiedPiglin) entity).getLastHurtByMob() != null)
-                    .filter(entity -> !(entity instanceof EnderMan) || ((EnderMan) entity).isCreepy())
-                    .forEach(entity -> res.add(new Avoidance(entity.blockPosition(), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
+                    .filter(
+                            entity ->
+                                    (!(entity instanceof Spider))
+                                            || ctx.player().getLightLevelDependentMagicValue()
+                                                    < 0.5)
+                    .filter(
+                            entity ->
+                                    !(entity instanceof ZombifiedPiglin)
+                                            || ((ZombifiedPiglin) entity).getLastHurtByMob()
+                                                    != null)
+                    .filter(
+                            entity ->
+                                    !(entity instanceof EnderMan) || ((EnderMan) entity).isCreepy())
+                    .forEach(
+                            entity ->
+                                    res.add(
+                                            new Avoidance(
+                                                    entity.blockPosition(),
+                                                    mobCoeff,
+                                                    Baritone.settings().mobAvoidanceRadius.value)));
         }
         return res;
     }

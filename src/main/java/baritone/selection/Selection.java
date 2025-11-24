@@ -19,23 +19,19 @@ public class Selection implements ISelection {
         this.pos1 = pos1;
         this.pos2 = pos2;
 
-        this.min = new BetterBlockPos(
-                Math.min(pos1.x, pos2.x),
-                Math.min(pos1.y, pos2.y),
-                Math.min(pos1.z, pos2.z)
-        );
+        this.min =
+                new BetterBlockPos(
+                        Math.min(pos1.x, pos2.x),
+                        Math.min(pos1.y, pos2.y),
+                        Math.min(pos1.z, pos2.z));
 
-        this.max = new BetterBlockPos(
-                Math.max(pos1.x, pos2.x),
-                Math.max(pos1.y, pos2.y),
-                Math.max(pos1.z, pos2.z)
-        );
+        this.max =
+                new BetterBlockPos(
+                        Math.max(pos1.x, pos2.x),
+                        Math.max(pos1.y, pos2.y),
+                        Math.max(pos1.z, pos2.z));
 
-        this.size = new Vec3i(
-                max.x - min.x + 1,
-                max.y - min.y + 1,
-                max.z - min.z + 1
-        );
+        this.size = new Vec3i(max.x - min.x + 1, max.y - min.y + 1, max.z - min.z + 1);
 
         this.aabb = new AABB(min.x, min.y, min.z, max.x + 1, max.y + 1, max.z + 1);
     }
@@ -82,13 +78,14 @@ public class Selection implements ISelection {
 
     /**
      * Since it might not be immediately obvious what this does, let me explain.
-     * <p>
-     * Let's say you specify Direction.UP, this functions returns if pos2 is the highest BlockPos.
-     * If you specify Direction.DOWN, it returns if pos2 is the lowest BlockPos.
+     *
+     * <p>Let's say you specify Direction.UP, this functions returns if pos2 is the highest
+     * BlockPos. If you specify Direction.DOWN, it returns if pos2 is the lowest BlockPos.
      *
      * @param facing The direction to check.
-     * @return {@code true} if pos2 is further in that direction than pos1, {@code false} if it isn't, and something
-     * else if they're both at the same position on that axis (it really doesn't matter)
+     * @return {@code true} if pos2 is further in that direction than pos1, {@code false} if it
+     *     isn't, and something else if they're both at the same position on that axis (it really
+     *     doesn't matter)
      */
     private boolean isPos2(Direction facing) {
         boolean negative = facing.getAxisDirection().getStep() < 0;

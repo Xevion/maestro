@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils.schematic.format.defaults;
 
 import baritone.utils.schematic.StaticSchematic;
@@ -25,9 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -66,13 +47,15 @@ public final class SpongeSchematic extends StaticSchematic {
             palette.put(index, state);
         }
 
-        // BlockData is stored as an NBT byte[], however, the actual data that is represented is a varint[]
+        // BlockData is stored as an NBT byte[], however, the actual data that is represented is a
+        // varint[]
         byte[] rawBlockData = nbt.getByteArray("BlockData");
         int[] blockData = new int[this.x * this.y * this.z];
         int offset = 0;
         for (int i = 0; i < blockData.length; i++) {
             if (offset >= rawBlockData.length) {
-                throw new IllegalArgumentException("No remaining bytes in BlockData for complete schematic");
+                throw new IllegalArgumentException(
+                        "No remaining bytes in BlockData for complete schematic");
             }
 
             VarInt varInt = VarInt.read(rawBlockData, offset);
@@ -97,30 +80,42 @@ public final class SpongeSchematic extends StaticSchematic {
 
     private static final class SerializedBlockState {
 
-        private static final Pattern REGEX = Pattern.compile("(?<location>(\\w+:)?\\w+)(\\[(?<properties>(\\w+=\\w+,?)+)])?");
+        private static final Pattern REGEX =
+                Pattern.compile("(?<location>(\\w+:)?\\w+)(\\[(?<properties>(\\w+=\\w+,?)+)])?");
 
         private final ResourceLocation resourceLocation;
         private final Map<String, String> properties;
         private BlockState blockState;
 
-        private SerializedBlockState(ResourceLocation resourceLocation, Map<String, String> properties) {
+        private SerializedBlockState(
+                ResourceLocation resourceLocation, Map<String, String> properties) {
             this.resourceLocation = resourceLocation;
             this.properties = properties;
         }
 
         private BlockState deserialize() {
             if (this.blockState == null) {
-                Block block = BuiltInRegistries.BLOCK.get(this.resourceLocation)
-                    .map(Holder.Reference::value)
-                    .orElse(Blocks.AIR);
+                Block block =
+                        BuiltInRegistries.BLOCK
+                                .get(this.resourceLocation)
+                                .map(Holder.Reference::value)
+                                .orElse(Blocks.AIR);
                 this.blockState = block.defaultBlockState();
 
-                this.properties.keySet().stream().sorted(String::compareTo).forEachOrdered(key -> {
-                    Property<?> property = block.getStateDefinition().getProperty(key);
-                    if (property != null) {
-                        this.blockState = setPropertyValue(this.blockState, property, this.properties.get(key));
-                    }
-                });
+                this.properties.keySet().stream()
+                        .sorted(String::compareTo)
+                        .forEachOrdered(
+                                key -> {
+                                    Property<?> property =
+                                            block.getStateDefinition().getProperty(key);
+                                    if (property != null) {
+                                        this.blockState =
+                                                setPropertyValue(
+                                                        this.blockState,
+                                                        property,
+                                                        this.properties.get(key));
+                                    }
+                                });
             }
             return this.blockState;
         }
@@ -151,7 +146,8 @@ public final class SpongeSchematic extends StaticSchematic {
             }
         }
 
-        private static <T extends Comparable<T>> BlockState setPropertyValue(BlockState state, Property<T> property, String value) {
+        private static <T extends Comparable<T>> BlockState setPropertyValue(
+                BlockState state, Property<T> property, String value) {
             Optional<T> parsed = property.getValue(value);
             if (parsed.isPresent()) {
                 return state.setValue(property, parsed.get());

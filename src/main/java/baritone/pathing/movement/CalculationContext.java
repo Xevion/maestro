@@ -1,21 +1,6 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.movement;
+
+import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
@@ -25,6 +10,8 @@ import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -38,11 +25,6 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 /**
  * @author Brady
@@ -99,9 +81,16 @@ public class CalculationContext {
         this.worldData = (WorldData) baritone.getPlayerContext().worldData();
         this.bsi = new BlockStateInterface(baritone.getPlayerContext(), forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
-        this.hasThrowaway = Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.value && Inventory.isHotbarSlot(player.getInventory().findSlotMatchingItem(STACK_BUCKET_WATER)) && world.dimension() != Level.NETHER;
-        this.canSprint = Baritone.settings().allowSprint.value && player.getFoodData().getFoodLevel() > 6;
+        this.hasThrowaway =
+                Baritone.settings().allowPlace.value
+                        && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
+        this.hasWaterBucket =
+                Baritone.settings().allowWaterBucketFall.value
+                        && Inventory.isHotbarSlot(
+                                player.getInventory().findSlotMatchingItem(STACK_BUCKET_WATER))
+                        && world.dimension() != Level.NETHER;
+        this.canSprint =
+                Baritone.settings().allowSprint.value && player.getFoodData().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
         this.allowBreak = Baritone.settings().allowBreak.value;
         this.allowBreakAnyway = new ArrayList<>(Baritone.settings().allowBreakAnyway.value);
@@ -111,13 +100,12 @@ public class CalculationContext {
         this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
         this.allowFallIntoLava = false; // Super secret internal setting for ElytraBehavior
-        // todo: technically there can now be datapack enchants that replace blocks with any other at any range
+        // todo: technically there can now be datapack enchants that replace blocks with any other
+        // at any range
         int frostWalkerLevel = 0;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemEnchantments itemEnchantments = baritone.getPlayerContext()
-                .player()
-                .getItemBySlot(slot)
-                .getEnchantments();
+            ItemEnchantments itemEnchantments =
+                    baritone.getPlayerContext().player().getItemBySlot(slot).getEnchantments();
             for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
                 if (enchant.is(Enchantments.FROST_WALKER)) {
                     frostWalkerLevel = itemEnchantments.getLevel(enchant);
@@ -132,25 +120,29 @@ public class CalculationContext {
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.value;
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.value;
         float waterSpeedMultiplier = 1.0f;
-        OUTER: for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemEnchantments itemEnchantments = baritone.getPlayerContext()
-                .player()
-                .getItemBySlot(slot)
-                .getEnchantments();
+        OUTER:
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemEnchantments itemEnchantments =
+                    baritone.getPlayerContext().player().getItemBySlot(slot).getEnchantments();
             for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                List<EnchantmentAttributeEffect> effects = enchant.value()
-                    .getEffects(EnchantmentEffectComponents.ATTRIBUTES);
+                List<EnchantmentAttributeEffect> effects =
+                        enchant.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES);
                 for (EnchantmentAttributeEffect effect : effects) {
-                    if (effect.attribute().is(Attributes.WATER_MOVEMENT_EFFICIENCY.unwrapKey().get())) {
-                        waterSpeedMultiplier = effect.amount().calculate(itemEnchantments.getLevel(enchant));
+                    if (effect.attribute()
+                            .is(Attributes.WATER_MOVEMENT_EFFICIENCY.unwrapKey().get())) {
+                        waterSpeedMultiplier =
+                                effect.amount().calculate(itemEnchantments.getLevel(enchant));
                         break OUTER;
                     }
                 }
             }
         }
-        this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - waterSpeedMultiplier) + ActionCosts.WALK_ONE_BLOCK_COST * waterSpeedMultiplier;
+        this.waterWalkSpeed =
+                ActionCosts.WALK_ONE_IN_WATER_COST * (1 - waterSpeedMultiplier)
+                        + ActionCosts.WALK_ONE_BLOCK_COST * waterSpeedMultiplier;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.value;
-        this.backtrackCostFavoringCoefficient = Baritone.settings().backtrackCostFavoringCoefficient.value;
+        this.backtrackCostFavoringCoefficient =
+                Baritone.settings().backtrackCostFavoringCoefficient.value;
         this.jumpPenalty = Baritone.settings().jumpPenalty.value;
         this.walkOnWaterOnePenalty = Baritone.settings().walkOnWaterOnePenalty.value;
         // why cache these things here, why not let the movements just get directly from settings?
@@ -189,10 +181,13 @@ public class CalculationContext {
         if (!worldBorder.canPlaceAt(x, z)) {
             return COST_INF;
         }
-        if (!Baritone.settings().allowPlaceInFluidsSource.value && current.getFluidState().isSource()) {
+        if (!Baritone.settings().allowPlaceInFluidsSource.value
+                && current.getFluidState().isSource()) {
             return COST_INF;
         }
-        if (!Baritone.settings().allowPlaceInFluidsFlow.value && !current.getFluidState().isEmpty() && !current.getFluidState().isSource()) {
+        if (!Baritone.settings().allowPlaceInFluidsFlow.value
+                && !current.getFluidState().isEmpty()
+                && !current.getFluidState().isSource()) {
             return COST_INF;
         }
         return placeBlockCost;

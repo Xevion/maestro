@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.pathing.goals;
 
 import baritone.api.utils.BetterBlockPos;
@@ -23,26 +6,20 @@ import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.core.BlockPos;
 
 /**
- * Useful if the goal is just to mine a block. This goal will be satisfied if the specified
- * {@link BlockPos} is at to or above the specified position for this goal.
+ * Useful if the goal is just to mine a block. This goal will be satisfied if the specified {@link
+ * BlockPos} is at to or above the specified position for this goal.
  *
  * @author leijurv
  */
 public class GoalTwoBlocks implements Goal, IGoalRenderPos {
 
-    /**
-     * The X block position of this goal
-     */
+    /** The X block position of this goal */
     protected final int x;
 
-    /**
-     * The Y block position of this goal
-     */
+    /** The Y block position of this goal */
     protected final int y;
 
-    /**
-     * The Z block position of this goal
-     */
+    /** The Z block position of this goal */
     protected final int z;
 
     public GoalTwoBlocks(BlockPos pos) {
@@ -83,9 +60,7 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
         }
 
         GoalTwoBlocks goal = (GoalTwoBlocks) o;
-        return x == goal.x
-                && y == goal.y
-                && z == goal.z;
+        return x == goal.x && y == goal.y && z == goal.z;
     }
 
     @Override
@@ -99,7 +74,6 @@ public class GoalTwoBlocks implements Goal, IGoalRenderPos {
                 "GoalTwoBlocks{x=%s,y=%s,z=%s}",
                 SettingsUtil.maybeCensor(x),
                 SettingsUtil.maybeCensor(y),
-                SettingsUtil.maybeCensor(z)
-        );
+                SettingsUtil.maybeCensor(z));
     }
 }

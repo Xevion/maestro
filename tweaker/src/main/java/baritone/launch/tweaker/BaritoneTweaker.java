@@ -18,14 +18,13 @@
 package baritone.launch.tweaker;
 
 import io.github.impactdevelopment.simpletweaker.SimpleTweaker;
+import java.util.List;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 import org.spongepowered.tools.obfuscation.mcp.ObfuscationServiceMCP;
-
-import java.util.List;
 
 /**
  * @author Brady
@@ -43,7 +42,8 @@ public class BaritoneTweaker extends SimpleTweaker {
         List<String> tweakClasses = (List<String>) Launch.blackboard.get("TweakClasses");
 
         String obfuscation = ObfuscationServiceMCP.NOTCH;
-        if (tweakClasses.stream().anyMatch(s -> s.contains("net.minecraftforge.fml.common.launcher"))) {
+        if (tweakClasses.stream()
+                .anyMatch(s -> s.contains("net.minecraftforge.fml.common.launcher"))) {
             obfuscation = ObfuscationServiceMCP.SEARGE;
         }
 

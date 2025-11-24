@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
@@ -39,15 +22,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LevelRenderer.class)
 public class MixinWorldRenderer {
 
-    @Inject(
-            method = "renderLevel",
-            at = @At("RETURN")
-    )
-    private void onStartHand(final GraphicsResourceAllocator graphicsResourceAllocator, final DeltaTracker deltaTracker, final boolean bl, final Camera camera, final GameRenderer gameRenderer, final Matrix4f matrix4f, final Matrix4f matrix4f2, final CallbackInfo ci) {
+    @Inject(method = "renderLevel", at = @At("RETURN"))
+    private void onStartHand(
+            final GraphicsResourceAllocator graphicsResourceAllocator,
+            final DeltaTracker deltaTracker,
+            final boolean bl,
+            final Camera camera,
+            final GameRenderer gameRenderer,
+            final Matrix4f matrix4f,
+            final Matrix4f matrix4f2,
+            final CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             PoseStack poseStack = new PoseStack();
             poseStack.mulPose(matrix4f);
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(deltaTracker.getGameTimeDeltaPartialTick(false), poseStack, matrix4f2));
+            ibaritone
+                    .getGameEventHandler()
+                    .onRenderPass(
+                            new RenderEvent(
+                                    deltaTracker.getGameTimeDeltaPartialTick(false),
+                                    poseStack,
+                                    matrix4f2));
         }
     }
 }

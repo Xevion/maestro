@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.movement;
 
 import baritone.Baritone;
@@ -33,7 +16,9 @@ import net.minecraft.world.phys.AABB;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
-    public static final Direction[] HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, Direction.DOWN};
+    public static final Direction[] HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP = {
+        Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, Direction.DOWN
+    };
 
     protected final IBaritone baritone;
     protected final IPlayerContext ctx;
@@ -44,14 +29,10 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     protected final BetterBlockPos dest;
 
-    /**
-     * The positions that need to be broken before this movement can ensue
-     */
+    /** The positions that need to be broken before this movement can ensue */
     protected final BetterBlockPos[] positionsToBreak;
 
-    /**
-     * The position where we need to place a block before this movement can ensue
-     */
+    /** The position where we need to place a block before this movement can ensue */
     protected final BetterBlockPos positionToPlace;
 
     private Double cost;
@@ -64,7 +45,12 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     private Boolean calculatedWhileLoaded;
 
-    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak, BetterBlockPos toPlace) {
+    protected Movement(
+            IBaritone baritone,
+            BetterBlockPos src,
+            BetterBlockPos dest,
+            BetterBlockPos[] toBreak,
+            BetterBlockPos toPlace) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.src = src;
@@ -73,7 +59,8 @@ public abstract class Movement implements IMovement, MovementHelper {
         this.positionToPlace = toPlace;
     }
 
-    protected Movement(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
+    protected Movement(
+            IBaritone baritone, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
         this(baritone, src, dest, toBreak, null);
     }
 
@@ -110,12 +97,13 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     protected boolean playerInValidPosition() {
-        return getValidPositions().contains(ctx.playerFeet()) || getValidPositions().contains(((PathingBehavior) baritone.getPathingBehavior()).pathStart());
+        return getValidPositions().contains(ctx.playerFeet())
+                || getValidPositions()
+                        .contains(((PathingBehavior) baritone.getPathingBehavior()).pathStart());
     }
 
     /**
-     * Handles the execution of the latest Movement
-     * State, and offers a Status to the calling class.
+     * Handles the execution of the latest Movement State, and offers a Status to the calling class.
      *
      * @return Status
      */
@@ -123,23 +111,37 @@ public abstract class Movement implements IMovement, MovementHelper {
     public MovementStatus update() {
         ctx.player().getAbilities().flying = false;
         currentState = updateState(currentState);
-        if (MovementHelper.isLiquid(ctx, ctx.playerFeet()) && ctx.player().position().y < dest.y + 0.6) {
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())
+                && ctx.player().position().y < dest.y + 0.6) {
             currentState.setInput(Input.JUMP, true);
         }
         if (ctx.player().isInWall()) {
-            ctx.getSelectedBlock().ifPresent(pos -> MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, pos)));
+            ctx.getSelectedBlock()
+                    .ifPresent(
+                            pos ->
+                                    MovementHelper.switchToBestToolFor(
+                                            ctx, BlockStateInterface.get(ctx, pos)));
             currentState.setInput(Input.CLICK_LEFT, true);
         }
 
-        // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
-        currentState.getTarget().getRotation().ifPresent(rotation ->
-                baritone.getLookBehavior().updateTarget(
-                        rotation,
-                        currentState.getTarget().hasToForceRotations()));
+        // If the movement target has to force the new rotations, or we aren't using silent move,
+        // then force the rotations
+        currentState
+                .getTarget()
+                .getRotation()
+                .ifPresent(
+                        rotation ->
+                                baritone.getLookBehavior()
+                                        .updateTarget(
+                                                rotation,
+                                                currentState.getTarget().hasToForceRotations()));
         baritone.getInputOverrideHandler().clearAllKeys();
-        currentState.getInputStates().forEach((input, forced) -> {
-            baritone.getInputOverrideHandler().setInputForceState(input, forced);
-        });
+        currentState
+                .getInputStates()
+                .forEach(
+                        (input, forced) -> {
+                            baritone.getInputOverrideHandler().setInputForceState(input, forced);
+                        });
         currentState.getInputStates().clear();
 
         // If the current status indicates a completed movement
@@ -156,35 +158,49 @@ public abstract class Movement implements IMovement, MovementHelper {
         }
         boolean somethingInTheWay = false;
         for (BetterBlockPos blockPos : positionsToBreak) {
-            if (!ctx.world().getEntitiesOfClass(FallingBlockEntity.class, new AABB(0, 0, 0, 1, 1.1, 1).move(blockPos)).isEmpty() && Baritone.settings().pauseMiningForFallingBlocks.value) {
+            if (!ctx.world()
+                            .getEntitiesOfClass(
+                                    FallingBlockEntity.class,
+                                    new AABB(0, 0, 0, 1, 1.1, 1).move(blockPos))
+                            .isEmpty()
+                    && Baritone.settings().pauseMiningForFallingBlocks.value) {
                 return false;
             }
             if (!MovementHelper.canWalkThrough(ctx, blockPos)) { // can't break air, so don't try
                 somethingInTheWay = true;
                 MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
-                Optional<Rotation> reachable = RotationUtils.reachable(ctx, blockPos, ctx.playerController().getBlockReachDistance());
+                Optional<Rotation> reachable =
+                        RotationUtils.reachable(
+                                ctx, blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
+                    if (ctx.isLookingAt(blockPos)
+                            || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;
                 }
-                //get rekt minecraft
-                //i'm doing it anyway
-                //i dont care if theres snow in the way!!!!!!!
-                //you dont own me!!!!
-                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(blockPos), ctx.playerRotations()), true)
-                );
-                // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block
+                // get rekt minecraft
+                // i'm doing it anyway
+                // i dont care if theres snow in the way!!!!!!!
+                // you dont own me!!!!
+                state.setTarget(
+                        new MovementState.MovementTarget(
+                                RotationUtils.calcRotationFromVec3d(
+                                        ctx.playerHead(),
+                                        VecUtils.getBlockPosCenter(blockPos),
+                                        ctx.playerRotations()),
+                                true));
+                // don't check selectedblock on this one, this is a fallback when we can't see any
+                // face directly, it's intended to be breaking the "incorrect" block
                 state.setInput(Input.CLICK_LEFT, true);
                 return false;
             }
         }
         if (somethingInTheWay) {
-            // There's a block or blocks that we can't walk through, but we have no target rotation to reach any
+            // There's a block or blocks that we can't walk through, but we have no target rotation
+            // to reach any
             // So don't return true, actually set state to unreachable
             state.setStatus(MovementStatus.UNREACHABLE);
             return true;
@@ -263,7 +279,8 @@ public abstract class Movement implements IMovement, MovementHelper {
         }
         List<BlockPos> result = new ArrayList<>();
         for (BetterBlockPos positionToBreak : positionsToBreak) {
-            if (!MovementHelper.canWalkThrough(bsi, positionToBreak.x, positionToBreak.y, positionToBreak.z)) {
+            if (!MovementHelper.canWalkThrough(
+                    bsi, positionToBreak.x, positionToBreak.y, positionToBreak.z)) {
                 result.add(positionToBreak);
             }
         }
@@ -276,7 +293,9 @@ public abstract class Movement implements IMovement, MovementHelper {
             return toPlaceCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        if (positionToPlace != null && !MovementHelper.canWalkOn(bsi, positionToPlace.x, positionToPlace.y, positionToPlace.z)) {
+        if (positionToPlace != null
+                && !MovementHelper.canWalkOn(
+                        bsi, positionToPlace.x, positionToPlace.y, positionToPlace.z)) {
             result.add(positionToPlace);
         }
         toPlaceCached = result;

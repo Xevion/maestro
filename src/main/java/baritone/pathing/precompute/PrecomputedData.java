@@ -1,29 +1,12 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.precompute;
+
+import static baritone.pathing.precompute.Ternary.MAYBE;
+import static baritone.pathing.precompute.Ternary.YES;
 
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import static baritone.pathing.precompute.Ternary.MAYBE;
-import static baritone.pathing.precompute.Ternary.YES;
 
 public class PrecomputedData {
 
@@ -66,7 +49,9 @@ public class PrecomputedData {
 
         blockData |= COMPLETED_MASK;
 
-        data[id] = blockData; // in theory, this is thread "safe" because every thread should compute the exact same int to write?
+        data[id] =
+                blockData; // in theory, this is thread "safe" because every thread should compute
+        // the exact same int to write?
         return blockData;
     }
 

@@ -1,36 +1,17 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.pathing.goals;
 
 import java.util.Arrays;
 
 /**
- * A composite of many goals, any one of which satisfies the composite.
- * For example, a GoalComposite of block goals for every oak log in loaded chunks
- * would result in it pathing to the easiest oak log to get to
+ * A composite of many goals, any one of which satisfies the composite. For example, a GoalComposite
+ * of block goals for every oak log in loaded chunks would result in it pathing to the easiest oak
+ * log to get to
  *
  * @author avecowa
  */
 public class GoalComposite implements Goal {
 
-    /**
-     * An array of goals that any one of must be satisfied
-     */
+    /** An array of goals that any one of must be satisfied */
     private final Goal[] goals;
 
     public GoalComposite(Goal... goals) {

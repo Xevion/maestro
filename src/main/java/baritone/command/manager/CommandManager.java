@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.command.manager;
 
 import baritone.Baritone;
@@ -30,12 +13,10 @@ import baritone.api.command.registry.Registry;
 import baritone.command.argument.ArgConsumer;
 import baritone.command.argument.CommandArguments;
 import baritone.command.defaults.DefaultCommands;
-import net.minecraft.util.Tuple;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
-
+import net.minecraft.util.Tuple;
 
 /**
  * The default, internal implementation of {@link ICommandManager}
@@ -100,9 +81,7 @@ public class CommandManager implements ICommandManager {
         List<ICommandArgument> args = pair.getB();
         if (args.isEmpty()) {
             return new TabCompleteHelper()
-                    .addCommands(this.baritone.getCommandManager())
-                    .filterPrefix(label)
-                    .stream();
+                    .addCommands(this.baritone.getCommandManager()).filterPrefix(label).stream();
         } else {
             return tabComplete(pair);
         }
@@ -116,9 +95,11 @@ public class CommandManager implements ICommandManager {
         return command == null ? null : new ExecutionWrapper(command, label, args);
     }
 
-    private static Tuple<String, List<ICommandArgument>> expand(String string, boolean preserveEmptyLast) {
+    private static Tuple<String, List<ICommandArgument>> expand(
+            String string, boolean preserveEmptyLast) {
         String label = string.split("\\s", 2)[0];
-        List<ICommandArgument> args = CommandArguments.from(string.substring(label.length()), preserveEmptyLast);
+        List<ICommandArgument> args =
+                CommandArguments.from(string.substring(label.length()), preserveEmptyLast);
         return new Tuple<>(label, args);
     }
 
@@ -143,9 +124,10 @@ public class CommandManager implements ICommandManager {
                 this.command.execute(this.label, this.args);
             } catch (Throwable t) {
                 // Create a handleable exception, wrap if needed
-                ICommandException exception = t instanceof ICommandException
-                        ? (ICommandException) t
-                        : new CommandUnhandledException(t);
+                ICommandException exception =
+                        t instanceof ICommandException
+                                ? (ICommandException) t
+                                : new CommandUnhandledException(t);
 
                 exception.handle(command, args.getArgs());
             }

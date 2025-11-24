@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
@@ -41,74 +24,96 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Connection.class)
 public class MixinNetworkManager {
 
-    @Shadow
-    private Channel channel;
+    @Shadow private Channel channel;
 
-    @Shadow
-    @Final
-    private PacketFlow receiving;
+    @Shadow @Final private PacketFlow receiving;
 
-    @Inject(
-            method = "sendPacket",
-            at = @At("HEAD")
-    )
-    private void preDispatchPacket(Packet<?> packet, PacketSendListener packetSendListener, boolean flush, CallbackInfo ci) {
+    @Inject(method = "sendPacket", at = @At("HEAD"))
+    private void preDispatchPacket(
+            Packet<?> packet,
+            PacketSendListener packetSendListener,
+            boolean flush,
+            CallbackInfo ci) {
         if (this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
 
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
-                ibaritone.getGameEventHandler().onSendPacket(new PacketEvent((Connection) (Object) this, EventState.PRE, packet));
+            if (ibaritone.getPlayerContext().player() != null
+                    && ibaritone.getPlayerContext().player().connection.getConnection()
+                            == (Connection) (Object) this) {
+                ibaritone
+                        .getGameEventHandler()
+                        .onSendPacket(
+                                new PacketEvent(
+                                        (Connection) (Object) this, EventState.PRE, packet));
             }
         }
     }
 
-    @Inject(
-            method = "sendPacket",
-            at = @At("RETURN")
-    )
-    private void postDispatchPacket(Packet<?> packet, PacketSendListener packetSendListener, boolean flush, CallbackInfo ci) {
+    @Inject(method = "sendPacket", at = @At("RETURN"))
+    private void postDispatchPacket(
+            Packet<?> packet,
+            PacketSendListener packetSendListener,
+            boolean flush,
+            CallbackInfo ci) {
         if (this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
 
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
-                ibaritone.getGameEventHandler().onSendPacket(new PacketEvent((Connection) (Object) this, EventState.POST, packet));
-            }
-        }
-    }
-
-    @Inject(
-            method = "channelRead0",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/network/Connection.genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V"
-            )
-    )
-    private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if (this.receiving != PacketFlow.CLIENTBOUND) {
-            return;
-        }
-        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
-                ibaritone.getGameEventHandler().onReceivePacket(new PacketEvent((Connection) (Object) this, EventState.PRE, packet));
+            if (ibaritone.getPlayerContext().player() != null
+                    && ibaritone.getPlayerContext().player().connection.getConnection()
+                            == (Connection) (Object) this) {
+                ibaritone
+                        .getGameEventHandler()
+                        .onSendPacket(
+                                new PacketEvent(
+                                        (Connection) (Object) this, EventState.POST, packet));
             }
         }
     }
 
     @Inject(
             method = "channelRead0",
-            at = @At("RETURN")
-    )
-    private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "net/minecraft/network/Connection.genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V"))
+    private void preProcessPacket(
+            ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+        if (this.receiving != PacketFlow.CLIENTBOUND) {
+            return;
+        }
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            if (ibaritone.getPlayerContext().player() != null
+                    && ibaritone.getPlayerContext().player().connection.getConnection()
+                            == (Connection) (Object) this) {
+                ibaritone
+                        .getGameEventHandler()
+                        .onReceivePacket(
+                                new PacketEvent(
+                                        (Connection) (Object) this, EventState.PRE, packet));
+            }
+        }
+    }
+
+    @Inject(method = "channelRead0", at = @At("RETURN"))
+    private void postProcessPacket(
+            ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (!this.channel.isOpen() || this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
-                ibaritone.getGameEventHandler().onReceivePacket(new PacketEvent((Connection) (Object) this, EventState.POST, packet));
+            if (ibaritone.getPlayerContext().player() != null
+                    && ibaritone.getPlayerContext().player().connection.getConnection()
+                            == (Connection) (Object) this) {
+                ibaritone
+                        .getGameEventHandler()
+                        .onReceivePacket(
+                                new PacketEvent(
+                                        (Connection) (Object) this, EventState.POST, packet));
             }
         }
     }

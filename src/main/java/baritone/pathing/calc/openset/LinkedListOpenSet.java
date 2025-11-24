@@ -1,28 +1,11 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.calc.openset;
 
 import baritone.pathing.calc.PathNode;
 
 /**
- * A linked list implementation of an open set. This is the original implementation from MineBot.
- * It has incredibly fast insert performance, at the cost of O(n) removeLowest.
- * It sucks. BinaryHeapOpenSet results in more than 10x more nodes considered in 4 seconds.
+ * A linked list implementation of an open set. This is the original implementation from MineBot. It
+ * has incredibly fast insert performance, at the cost of O(n) removeLowest. It sucks.
+ * BinaryHeapOpenSet results in more than 10x more nodes considered in 4 seconds.
  *
  * @author leijurv
  */
@@ -44,9 +27,7 @@ class LinkedListOpenSet implements IOpenSet {
     }
 
     @Override
-    public void update(PathNode node) {
-
-    }
+    public void update(PathNode node) {}
 
     @Override
     public PathNode removeLowest() {
@@ -83,7 +64,7 @@ class LinkedListOpenSet implements IOpenSet {
         return bestNode.val;
     }
 
-    public static class Node { //wrapper with next
+    public static class Node { // wrapper with next
 
         private Node nextOpen;
         private PathNode val;

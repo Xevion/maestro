@@ -1,24 +1,6 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.cache;
 
 import baritone.api.utils.BetterBlockPos;
-
 import java.util.*;
 
 /**
@@ -35,18 +17,17 @@ public interface IWaypoint {
     String getName();
 
     /**
-     * Returns the tag for this waypoint. The tag is a category
-     * for the waypoint in a sense, it describes the source of
-     * the waypoint.
+     * Returns the tag for this waypoint. The tag is a category for the waypoint in a sense, it
+     * describes the source of the waypoint.
      *
      * @return The waypoint tag
      */
     Tag getTag();
 
     /**
-     * Returns the unix epoch time in milliseconds that this waypoint
-     * was created. This value should only be set once, when the waypoint
-     * is initially created, and not when it is being loaded from file.
+     * Returns the unix epoch time in milliseconds that this waypoint was created. This value should
+     * only be set once, when the waypoint is initially created, and not when it is being loaded
+     * from file.
      *
      * @return The unix epoch milliseconds that this waypoint was created
      */
@@ -61,34 +42,23 @@ public interface IWaypoint {
 
     enum Tag {
 
-        /**
-         * Tag indicating a position explictly marked as a home base
-         */
+        /** Tag indicating a position explictly marked as a home base */
         HOME("home", "base"),
 
-        /**
-         * Tag indicating a position that the local player has died at
-         */
+        /** Tag indicating a position that the local player has died at */
         DEATH("death"),
 
-        /**
-         * Tag indicating a bed position
-         */
+        /** Tag indicating a bed position */
         BED("bed", "spawn"),
 
-        /**
-         * Tag indicating that the waypoint was user-created
-         */
+        /** Tag indicating that the waypoint was user-created */
         USER("user");
 
-        /**
-         * A list of all of the
-         */
-        private static final List<Tag> TAG_LIST = Collections.unmodifiableList(Arrays.asList(Tag.values()));
+        /** A list of all of the */
+        private static final List<Tag> TAG_LIST =
+                Collections.unmodifiableList(Arrays.asList(Tag.values()));
 
-        /**
-         * The names for the tag, anything that the tag can be referred to as.
-         */
+        /** The names for the tag, anything that the tag can be referred to as. */
         public final String[] names;
 
         Tag(String... names) {

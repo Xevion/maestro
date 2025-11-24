@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.behavior.look;
 
 import java.util.Arrays;
@@ -23,9 +6,9 @@ import java.util.function.LongSupplier;
 
 /**
  * Implementation of Xoroshiro256++
- * <p>
- * Extended to produce random double-precision floating point numbers, and allow copies to be spawned via {@link #fork},
- * which share the same internal state as the source object.
+ *
+ * <p>Extended to produce random double-precision floating point numbers, and allow copies to be
+ * spawned via {@link #fork}, which share the same internal state as the source object.
  *
  * @author Brady
  */
@@ -41,18 +24,20 @@ public final class ForkableRandom {
 
     public ForkableRandom(long seedIn) {
         final AtomicLong seed = new AtomicLong(seedIn);
-        final LongSupplier splitmix64 = () -> {
-            long z = seed.addAndGet(0x9e3779b97f4a7c15L);
-            z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
-            z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;
-            return z ^ (z >>> 31);
-        };
-        this.s = new long[] {
-                splitmix64.getAsLong(),
-                splitmix64.getAsLong(),
-                splitmix64.getAsLong(),
-                splitmix64.getAsLong()
-        };
+        final LongSupplier splitmix64 =
+                () -> {
+                    long z = seed.addAndGet(0x9e3779b97f4a7c15L);
+                    z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
+                    z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;
+                    return z ^ (z >>> 31);
+                };
+        this.s =
+                new long[] {
+                    splitmix64.getAsLong(),
+                    splitmix64.getAsLong(),
+                    splitmix64.getAsLong(),
+                    splitmix64.getAsLong()
+                };
     }
 
     private ForkableRandom(long[] s) {

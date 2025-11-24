@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils;
 
 import baritone.Baritone;
@@ -27,9 +10,8 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
-import net.minecraft.core.BlockPos;
-
 import java.util.*;
+import net.minecraft.core.BlockPos;
 
 public class PathingControlManager implements IPathingControlManager {
 
@@ -44,14 +26,16 @@ public class PathingControlManager implements IPathingControlManager {
         this.baritone = baritone;
         this.processes = new HashSet<>();
         this.active = new ArrayList<>();
-        baritone.getGameEventHandler().registerEventListener(new AbstractGameEventListener() { // needs to be after all behavior ticks
-            @Override
-            public void onTick(TickEvent event) {
-                if (event.getType() == TickEvent.Type.IN) {
-                    postTick();
-                }
-            }
-        });
+        baritone.getGameEventHandler()
+                .registerEventListener(
+                        new AbstractGameEventListener() { // needs to be after all behavior ticks
+                            @Override
+                            public void onTick(TickEvent event) {
+                                if (event.getType() == TickEvent.Type.IN) {
+                                    postTick();
+                                }
+                            }
+                        });
     }
 
     @Override
@@ -67,8 +51,12 @@ public class PathingControlManager implements IPathingControlManager {
         active.clear();
         for (IBaritoneProcess proc : processes) {
             proc.onLostControl();
-            if (proc.isActive() && !proc.isTemporary()) { // it's okay only for a temporary thing (like combat pause) to maintain control even if you say to cancel
-                throw new IllegalStateException(proc.displayName() + " stayed active after being cancelled");
+            if (proc.isActive()
+                    && !proc.isTemporary()) { // it's okay only for a temporary thing (like combat
+                // pause) to maintain control even if you say to
+                // cancel
+                throw new IllegalStateException(
+                        proc.displayName() + " stayed active after being cancelled");
             }
         }
     }
@@ -93,8 +81,12 @@ public class PathingControlManager implements IPathingControlManager {
             p.secretInternalSetGoal(null);
             return;
         }
-        if (!Objects.equals(inControlThisTick, inControlLastTick) && command.commandType != PathingCommandType.REQUEST_PAUSE && inControlLastTick != null && !inControlLastTick.isTemporary()) {
-            // if control has changed from a real process to another real process, and the new process wants to do something
+        if (!Objects.equals(inControlThisTick, inControlLastTick)
+                && command.commandType != PathingCommandType.REQUEST_PAUSE
+                && inControlLastTick != null
+                && !inControlLastTick.isTemporary()) {
+            // if control has changed from a real process to another real process, and the new
+            // process wants to do something
             p.cancelSegmentIfSafe();
             // get rid of the in progress stuff from the last process
         }
@@ -128,7 +120,8 @@ public class PathingControlManager implements IPathingControlManager {
     private void postTick() {
         // if we did this in pretick, it would suck
         // we use the time between ticks as calculation time
-        // therefore, we only cancel and recalculate after the tick for the current path has executed
+        // therefore, we only cancel and recalculate after the tick for the current path has
+        // executed
         // "it would suck" means it would actually execute a path every other tick
         if (command == null) {
             return;
@@ -136,14 +129,17 @@ public class PathingControlManager implements IPathingControlManager {
         PathingBehavior p = baritone.getPathingBehavior();
         switch (command.commandType) {
             case FORCE_REVALIDATE_GOAL_AND_PATH:
-                if (command.goal == null || forceRevalidate(command.goal) || revalidateGoal(command.goal)) {
+                if (command.goal == null
+                        || forceRevalidate(command.goal)
+                        || revalidateGoal(command.goal)) {
                     // pwnage
                     p.softCancelIfSafe();
                 }
                 p.secretInternalSetGoalAndPath(command);
                 break;
             case REVALIDATE_GOAL_AND_PATH:
-                if (Baritone.settings().cancelOnGoalInvalidation.value && (command.goal == null || revalidateGoal(command.goal))) {
+                if (Baritone.settings().cancelOnGoalInvalidation.value
+                        && (command.goal == null || revalidateGoal(command.goal))) {
                     p.softCancelIfSafe();
                 }
                 p.secretInternalSetGoalAndPath(command);
@@ -177,7 +173,6 @@ public class PathingControlManager implements IPathingControlManager {
         return false;
     }
 
-
     public PathingCommand executeProcesses() {
         for (IBaritoneProcess process : processes) {
             if (process.isActive()) {
@@ -196,10 +191,15 @@ public class PathingControlManager implements IPathingControlManager {
         while (iterator.hasNext()) {
             IBaritoneProcess proc = iterator.next();
 
-            PathingCommand exec = proc.onTick(Objects.equals(proc, inControlLastTick) && baritone.getPathingBehavior().calcFailedLastTick(), baritone.getPathingBehavior().isSafeToCancel());
+            PathingCommand exec =
+                    proc.onTick(
+                            Objects.equals(proc, inControlLastTick)
+                                    && baritone.getPathingBehavior().calcFailedLastTick(),
+                            baritone.getPathingBehavior().isSafeToCancel());
             if (exec == null) {
                 if (proc.isActive()) {
-                    throw new IllegalStateException(proc.displayName() + " actively returned null PathingCommand");
+                    throw new IllegalStateException(
+                            proc.displayName() + " actively returned null PathingCommand");
                 }
                 // no need to call onLostControl; they are reporting inactive.
             } else if (exec.commandType != PathingCommandType.DEFER) {

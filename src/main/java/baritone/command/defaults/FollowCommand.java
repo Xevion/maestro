@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.command.defaults;
 
 import baritone.KeepName;
@@ -30,7 +13,6 @@ import baritone.api.command.helpers.TabCompleteHelper;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -67,11 +49,11 @@ public class FollowCommand extends Command {
                 }
             }
 
-            baritone.getFollowProcess().follow(
-                    classes.isEmpty()
-                            ? entities::contains
-                            : e -> classes.stream().anyMatch(c -> e.getType().equals(c))
-            );
+            baritone.getFollowProcess()
+                    .follow(
+                            classes.isEmpty()
+                                    ? entities::contains
+                                    : e -> classes.stream().anyMatch(c -> e.getType().equals(c)));
         }
         if (group != null) {
             logDirect(String.format("Following all %s", group.name().toLowerCase(Locale.US)));
@@ -79,9 +61,7 @@ public class FollowCommand extends Command {
             if (classes.isEmpty()) {
                 if (entities.isEmpty()) throw new NoEntitiesException();
                 logDirect("Following these entities:");
-                entities.stream()
-                        .map(Entity::toString)
-                        .forEach(this::logDirect);
+                entities.stream().map(Entity::toString).forEach(this::logDirect);
             } else {
                 logDirect("Following these types of entities:");
                 classes.stream()
@@ -97,10 +77,10 @@ public class FollowCommand extends Command {
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
-                    .append(FollowGroup.class)
-                    .append(FollowList.class)
-                    .filterPrefix(args.getString())
-                    .stream();
+                            .append(FollowGroup.class)
+                            .append(FollowList.class)
+                            .filterPrefix(args.getString())
+                            .stream();
         } else {
             IDatatypeFor followType;
             try {
@@ -130,10 +110,10 @@ public class FollowCommand extends Command {
                 "",
                 "Usage:",
                 "> follow entities - Follows all entities.",
-                "> follow entity <entity1> <entity2> <...> - Follow certain entities (for example 'skeleton', 'horse' etc.)",
+                "> follow entity <entity1> <entity2> <...> - Follow certain entities (for example"
+                        + " 'skeleton', 'horse' etc.)",
                 "> follow players - Follow players",
-                "> follow player <username1> <username2> <...> - Follow certain players"
-        );
+                "> follow player <username1> <username2> <...> - Follow certain players");
     }
 
     @KeepName
@@ -166,6 +146,5 @@ public class FollowCommand extends Command {
         protected NoEntitiesException() {
             super("No valid entities in range!");
         }
-
     }
 }

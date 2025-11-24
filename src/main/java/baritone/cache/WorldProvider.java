@@ -1,33 +1,8 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.cache;
 
 import baritone.Baritone;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.storage.LevelResource;
-import org.apache.commons.lang3.SystemUtils;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -35,6 +10,12 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
+import org.apache.commons.lang3.SystemUtils;
 
 /**
  * @author Brady
@@ -50,6 +31,7 @@ public class WorldProvider implements IWorldProvider {
 
     /**
      * This lets us detect a broken load/unload hook.
+     *
      * @see #detectAndHandleBrokenLoading()
      */
     private Level mcWorld;
@@ -71,32 +53,39 @@ public class WorldProvider implements IWorldProvider {
      * @param world The new world
      */
     public final void initWorld(Level world) {
-        this.getSaveDirectories(world).ifPresent(dirs -> {
-            final Path worldDir = dirs.getA();
-            final Path readmeDir = dirs.getB();
+        this.getSaveDirectories(world)
+                .ifPresent(
+                        dirs -> {
+                            final Path worldDir = dirs.getA();
+                            final Path readmeDir = dirs.getB();
 
-            try {
-                // lol wtf is this baritone folder in my minecraft save?
-                // good thing we have a readme
-                Files.createDirectories(readmeDir);
-                Files.write(
-                        readmeDir.resolve("readme.txt"),
-                        "https://github.com/cabaletta/baritone\n".getBytes(StandardCharsets.US_ASCII)
-                );
-            } catch (IOException ignored) {}
+                            try {
+                                // lol wtf is this baritone folder in my minecraft save?
+                                // good thing we have a readme
+                                Files.createDirectories(readmeDir);
+                                Files.write(
+                                        readmeDir.resolve("readme.txt"),
+                                        "https://github.com/cabaletta/baritone\n"
+                                                .getBytes(StandardCharsets.US_ASCII));
+                            } catch (IOException ignored) {
+                            }
 
-            // We will actually store the world data in a subfolder: "DIM<id>"
-            final Path worldDataDir = this.getWorldDataDirectory(worldDir, world);
-            try {
-                Files.createDirectories(worldDataDir);
-            } catch (IOException ignored) {}
+                            // We will actually store the world data in a subfolder: "DIM<id>"
+                            final Path worldDataDir = this.getWorldDataDirectory(worldDir, world);
+                            try {
+                                Files.createDirectories(worldDataDir);
+                            } catch (IOException ignored) {
+                            }
 
-            System.out.println("Baritone world data dir: " + worldDataDir);
-            synchronized (worldCache) {
-                this.currentWorld = worldCache.computeIfAbsent(worldDataDir, d -> new WorldData(d, world.dimensionType()));
-            }
-            this.mcWorld = ctx.world();
-        });
+                            System.out.println("Baritone world data dir: " + worldDataDir);
+                            synchronized (worldCache) {
+                                this.currentWorld =
+                                        worldCache.computeIfAbsent(
+                                                worldDataDir,
+                                                d -> new WorldData(d, world.dimensionType()));
+                            }
+                            this.mcWorld = ctx.world();
+                        });
     }
 
     public final void closeWorld() {
@@ -117,18 +106,20 @@ public class WorldProvider implements IWorldProvider {
 
     /**
      * @param world The world
-     * @return An {@link Optional} containing the world's baritone dir and readme dir, or {@link Optional#empty()} if
-     *         the world isn't valid for caching.
+     * @return An {@link Optional} containing the world's baritone dir and readme dir, or {@link
+     *     Optional#empty()} if the world isn't valid for caching.
      */
     private Optional<Tuple<Path, Path>> getSaveDirectories(Level world) {
         Path worldDir;
         Path readmeDir;
 
-        // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
+        // If there is an integrated server running (Aka Singleplayer) then do magic to find the
+        // world save file
         if (ctx.minecraft().hasSingleplayerServer()) {
             worldDir = ctx.minecraft().getSingleplayerServer().getWorldPath(LevelResource.ROOT);
 
-            // Gets the "depth" of this directory relative to the game's run directory, 2 is the location of the world
+            // Gets the "depth" of this directory relative to the game's run directory, 2 is the
+            // location of the world
             if (worldDir.relativize(ctx.minecraft().gameDirectory.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
                 worldDir = worldDir.getParent();
@@ -142,7 +133,7 @@ public class WorldProvider implements IWorldProvider {
             if (serverData != null) {
                 folderName = serverData.isRealm() ? "realms" : serverData.ip;
             } else {
-                //replaymod causes null currentServer and false singleplayer.
+                // replaymod causes null currentServer and false singleplayer.
                 System.out.println("World seems to be a replay. Not loading Baritone cache.");
                 currentWorld = null;
                 mcWorld = ctx.world();
@@ -160,9 +151,7 @@ public class WorldProvider implements IWorldProvider {
         return Optional.of(new Tuple<>(worldDir, readmeDir));
     }
 
-    /**
-     * Why does this exist instead of fixing the event? Some mods break the event. Lol.
-     */
+    /** Why does this exist instead of fixing the event? Some mods break the event. Lol. */
     private void detectAndHandleBrokenLoading() {
         if (this.mcWorld != ctx.world()) {
             if (this.currentWorld != null) {
@@ -173,7 +162,10 @@ public class WorldProvider implements IWorldProvider {
                 System.out.println("mc.world loaded unnoticed! Loading Baritone cache now.");
                 initWorld(ctx.world());
             }
-        } else if (this.currentWorld == null && ctx.world() != null && (ctx.minecraft().hasSingleplayerServer() || ctx.minecraft().getCurrentServer() != null)) {
+        } else if (this.currentWorld == null
+                && ctx.world() != null
+                && (ctx.minecraft().hasSingleplayerServer()
+                        || ctx.minecraft().getCurrentServer() != null)) {
             System.out.println("Retrying to load Baritone cache");
             initWorld(ctx.world());
         }

@@ -1,23 +1,10 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils;
 
 import baritone.Baritone;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.ItemTags;
@@ -35,11 +22,6 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 /**
  * A cached list of the best tools on the hotbar for any block
  *
@@ -48,31 +30,28 @@ import java.util.function.Function;
 public class ToolSet {
 
     /**
-     * A cache mapping a {@link Block} to how long it will take to break
-     * with this toolset, given the optimum tool is used.
+     * A cache mapping a {@link Block} to how long it will take to break with this toolset, given
+     * the optimum tool is used.
      */
     private final Map<Block, Double> breakStrengthCache;
 
-    /**
-     * My buddy leijurv owned me so we have this to not create a new lambda instance.
-     */
+    /** My buddy leijurv owned me so we have this to not create a new lambda instance. */
     private final Function<Block, Double> backendCalculation;
 
     private final LocalPlayer player;
 
     /**
-     * Used for evaluating the material cost of a tool.
-     * see {@link #getMaterialCost(ItemStack)}
+     * Used for evaluating the material cost of a tool. see {@link #getMaterialCost(ItemStack)}
      * Prefer tools with lower material cost (lower index in this list).
      */
-    private static final List<TagKey<Item>> materialTagsPriorityList = List.of(
-        ItemTags.WOODEN_TOOL_MATERIALS,
-        ItemTags.STONE_TOOL_MATERIALS,
-        ItemTags.IRON_TOOL_MATERIALS,
-        ItemTags.GOLD_TOOL_MATERIALS,
-        ItemTags.DIAMOND_TOOL_MATERIALS,
-        ItemTags.NETHERITE_TOOL_MATERIALS
-    );
+    private static final List<TagKey<Item>> materialTagsPriorityList =
+            List.of(
+                    ItemTags.WOODEN_TOOL_MATERIALS,
+                    ItemTags.STONE_TOOL_MATERIALS,
+                    ItemTags.IRON_TOOL_MATERIALS,
+                    ItemTags.GOLD_TOOL_MATERIALS,
+                    ItemTags.DIAMOND_TOOL_MATERIALS,
+                    ItemTags.NETHERITE_TOOL_MATERIALS);
 
     public ToolSet(LocalPlayer player) {
         breakStrengthCache = new HashMap<>();
@@ -98,9 +77,10 @@ public class ToolSet {
     }
 
     /**
-     * Evaluate the material cost of a possible tool.
-     * If all else is equal, we want to prefer the tool with the lowest material cost.
-     * i.e. we want to prefer a wooden pickaxe over a stone pickaxe, if all else is equal.
+     * Evaluate the material cost of a possible tool. If all else is equal, we want to prefer the
+     * tool with the lowest material cost. i.e. we want to prefer a wooden pickaxe over a stone
+     * pickaxe, if all else is equal.
+     *
      * @param itemStack a possibly empty ItemStack
      * @return values from 0 up
      */
@@ -126,12 +106,12 @@ public class ToolSet {
 
     /**
      * Calculate which tool on the hotbar is best for mining, depending on an override setting,
-     * related to auto tool movement cost, it will either return current selected slot, or the best slot.
+     * related to auto tool movement cost, it will either return current selected slot, or the best
+     * slot.
      *
      * @param b the blockstate to be mined
      * @return An int containing the index in the tools array that worked best
      */
-
     public int getBestSlot(Block b, boolean preferSilkTouch) {
         return getBestSlot(b, preferSilkTouch, false);
     }
@@ -153,11 +133,15 @@ public class ToolSet {
         BlockState blockState = b.defaultBlockState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.getInventory().getItem(i);
-            if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof SwordItem) {
+            if (!Baritone.settings().useSwordToMine.value
+                    && itemStack.getItem() instanceof SwordItem) {
                 continue;
             }
 
-            if (Baritone.settings().itemSaver.value && (itemStack.getDamageValue() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
+            if (Baritone.settings().itemSaver.value
+                    && (itemStack.getDamageValue() + Baritone.settings().itemSaverThreshold.value)
+                            >= itemStack.getMaxDamage()
+                    && itemStack.getMaxDamage() > 1) {
                 continue;
             }
             double speed = calculateSpeedVsBlock(itemStack, blockState);
@@ -169,8 +153,8 @@ public class ToolSet {
                 bestSilkTouch = silkTouch;
             } else if (speed == highestSpeed) {
                 int cost = getMaterialCost(itemStack);
-                if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
-                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                if ((cost < lowestCost && (silkTouch || !bestSilkTouch))
+                        || (preferSilkTouch && !bestSilkTouch && silkTouch)) {
                     highestSpeed = speed;
                     best = i;
                     lowestCost = cost;
@@ -193,14 +177,16 @@ public class ToolSet {
     }
 
     private double avoidanceMultiplier(Block b) {
-        return Baritone.settings().blocksToAvoidBreaking.value.contains(b) ? Baritone.settings().avoidBreakingMultiplier.value : 1;
+        return Baritone.settings().blocksToAvoidBreaking.value.contains(b)
+                ? Baritone.settings().avoidBreakingMultiplier.value
+                : 1;
     }
 
     /**
-     * Calculates how long would it take to mine the specified block given the best tool
-     * in this toolset is used. A negative value is returned if the specified block is unbreakable.
+     * Calculates how long would it take to mine the specified block given the best tool in this
+     * toolset is used. A negative value is returned if the specified block is unbreakable.
      *
-     * @param item  the item to mine it with
+     * @param item the item to mine it with
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */
@@ -219,8 +205,10 @@ public class ToolSet {
         float speed = item.getDestroySpeed(state);
         if (speed > 1) {
             final ItemEnchantments itemEnchantments = item.getEnchantments();
-            OUTER: for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                List<EnchantmentAttributeEffect> effects = enchant.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES);
+            OUTER:
+            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                List<EnchantmentAttributeEffect> effects =
+                        enchant.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES);
                 for (EnchantmentAttributeEffect e : effects) {
                     if (e.attribute().is(Attributes.MINING_EFFICIENCY.unwrapKey().get())) {
                         speed += e.amount().calculate(itemEnchantments.getLevel(enchant));
@@ -231,7 +219,8 @@ public class ToolSet {
         }
 
         speed /= hardness;
-        if (!state.requiresCorrectToolForDrops() || (!item.isEmpty() && item.isCorrectToolForDrops(state))) {
+        if (!state.requiresCorrectToolForDrops()
+                || (!item.isEmpty() && item.isCorrectToolForDrops(state))) {
             return speed / 30;
         } else {
             return speed / 100;
@@ -257,7 +246,9 @@ public class ToolSet {
                     speed *= 0.09;
                     break;
                 case 2:
-                    speed *= 0.0027; // you might think that 0.09*0.3 = 0.027 so that should be next, that would make too much sense. it's 0.0027.
+                    speed *=
+                            0.0027; // you might think that 0.09*0.3 = 0.027 so that should be next,
+                    // that would make too much sense. it's 0.0027.
                     break;
                 default:
                     speed *= 0.00081;

@@ -1,25 +1,7 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.utils;
 
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -57,8 +39,15 @@ public class BlockUtils {
         if (resourceCache.containsKey(name)) {
             return null; // cached as null
         }
-        block = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(name.contains(":") ? name : "minecraft:" + name)).orElse(null);
-        Map<String, Block> copy = new HashMap<>(resourceCache); // read only copy is safe, wont throw concurrentmodification
+        block =
+                BuiltInRegistries.BLOCK
+                        .getOptional(
+                                ResourceLocation.tryParse(
+                                        name.contains(":") ? name : "minecraft:" + name))
+                        .orElse(null);
+        Map<String, Block> copy =
+                new HashMap<>(
+                        resourceCache); // read only copy is safe, wont throw concurrentmodification
         copy.put(name, block);
         resourceCache = copy;
         return block;

@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.event;
 
 import baritone.Baritone;
@@ -27,13 +10,12 @@ import baritone.api.utils.Pair;
 import baritone.cache.CachedChunk;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Brady
@@ -94,17 +76,20 @@ public final class GameEventHandler implements IEventBus, Helper {
         // Whenever the server sends us to another dimension, chunks are unloaded
         // technically after the new world has been loaded, so we perform a check
         // to make sure the chunk being unloaded is already loaded.
-        boolean isPreUnload = state == EventState.PRE
-                && type == ChunkEvent.Type.UNLOAD
-                && world.getChunkSource().getChunk(event.getX(), event.getZ(), null, false) != null;
+        boolean isPreUnload =
+                state == EventState.PRE
+                        && type == ChunkEvent.Type.UNLOAD
+                        && world.getChunkSource().getChunk(event.getX(), event.getZ(), null, false)
+                                != null;
 
         if (event.isPostPopulate() || isPreUnload) {
-            baritone.getWorldProvider().ifWorldLoaded(worldData -> {
-                LevelChunk chunk = world.getChunk(event.getX(), event.getZ());
-                worldData.getCachedWorld().queueForPacking(chunk);
-            });
+            baritone.getWorldProvider()
+                    .ifWorldLoaded(
+                            worldData -> {
+                                LevelChunk chunk = world.getChunk(event.getX(), event.getZ());
+                                worldData.getCachedWorld().queueForPacking(chunk);
+                            });
         }
-
 
         listeners.forEach(l -> l.onChunkEvent(event));
     }
@@ -112,16 +97,22 @@ public final class GameEventHandler implements IEventBus, Helper {
     @Override
     public void onBlockChange(BlockChangeEvent event) {
         if (Baritone.settings().repackOnAnyBlockChange.value) {
-            final boolean keepingTrackOf = event.getBlocks().stream()
-                    .map(Pair::second).map(BlockState::getBlock)
-                    .anyMatch(CachedChunk.BLOCKS_TO_KEEP_TRACK_OF::contains);
+            final boolean keepingTrackOf =
+                    event.getBlocks().stream()
+                            .map(Pair::second)
+                            .map(BlockState::getBlock)
+                            .anyMatch(CachedChunk.BLOCKS_TO_KEEP_TRACK_OF::contains);
 
             if (keepingTrackOf) {
-                baritone.getWorldProvider().ifWorldLoaded(worldData -> {
-                    final Level world = baritone.getPlayerContext().world();
-                    ChunkPos pos = event.getChunkPos();
-                    worldData.getCachedWorld().queueForPacking(world.getChunk(pos.x, pos.z));
-                });
+                baritone.getWorldProvider()
+                        .ifWorldLoaded(
+                                worldData -> {
+                                    final Level world = baritone.getPlayerContext().world();
+                                    ChunkPos pos = event.getChunkPos();
+                                    worldData
+                                            .getCachedWorld()
+                                            .queueForPacking(world.getChunk(pos.x, pos.z));
+                                });
             }
         }
 

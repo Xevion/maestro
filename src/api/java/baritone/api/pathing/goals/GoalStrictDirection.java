@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.pathing.goals;
 
 import baritone.api.utils.BetterBlockPos;
@@ -23,7 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
 /**
- * Dig a tunnel in a certain direction, but if you have to deviate from the path, go back to where you started
+ * Dig a tunnel in a certain direction, but if you have to deviate from the path, go back to where
+ * you started
  */
 public class GoalStrictDirection implements Goal {
 
@@ -53,7 +37,8 @@ public class GoalStrictDirection implements Goal {
     public double heuristic(int x, int y, int z) {
         int distanceFromStartInDesiredDirection = (x - this.x) * dx + (z - this.z) * dz;
 
-        int distanceFromStartInIncorrectDirection = Math.abs((x - this.x) * dz) + Math.abs((z - this.z) * dx);
+        int distanceFromStartInIncorrectDirection =
+                Math.abs((x - this.x) * dz) + Math.abs((z - this.z) * dx);
 
         int verticalDistanceFromStart = Math.abs(y - this.y);
 
@@ -80,11 +65,7 @@ public class GoalStrictDirection implements Goal {
         }
 
         GoalStrictDirection goal = (GoalStrictDirection) o;
-        return x == goal.x
-                && y == goal.y
-                && z == goal.z
-                && dx == goal.dx
-                && dz == goal.dz;
+        return x == goal.x && y == goal.y && z == goal.z && dx == goal.dx && dz == goal.dz;
     }
 
     @Override
@@ -103,7 +84,6 @@ public class GoalStrictDirection implements Goal {
                 SettingsUtil.maybeCensor(y),
                 SettingsUtil.maybeCensor(z),
                 SettingsUtil.maybeCensor(dx),
-                SettingsUtil.maybeCensor(dz)
-        );
+                SettingsUtil.maybeCensor(dz));
     }
 }

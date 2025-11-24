@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.movement.movements;
 
 import baritone.Baritone;
@@ -28,6 +11,8 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -35,32 +20,37 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.WaterFluid;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class MovementParkour extends Movement {
 
-    private static final BetterBlockPos[] EMPTY = new BetterBlockPos[]{};
+    private static final BetterBlockPos[] EMPTY = new BetterBlockPos[] {};
 
     private final Direction direction;
     private final int dist;
     private final boolean ascend;
 
-    private MovementParkour(IBaritone baritone, BetterBlockPos src, int dist, Direction dir, boolean ascend) {
-        super(baritone, src, src.relative(dir, dist).above(ascend ? 1 : 0), EMPTY, src.relative(dir, dist).below(ascend ? 0 : 1));
+    private MovementParkour(
+            IBaritone baritone, BetterBlockPos src, int dist, Direction dir, boolean ascend) {
+        super(
+                baritone,
+                src,
+                src.relative(dir, dist).above(ascend ? 1 : 0),
+                EMPTY,
+                src.relative(dir, dist).below(ascend ? 0 : 1));
         this.direction = dir;
         this.dist = dist;
         this.ascend = ascend;
     }
 
-    public static MovementParkour cost(CalculationContext context, BetterBlockPos src, Direction direction) {
+    public static MovementParkour cost(
+            CalculationContext context, BetterBlockPos src, Direction direction) {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, direction, res);
         int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
         return new MovementParkour(context.getBaritone(), src, dist, direction, res.y > src.y);
     }
 
-    public static void cost(CalculationContext context, int x, int y, int z, Direction dir, MutableMoveResult res) {
+    public static void cost(
+            CalculationContext context, int x, int y, int z, Direction dir, MutableMoveResult res) {
         if (!context.allowParkour) {
             return;
         }
@@ -74,11 +64,14 @@ public class MovementParkour extends Movement {
             return;
         }
         BlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
-        if (MovementHelper.canWalkOn(context, x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (MovementHelper.canWalkOn(
+                context, x + xDiff, y - 1, z + zDiff,
+                adj)) { // don't parkour if we could just traverse (for now)
             // second most common case -- we could just traverse not parkour
             return;
         }
-        if (MovementHelper.avoidWalkingInto(adj) && !(adj.getFluidState().getType() instanceof WaterFluid)) { // magma sucks
+        if (MovementHelper.avoidWalkingInto(adj)
+                && !(adj.getFluidState().getType() instanceof WaterFluid)) { // magma sucks
             return;
         }
         if (!MovementHelper.fullyPassable(context, x + xDiff, y + 1, z + zDiff)) {
@@ -91,10 +84,14 @@ public class MovementParkour extends Movement {
             return;
         }
         BlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof StairBlock || MovementHelper.isBottomSlab(standingOn)) {
+        if (standingOn.getBlock() == Blocks.VINE
+                || standingOn.getBlock() == Blocks.LADDER
+                || standingOn.getBlock() instanceof StairBlock
+                || MovementHelper.isBottomSlab(standingOn)) {
             return;
         }
-        // we can't jump from (frozen) water with assumeWalkOnWater because we can't be sure it will be frozen
+        // we can't jump from (frozen) water with assumeWalkOnWater because we can't be sure it will
+        // be frozen
         if (context.assumeWalkOnWater && !standingOn.getFluidState().isEmpty()) {
             return;
         }
@@ -129,7 +126,11 @@ public class MovementParkour extends Movement {
             // check for ascend landing position
             BlockState destInto = context.bsi.get0(destX, y, destZ);
             if (!MovementHelper.fullyPassable(context, destX, y, destZ, destInto)) {
-                if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context, destX, y, destZ, destInto) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
+                if (i <= 3
+                        && context.allowParkourAscend
+                        && context.canSprint
+                        && MovementHelper.canWalkOn(context, destX, y, destZ, destInto)
+                        && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
                     res.x = destX;
                     res.y = y + 1;
                     res.z = destZ;
@@ -141,11 +142,13 @@ public class MovementParkour extends Movement {
 
             // check for flat landing position
             BlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
-            // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
+            // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to
+            // specifically disallow ending a jump on farmland haha
             // frostwalker works here because we can't jump from possibly unfrozen water
-            if ((landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context, destX, y - 1, destZ, landingOn))
-                    || (Math.min(16, context.frostWalker + 2) >= i && MovementHelper.canUseFrostWalker(context, landingOn))
-            ) {
+            if ((landingOn.getBlock() != Blocks.FARMLAND
+                            && MovementHelper.canWalkOn(context, destX, y - 1, destZ, landingOn))
+                    || (Math.min(16, context.frostWalker + 2) >= i
+                            && MovementHelper.canUseFrostWalker(context, landingOn))) {
                 if (checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
                     res.x = destX;
                     res.y = y;
@@ -183,10 +186,21 @@ public class MovementParkour extends Movement {
                 continue;
             }
             for (int j = 0; j < 5; j++) {
-                int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getStepX();
-                int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getStepY();
-                int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getStepZ();
-                if (againstX == destX - xDiff && againstZ == destZ - zDiff) { // we can't turn around that fast
+                int againstX =
+                        destX
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j]
+                                        .getStepX();
+                int againstY =
+                        y
+                                - 1
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j]
+                                        .getStepY();
+                int againstZ =
+                        destZ
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j]
+                                        .getStepZ();
+                if (againstX == destX - xDiff
+                        && againstZ == destZ - zDiff) { // we can't turn around that fast
                     continue;
                 }
                 if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
@@ -201,8 +215,10 @@ public class MovementParkour extends Movement {
     }
 
     private static boolean checkOvershootSafety(BlockStateInterface bsi, int x, int y, int z) {
-        // we're going to walk into these two blocks after the landing of the parkour anyway, so make sure they aren't avoidWalkingInto
-        return !MovementHelper.avoidWalkingInto(bsi.get0(x, y, z)) && !MovementHelper.avoidWalkingInto(bsi.get0(x, y + 1, z));
+        // we're going to walk into these two blocks after the landing of the parkour anyway, so
+        // make sure they aren't avoidWalkingInto
+        return !MovementHelper.avoidWalkingInto(bsi.get0(x, y, z))
+                && !MovementHelper.avoidWalkingInto(bsi.get0(x, y + 1, z));
     }
 
     private static double costFromJumpDistance(int dist) {
@@ -217,7 +233,6 @@ public class MovementParkour extends Movement {
                 throw new IllegalStateException("LOL " + dist);
         }
     }
-
 
     @Override
     public double calculateCost(CalculationContext context) {
@@ -244,7 +259,8 @@ public class MovementParkour extends Movement {
     public boolean safeToCancel(MovementState state) {
         // once this movement is instantiated, the state is default to PREPPING
         // but once it's ticked for the first time it changes to RUNNING
-        // since we don't really know anything about momentum, it suffices to say Parkour can only be canceled on the 0th tick
+        // since we don't really know anything about momentum, it suffices to say Parkour can only
+        // be canceled on the 0th tick
         return state.getStatus() != MovementStatus.RUNNING;
     }
 
@@ -274,14 +290,18 @@ public class MovementParkour extends Movement {
                 state.setStatus(MovementStatus.SUCCESS);
             }
         } else if (!ctx.playerFeet().equals(src)) {
-            if (ctx.playerFeet().equals(src.relative(direction)) || ctx.player().position().y - src.y > 0.0001) {
+            if (ctx.playerFeet().equals(src.relative(direction))
+                    || ctx.player().position().y - src.y > 0.0001) {
                 if (Baritone.settings().allowPlace.value // see PR #3775
                         && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway()
                         && !MovementHelper.canWalkOn(ctx, dest.below())
                         && !ctx.player().onGround()
-                        && MovementHelper.attemptToPlaceABlock(state, baritone, dest.below(), true, false) == PlaceResult.READY_TO_PLACE
-                ) {
-                    // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
+                        && MovementHelper.attemptToPlaceABlock(
+                                        state, baritone, dest.below(), true, false)
+                                == PlaceResult.READY_TO_PLACE) {
+                    // go in the opposite order to check DOWN before all horizontals -- down is
+                    // preferable because you don't have to look to the side while in midair, which
+                    // could mess up the trajectory
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
                 // prevent jumping too late by checking for ascend

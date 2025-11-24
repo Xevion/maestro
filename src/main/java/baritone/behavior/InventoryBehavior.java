@@ -1,26 +1,13 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.utils.Helper;
 import baritone.utils.ToolSet;
+import java.util.ArrayList;
+import java.util.OptionalInt;
+import java.util.Random;
+import java.util.function.Predicate;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -38,15 +25,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import java.util.ArrayList;
-import java.util.OptionalInt;
-import java.util.Random;
-import java.util.function.Predicate;
 
 public final class InventoryBehavior extends Behavior implements Helper {
 
     int ticksSinceLastInventoryMove;
-    int[] lastTickRequestedMove; // not everything asks every tick, so remember the request while coming to a halt
+    int[] lastTickRequestedMove; // not everything asks every tick, so remember the request while
+
+    // coming to a halt
 
     public InventoryBehavior(Baritone baritone) {
         super(baritone);
@@ -65,7 +50,8 @@ public final class InventoryBehavior extends Behavior implements Helper {
             return;
         }
         ticksSinceLastInventoryMove++;
-        if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
+        if (firstValidThrowaway()
+                >= 9) { // aka there are none on the hotbar, but there are some in main inventory
             requestSwapWithHotBar(firstValidThrowaway(), 8);
         }
         int pick = bestToolAgainst(Blocks.STONE, PickaxeItem.class);
@@ -73,7 +59,12 @@ public final class InventoryBehavior extends Behavior implements Helper {
             requestSwapWithHotBar(pick, 0);
         }
         if (lastTickRequestedMove != null) {
-            logDebug("Remembering to move " + lastTickRequestedMove[0] + " " + lastTickRequestedMove[1] + " from a previous tick");
+            logDebug(
+                    "Remembering to move "
+                            + lastTickRequestedMove[0]
+                            + " "
+                            + lastTickRequestedMove[1]
+                            + " from a previous tick");
             requestSwapWithHotBar(lastTickRequestedMove[0], lastTickRequestedMove[1]);
         }
     }
@@ -110,16 +101,27 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     private boolean requestSwapWithHotBar(int inInventory, int inHotbar) {
-        lastTickRequestedMove = new int[]{inInventory, inHotbar};
+        lastTickRequestedMove = new int[] {inInventory, inHotbar};
         if (ticksSinceLastInventoryMove < Baritone.settings().ticksBetweenInventoryMoves.value) {
-            logDebug("Inventory move requested but delaying " + ticksSinceLastInventoryMove + " " + Baritone.settings().ticksBetweenInventoryMoves.value);
+            logDebug(
+                    "Inventory move requested but delaying "
+                            + ticksSinceLastInventoryMove
+                            + " "
+                            + Baritone.settings().ticksBetweenInventoryMoves.value);
             return false;
         }
-        if (Baritone.settings().inventoryMoveOnlyIfStationary.value && !baritone.getInventoryPauserProcess().stationaryForInventoryMove()) {
+        if (Baritone.settings().inventoryMoveOnlyIfStationary.value
+                && !baritone.getInventoryPauserProcess().stationaryForInventoryMove()) {
             logDebug("Inventory move requested but delaying until stationary");
             return false;
         }
-        ctx.playerController().windowClick(ctx.player().inventoryMenu.containerId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickType.SWAP, ctx.player());
+        ctx.playerController()
+                .windowClick(
+                        ctx.player().inventoryMenu.containerId,
+                        inInventory < 9 ? inInventory + 36 : inInventory,
+                        inHotbar,
+                        ClickType.SWAP,
+                        ctx.player());
         ticksSinceLastInventoryMove = 0;
         lastTickRequestedMove = null;
         return true;
@@ -128,7 +130,10 @@ public final class InventoryBehavior extends Behavior implements Helper {
     private int firstValidThrowaway() { // TODO offhand idk
         NonNullList<ItemStack> invy = ctx.player().getInventory().items;
         for (int i = 0; i < invy.size(); i++) {
-            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
+            if (Baritone.settings()
+                    .acceptableThrowawayItems
+                    .value
+                    .contains(invy.get(i).getItem())) {
                 return i;
             }
         }
@@ -144,11 +149,16 @@ public final class InventoryBehavior extends Behavior implements Helper {
             if (stack.isEmpty()) {
                 continue;
             }
-            if (Baritone.settings().itemSaver.value && (stack.getDamageValue() + Baritone.settings().itemSaverThreshold.value) >= stack.getMaxDamage() && stack.getMaxDamage() > 1) {
+            if (Baritone.settings().itemSaver.value
+                    && (stack.getDamageValue() + Baritone.settings().itemSaverThreshold.value)
+                            >= stack.getMaxDamage()
+                    && stack.getMaxDamage() > 1) {
                 continue;
             }
             if (cla$$.isInstance(stack.getItem())) {
-                double speed = ToolSet.calculateSpeedVsBlock(stack, against.defaultBlockState()); // takes into account enchants
+                double speed =
+                        ToolSet.calculateSpeedVsBlock(
+                                stack, against.defaultBlockState()); // takes into account enchants
                 if (speed > bestSpeed) {
                     bestSpeed = speed;
                     bestInd = i;
@@ -168,11 +178,50 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
-        BlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && maybe.equals(((BlockItem) stack.getItem()).getBlock().getStateForPlacement(new BlockPlaceContext(new UseOnContext(ctx.world(), ctx.player(), InteractionHand.MAIN_HAND, stack, new BlockHitResult(new Vec3(ctx.player().position().x, ctx.player().position().y, ctx.player().position().z), Direction.UP, ctx.playerFeet(), false)) {}))))) {
+        BlockState maybe =
+                baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
+        if (maybe != null
+                && throwaway(
+                        select,
+                        stack ->
+                                stack.getItem() instanceof BlockItem
+                                        && maybe.equals(
+                                                ((BlockItem) stack.getItem())
+                                                        .getBlock()
+                                                        .getStateForPlacement(
+                                                                new BlockPlaceContext(
+                                                                        new UseOnContext(
+                                                                                ctx.world(),
+                                                                                ctx.player(),
+                                                                                InteractionHand
+                                                                                        .MAIN_HAND,
+                                                                                stack,
+                                                                                new BlockHitResult(
+                                                                                        new Vec3(
+                                                                                                ctx.player()
+                                                                                                        .position()
+                                                                                                        .x,
+                                                                                                ctx.player()
+                                                                                                        .position()
+                                                                                                        .y,
+                                                                                                ctx.player()
+                                                                                                        .position()
+                                                                                                        .z),
+                                                                                        Direction
+                                                                                                .UP,
+                                                                                        ctx
+                                                                                                .playerFeet(),
+                                                                                        false)) {}))))) {
             return true; // gotem
         }
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+        if (maybe != null
+                && throwaway(
+                        select,
+                        stack ->
+                                stack.getItem() instanceof BlockItem
+                                        && ((BlockItem) stack.getItem())
+                                                .getBlock()
+                                                .equals(maybe.getBlock()))) {
             return true;
         }
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
@@ -187,7 +236,8 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return throwaway(select, desired, Baritone.settings().allowInventory.value);
     }
 
-    public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
+    public boolean throwaway(
+            boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
         LocalPlayer p = ctx.player();
         NonNullList<ItemStack> inv = p.getInventory().items;
         for (int i = 0; i < 9; i++) {
@@ -206,8 +256,10 @@ public final class InventoryBehavior extends Behavior implements Helper {
         }
         if (desired.test(p.getInventory().offhand.get(0))) {
             // main hand takes precedence over off hand
-            // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
-            // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
+            // that means that if we have block A selected in main hand and block B in off hand,
+            // right clicking places block B
+            // we've already checked above ^ and the main hand can't possible have an
+            // acceptablethrowawayitem
             // so we need to select in the main hand something that doesn't right click
             // so not a shovel, not a hoe, not a block, etc
             for (int i = 0; i < 9; i++) {

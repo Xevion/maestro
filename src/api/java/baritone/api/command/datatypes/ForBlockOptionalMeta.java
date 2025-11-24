@@ -1,34 +1,16 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.command.datatypes;
 
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.BlockOptionalMeta;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.properties.Property;
-
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.Property;
 
 public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
     INSTANCE;
@@ -39,7 +21,9 @@ public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
      * property and value use the same format as domain.
      */
     // Good luck reading this.
-    private static Pattern PATTERN = Pattern.compile("(?:[a-z0-9_.-]+:)?(?:[a-z0-9/_.-]+(?:\\[(?:(?:[a-z0-9_.-]+=[a-z0-9_.-]+,)*(?:[a-z0-9_.-]+(?:=(?:[a-z0-9_.-]+(?:\\])?)?)?)?|\\])?)?)?");
+    private static Pattern PATTERN =
+            Pattern.compile(
+                    "(?:[a-z0-9_.-]+:)?(?:[a-z0-9/_.-]+(?:\\[(?:(?:[a-z0-9_.-]+=[a-z0-9_.-]+,)*(?:[a-z0-9_.-]+(?:=(?:[a-z0-9_.-]+(?:\\])?)?)?)?|\\])?)?)?");
 
     @Override
     public BlockOptionalMeta get(IDatatypeContext ctx) throws CommandException {
@@ -77,7 +61,8 @@ public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
             properties = parts[1];
         }
 
-        Block block = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.parse(blockId)).orElse(null);
+        Block block =
+                BuiltInRegistries.BLOCK.getOptional(ResourceLocation.parse(blockId)).orElse(null);
         if (block == null) {
             // This block doesn't exist so there's no properties to complete.
             return Stream.empty();
@@ -92,23 +77,21 @@ public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
 
         if (!lastProperty.contains("=")) {
             // The last property-value pair doesn't have a value yet so we are completing its name
-            Set<String> usedProps = Stream.of(leadingProperties.split(","))
-                    .map(pair -> pair.split("=")[0])
-                    .collect(Collectors.toSet());
+            Set<String> usedProps =
+                    Stream.of(leadingProperties.split(","))
+                            .map(pair -> pair.split("=")[0])
+                            .collect(Collectors.toSet());
 
             String prefix = arg.substring(0, arg.length() - lastProperty.length());
             return new TabCompleteHelper()
-                    .append(
-                            block.getStateDefinition()
-                                    .getProperties()
-                                    .stream()
-                                    .map(Property::getName)
-                    )
-                    .filter(prop -> !usedProps.contains(prop))
-                    .filterPrefix(lastProperty)
-                    .sortAlphabetically()
-                    .map(prop -> prefix + prop)
-                    .stream();
+                            .append(
+                                    block.getStateDefinition().getProperties().stream()
+                                            .map(Property::getName))
+                            .filter(prop -> !usedProps.contains(prop))
+                            .filterPrefix(lastProperty)
+                            .sortAlphabetically()
+                            .map(prop -> prefix + prop)
+                            .stream();
         }
 
         String lastName, lastValue;
@@ -128,23 +111,23 @@ public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
         }
 
         return new TabCompleteHelper()
-                .append(getValues(property))
-                .filterPrefix(lastValue)
-                .sortAlphabetically()
-                .map(val -> prefix + val)
-                .stream();
+                        .append(getValues(property))
+                        .filterPrefix(lastValue)
+                        .sortAlphabetically()
+                        .map(val -> prefix + val)
+                        .stream();
     }
 
     /**
-     * Always returns exactly two strings.
-     * If the separator is not found the FIRST returned string is empty.
+     * Always returns exactly two strings. If the separator is not found the FIRST returned string
+     * is empty.
      */
     private static String[] splitLast(String string, char chr) {
         int idx = string.lastIndexOf(chr);
         if (idx == -1) {
-            return new String[]{"", string};
+            return new String[] {"", string};
         }
-        return new String[]{string.substring(0, idx), string.substring(idx + 1)};
+        return new String[] {string.substring(0, idx), string.substring(idx + 1)};
     }
 
     // this shouldn't need to be a separate method?

@@ -1,29 +1,11 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.pathing.goals;
 
 import baritone.api.utils.SettingsUtil;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
-import net.minecraft.core.BlockPos;
-
 import java.util.Arrays;
 import java.util.Objects;
+import net.minecraft.core.BlockPos;
 
 /**
  * Useful for automated combat (retreating specifically)
@@ -68,7 +50,7 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public double heuristic(int x, int y, int z) {// mostly copied from GoalBlock
+    public double heuristic(int x, int y, int z) { // mostly copied from GoalBlock
         double min = Double.MAX_VALUE;
         for (BlockPos p : from) {
             double h = GoalXZ.calculate(p.getX() - x, p.getZ() - z);
@@ -84,7 +66,7 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public double heuristic() {// TODO less hacky solution
+    public double heuristic() { // TODO less hacky solution
         int distance = (int) Math.ceil(Math.sqrt(distanceSq));
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
@@ -153,9 +135,7 @@ public class GoalRunAway implements Goal {
         if (maintainY != null) {
             return String.format(
                     "GoalRunAwayFromMaintainY y=%s, %s",
-                    SettingsUtil.maybeCensor(maintainY),
-                    Arrays.asList(from)
-            );
+                    SettingsUtil.maybeCensor(maintainY), Arrays.asList(from));
         } else {
             return "GoalRunAwayFrom" + Arrays.asList(from);
         }

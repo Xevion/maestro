@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.cache;
 
 import baritone.Baritone;
@@ -26,11 +9,6 @@ import baritone.api.utils.Helper;
 import com.google.common.cache.CacheBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.dimension.DimensionType;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
 
 /**
  * @author Brady
@@ -45,32 +27,27 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public final class CachedWorld implements ICachedWorld, Helper {
 
-    /**
-     * The maximum number of regions in any direction from (0,0)
-     */
+    /** The maximum number of regions in any direction from (0,0) */
     private static final int REGION_MAX = 30_000_000 / 512 + 1;
 
-    /**
-     * A map of all of the cached regions.
-     */
+    /** A map of all of the cached regions. */
     private Long2ObjectMap<CachedRegion> cachedRegions = new Long2ObjectOpenHashMap<>();
 
-    /**
-     * The directory that the cached region files are saved to
-     */
+    /** The directory that the cached region files are saved to */
     private final String directory;
 
     /**
-     * Queue of positions to pack. Refers to the toPackMap, in that every element of this queue will be a
-     * key in that map.
+     * Queue of positions to pack. Refers to the toPackMap, in that every element of this queue will
+     * be a key in that map.
      */
     private final LinkedBlockingQueue<ChunkPos> toPackQueue = new LinkedBlockingQueue<>();
 
     /**
-     * All chunk positions pending packing. This map will be updated in-place if a new update to the chunk occurs
-     * while waiting in the queue for the packer thread to get to it.
+     * All chunk positions pending packing. This map will be updated in-place if a new update to the
+     * chunk occurs while waiting in the queue for the packer thread to get to it.
      */
-    private final Map<ChunkPos, LevelChunk> toPackMap = CacheBuilder.newBuilder().softValues().<ChunkPos, LevelChunk>build().asMap();
+    private final Map<ChunkPos, LevelChunk> toPackMap =
+            CacheBuilder.newBuilder().softValues().<ChunkPos, LevelChunk>build().asMap();
 
     private final DimensionType dimension;
 
@@ -85,20 +62,23 @@ public final class CachedWorld implements ICachedWorld, Helper {
         this.dimension = dimension;
         System.out.println("Cached world directory: " + directory);
         Baritone.getExecutor().execute(new PackerThread());
-        Baritone.getExecutor().execute(() -> {
-            try {
-                Thread.sleep(30000);
-                while (true) {
-                    // since a region only saves if it's been modified since its last save
-                    // saving every 10 minutes means that once it's time to exit
-                    // we'll only have a couple regions to save
-                    save();
-                    Thread.sleep(600000);
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
+        Baritone.getExecutor()
+                .execute(
+                        () -> {
+                            try {
+                                Thread.sleep(30000);
+                                while (true) {
+                                    // since a region only saves if it's been modified since its
+                                    // last save
+                                    // saving every 10 minutes means that once it's time to exit
+                                    // we'll only have a couple regions to save
+                                    save();
+                                    Thread.sleep(600000);
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        });
     }
 
     @Override
@@ -122,7 +102,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     @Override
-    public final ArrayList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
+    public final ArrayList<BlockPos> getLocationsOf(
+            String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
         ArrayList<BlockPos> res = new ArrayList<>();
         int centerRegionX = centerX >> 9;
         int centerRegionZ = centerZ >> 9;
@@ -161,28 +142,31 @@ public final class CachedWorld implements ICachedWorld, Helper {
     public final void save() {
         if (!Baritone.settings().chunkCaching.value) {
             System.out.println("Not saving to disk; chunk caching is disabled.");
-            allRegions().forEach(region -> {
-                if (region != null) {
-                    region.removeExpired();
-                }
-            }); // even if we aren't saving to disk, still delete expired old chunks from RAM
+            allRegions()
+                    .forEach(
+                            region -> {
+                                if (region != null) {
+                                    region.removeExpired();
+                                }
+                            }); // even if we aren't saving to disk, still delete expired old chunks
+            // from RAM
             prune();
             return;
         }
         long start = System.nanoTime() / 1000000L;
-        allRegions().parallelStream().forEach(region -> {
-            if (region != null) {
-                region.save(this.directory);
-            }
-        });
+        allRegions().parallelStream()
+                .forEach(
+                        region -> {
+                            if (region != null) {
+                                region.save(this.directory);
+                            }
+                        });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World save took " + (now - start) + "ms");
         prune();
     }
 
-    /**
-     * Delete regions that are too far from the player
-     */
+    /** Delete regions that are too far from the player */
     private synchronized void prune() {
         if (!Baritone.settings().pruneRegionsFromRAM.value) {
             return;
@@ -203,12 +187,15 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     /**
-     * If we are still in this world and dimension, return player feet, otherwise return most recently modified chunk
+     * If we are still in this world and dimension, return player feet, otherwise return most
+     * recently modified chunk
      */
     private BlockPos guessPosition() {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             IWorldData data = ibaritone.getWorldProvider().getCurrentWorld();
-            if (data != null && data.getCachedWorld() == this && ibaritone.getPlayerContext().player() != null) {
+            if (data != null
+                    && data.getCachedWorld() == this
+                    && ibaritone.getPlayerContext().player() != null) {
                 return ibaritone.getPlayerContext().playerFeet();
             }
         }
@@ -221,14 +208,16 @@ public final class CachedWorld implements ICachedWorld, Helper {
             if (ch == null) {
                 continue;
             }
-            if (mostRecentlyModified == null || mostRecentlyModified.cacheTimestamp < ch.cacheTimestamp) {
+            if (mostRecentlyModified == null
+                    || mostRecentlyModified.cacheTimestamp < ch.cacheTimestamp) {
                 mostRecentlyModified = ch;
             }
         }
         if (mostRecentlyModified == null) {
             return new BlockPos(0, 0, 0);
         }
-        return new BlockPos((mostRecentlyModified.x << 4) + 8, 0, (mostRecentlyModified.z << 4) + 8);
+        return new BlockPos(
+                (mostRecentlyModified.x << 4) + 8, 0, (mostRecentlyModified.z << 4) + 8);
     }
 
     private synchronized List<CachedRegion> allRegions() {
@@ -238,11 +227,13 @@ public final class CachedWorld implements ICachedWorld, Helper {
     @Override
     public final void reloadAllFromDisk() {
         long start = System.nanoTime() / 1000000L;
-        allRegions().forEach(region -> {
-            if (region != null) {
-                region.load(this.directory);
-            }
-        });
+        allRegions()
+                .forEach(
+                        region -> {
+                            if (region != null) {
+                                region.load(this.directory);
+                            }
+                        });
         long now = System.nanoTime() / 1000000L;
         System.out.println("World load took " + (now - start) + "ms");
     }
@@ -253,19 +244,21 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     /**
-     * Returns the region at the specified region coordinates. If a
-     * region is not found, then a new one is created.
+     * Returns the region at the specified region coordinates. If a region is not found, then a new
+     * one is created.
      *
      * @param regionX The region X coordinate
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
     private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
-        return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
-            CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension);
-            newRegion.load(this.directory);
-            return newRegion;
-        });
+        return cachedRegions.computeIfAbsent(
+                getRegionID(regionX, regionZ),
+                id -> {
+                    CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension);
+                    newRegion.load(this.directory);
+                    return newRegion;
+                });
     }
 
     public void tryLoadFromDisk(int regionX, int regionZ) {
@@ -273,8 +266,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     /**
-     * Returns the region ID based on the region coordinates. 0 will be
-     * returned if the specified region coordinates are out of bounds.
+     * Returns the region ID based on the region coordinates. 0 will be returned if the specified
+     * region coordinates are out of bounds.
      *
      * @param regionX The region X coordinate
      * @param regionZ The region Z coordinate
@@ -296,7 +289,10 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * @return Whether or not the region is in world bounds
      */
     private boolean isRegionInWorld(int regionX, int regionZ) {
-        return regionX <= REGION_MAX && regionX >= -REGION_MAX && regionZ <= REGION_MAX && regionZ >= -REGION_MAX;
+        return regionX <= REGION_MAX
+                && regionX >= -REGION_MAX
+                && regionZ <= REGION_MAX
+                && regionZ >= -REGION_MAX;
     }
 
     private class PackerThread implements Runnable {
@@ -311,12 +307,13 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     }
                     CachedChunk cached = ChunkPacker.pack(chunk);
                     CachedWorld.this.updateCachedChunk(cached);
-                    //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
+                    // System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
                 } catch (Throwable th) {
-                    // in the case of an exception, keep consuming from the queue so as not to leak memory
+                    // in the case of an exception, keep consuming from the queue so as not to leak
+                    // memory
                     th.printStackTrace();
                 }
             }

@@ -1,21 +1,6 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.path;
+
+import static baritone.api.pathing.movement.MovementStatus.*;
 
 import baritone.Baritone;
 import baritone.api.pathing.calc.IPath;
@@ -32,13 +17,11 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
+import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec3;
-import java.util.*;
-
-import static baritone.api.pathing.movement.MovementStatus.*;
 
 /**
  * Behavior to execute a precomputed path
@@ -51,8 +34,8 @@ public class PathExecutor implements IPathExecutor, Helper {
     private static final double MAX_DIST_FROM_PATH = 2;
 
     /**
-     * Default value is equal to 10 seconds. It's find to decrease it, but it must be at least 5.5s (110 ticks).
-     * For more information, see issue #102.
+     * Default value is equal to 10 seconds. It's find to decrease it, but it must be at least 5.5s
+     * (110 ticks). For more information, see issue #102.
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/102">Issue #102</a>
      * @see <a href="https://i.imgur.com/5s5GLnI.png">Anime</a>
@@ -86,8 +69,8 @@ public class PathExecutor implements IPathExecutor, Helper {
     /**
      * Tick this executor
      *
-     * @return True if a movement just finished (and the player is therefore in a "stable" state, like,
-     * not sneaking out over lava), false otherwise
+     * @return True if a movement just finished (and the player is therefore in a "stable" state,
+     *     like, not sneaking out over lava), false otherwise
      */
     public boolean onTick() {
         if (pathPosition == path.length() - 1) {
@@ -99,7 +82,10 @@ public class PathExecutor implements IPathExecutor, Helper {
         Movement movement = (Movement) path.movements().get(pathPosition);
         BetterBlockPos whereAmI = ctx.playerFeet();
         if (!movement.getValidPositions().contains(whereAmI)) {
-            for (int i = 0; i < pathPosition && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
+            for (int i = 0;
+                    i < pathPosition && i < path.length();
+                    i++) { // this happens for example when you lag out and get teleported back a
+                // couple blocks
                 if (((Movement) path.movements().get(i)).getValidPositions().contains(whereAmI)) {
                     int previousPos = pathPosition;
                     pathPosition = i;
@@ -111,13 +97,16 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return false;
                 }
             }
-            for (int i = pathPosition + 3; i < path.length() - 1; i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
+            for (int i = pathPosition + 3;
+                    i < path.length() - 1;
+                    i++) { // dont check pathPosition+1. the movement tells us when it's done (e.g.
+                // sneak placing)
                 // also don't check pathPosition+2 because reasons
                 if (((Movement) path.movements().get(i)).getValidPositions().contains(whereAmI)) {
                     if (i - pathPosition > 2) {
                         logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                     }
-                    //System.out.println("Double skip sundae");
+                    // System.out.println("Double skip sundae");
                     pathPosition = i - 1;
                     onChangeInPathPosition();
                     onTick();
@@ -128,7 +117,13 @@ public class PathExecutor implements IPathExecutor, Helper {
         Tuple<Double, BlockPos> status = closestPathPos(path);
         if (possiblyOffPath(status, MAX_DIST_FROM_PATH)) {
             ticksAway++;
-            System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + status.getA() + ". Threshold: " + MAX_DIST_FROM_PATH);
+            System.out.println(
+                    "FAR AWAY FROM PATH FOR "
+                            + ticksAway
+                            + " TICKS. Current distance: "
+                            + status.getA()
+                            + ". Threshold: "
+                            + MAX_DIST_FROM_PATH);
             if (ticksAway > MAX_TICKS_AWAY) {
                 logDebug("Too far away from path for too long, cancelling path");
                 cancel();
@@ -137,12 +132,13 @@ public class PathExecutor implements IPathExecutor, Helper {
         } else {
             ticksAway = 0;
         }
-        if (possiblyOffPath(status, MAX_MAX_DIST_FROM_PATH)) { // ok, stop right away, we're way too far.
+        if (possiblyOffPath(
+                status, MAX_MAX_DIST_FROM_PATH)) { // ok, stop right away, we're way too far.
             logDebug("too far from path");
             cancel();
             return false;
         }
-        //long start = System.nanoTime() / 1000000L;
+        // long start = System.nanoTime() / 1000000L;
         BlockStateInterface bsi = new BlockStateInterface(ctx);
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i < 0 || i >= path.movements().size()) {
@@ -184,7 +180,8 @@ public class PathExecutor implements IPathExecutor, Helper {
         }*/
         if (pathPosition < path.movements().size() - 1) {
             IMovement next = path.movements().get(pathPosition + 1);
-            if (!behavior.baritone.bsi.worldContainsLoadedChunk(next.getDest().x, next.getDest().z)) {
+            if (!behavior.baritone.bsi.worldContainsLoadedChunk(
+                    next.getDest().x, next.getDest().z)) {
                 logDebug("Pausing since destination is at edge of loaded chunks");
                 clearKeys();
                 return true;
@@ -193,26 +190,48 @@ public class PathExecutor implements IPathExecutor, Helper {
         boolean canCancel = movement.safeToCancel();
         if (costEstimateIndex == null || costEstimateIndex != pathPosition) {
             costEstimateIndex = pathPosition;
-            // do this only once, when the movement starts, and deliberately get the cost as cached when this path was calculated, not the cost as it is right now
+            // do this only once, when the movement starts, and deliberately get the cost as cached
+            // when this path was calculated, not the cost as it is right now
             currentMovementOriginalCostEstimate = movement.getCost();
-            for (int i = 1; i < Baritone.settings().costVerificationLookahead.value && pathPosition + i < path.length() - 1; i++) {
-                if (((Movement) path.movements().get(pathPosition + i)).calculateCost(behavior.secretInternalGetCalculationContext()) >= ActionCosts.COST_INF && canCancel) {
-                    logDebug("Something has changed in the world and a future movement has become impossible. Cancelling.");
+            for (int i = 1;
+                    i < Baritone.settings().costVerificationLookahead.value
+                            && pathPosition + i < path.length() - 1;
+                    i++) {
+                if (((Movement) path.movements().get(pathPosition + i))
+                                        .calculateCost(
+                                                behavior.secretInternalGetCalculationContext())
+                                >= ActionCosts.COST_INF
+                        && canCancel) {
+                    logDebug(
+                            "Something has changed in the world and a future movement has become"
+                                    + " impossible. Cancelling.");
                     cancel();
                     return true;
                 }
             }
         }
-        double currentCost = movement.recalculateCost(behavior.secretInternalGetCalculationContext());
+        double currentCost =
+                movement.recalculateCost(behavior.secretInternalGetCalculationContext());
         if (currentCost >= ActionCosts.COST_INF && canCancel) {
-            logDebug("Something has changed in the world and this movement has become impossible. Cancelling.");
+            logDebug(
+                    "Something has changed in the world and this movement has become impossible."
+                            + " Cancelling.");
             cancel();
             return true;
         }
-        if (!movement.calculatedWhileLoaded() && currentCost - currentMovementOriginalCostEstimate > Baritone.settings().maxCostIncrease.value && canCancel) {
+        if (!movement.calculatedWhileLoaded()
+                && currentCost - currentMovementOriginalCostEstimate
+                        > Baritone.settings().maxCostIncrease.value
+                && canCancel) {
             // don't do this if the movement was calculated while loaded
-            // that means that this isn't a cache error, it's just part of the path interfering with a later part
-            logDebug("Original cost " + currentMovementOriginalCostEstimate + " current cost " + currentCost + ". Cancelling.");
+            // that means that this isn't a cache error, it's just part of the path interfering with
+            // a later part
+            logDebug(
+                    "Original cost "
+                            + currentMovementOriginalCostEstimate
+                            + " current cost "
+                            + currentCost
+                            + ". Cancelling.");
             cancel();
             return true;
         }
@@ -228,7 +247,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
         if (movementStatus == SUCCESS) {
-            //System.out.println("Movement done, next path");
+            // System.out.println("Movement done, next path");
             pathPosition++;
             onChangeInPathPosition();
             onTick();
@@ -236,20 +255,33 @@ public class PathExecutor implements IPathExecutor, Helper {
         } else {
             sprintNextTick = shouldSprintNextTick();
             if (!sprintNextTick) {
-                ctx.player().setSprinting(false); // letting go of control doesn't make you stop sprinting actually
+                ctx.player()
+                        .setSprinting(
+                                false); // letting go of control doesn't make you stop sprinting
+                // actually
             }
             ticksOnCurrent++;
-            if (ticksOnCurrent > currentMovementOriginalCostEstimate + Baritone.settings().movementTimeoutTicks.value) {
+            if (ticksOnCurrent
+                    > currentMovementOriginalCostEstimate
+                            + Baritone.settings().movementTimeoutTicks.value) {
                 // only cancel if the total time has exceeded the initial estimate
-                // as you break the blocks required, the remaining cost goes down, to the point where
+                // as you break the blocks required, the remaining cost goes down, to the point
+                // where
                 // ticksOnCurrent is greater than recalculateCost + 100
-                // this is why we cache cost at the beginning, and don't recalculate for this comparison every tick
-                logDebug("This movement has taken too long (" + ticksOnCurrent + " ticks, expected " + currentMovementOriginalCostEstimate + "). Cancelling.");
+                // this is why we cache cost at the beginning, and don't recalculate for this
+                // comparison every tick
+                logDebug(
+                        "This movement has taken too long ("
+                                + ticksOnCurrent
+                                + " ticks, expected "
+                                + currentMovementOriginalCostEstimate
+                                + "). Cancelling.");
                 cancel();
                 return true;
             }
         }
-        return canCancel; // movement is in progress, but if it reports cancellable, PathingBehavior is good to cut onto the next path
+        return canCancel; // movement is in progress, but if it reports cancellable, PathingBehavior
+        // is good to cut onto the next path
     }
 
     private Tuple<Double, BlockPos> closestPathPos(IPath path) {
@@ -279,7 +311,8 @@ public class PathExecutor implements IPathExecutor, Helper {
             // we're in some kind of sketchy situation, maybe parkouring
             return false;
         }
-        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet()) || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().above())) {
+        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet())
+                || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().above())) {
             // suffocating?
             return false;
         }
@@ -292,10 +325,12 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         List<BetterBlockPos> positions = currentBest.get().positions();
         if (positions.size() < 3) {
-            return false; // not long enough yet to justify pausing, its far from certain we'll actually take this route
+            return false; // not long enough yet to justify pausing, its far from certain we'll
+            // actually take this route
         }
         // the first block of the next path will always overlap
-        // no need to pause our very last movement when it would have otherwise cleanly exited with MovementStatus SUCCESS
+        // no need to pause our very last movement when it would have otherwise cleanly exited with
+        // MovementStatus SUCCESS
         positions = positions.subList(1, positions.size());
         return positions.contains(ctx.playerFeet());
     }
@@ -303,10 +338,17 @@ public class PathExecutor implements IPathExecutor, Helper {
     private boolean possiblyOffPath(Tuple<Double, BlockPos> status, double leniency) {
         double distanceFromPath = status.getA();
         if (distanceFromPath > leniency) {
-            // when we're midair in the middle of a fall, we're very far from both the beginning and the end, but we aren't actually off path
+            // when we're midair in the middle of a fall, we're very far from both the beginning and
+            // the end, but we aren't actually off path
             if (path.movements().get(pathPosition) instanceof MovementFall) {
-                BlockPos fallDest = path.positions().get(pathPosition + 1); // .get(pathPosition) is the block we fell off of
-                return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest) >= leniency; // ignore Y by using flat distance
+                BlockPos fallDest =
+                        path.positions()
+                                .get(
+                                        pathPosition
+                                                + 1); // .get(pathPosition) is the block we fell off
+                // of
+                return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest)
+                        >= leniency; // ignore Y by using flat distance
             } else {
                 return true;
             }
@@ -342,12 +384,15 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean shouldSprintNextTick() {
-        boolean requested = behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT);
+        boolean requested =
+                behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT);
 
-        // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
+        // we'll take it from here, no need for minecraft to see we're holding down control and
+        // sprint for us
         behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
 
-        // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
+        // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try
+        // and sprint
         if (!new CalculationContext(behavior.baritone, false).canSprint) {
             return false;
         }
@@ -356,13 +401,20 @@ public class PathExecutor implements IPathExecutor, Helper {
         // traverse requests sprinting, so we need to do this check first
         if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {
             IMovement next = path.movements().get(pathPosition + 1);
-            if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next, path.movements().get(pathPosition + 2))) {
+            if (next instanceof MovementAscend
+                    && sprintableAscend(
+                            ctx,
+                            (MovementTraverse) current,
+                            (MovementAscend) next,
+                            path.movements().get(pathPosition + 2))) {
                 if (skipNow(ctx, current)) {
                     logDebug("Skipping traverse to straight ascend");
                     pathPosition++;
                     onChangeInPathPosition();
                     onTick();
-                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+                    behavior.baritone
+                            .getInputOverrideHandler()
+                            .setInputForceState(Input.JUMP, true);
                     return true;
                 } else {
                     logDebug("Too far to the side to safely sprint ascend");
@@ -375,42 +427,71 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
 
-        // however, descend and ascend don't request sprinting, because they don't know the context of what movement comes after it
+        // however, descend and ascend don't request sprinting, because they don't know the context
+        // of what movement comes after it
         if (current instanceof MovementDescend) {
 
             if (pathPosition < path.length() - 2) {
-                // keep this out of onTick, even if that means a tick of delay before it has an effect
+                // keep this out of onTick, even if that means a tick of delay before it has an
+                // effect
                 IMovement next = path.movements().get(pathPosition + 1);
                 if (MovementHelper.canUseFrostWalker(ctx, next.getDest().below())) {
-                    // frostwalker only works if you cross the edge of the block on ground so in some cases we may not overshoot
+                    // frostwalker only works if you cross the edge of the block on ground so in
+                    // some cases we may not overshoot
                     // Since MovementDescend can't know the next movement we have to tell it
                     if (next instanceof MovementTraverse || next instanceof MovementParkour) {
-                        boolean couldPlaceInstead = Baritone.settings().allowPlace.value && behavior.baritone.getInventoryBehavior().hasGenericThrowaway() && next instanceof MovementParkour; // traverse doesn't react fast enough
-                        // this is true if the next movement does not ascend or descends and goes into the same cardinal direction (N-NE-E-SE-S-SW-W-NW) as the descend
-                        // in that case current.getDirection() is e.g. (0, -1, 1) and next.getDirection() is e.g. (0, 0, 3) so the cross product of (0, 0, 1) and (0, 0, 3) is taken, which is (0, 0, 0) because the vectors are colinear (don't form a plane)
-                        // since movements in exactly the opposite direction (e.g. descend (0, -1, 1) and traverse (0, 0, -1)) would also pass this check we also have to rule out that case
-                        // we can do that by adding the directions because traverse is always 1 long like descend and parkour can't jump through current.getSrc().down()
-                        boolean sameFlatDirection = !current.getDirection().above().offset(next.getDirection()).equals(BlockPos.ZERO)
-                                && current.getDirection().above().cross(next.getDirection()).equals(BlockPos.ZERO); // here's why you learn maths in school
+                        boolean couldPlaceInstead =
+                                Baritone.settings().allowPlace.value
+                                        && behavior.baritone
+                                                .getInventoryBehavior()
+                                                .hasGenericThrowaway()
+                                        && next
+                                                instanceof
+                                                MovementParkour; // traverse doesn't react fast
+                        // enough
+                        // this is true if the next movement does not ascend or descends and goes
+                        // into the same cardinal direction (N-NE-E-SE-S-SW-W-NW) as the descend
+                        // in that case current.getDirection() is e.g. (0, -1, 1) and
+                        // next.getDirection() is e.g. (0, 0, 3) so the cross product of (0, 0, 1)
+                        // and (0, 0, 3) is taken, which is (0, 0, 0) because the vectors are
+                        // colinear (don't form a plane)
+                        // since movements in exactly the opposite direction (e.g. descend (0, -1,
+                        // 1) and traverse (0, 0, -1)) would also pass this check we also have to
+                        // rule out that case
+                        // we can do that by adding the directions because traverse is always 1 long
+                        // like descend and parkour can't jump through current.getSrc().down()
+                        boolean sameFlatDirection =
+                                !current.getDirection()
+                                                .above()
+                                                .offset(next.getDirection())
+                                                .equals(BlockPos.ZERO)
+                                        && current.getDirection()
+                                                .above()
+                                                .cross(next.getDirection())
+                                                .equals(BlockPos.ZERO); // here's why you learn
+                        // maths in school
                         if (sameFlatDirection && !couldPlaceInstead) {
                             ((MovementDescend) current).forceSafeMode();
                         }
                     }
                 }
             }
-            if (((MovementDescend) current).safeMode() && !((MovementDescend) current).skipToAscend()) {
+            if (((MovementDescend) current).safeMode()
+                    && !((MovementDescend) current).skipToAscend()) {
                 logDebug("Sprinting would be unsafe");
                 return false;
             }
 
             if (pathPosition < path.length() - 2) {
                 IMovement next = path.movements().get(pathPosition + 1);
-                if (next instanceof MovementAscend && current.getDirection().above().equals(next.getDirection().below())) {
+                if (next instanceof MovementAscend
+                        && current.getDirection().above().equals(next.getDirection().below())) {
                     // a descend then an ascend in the same direction
                     pathPosition++;
                     onChangeInPathPosition();
                     onTick();
-                    // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
+                    // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't
+                    // possible to repeat, since it's asymmetric
                     logDebug("Skipping descend to straight ascend");
                     return true;
                 }
@@ -418,10 +499,10 @@ public class PathExecutor implements IPathExecutor, Helper {
 
                     if (next instanceof MovementDescend && pathPosition < path.length() - 3) {
                         IMovement next_next = path.movements().get(pathPosition + 2);
-                        if (next_next instanceof MovementDescend && !canSprintFromDescendInto(ctx, next, next_next)) {
+                        if (next_next instanceof MovementDescend
+                                && !canSprintFromDescendInto(ctx, next, next_next)) {
                             return false;
                         }
-
                     }
                     if (ctx.playerFeet().equals(current.getDest())) {
                         pathPosition++;
@@ -431,22 +512,33 @@ public class PathExecutor implements IPathExecutor, Helper {
 
                     return true;
                 }
-                //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
+                // logDebug("Turning off sprinting " + movement + " " + next + " " +
+                // movement.getDirection() + " " + next.getDirection().down() + " " +
+                // next.getDirection().down().equals(movement.getDirection()));
             }
         }
         if (current instanceof MovementAscend && pathPosition != 0) {
             IMovement prev = path.movements().get(pathPosition - 1);
-            if (prev instanceof MovementDescend && prev.getDirection().above().equals(current.getDirection().below())) {
+            if (prev instanceof MovementDescend
+                    && prev.getDirection().above().equals(current.getDirection().below())) {
                 BlockPos center = current.getSrc().above();
                 // playerFeet adds 0.1251 to account for soul sand
                 // farmland is 0.9375
                 // 0.07 is to account for farmland
                 if (ctx.player().position().y >= center.getY() - 0.07) {
-                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
+                    behavior.baritone
+                            .getInputOverrideHandler()
+                            .setInputForceState(Input.JUMP, false);
                     return true;
                 }
             }
-            if (pathPosition < path.length() - 2 && prev instanceof MovementTraverse && sprintableAscend(ctx, (MovementTraverse) prev, (MovementAscend) current, path.movements().get(pathPosition + 1))) {
+            if (pathPosition < path.length() - 2
+                    && prev instanceof MovementTraverse
+                    && sprintableAscend(
+                            ctx,
+                            (MovementTraverse) prev,
+                            (MovementAscend) current,
+                            path.movements().get(pathPosition + 1))) {
                 return true;
             }
         }
@@ -455,9 +547,11 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (data != null) {
                 BetterBlockPos fallDest = new BetterBlockPos(data.getB());
                 if (!path.positions().contains(fallDest)) {
-                    throw new IllegalStateException(String.format(
-                            "Fall override at %s %s %s returned illegal destination %s %s %s",
-                            current.getSrc(), fallDest));
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Fall override at %s %s %s returned illegal destination %s %s"
+                                            + " %s",
+                                    current.getSrc(), fallDest));
                 }
                 if (ctx.playerFeet().equals(fallDest)) {
                     pathPosition = path.positions().indexOf(fallDest);
@@ -466,8 +560,15 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return true;
                 }
                 clearKeys();
-                behavior.baritone.getLookBehavior().updateTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), data.getA(), ctx.playerRotations()), false);
-                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                behavior.baritone
+                        .getLookBehavior()
+                        .updateTarget(
+                                RotationUtils.calcRotationFromVec3d(
+                                        ctx.playerHead(), data.getA(), ctx.playerRotations()),
+                                false);
+                behavior.baritone
+                        .getInputOverrideHandler()
+                        .setInputForceState(Input.MOVE_FORWARD, true);
                 return true;
             }
         }
@@ -509,12 +610,25 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         double len = i - pathPosition - 0.4;
         return new Tuple<>(
-                new Vec3(flatDir.getX() * len + movement.getDest().x + 0.5, movement.getDest().y, flatDir.getZ() * len + movement.getDest().z + 0.5),
-                movement.getDest().offset(flatDir.getX() * (i - pathPosition), 0, flatDir.getZ() * (i - pathPosition)));
+                new Vec3(
+                        flatDir.getX() * len + movement.getDest().x + 0.5,
+                        movement.getDest().y,
+                        flatDir.getZ() * len + movement.getDest().z + 0.5),
+                movement.getDest()
+                        .offset(
+                                flatDir.getX() * (i - pathPosition),
+                                0,
+                                flatDir.getZ() * (i - pathPosition)));
     }
 
     private static boolean skipNow(IPlayerContext ctx, IMovement current) {
-        double offTarget = Math.abs(current.getDirection().getX() * (current.getSrc().z + 0.5D - ctx.player().position().z)) + Math.abs(current.getDirection().getZ() * (current.getSrc().x + 0.5D - ctx.player().position().x));
+        double offTarget =
+                Math.abs(
+                                current.getDirection().getX()
+                                        * (current.getSrc().z + 0.5D - ctx.player().position().z))
+                        + Math.abs(
+                                current.getDirection().getZ()
+                                        * (current.getSrc().x + 0.5D - ctx.player().position().x));
         if (offTarget > 0.1) {
             return false;
         }
@@ -524,18 +638,26 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
         // wait 0.3
-        double flatDist = Math.abs(current.getDirection().getX() * (headBonk.getX() + 0.5D - ctx.player().position().x)) + Math.abs(current.getDirection().getZ() * (headBonk.getZ() + 0.5 - ctx.player().position().z));
+        double flatDist =
+                Math.abs(
+                                current.getDirection().getX()
+                                        * (headBonk.getX() + 0.5D - ctx.player().position().x))
+                        + Math.abs(
+                                current.getDirection().getZ()
+                                        * (headBonk.getZ() + 0.5 - ctx.player().position().z));
         return flatDist > 0.8;
     }
 
-    private static boolean sprintableAscend(IPlayerContext ctx, MovementTraverse current, MovementAscend next, IMovement nextnext) {
+    private static boolean sprintableAscend(
+            IPlayerContext ctx, MovementTraverse current, MovementAscend next, IMovement nextnext) {
         if (!Baritone.settings().sprintAscends.value) {
             return false;
         }
         if (!current.getDirection().equals(next.getDirection().below())) {
             return false;
         }
-        if (nextnext.getDirection().getX() != next.getDirection().getX() || nextnext.getDirection().getZ() != next.getDirection().getZ()) {
+        if (nextnext.getDirection().getX() != next.getDirection().getX()
+                || nextnext.getDirection().getZ() != next.getDirection().getZ()) {
             return false;
         }
         if (!MovementHelper.canWalkOn(ctx, current.getDest().below())) {
@@ -561,20 +683,24 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (MovementHelper.avoidWalkingInto(ctx.world().getBlockState(current.getSrc().above(3)))) {
             return false;
         }
-        return !MovementHelper.avoidWalkingInto(ctx.world().getBlockState(next.getDest().above(2))); // codacy smh my head
+        return !MovementHelper.avoidWalkingInto(
+                ctx.world().getBlockState(next.getDest().above(2))); // codacy smh my head
     }
 
-    private static boolean canSprintFromDescendInto(IPlayerContext ctx, IMovement current, IMovement next) {
+    private static boolean canSprintFromDescendInto(
+            IPlayerContext ctx, IMovement current, IMovement next) {
         if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
             return true;
         }
         if (!MovementHelper.canWalkOn(ctx, current.getDest().offset(current.getDirection()))) {
             return false;
         }
-        if (next instanceof MovementTraverse && next.getDirection().equals(current.getDirection())) {
+        if (next instanceof MovementTraverse
+                && next.getDirection().equals(current.getDirection())) {
             return true;
         }
-        return next instanceof MovementDiagonal && Baritone.settings().allowOvershootDiagonalDescend.value;
+        return next instanceof MovementDiagonal
+                && Baritone.settings().allowOvershootDiagonalDescend.value;
     }
 
     private void onChangeInPathPosition() {
@@ -603,19 +729,25 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (next == null) {
             return cutIfTooLong();
         }
-        return SplicedPath.trySplice(path, next.path, false).map(path -> {
-            if (!path.getDest().equals(next.getPath().getDest())) {
-                throw new IllegalStateException(String.format(
-                        "Path has end %s instead of %s after splicing",
-                        path.getDest(), next.getPath().getDest()));
-            }
-            PathExecutor ret = new PathExecutor(behavior, path);
-            ret.pathPosition = pathPosition;
-            ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
-            ret.costEstimateIndex = costEstimateIndex;
-            ret.ticksOnCurrent = ticksOnCurrent;
-            return ret;
-        }).orElseGet(this::cutIfTooLong); // dont actually call cutIfTooLong every tick if we won't actually use it, use a method reference
+        return SplicedPath.trySplice(path, next.path, false)
+                .map(
+                        path -> {
+                            if (!path.getDest().equals(next.getPath().getDest())) {
+                                throw new IllegalStateException(
+                                        String.format(
+                                                "Path has end %s instead of %s after splicing",
+                                                path.getDest(), next.getPath().getDest()));
+                            }
+                            PathExecutor ret = new PathExecutor(behavior, path);
+                            ret.pathPosition = pathPosition;
+                            ret.currentMovementOriginalCostEstimate =
+                                    currentMovementOriginalCostEstimate;
+                            ret.costEstimateIndex = costEstimateIndex;
+                            ret.ticksOnCurrent = ticksOnCurrent;
+                            return ret;
+                        })
+                .orElseGet(this::cutIfTooLong); // dont actually call cutIfTooLong every tick if we
+        // won't actually use it, use a method reference
     }
 
     private PathExecutor cutIfTooLong() {
@@ -623,11 +755,16 @@ public class PathExecutor implements IPathExecutor, Helper {
             int cutoffAmt = Baritone.settings().pathHistoryCutoffAmount.value;
             CutoffPath newPath = new CutoffPath(path, cutoffAmt, path.length() - 1);
             if (!newPath.getDest().equals(path.getDest())) {
-                throw new IllegalStateException(String.format(
-                        "Path has end %s instead of %s after trimming its start",
-                        newPath.getDest(), path.getDest()));
+                throw new IllegalStateException(
+                        String.format(
+                                "Path has end %s instead of %s after trimming its start",
+                                newPath.getDest(), path.getDest()));
             }
-            logDebug("Discarding earliest segment movements, length cut from " + path.length() + " to " + newPath.length());
+            logDebug(
+                    "Discarding earliest segment movements, length cut from "
+                            + path.length()
+                            + " to "
+                            + newPath.length());
             PathExecutor ret = new PathExecutor(behavior, newPath);
             ret.pathPosition = pathPosition - cutoffAmt;
             ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;

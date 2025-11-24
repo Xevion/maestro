@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.utils;
 
 import net.minecraft.core.BlockPos;
@@ -38,7 +21,7 @@ public final class VecUtils {
      * Calculates the center of the block at the specified position's bounding box
      *
      * @param world The world that the block is in, used to provide the bounding box
-     * @param pos   The block position
+     * @param pos The block position
      * @return The center of the block's bounding box
      * @see #getBlockPosCenter(BlockPos)
      */
@@ -54,21 +37,18 @@ public final class VecUtils {
         if (Double.isNaN(xDiff) || Double.isNaN(yDiff) || Double.isNaN(zDiff)) {
             throw new IllegalStateException(b + " " + pos + " " + shape);
         }
-        if (b.getBlock() instanceof BaseFireBlock) {//look at bottom of fire when putting it out
+        if (b.getBlock() instanceof BaseFireBlock) { // look at bottom of fire when putting it out
             yDiff = 0;
         }
-        return new Vec3(
-                pos.getX() + xDiff,
-                pos.getY() + yDiff,
-                pos.getZ() + zDiff
-        );
+        return new Vec3(pos.getX() + xDiff, pos.getY() + yDiff, pos.getZ() + zDiff);
     }
 
     /**
-     * Gets the assumed center position of the given block position.
-     * This is done by adding 0.5 to the X, Y, and Z axes.
-     * <p>
-     * TODO: We may want to consider replacing many usages of this method with #calculateBlockCenter(BlockPos)
+     * Gets the assumed center position of the given block position. This is done by adding 0.5 to
+     * the X, Y, and Z axes.
+     *
+     * <p>TODO: We may want to consider replacing many usages of this method with
+     * #calculateBlockCenter(BlockPos)
      *
      * @param pos The block position
      * @return The assumed center of the position
@@ -79,12 +59,13 @@ public final class VecUtils {
     }
 
     /**
-     * Gets the distance from the specified position to the assumed center of the specified block position.
+     * Gets the distance from the specified position to the assumed center of the specified block
+     * position.
      *
      * @param pos The block position
-     * @param x   The x pos
-     * @param y   The y pos
-     * @param z   The z pos
+     * @param x The x pos
+     * @param y The y pos
+     * @param z The z pos
      * @return The distance from the assumed block center to the position
      * @see #getBlockPosCenter(BlockPos)
      */
@@ -96,11 +77,11 @@ public final class VecUtils {
     }
 
     /**
-     * Gets the distance from the specified entity's position to the assumed
-     * center of the specified block position.
+     * Gets the distance from the specified entity's position to the assumed center of the specified
+     * block position.
      *
      * @param entity The entity
-     * @param pos    The block position
+     * @param pos The block position
      * @return The distance from the entity to the block's assumed center
      * @see #getBlockPosCenter(BlockPos)
      */
@@ -109,11 +90,11 @@ public final class VecUtils {
     }
 
     /**
-     * Gets the distance from the specified entity's position to the assumed
-     * center of the specified block position, ignoring the Y axis.
+     * Gets the distance from the specified entity's position to the assumed center of the specified
+     * block position, ignoring the Y axis.
      *
      * @param entity The entity
-     * @param pos    The block position
+     * @param pos The block position
      * @return The horizontal distance from the entity to the block's assumed center
      * @see #getBlockPosCenter(BlockPos)
      */

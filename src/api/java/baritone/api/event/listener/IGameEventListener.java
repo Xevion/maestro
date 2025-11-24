@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.event.listener;
 
 import baritone.api.event.events.*;
@@ -117,8 +100,8 @@ public interface IGameEventListener {
     void onReceivePacket(PacketEvent event);
 
     /**
-     * Run once per game tick from before and after the player's moveRelative method is called
-     * and before and after the player jumps.
+     * Run once per game tick from before and after the player's moveRelative method is called and
+     * before and after the player jumps.
      *
      * @param event The event
      * @see Entity#moveRelative(float, Vec3)
@@ -134,14 +117,16 @@ public interface IGameEventListener {
     void onPlayerSprintState(SprintStateEvent event);
 
     /**
-     * Called when the local player interacts with a block, whether it is breaking or opening/placing.
+     * Called when the local player interacts with a block, whether it is breaking or
+     * opening/placing.
      *
      * @param event The event
      */
     void onBlockInteract(BlockInteractEvent event);
 
     /**
-     * Called when the local player dies, as indicated by the creation of the {@link DeathScreen} screen.
+     * Called when the local player dies, as indicated by the creation of the {@link DeathScreen}
+     * screen.
      *
      * @see DeathScreen
      */

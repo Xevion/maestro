@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.pathing.goals;
 
 import net.minecraft.core.BlockPos;
@@ -27,8 +10,7 @@ import net.minecraft.core.BlockPos;
 public interface Goal {
 
     /**
-     * Returns whether or not the specified position
-     * meets the requirement for this goal based.
+     * Returns whether or not the specified position meets the requirement for this goal based.
      *
      * @param x The goal X position
      * @param y The goal Y position
@@ -56,14 +38,11 @@ public interface Goal {
     }
 
     /**
-     * Returns the heuristic at the goal.
-     * i.e. {@code heuristic() == heuristic(x,y,z)}
-     * when {@code isInGoal(x,y,z) == true}
-     * This is needed by {@code PathingBehavior#estimatedTicksToGoal} because
-     * some Goals actually do not have a heuristic of 0 when that condition is met
+     * Returns the heuristic at the goal. i.e. {@code heuristic() == heuristic(x,y,z)} when {@code
+     * isInGoal(x,y,z) == true} This is needed by {@code PathingBehavior#estimatedTicksToGoal}
+     * because some Goals actually do not have a heuristic of 0 when that condition is met
      *
-     * @return The estimate number of ticks to satisfy the goal when the goal
-     * is already satisfied
+     * @return The estimate number of ticks to satisfy the goal when the goal is already satisfied
      */
     default double heuristic() {
         return 0;

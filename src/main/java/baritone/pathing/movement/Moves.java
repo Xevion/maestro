@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.pathing.movement;
 
 import baritone.api.utils.BetterBlockPos;
@@ -103,7 +86,8 @@ public enum Moves {
     ASCEND_NORTH(0, +1, -1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z - 1));
+            return new MovementAscend(
+                    context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z - 1));
         }
 
         @Override
@@ -115,7 +99,8 @@ public enum Moves {
     ASCEND_SOUTH(0, +1, +1) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
+            return new MovementAscend(
+                    context.getBaritone(), src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
         }
 
         @Override
@@ -127,7 +112,8 @@ public enum Moves {
     ASCEND_EAST(+1, +1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
+            return new MovementAscend(
+                    context.getBaritone(), src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
         }
 
         @Override
@@ -139,7 +125,8 @@ public enum Moves {
     ASCEND_WEST(-1, +1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementAscend(context.getBaritone(), src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
+            return new MovementAscend(
+                    context.getBaritone(), src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
         }
 
         @Override
@@ -154,14 +141,17 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDescend.cost(context, x, y, z, x + 1, z, result);
         }
     },
@@ -172,14 +162,17 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDescend.cost(context, x, y, z, x - 1, z, result);
         }
     },
@@ -190,14 +183,17 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDescend.cost(context, x, y, z, x, z - 1, result);
         }
     },
@@ -208,14 +204,17 @@ public enum Moves {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
             if (res.y == src.y - 1) {
-                return new MovementDescend(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementDescend(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             } else {
-                return new MovementFall(context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
+                return new MovementFall(
+                        context.getBaritone(), src, new BetterBlockPos(res.x, res.y, res.z));
             }
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDescend.cost(context, x, y, z, x, z + 1, result);
         }
     },
@@ -225,11 +224,13 @@ public enum Moves {
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
-            return new MovementDiagonal(context.getBaritone(), src, Direction.NORTH, Direction.EAST, res.y - src.y);
+            return new MovementDiagonal(
+                    context.getBaritone(), src, Direction.NORTH, Direction.EAST, res.y - src.y);
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDiagonal.cost(context, x, y, z, x + 1, z - 1, result);
         }
     },
@@ -239,11 +240,13 @@ public enum Moves {
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
-            return new MovementDiagonal(context.getBaritone(), src, Direction.NORTH, Direction.WEST, res.y - src.y);
+            return new MovementDiagonal(
+                    context.getBaritone(), src, Direction.NORTH, Direction.WEST, res.y - src.y);
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDiagonal.cost(context, x, y, z, x - 1, z - 1, result);
         }
     },
@@ -253,11 +256,13 @@ public enum Moves {
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
-            return new MovementDiagonal(context.getBaritone(), src, Direction.SOUTH, Direction.EAST, res.y - src.y);
+            return new MovementDiagonal(
+                    context.getBaritone(), src, Direction.SOUTH, Direction.EAST, res.y - src.y);
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDiagonal.cost(context, x, y, z, x + 1, z + 1, result);
         }
     },
@@ -267,11 +272,13 @@ public enum Moves {
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
             apply(context, src.x, src.y, src.z, res);
-            return new MovementDiagonal(context.getBaritone(), src, Direction.SOUTH, Direction.WEST, res.y - src.y);
+            return new MovementDiagonal(
+                    context.getBaritone(), src, Direction.SOUTH, Direction.WEST, res.y - src.y);
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementDiagonal.cost(context, x, y, z, x - 1, z + 1, result);
         }
     },
@@ -283,7 +290,8 @@ public enum Moves {
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementParkour.cost(context, x, y, z, Direction.NORTH, result);
         }
     },
@@ -295,7 +303,8 @@ public enum Moves {
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementParkour.cost(context, x, y, z, Direction.SOUTH, result);
         }
     },
@@ -307,7 +316,8 @@ public enum Moves {
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementParkour.cost(context, x, y, z, Direction.EAST, result);
         }
     },
@@ -319,7 +329,8 @@ public enum Moves {
         }
 
         @Override
-        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+        public void apply(
+                CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementParkour.cost(context, x, y, z, Direction.WEST, result);
         }
     };
@@ -347,7 +358,8 @@ public enum Moves {
 
     public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
         if (dynamicXZ || dynamicY) {
-            throw new UnsupportedOperationException("Movements with dynamic offset must override `apply`");
+            throw new UnsupportedOperationException(
+                    "Movements with dynamic offset must override `apply`");
         }
         result.x = x + xOffset;
         result.y = y + yOffset;

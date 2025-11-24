@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.selection;
 
 import baritone.api.utils.BetterBlockPos;
@@ -23,18 +6,20 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 
 /**
- * A selection is an immutable object representing the current selection. The selection is commonly used for certain
- * types of build commands, however it can be used for anything.
+ * A selection is an immutable object representing the current selection. The selection is commonly
+ * used for certain types of build commands, however it can be used for anything.
  */
 public interface ISelection {
 
     /**
-     * @return The first corner of this selection. This is meant to preserve the user's original first corner.
+     * @return The first corner of this selection. This is meant to preserve the user's original
+     *     first corner.
      */
     BetterBlockPos pos1();
 
     /**
-     * @return The second corner of this selection. This is meant to preserve the user's original second corner.
+     * @return The second corner of this selection. This is meant to preserve the user's original
+     *     second corner.
      */
     BetterBlockPos pos2();
 
@@ -59,32 +44,34 @@ public interface ISelection {
     AABB aabb();
 
     /**
-     * Returns a new {@link ISelection} expanded in the specified direction by the specified number of blocks.
+     * Returns a new {@link ISelection} expanded in the specified direction by the specified number
+     * of blocks.
      *
      * @param direction The direction to expand the selection.
-     * @param blocks    How many blocks to expand it.
+     * @param blocks How many blocks to expand it.
      * @return A new selection, expanded as specified.
      */
     ISelection expand(Direction direction, int blocks);
 
     /**
-     * Returns a new {@link ISelection} contracted in the specified direction by the specified number of blocks.
-     * <p>
-     * Note that, for example, if the direction specified is UP, the bottom of the selection will be shifted up. If it
-     * is DOWN, the top of the selection will be shifted down.
+     * Returns a new {@link ISelection} contracted in the specified direction by the specified
+     * number of blocks.
+     *
+     * <p>Note that, for example, if the direction specified is UP, the bottom of the selection will
+     * be shifted up. If it is DOWN, the top of the selection will be shifted down.
      *
      * @param direction The direction to contract the selection.
-     * @param blocks    How many blocks to contract it.
+     * @param blocks How many blocks to contract it.
      * @return A new selection, contracted as specified.
      */
     ISelection contract(Direction direction, int blocks);
 
     /**
-     * Returns a new {@link ISelection} shifted in the specified direction by the specified number of blocks. This moves
-     * the whole selection.
+     * Returns a new {@link ISelection} shifted in the specified direction by the specified number
+     * of blocks. This moves the whole selection.
      *
      * @param direction The direction to shift the selection.
-     * @param blocks    How many blocks to shift it.
+     * @param blocks How many blocks to shift it.
      * @return A new selection, shifted as specified.
      */
     ISelection shift(Direction direction, int blocks);

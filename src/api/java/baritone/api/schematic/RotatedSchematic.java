@@ -1,27 +1,9 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.schematic;
-
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Rotation;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class RotatedSchematic implements ISchematic {
 
@@ -42,19 +24,20 @@ public class RotatedSchematic implements ISchematic {
                 rotateX(x, z, widthX(), lengthZ(), inverseRotation),
                 y,
                 rotateZ(x, z, widthX(), lengthZ(), inverseRotation),
-                rotate(currentState, inverseRotation)
-        );
+                rotate(currentState, inverseRotation));
     }
 
     @Override
-    public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
-        return rotate(schematic.desiredState(
-                rotateX(x, z, widthX(), lengthZ(), inverseRotation),
-                y,
-                rotateZ(x, z, widthX(), lengthZ(), inverseRotation),
-                rotate(current, inverseRotation),
-                rotate(approxPlaceable, inverseRotation)
-        ), rotation);
+    public BlockState desiredState(
+            int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
+        return rotate(
+                schematic.desiredState(
+                        rotateX(x, z, widthX(), lengthZ(), inverseRotation),
+                        y,
+                        rotateZ(x, z, widthX(), lengthZ(), inverseRotation),
+                        rotate(current, inverseRotation),
+                        rotate(approxPlaceable, inverseRotation)),
+                rotation);
     }
 
     @Override
@@ -77,16 +60,12 @@ public class RotatedSchematic implements ISchematic {
         return flipsCoordinates(rotation) ? schematic.widthX() : schematic.lengthZ();
     }
 
-    /**
-     * Wether {@code rotation} swaps the x and z components
-     */
+    /** Wether {@code rotation} swaps the x and z components */
     private static boolean flipsCoordinates(Rotation rotation) {
         return rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90;
     }
 
-    /**
-     * The x component of x,y after applying the rotation
-     */
+    /** The x component of x,y after applying the rotation */
     private static int rotateX(int x, int z, int sizeX, int sizeZ, Rotation rotation) {
         switch (rotation) {
             case NONE:
@@ -101,9 +80,7 @@ public class RotatedSchematic implements ISchematic {
         throw new IllegalArgumentException("Unknown rotation");
     }
 
-    /**
-     * The z component of x,y after applying the rotation
-     */
+    /** The z component of x,y after applying the rotation */
     private static int rotateZ(int x, int z, int sizeX, int sizeZ, Rotation rotation) {
         switch (rotation) {
             case NONE:
@@ -129,8 +106,6 @@ public class RotatedSchematic implements ISchematic {
         if (states == null) {
             return null;
         }
-        return states.stream()
-                .map(s -> rotate(s, rotation))
-                .collect(Collectors.toList());
+        return states.stream().map(s -> rotate(s, rotation)).collect(Collectors.toList());
     }
 }

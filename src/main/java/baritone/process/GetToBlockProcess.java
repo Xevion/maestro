@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.process;
 
 import baritone.Baritone;
@@ -30,13 +13,12 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
+import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.*;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
@@ -74,17 +56,19 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         }
         if (knownLocations.isEmpty()) {
             if (Baritone.settings().exploreForBlocks.value && !calcFailed) {
-                return new PathingCommand(new GoalRunAway(1, start) {
-                    @Override
-                    public boolean isInGoal(int x, int y, int z) {
-                        return false;
-                    }
+                return new PathingCommand(
+                        new GoalRunAway(1, start) {
+                            @Override
+                            public boolean isInGoal(int x, int y, int z) {
+                                return false;
+                            }
 
-                    @Override
-                    public double heuristic() {
-                        return Double.NEGATIVE_INFINITY;
-                    }
-                }, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+                            @Override
+                            public double heuristic() {
+                                return Double.NEGATIVE_INFINITY;
+                            }
+                        },
+                        PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
             }
             logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
             if (isSafeToCancel) {
@@ -92,10 +76,15 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
-        Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
+        Goal goal =
+                new GoalComposite(
+                        knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
             if (Baritone.settings().blacklistClosestOnFailure.value) {
-                logDirect("Unable to find any path to " + gettingTo + ", blacklisting presumably unreachable closest instances...");
+                logDirect(
+                        "Unable to find any path to "
+                                + gettingTo
+                                + ", blacklisting presumably unreachable closest instances...");
                 blacklistClosest();
                 return onTick(false, isSafeToCancel); // gamer moment
             } else {
@@ -112,7 +101,9 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
             CalculationContext context = new GetToBlockCalculationContext(true);
             Baritone.getExecutor().execute(() -> rescan(current, context));
         }
-        if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart()) && isSafeToCancel) {
+        if (goal.isInGoal(ctx.playerFeet())
+                && goal.isInGoal(baritone.getPathingBehavior().pathStart())
+                && isSafeToCancel) {
             // we're there
             if (rightClickOnArrival(gettingTo.getBlock())) {
                 if (rightClick()) {
@@ -130,7 +121,9 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     // blacklist the closest block and its adjacent blocks
     public synchronized boolean blacklistClosest() {
         List<BlockPos> newBlacklist = new ArrayList<>();
-        knownLocations.stream().min(Comparator.comparingDouble(ctx.playerFeet()::distSqr)).ifPresent(newBlacklist::add);
+        knownLocations.stream()
+                .min(Comparator.comparingDouble(ctx.playerFeet()::distSqr))
+                .ifPresent(newBlacklist::add);
         outer:
         while (true) {
             for (BlockPos known : knownLocations) {
@@ -142,7 +135,8 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                     }
                 }
             }
-            // i can't do break; (codacy gets mad), and i can't do if(true){break}; (codacy gets mad)
+            // i can't do break; (codacy gets mad), and i can't do if(true){break}; (codacy gets
+            // mad)
             // so i will do this
             switch (newBlacklist.size()) {
                 default:
@@ -194,7 +188,14 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     }
 
     private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
-        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo), 64, known, blacklist, Collections.emptyList());
+        List<BlockPos> positions =
+                MineProcess.searchWorld(
+                        context,
+                        new BlockOptionalMetaLookup(gettingTo),
+                        64,
+                        known,
+                        blacklist,
+                        Collections.emptyList());
         positions.removeIf(blacklist::contains);
         knownLocations = positions;
     }
@@ -203,7 +204,11 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         if (walkIntoInsteadOfAdjacent(gettingTo.getBlock())) {
             return new GoalTwoBlocks(pos);
         }
-        if (blockOnTopMustBeRemoved(gettingTo.getBlock()) && MovementHelper.isBlockNormalCube(baritone.bsi.get0(pos.above()))) { // TODO this should be the check for chest openability
+        if (blockOnTopMustBeRemoved(gettingTo.getBlock())
+                && MovementHelper.isBlockNormalCube(
+                        baritone.bsi.get0(
+                                pos.above()))) { // TODO this should be the check for chest
+            // openability
             return new GoalBlock(pos.above());
         }
         return new GoalGetToBlock(pos);
@@ -211,11 +216,17 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
 
     private boolean rightClick() {
         for (BlockPos pos : knownLocations) {
-            Optional<Rotation> reachable = RotationUtils.reachable(ctx, pos, ctx.playerController().getBlockReachDistance());
+            Optional<Rotation> reachable =
+                    RotationUtils.reachable(
+                            ctx, pos, ctx.playerController().getBlockReachDistance());
             if (reachable.isPresent()) {
                 baritone.getLookBehavior().updateTarget(reachable.get(), true);
                 if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to right click even if we're in an ESC menu
+                    baritone.getInputOverrideHandler()
+                            .setInputForceState(
+                                    Input.CLICK_RIGHT,
+                                    true); // TODO find some way to right click even if we're in an
+                    // ESC menu
                     System.out.println(ctx.player().containerMenu);
                     if (!(ctx.player().containerMenu instanceof InventoryMenu)) {
                         return true;
@@ -243,7 +254,12 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         if (!Baritone.settings().rightClickContainerOnArrival.value) {
             return false;
         }
-        return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.BLAST_FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
+        return block == Blocks.CRAFTING_TABLE
+                || block == Blocks.FURNACE
+                || block == Blocks.BLAST_FURNACE
+                || block == Blocks.ENDER_CHEST
+                || block == Blocks.CHEST
+                || block == Blocks.TRAPPED_CHEST;
     }
 
     private boolean blockOnTopMustBeRemoved(Block block) {
@@ -251,6 +267,8 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
             return false;
         }
         // only these chests; you can open a crafting table or furnace even with a block on top
-        return block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
+        return block == Blocks.ENDER_CHEST
+                || block == Blocks.CHEST
+                || block == Blocks.TRAPPED_CHEST;
     }
 }

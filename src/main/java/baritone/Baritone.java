@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone;
 
 import baritone.api.BaritoneAPI;
@@ -36,18 +19,15 @@ import baritone.utils.GuiClick;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
 import baritone.utils.player.BaritonePlayerContext;
-import net.minecraft.client.Minecraft;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import net.minecraft.client.Minecraft;
 
 /**
  * @author Brady
@@ -58,7 +38,9 @@ public class Baritone implements IBaritone {
     private static final ThreadPoolExecutor threadPool;
 
     static {
-        threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        threadPool =
+                new ThreadPoolExecutor(
+                        4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
     }
 
     private final Minecraft mc;
@@ -98,31 +80,33 @@ public class Baritone implements IBaritone {
         if (!Files.exists(this.directory)) {
             try {
                 Files.createDirectories(this.directory);
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
 
-        // Define this before behaviors try and get it, or else it will be null and the builds will fail!
+        // Define this before behaviors try and get it, or else it will be null and the builds will
+        // fail!
         this.playerContext = new BaritonePlayerContext(this, mc);
 
         {
-            this.lookBehavior         = this.registerBehavior(LookBehavior::new);
-            this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
-            this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
+            this.lookBehavior = this.registerBehavior(LookBehavior::new);
+            this.pathingBehavior = this.registerBehavior(PathingBehavior::new);
+            this.inventoryBehavior = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
             this.registerBehavior(WaypointBehavior::new);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
         {
-            this.followProcess           = this.registerProcess(FollowProcess::new);
-            this.mineProcess             = this.registerProcess(MineProcess::new);
-            this.customGoalProcess       = this.registerProcess(CustomGoalProcess::new); // very high iq
-            this.getToBlockProcess       = this.registerProcess(GetToBlockProcess::new);
-            this.builderProcess          = this.registerProcess(BuilderProcess::new);
-            this.exploreProcess          = this.registerProcess(ExploreProcess::new);
-            this.farmProcess             = this.registerProcess(FarmProcess::new);
-            this.inventoryPauserProcess  = this.registerProcess(InventoryPauserProcess::new);
-            this.elytraProcess           = this.registerProcess(ElytraProcess::create);
+            this.followProcess = this.registerProcess(FollowProcess::new);
+            this.mineProcess = this.registerProcess(MineProcess::new);
+            this.customGoalProcess = this.registerProcess(CustomGoalProcess::new); // very high iq
+            this.getToBlockProcess = this.registerProcess(GetToBlockProcess::new);
+            this.builderProcess = this.registerProcess(BuilderProcess::new);
+            this.exploreProcess = this.registerProcess(ExploreProcess::new);
+            this.farmProcess = this.registerProcess(FarmProcess::new);
+            this.inventoryPauserProcess = this.registerProcess(InventoryPauserProcess::new);
+            this.elytraProcess = this.registerProcess(ElytraProcess::create);
             this.registerProcess(BackfillProcess::new);
         }
 
@@ -242,12 +226,15 @@ public class Baritone implements IBaritone {
 
     @Override
     public void openClick() {
-        new Thread(() -> {
-            try {
-                Thread.sleep(100);
-                mc.execute(() -> mc.setScreen(new GuiClick()));
-            } catch (Exception ignored) {}
-        }).start();
+        new Thread(
+                        () -> {
+                            try {
+                                Thread.sleep(100);
+                                mc.execute(() -> mc.setScreen(new GuiClick()));
+                            } catch (Exception ignored) {
+                            }
+                        })
+                .start();
     }
 
     public Path getDirectory() {

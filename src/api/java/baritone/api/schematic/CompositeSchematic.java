@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.api.schematic;
 
 import java.util.ArrayList;
@@ -48,8 +31,11 @@ public class CompositeSchematic extends AbstractSchematic {
 
     private CompositeSchematicEntry getSchematic(int x, int y, int z, BlockState currentState) {
         for (CompositeSchematicEntry entry : schematicArr) {
-            if (x >= entry.x && y >= entry.y && z >= entry.z &&
-                    entry.schematic.inSchematic(x - entry.x, y - entry.y, z - entry.z, currentState)) {
+            if (x >= entry.x
+                    && y >= entry.y
+                    && z >= entry.z
+                    && entry.schematic.inSchematic(
+                            x - entry.x, y - entry.y, z - entry.z, currentState)) {
                 return entry;
             }
         }
@@ -59,16 +45,19 @@ public class CompositeSchematic extends AbstractSchematic {
     @Override
     public boolean inSchematic(int x, int y, int z, BlockState currentState) {
         CompositeSchematicEntry entry = getSchematic(x, y, z, currentState);
-        return entry != null && entry.schematic.inSchematic(x - entry.x, y - entry.y, z - entry.z, currentState);
+        return entry != null
+                && entry.schematic.inSchematic(x - entry.x, y - entry.y, z - entry.z, currentState);
     }
 
     @Override
-    public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
+    public BlockState desiredState(
+            int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
         CompositeSchematicEntry entry = getSchematic(x, y, z, current);
         if (entry == null) {
             throw new IllegalStateException("couldn't find schematic for this position");
         }
-        return entry.schematic.desiredState(x - entry.x, y - entry.y, z - entry.z, current, approxPlaceable);
+        return entry.schematic.desiredState(
+                x - entry.x, y - entry.y, z - entry.z, current, approxPlaceable);
     }
 
     @Override

@@ -1,20 +1,3 @@
-/*
- * This file is part of Baritone.
- *
- * Baritone is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Baritone is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package baritone.utils;
 
 import baritone.Baritone;
@@ -70,7 +53,8 @@ public class BlockStateInterface {
         }
         this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.value;
         if (!ctx.minecraft().isSameThread()) {
-            throw new IllegalStateException("BlockStateInterface must be constructed on the main thread");
+            throw new IllegalStateException(
+                    "BlockStateInterface must be constructed on the main thread");
         }
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);
@@ -80,14 +64,18 @@ public class BlockStateInterface {
         return provider.hasChunk(blockX >> 4, blockZ >> 4);
     }
 
-    public static Block getBlock(IPlayerContext ctx, BlockPos pos) { // won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
+    public static Block getBlock(
+            IPlayerContext ctx,
+            BlockPos pos) { // won't be called from the pathing thread because the pathing thread
+        // doesn't make a single blockpos pog
         return get(ctx, pos).getBlock();
     }
 
     public static BlockState get(IPlayerContext ctx, BlockPos pos) {
         return new BlockStateInterface(ctx).get0(pos.getX(), pos.getY(), pos.getZ()); // immense iq
         // can't just do world().get because that doesn't work for out of bounds
-        // and toBreak and stuff fails when the movement is instantiated out of load range but it's not able to BlockStateInterface.get what it's going to walk on
+        // and toBreak and stuff fails when the movement is instantiated out of load range but it's
+        // not able to BlockStateInterface.get what it's going to walk on
     }
 
     public BlockState get0(BlockPos pos) {
