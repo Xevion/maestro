@@ -5,6 +5,10 @@ pluginManagement {
         mavenLocal()
         maven {
             name = 'WagYourMaven'
+            url = 'https://maven.wagyourtail.xyz/releases'
+        }
+        maven {
+            name = 'WagYourMavenSnapshots'
             url = 'https://maven.wagyourtail.xyz/snapshots'
         }
         maven {
@@ -27,6 +31,9 @@ pluginManagement {
 rootProject.name = 'maestro'
 
 include("tweaker")
+project(":tweaker").projectDir = file("platforms/tweaker")
+
 for (platform in available_loaders.split(",")) {
-       include(platform)
+    include(platform)
+    project(":${platform}").projectDir = file("platforms/${platform}")
 }
