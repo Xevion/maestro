@@ -3,7 +3,7 @@ default: check
 
 # Quick type checking and linting
 check:
-    ./gradlew spotlessCheck check --no-daemon
+    ./gradlew check --no-daemon
 
 # Format code
 fmt:
