@@ -43,3 +43,4 @@ jobs:
       with:
         files: |
           **/build/test-results/**/*.xml
+        comment_mode: off
