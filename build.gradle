@@ -107,6 +107,7 @@ allprojects {
     }
 
     spotless {
+        enforceCheck = false
         java {
             target 'src/*/java/**/*.java'
             targetExclude 'src/launch/java/maestro/launch/mixins/MixinLootContextBuilder.java'

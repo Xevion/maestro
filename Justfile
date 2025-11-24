@@ -9,6 +9,10 @@ check:
 fmt:
     ./gradlew spotlessApply
 
+# Check code formatting
+format-check:
+    ./gradlew spotlessCheck
+
 # Run all tests
 test:
     ./gradlew test
