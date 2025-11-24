@@ -8,9 +8,13 @@ import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.ForBlockOptionalMeta;
+import maestro.api.command.datatypes.ForBlockSelector;
+import maestro.api.command.exception.CommandErrorMessageException;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.BlockOptionalMeta;
+import maestro.api.selector.block.BlockCategory;
+import maestro.api.selector.block.BlockSelector;
+import maestro.api.selector.block.BlockSelectorLookup;
+import net.minecraft.ChatFormatting;
 
 public class MineCommand extends Command {
 
@@ -22,22 +26,55 @@ public class MineCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         int quantity = args.getAsOrDefault(Integer.class, 0);
         args.requireMin(1);
-        List<BlockOptionalMeta> boms = new ArrayList<>();
+
+        // Parse block selectors (supports @ores, *_ore, #minecraft:logs, etc.)
+        List<BlockSelector> selectors = new ArrayList<>();
         while (args.hasAny()) {
-            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
+            try {
+                BlockSelector selector = args.getDatatypeFor(ForBlockSelector.INSTANCE);
+                selectors.add(selector);
+            } catch (IllegalArgumentException e) {
+                throw new InvalidSelectorException(e.getMessage());
+            }
         }
+
+        if (selectors.isEmpty()) {
+            throw new NoSelectorsException();
+        }
+
+        // Create lookup and convert to BlockOptionalMetaLookup for MineProcess
+        BlockSelectorLookup lookup = new BlockSelectorLookup(selectors);
+
+        // Warn about individual selectors that matched nothing
+        for (BlockSelector selector : selectors) {
+            if (selector.resolve().isEmpty()) {
+                logDirect(
+                        "Warning: '" + selector.getRawInput() + "' matched 0 blocks",
+                        ChatFormatting.YELLOW);
+            }
+        }
+
+        // Error if ALL selectors combined match nothing
+        if (lookup.resolveAll().isEmpty()) {
+            throw new NoMatchesException();
+        }
+
         MaestroAPI.getProvider().getWorldScanner().repack(ctx);
-        logDirect(String.format("Mining %s", boms));
-        maestro.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        logDirect("Mining: " + lookup.toDisplayString());
+        maestro.getMineProcess().mine(quantity, lookup.toBlockOptionalMetaLookup());
     }
 
     @Override
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         args.getAsOrDefault(Integer.class, 0);
-        while (args.has(2)) {
-            args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
+        if (args.hasExactlyOne()) {
+            return args.tabCompleteDatatype(ForBlockSelector.INSTANCE);
+        } else {
+            while (args.has(2)) {
+                args.get();
+            }
+            return args.tabCompleteDatatype(ForBlockSelector.INSTANCE);
         }
-        return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
     }
 
     @Override
@@ -48,14 +85,37 @@ public class MineCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The mine command allows you to tell Maestro to search for and mine individual"
-                        + " blocks.",
+                "The mine command allows you to tell Maestro to search for and mine blocks.",
                 "",
-                "The specified blocks can be ores, or any other block.",
-                "",
-                "Also see the legitMine settings (see #set l legitMine).",
+                "Supports wildcards, categories, and Minecraft tags:",
                 "",
                 "Usage:",
-                "> mine diamond_ore - Mines all diamonds it can find.");
+                "> mine diamond_ore - Mine diamond ore.",
+                "> mine @ores - Mine all ore blocks.",
+                "> mine *_ore - Mine anything ending in _ore.",
+                "> mine #minecraft:logs - Mine blocks in the logs tag.",
+                "> mine 64 @ores - Mine until 64 ores collected.",
+                "",
+                "Categories: " + String.join(", ", BlockCategory.names()),
+                "",
+                "Also see the legitMine settings (see #set l legitMine).");
+    }
+
+    public static class NoSelectorsException extends CommandErrorMessageException {
+        protected NoSelectorsException() {
+            super("No valid block selectors specified");
+        }
+    }
+
+    public static class InvalidSelectorException extends CommandErrorMessageException {
+        protected InvalidSelectorException(String message) {
+            super("Invalid selector: " + message);
+        }
+    }
+
+    public static class NoMatchesException extends CommandErrorMessageException {
+        protected NoMatchesException() {
+            super("No blocks matched any selector");
+        }
     }
 }
