@@ -77,7 +77,8 @@ public final class SpongeSchematic extends StaticSchematic {
     private static final class SerializedBlockState {
 
         private static final Pattern REGEX =
-                Pattern.compile("(?<location>(\\w+:)?\\w+)(\\[(?<properties>(\\w+=\\w+,?)+)])?");
+                Pattern.compile(
+                        "(?<location>(\\w+:)?\\w+)(\\[(?<properties>\\w+=\\w+(,\\w+=\\w+)*)])?");
 
         private final ResourceLocation resourceLocation;
         private final Map<String, String> properties;
