@@ -2,7 +2,7 @@ package maestro.pathing.movement.movements;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.RotationUtils;
@@ -25,7 +25,7 @@ public class MovementDescend extends Movement {
     private int numTicks = 0;
     public boolean forceSafeMode = false;
 
-    public MovementDescend(IMaestro maestro, BetterBlockPos start, BetterBlockPos end) {
+    public MovementDescend(IAgent maestro, BetterBlockPos start, BetterBlockPos end) {
         super(
                 maestro,
                 start,

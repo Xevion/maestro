@@ -2,7 +2,7 @@ package maestro.selection;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.selection.ISelection;
 import maestro.api.selection.ISelectionManager;
 import maestro.api.utils.BetterBlockPos;
@@ -13,7 +13,7 @@ public class SelectionManager implements ISelectionManager {
     private final LinkedList<ISelection> selections = new LinkedList<>();
     private ISelection[] selectionsArr = new ISelection[0];
 
-    public SelectionManager(Maestro maestro) {
+    public SelectionManager(Agent maestro) {
         new SelectionRenderer(maestro, this);
     }
 

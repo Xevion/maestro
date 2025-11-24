@@ -3,7 +3,7 @@ package maestro.behavior;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.Settings;
 import maestro.api.behavior.ILookBehavior;
 import maestro.api.behavior.look.IAimProcessor;
@@ -37,7 +37,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private final Deque<Float> smoothYawBuffer;
     private final Deque<Float> smoothPitchBuffer;
 
-    public LookBehavior(Maestro maestro) {
+    public LookBehavior(Agent maestro) {
         super(maestro);
         this.processor = new AimProcessor(maestro.getPlayerContext());
         this.smoothYawBuffer = new ArrayDeque<>();
@@ -89,20 +89,20 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     if (this.prevRotation != null) {
                         this.smoothYawBuffer.addLast(this.target.rotation.getYaw());
                         while (this.smoothYawBuffer.size()
-                                > Maestro.settings().smoothLookTicks.value) {
+                                > Agent.settings().smoothLookTicks.value) {
                             this.smoothYawBuffer.removeFirst();
                         }
                         this.smoothPitchBuffer.addLast(this.target.rotation.getPitch());
                         while (this.smoothPitchBuffer.size()
-                                > Maestro.settings().smoothLookTicks.value) {
+                                > Agent.settings().smoothLookTicks.value) {
                             this.smoothPitchBuffer.removeFirst();
                         }
                         if (this.target.mode == Target.Mode.SERVER) {
                             ctx.player().setYRot(this.prevRotation.getYaw());
                             ctx.player().setXRot(this.prevRotation.getPitch());
                         } else if (ctx.player().isFallFlying()
-                                ? Maestro.settings().elytraSmoothLook.value
-                                : Maestro.settings().smoothLook.value) {
+                                ? Agent.settings().elytraSmoothLook.value
+                                : Agent.settings().smoothLook.value) {
                             ctx.player()
                                     .setYRot(
                                             (float)
@@ -161,7 +161,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     public Optional<Rotation> getEffectiveRotation() {
-        if (Maestro.settings().freeLook.value) {
+        if (Agent.settings().freeLook.value) {
             return Optional.ofNullable(this.serverRotation);
         }
         // If freeLook isn't on, just defer to the player's actual rotations
@@ -236,16 +236,16 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         public final void tick() {
             // randomLooking
             this.randomYawOffset =
-                    (this.rand.nextDouble() - 0.5) * Maestro.settings().randomLooking.value;
+                    (this.rand.nextDouble() - 0.5) * Agent.settings().randomLooking.value;
             this.randomPitchOffset =
-                    (this.rand.nextDouble() - 0.5) * Maestro.settings().randomLooking.value;
+                    (this.rand.nextDouble() - 0.5) * Agent.settings().randomLooking.value;
 
             // randomLooking113
             double random = this.rand.nextDouble() - 0.5;
             if (Math.abs(random) < 0.1) {
                 random *= 4;
             }
-            this.randomYawOffset += random * Maestro.settings().randomLooking113.value;
+            this.randomYawOffset += random * Agent.settings().randomLooking113.value;
         }
 
         @Override
@@ -336,7 +336,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             NONE;
 
             static Mode resolve(IPlayerContext ctx, boolean blockInteract) {
-                final Settings settings = Maestro.settings();
+                final Settings settings = Agent.settings();
                 final boolean antiCheat = settings.antiCheatCompatibility.value;
                 final boolean blockFreeLook = settings.blockFreeLook.value;
 

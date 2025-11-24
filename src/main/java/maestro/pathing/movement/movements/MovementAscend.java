@@ -2,8 +2,8 @@ package maestro.pathing.movement.movements;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.input.Input;
@@ -21,7 +21,7 @@ public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
 
-    public MovementAscend(IMaestro maestro, BetterBlockPos src, BetterBlockPos dest) {
+    public MovementAscend(IAgent maestro, BetterBlockPos src, BetterBlockPos dest) {
         super(
                 maestro,
                 src,
@@ -211,7 +211,7 @@ public class MovementAscend extends Movement {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
 
-        if (Maestro.settings().assumeStep.value || ctx.playerFeet().equals(src.above())) {
+        if (Agent.settings().assumeStep.value || ctx.playerFeet().equals(src.above())) {
             // no need to hit space if we're already jumping
             return state;
         }

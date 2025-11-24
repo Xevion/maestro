@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ItemById;
@@ -16,7 +16,7 @@ import net.minecraft.world.item.Item;
 
 public class PickupCommand extends Command {
 
-    public PickupCommand(IMaestro maestro) {
+    public PickupCommand(IAgent maestro) {
         super(maestro, "pickup");
     }
 

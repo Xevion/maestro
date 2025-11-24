@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.input.Input;
@@ -27,7 +27,7 @@ public class MovementDiagonal extends Movement {
     private static final double SQRT_2 = Math.sqrt(2);
 
     public MovementDiagonal(
-            IMaestro maestro, BetterBlockPos start, Direction dir1, Direction dir2, int dy) {
+            IAgent maestro, BetterBlockPos start, Direction dir1, Direction dir2, int dy) {
         this(maestro, start, start.relative(dir1), start.relative(dir2), dir2, dy);
         // super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1),
         // start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(),
@@ -36,7 +36,7 @@ public class MovementDiagonal extends Movement {
     }
 
     private MovementDiagonal(
-            IMaestro maestro,
+            IAgent maestro,
             BetterBlockPos start,
             BetterBlockPos dir1,
             BetterBlockPos dir2,
@@ -46,7 +46,7 @@ public class MovementDiagonal extends Movement {
     }
 
     private MovementDiagonal(
-            IMaestro maestro,
+            IAgent maestro,
             BetterBlockPos start,
             BetterBlockPos end,
             BetterBlockPos dir1,
@@ -319,7 +319,7 @@ public class MovementDiagonal extends Movement {
 
     private boolean sprint() {
         if (MovementHelper.isLiquid(ctx, ctx.playerFeet())
-                && !Maestro.settings().sprintInWater.value) {
+                && !Agent.settings().sprintInWater.value) {
             return false;
         }
         for (int i = 0; i < 4; i++) {

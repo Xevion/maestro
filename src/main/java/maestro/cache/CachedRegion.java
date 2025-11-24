@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.cache.ICachedRegion;
 import maestro.api.utils.BlockUtils;
 import net.minecraft.core.BlockPos;
@@ -288,7 +288,7 @@ public final class CachedRegion implements ICachedRegion {
     }
 
     public synchronized void removeExpired() {
-        long expiry = Maestro.settings().cachedChunksExpirySeconds.value;
+        long expiry = Agent.settings().cachedChunksExpirySeconds.value;
         if (expiry < 0) {
             return;
         }

@@ -1,6 +1,6 @@
 package maestro.utils.pathing;
 
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
@@ -12,7 +12,7 @@ public abstract class PathBase implements IPath {
 
     @Override
     public PathBase cutoffAtLoadedChunks(Object bsi0) { // <-- cursed cursed cursed
-        if (!Maestro.settings().cutoffAtLoadBoundary.value) {
+        if (!Agent.settings().cutoffAtLoadBoundary.value) {
             return this;
         }
         BlockStateInterface bsi = (BlockStateInterface) bsi0;

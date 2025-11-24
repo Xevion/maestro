@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.BlockById;
@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.Block;
 
 public class FindCommand extends Command {
 
-    public FindCommand(IMaestro maestro) {
+    public FindCommand(IAgent maestro) {
         super(maestro, "find");
     }
 

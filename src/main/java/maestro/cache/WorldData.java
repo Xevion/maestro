@@ -1,7 +1,7 @@
 package maestro.cache;
 
 import java.nio.file.Path;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.cache.ICachedWorld;
 import maestro.api.cache.IWaypointCollection;
 import maestro.api.cache.IWorldData;
@@ -29,7 +29,7 @@ public class WorldData implements IWorldData {
     }
 
     public void onClose() {
-        Maestro.getExecutor()
+        Agent.getExecutor()
                 .execute(
                         () -> {
                             System.out.println("Started saving the world in a new thread");

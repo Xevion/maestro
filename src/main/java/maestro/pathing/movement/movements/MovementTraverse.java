@@ -3,8 +3,8 @@ package maestro.pathing.movement.movements;
 import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import java.util.Set;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.Rotation;
@@ -34,7 +34,7 @@ public class MovementTraverse extends Movement {
     /** Did we have to place a bridge block or was it always there */
     private boolean wasTheBridgeBlockAlwaysThere = true;
 
-    public MovementTraverse(IMaestro maestro, BetterBlockPos from, BetterBlockPos to) {
+    public MovementTraverse(IAgent maestro, BetterBlockPos from, BetterBlockPos to) {
         super(maestro, from, to, new BetterBlockPos[] {to.above(), to}, to.below());
     }
 
@@ -197,7 +197,7 @@ public class MovementTraverse extends Movement {
         BlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1]);
         if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
-            if (!Maestro.settings().walkWhileBreaking.value) {
+            if (!Agent.settings().walkWhileBreaking.value) {
                 return state;
             }
             // and if we're prepping (aka mining the block in front)
@@ -315,7 +315,7 @@ public class MovementTraverse extends Movement {
             if (feet.equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (Maestro.settings().overshootTraverse.value
+            if (Agent.settings().overshootTraverse.value
                     && (feet.equals(dest.offset(getDirection()))
                             || feet.equals(dest.offset(getDirection()).offset(getDirection())))) {
                 return state.setStatus(MovementStatus.SUCCESS);
@@ -337,7 +337,7 @@ public class MovementTraverse extends Movement {
             BlockState intoAbove = BlockStateInterface.get(ctx, into.above());
             if (wasTheBridgeBlockAlwaysThere
                     && (!MovementHelper.isLiquid(ctx, feet)
-                            || Maestro.settings().sprintInWater.value)
+                            || Agent.settings().sprintInWater.value)
                     && (!MovementHelper.avoidWalkingInto(intoBelow)
                             || MovementHelper.isWater(intoBelow))
                     && !MovementHelper.avoidWalkingInto(intoAbove)) {
@@ -385,13 +385,13 @@ public class MovementTraverse extends Movement {
             PlaceResult p =
                     MovementHelper.attemptToPlaceABlock(state, maestro, dest.below(), false, true);
             if ((p == PlaceResult.READY_TO_PLACE || dist1 < 0.6)
-                    && !Maestro.settings().assumeSafeWalk.value) {
+                    && !Agent.settings().assumeSafeWalk.value) {
                 state.setInput(Input.SNEAK, true);
             }
             switch (p) {
                 case READY_TO_PLACE:
                     {
-                        if (ctx.player().isCrouching() || Maestro.settings().assumeSafeWalk.value) {
+                        if (ctx.player().isCrouching() || Agent.settings().assumeSafeWalk.value) {
                             state.setInput(Input.CLICK_RIGHT, true);
                         }
                         return state;

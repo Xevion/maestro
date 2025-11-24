@@ -3,7 +3,7 @@ package maestro;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.IMaestroProvider;
 import maestro.api.cache.IWorldScanner;
 import maestro.api.command.ICommandSystem;
@@ -16,40 +16,40 @@ import net.minecraft.client.Minecraft;
 
 public final class MaestroProvider implements IMaestroProvider {
 
-    private final List<IMaestro> all;
-    private final List<IMaestro> allView;
+    private final List<IAgent> all;
+    private final List<IAgent> allView;
 
     public MaestroProvider() {
         this.all = new CopyOnWriteArrayList<>();
         this.allView = Collections.unmodifiableList(this.all);
 
         // Setup chat control, just for the primary instance
-        final Maestro primary = (Maestro) this.createMaestro(Minecraft.getInstance());
+        final Agent primary = (Agent) this.createMaestro(Minecraft.getInstance());
         primary.registerBehavior(ExampleMaestroControl::new);
     }
 
     @Override
-    public IMaestro getPrimaryMaestro() {
+    public IAgent getPrimaryAgent() {
         return this.all.getFirst();
     }
 
     @Override
-    public List<IMaestro> getAllMaestros() {
+    public List<IAgent> getAllMaestros() {
         return this.allView;
     }
 
     @Override
-    public synchronized IMaestro createMaestro(Minecraft minecraft) {
-        IMaestro maestro = this.getMaestroForMinecraft(minecraft);
+    public synchronized IAgent createMaestro(Minecraft minecraft) {
+        IAgent maestro = this.getMaestroForMinecraft(minecraft);
         if (maestro == null) {
-            this.all.add(maestro = new Maestro(minecraft));
+            this.all.add(maestro = new Agent(minecraft));
         }
         return maestro;
     }
 
     @Override
-    public synchronized boolean destroyMaestro(IMaestro maestro) {
-        return maestro != this.getPrimaryMaestro() && this.all.remove(maestro);
+    public synchronized boolean destroyMaestro(IAgent maestro) {
+        return maestro != this.getPrimaryAgent() && this.all.remove(maestro);
     }
 
     @Override

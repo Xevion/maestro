@@ -63,7 +63,7 @@ public final class PathRenderer implements IRenderer {
         final DimensionType thisPlayerDimension = ctx.world().dimensionType();
         final DimensionType currentRenderViewDimension =
                 MaestroAPI.getProvider()
-                        .getPrimaryMaestro()
+                        .getPrimaryAgent()
                         .getPlayerContext()
                         .world()
                         .dimensionType();
@@ -309,7 +309,7 @@ public final class PathRenderer implements IRenderer {
         BlockStateInterface bsi =
                 new BlockStateInterface(
                         MaestroAPI.getProvider()
-                                .getPrimaryMaestro()
+                                .getPrimaryAgent()
                                 .getPlayerContext()); // TODO this assumes same dimension between
         // primary maestro and render view? is this
         // safe?

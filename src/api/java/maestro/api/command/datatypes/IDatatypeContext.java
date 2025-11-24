@@ -1,6 +1,6 @@
 package maestro.api.command.datatypes;
 
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.argument.IArgConsumer;
 
 /**
@@ -12,12 +12,12 @@ import maestro.api.command.argument.IArgConsumer;
 public interface IDatatypeContext {
 
     /**
-     * Provides the {@link IMaestro} instance that is associated with the action relating to
+     * Provides the {@link IAgent} instance that is associated with the action relating to
      * datatype handling.
      *
-     * @return The context {@link IMaestro} instance.
+     * @return The context {@link IAgent} instance.
      */
-    IMaestro getMaestro();
+    IAgent getMaestro();
 
     /**
      * Provides the {@link IArgConsumer}} to fetch input information from.

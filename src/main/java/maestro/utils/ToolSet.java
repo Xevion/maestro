@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import maestro.Maestro;
+import maestro.Agent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.ItemTags;
@@ -57,7 +57,7 @@ public class ToolSet {
         breakStrengthCache = new HashMap<>();
         this.player = player;
 
-        if (Maestro.settings().considerPotionEffects.value) {
+        if (Agent.settings().considerPotionEffects.value) {
             double amplifier = potionAmplifier();
             Function<Double, Double> amplify = x -> amplifier * x;
             backendCalculation = amplify.compose(this::getBestDestructionTime);
@@ -122,7 +122,7 @@ public class ToolSet {
         If we actually want know what efficiency our held item has instead of the best one
         possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
         */
-        if (!Maestro.settings().autoTool.value && pathingCalculation) {
+        if (!Agent.settings().autoTool.value && pathingCalculation) {
             return player.getInventory().selected;
         }
 
@@ -133,13 +133,13 @@ public class ToolSet {
         BlockState blockState = b.defaultBlockState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.getInventory().getItem(i);
-            if (!Maestro.settings().useSwordToMine.value
+            if (!Agent.settings().useSwordToMine.value
                     && itemStack.getItem() instanceof SwordItem) {
                 continue;
             }
 
-            if (Maestro.settings().itemSaver.value
-                    && (itemStack.getDamageValue() + Maestro.settings().itemSaverThreshold.value)
+            if (Agent.settings().itemSaver.value
+                    && (itemStack.getDamageValue() + Agent.settings().itemSaverThreshold.value)
                             >= itemStack.getMaxDamage()
                     && itemStack.getMaxDamage() > 1) {
                 continue;
@@ -177,8 +177,8 @@ public class ToolSet {
     }
 
     private double avoidanceMultiplier(Block b) {
-        return Maestro.settings().blocksToAvoidBreaking.value.contains(b)
-                ? Maestro.settings().avoidBreakingMultiplier.value
+        return Agent.settings().blocksToAvoidBreaking.value.contains(b)
+                ? Agent.settings().avoidBreakingMultiplier.value
                 : 1;
     }
 

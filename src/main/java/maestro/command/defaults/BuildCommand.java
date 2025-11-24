@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeBlockPos;
@@ -21,7 +21,7 @@ public class BuildCommand extends Command {
 
     private final File schematicsDir;
 
-    public BuildCommand(IMaestro maestro) {
+    public BuildCommand(IAgent maestro) {
         super(maestro, "build");
         this.schematicsDir =
                 new File(maestro.getPlayerContext().minecraft().gameDirectory, "schematics");
@@ -37,7 +37,7 @@ public class BuildCommand extends Command {
                     new File(
                             file.getAbsolutePath()
                                     + "."
-                                    + Maestro.settings().schematicFallbackExtension.value);
+                                    + Agent.settings().schematicFallbackExtension.value);
         }
         if (!file.exists()) {
             if (file0.exists()) {

@@ -2,7 +2,7 @@ package maestro.api.command.datatypes;
 
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import net.minecraft.network.chat.Component;
@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Player;
 
 /**
  * An {@link IDatatype} used to resolve nearby players, those within render distance of the target
- * {@link IMaestro} instance.
+ * {@link IAgent} instance.
  */
 public enum NearbyPlayer implements IDatatypeFor<Player> {
     INSTANCE;

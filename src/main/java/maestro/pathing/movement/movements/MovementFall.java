@@ -3,7 +3,7 @@ package maestro.pathing.movement.movements;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.Rotation;
@@ -35,7 +35,7 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
-    public MovementFall(IMaestro maestro, BetterBlockPos src, BetterBlockPos dest) {
+    public MovementFall(IAgent maestro, BetterBlockPos src, BetterBlockPos dest) {
         super(maestro, src, dest, MovementFall.buildPositionsToBreak(src, dest));
     }
 

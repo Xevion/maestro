@@ -1,8 +1,8 @@
 package maestro.pathing.movement;
 
 import java.util.*;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.*;
@@ -20,7 +20,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, Direction.DOWN
     };
 
-    protected final IMaestro maestro;
+    protected final IAgent maestro;
     protected final IPlayerContext ctx;
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
@@ -46,7 +46,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     private Boolean calculatedWhileLoaded;
 
     protected Movement(
-            IMaestro maestro,
+            IAgent maestro,
             BetterBlockPos src,
             BetterBlockPos dest,
             BetterBlockPos[] toBreak,
@@ -60,7 +60,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     protected Movement(
-            IMaestro maestro, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
+            IAgent maestro, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
         this(maestro, src, dest, toBreak, null);
     }
 
@@ -163,7 +163,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                                     FallingBlockEntity.class,
                                     new AABB(0, 0, 0, 1, 1.1, 1).move(blockPos))
                             .isEmpty()
-                    && Maestro.settings().pauseMiningForFallingBlocks.value) {
+                    && Agent.settings().pauseMiningForFallingBlocks.value) {
                 return false;
             }
             if (!MovementHelper.canWalkThrough(ctx, blockPos)) { // can't break air, so don't try

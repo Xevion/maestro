@@ -1,6 +1,6 @@
 package maestro.utils;
 
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.utils.IPlayerContext;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,7 +30,7 @@ public class BlockPlaceHelper {
                 || mouseOver.getType() != HitResult.Type.BLOCK) {
             return;
         }
-        rightClickTimer = Maestro.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
+        rightClickTimer = Agent.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
         for (InteractionHand hand : InteractionHand.values()) {
             if (ctx.playerController()
                             .processRightClickBlock(

@@ -1,6 +1,6 @@
 package maestro.process;
 
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.process.ICustomGoalProcess;
 import maestro.api.process.PathingCommand;
@@ -27,7 +27,7 @@ public final class CustomGoalProcess extends MaestroProcessHelper implements ICu
      */
     private State state;
 
-    public CustomGoalProcess(Maestro maestro) {
+    public CustomGoalProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -87,10 +87,10 @@ public final class CustomGoalProcess extends MaestroProcessHelper implements ICu
                         || (this.goal.isInGoal(ctx.playerFeet())
                                 && this.goal.isInGoal(maestro.getPathingBehavior().pathStart()))) {
                     onLostControl(); // we're there xd
-                    if (Maestro.settings().disconnectOnArrival.value) {
+                    if (Agent.settings().disconnectOnArrival.value) {
                         ctx.world().disconnect();
                     }
-                    if (Maestro.settings().notificationOnPathComplete.value) {
+                    if (Agent.settings().notificationOnPathComplete.value) {
                         logNotification("Pathing complete", false);
                     }
                     return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);

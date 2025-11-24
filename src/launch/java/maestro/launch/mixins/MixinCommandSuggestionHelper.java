@@ -47,7 +47,7 @@ public class MixinCommandSuggestionHelper {
                                         this.input.getCursorPosition()));
 
         TabCompleteEvent event = new TabCompleteEvent(prefix);
-        MaestroAPI.getProvider().getPrimaryMaestro().getGameEventHandler().onPreTabComplete(event);
+        MaestroAPI.getProvider().getPrimaryAgent().getGameEventHandler().onPreTabComplete(event);
 
         if (event.isCancelled()) {
             ci.cancel();

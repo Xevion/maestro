@@ -1,7 +1,7 @@
 package maestro.pathing.calc;
 
 import java.util.Optional;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.ActionCosts;
@@ -58,21 +58,21 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         MutableMoveResult res = new MutableMoveResult();
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world.getWorldBorder());
         long startTime = System.currentTimeMillis();
-        boolean slowPath = Maestro.settings().slowPath.value;
+        boolean slowPath = Agent.settings().slowPath.value;
         if (slowPath) {
             logDebug(
                     "slowPath is on, path timeout will be "
-                            + Maestro.settings().slowPathTimeoutMS.value
+                            + Agent.settings().slowPathTimeoutMS.value
                             + "ms instead of "
                             + primaryTimeout
                             + "ms");
         }
         long primaryTimeoutTime =
                 startTime
-                        + (slowPath ? Maestro.settings().slowPathTimeoutMS.value : primaryTimeout);
+                        + (slowPath ? Agent.settings().slowPathTimeoutMS.value : primaryTimeout);
         long failureTimeoutTime =
                 startTime
-                        + (slowPath ? Maestro.settings().slowPathTimeoutMS.value : failureTimeout);
+                        + (slowPath ? Agent.settings().slowPathTimeoutMS.value : failureTimeout);
         boolean failing = true;
         int numNodes = 0;
         int numMovementsConsidered = 0;
@@ -80,12 +80,12 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         boolean isFavoring = !favoring.isEmpty();
         int timeCheckInterval = 1 << 6;
         int pathingMaxChunkBorderFetch =
-                Maestro.settings()
+                Agent.settings()
                         .pathingMaxChunkBorderFetch
                         .value; // grab all settings beforehand so that changing settings during
         // pathing doesn't cause a crash or unpredictable behavior
         double minimumImprovement =
-                Maestro.settings().minimumImprovementRepropagation.value ? MIN_IMPROVEMENT : 0;
+                Agent.settings().minimumImprovementRepropagation.value ? MIN_IMPROVEMENT : 0;
         Moves[] allMoves = Moves.values();
         while (!openSet.isEmpty()
                 && numEmptyChunk < pathingMaxChunkBorderFetch
@@ -100,7 +100,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             }
             if (slowPath) {
                 try {
-                    Thread.sleep(Maestro.settings().slowPathTimeDelayMS.value);
+                    Thread.sleep(Agent.settings().slowPathTimeDelayMS.value);
                 } catch (InterruptedException ignored) {
                 }
             }

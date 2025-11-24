@@ -5,8 +5,8 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.datatypes.IDatatype;
@@ -318,7 +318,7 @@ public class ArgConsumer implements IArgConsumer {
         try {
             return datatype.apply(this.context, original);
         } catch (Exception e) {
-            if (Maestro.settings().verboseCommandExceptions.value) {
+            if (Agent.settings().verboseCommandExceptions.value) {
                 e.printStackTrace();
             }
             throw new CommandInvalidTypeException(
@@ -353,7 +353,7 @@ public class ArgConsumer implements IArgConsumer {
         try {
             return datatype.get(this.context);
         } catch (Exception e) {
-            if (Maestro.settings().verboseCommandExceptions.value) {
+            if (Agent.settings().verboseCommandExceptions.value) {
                 e.printStackTrace();
             }
             throw new CommandInvalidTypeException(
@@ -444,7 +444,7 @@ public class ArgConsumer implements IArgConsumer {
     private final class Context implements IDatatypeContext {
 
         @Override
-        public IMaestro getMaestro() {
+        public IAgent getMaestro() {
             return ArgConsumer.this.manager.getMaestro();
         }
 

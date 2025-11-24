@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.IPlayerContext;
 import net.minecraft.core.BlockPos;
@@ -43,12 +43,12 @@ public class Avoidance {
     }
 
     public static List<Avoidance> create(IPlayerContext ctx) {
-        if (!Maestro.settings().avoidance.value) {
+        if (!Agent.settings().avoidance.value) {
             return Collections.emptyList();
         }
         List<Avoidance> res = new ArrayList<>();
-        double mobSpawnerCoeff = Maestro.settings().mobSpawnerAvoidanceCoefficient.value;
-        double mobCoeff = Maestro.settings().mobAvoidanceCoefficient.value;
+        double mobSpawnerCoeff = Agent.settings().mobSpawnerAvoidanceCoefficient.value;
+        double mobCoeff = Agent.settings().mobAvoidanceCoefficient.value;
         if (mobSpawnerCoeff != 1.0D) {
             ctx.worldData()
                     .getCachedWorld()
@@ -59,7 +59,7 @@ public class Avoidance {
                                             new Avoidance(
                                                     mobspawner,
                                                     mobSpawnerCoeff,
-                                                    Maestro.settings()
+                                                    Agent.settings()
                                                             .mobSpawnerAvoidanceRadius
                                                             .value)));
         }
@@ -85,7 +85,7 @@ public class Avoidance {
                                             new Avoidance(
                                                     entity.blockPosition(),
                                                     mobCoeff,
-                                                    Maestro.settings().mobAvoidanceRadius.value)));
+                                                    Agent.settings().mobAvoidanceRadius.value)));
         }
         return res;
     }

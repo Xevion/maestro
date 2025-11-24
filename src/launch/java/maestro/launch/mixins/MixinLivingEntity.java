@@ -1,7 +1,7 @@
 package maestro.launch.mixins;
 
 import java.util.Optional;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.RotationMoveEvent;
 import net.minecraft.client.player.LocalPlayer;
@@ -100,7 +100,7 @@ public abstract class MixinLivingEntity extends Entity {
     }
 
     @Unique
-    private Optional<IMaestro> getMaestro() {
+    private Optional<IAgent> getMaestro() {
         // noinspection ConstantConditions
         if (LocalPlayer.class.isInstance(this)) {
             return Optional.ofNullable(

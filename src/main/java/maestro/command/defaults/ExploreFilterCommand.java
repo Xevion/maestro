@@ -6,7 +6,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeFile;
@@ -16,7 +16,7 @@ import maestro.api.command.exception.CommandInvalidTypeException;
 
 public class ExploreFilterCommand extends Command {
 
-    public ExploreFilterCommand(IMaestro maestro) {
+    public ExploreFilterCommand(IAgent maestro) {
         super(maestro, "explorefilter");
     }
 

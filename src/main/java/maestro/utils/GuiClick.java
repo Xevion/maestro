@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.awt.*;
 import java.util.Collections;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.BetterBlockPos;
@@ -59,7 +59,7 @@ public class GuiClick extends Screen implements Helper {
             Vec3 viewerPos =
                     new Vec3(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
             LocalPlayer player =
-                    MaestroAPI.getProvider().getPrimaryMaestro().getPlayerContext().player();
+                    MaestroAPI.getProvider().getPrimaryAgent().getPlayerContext().player();
             BlockHitResult result =
                     player.level()
                             .clip(
@@ -82,11 +82,11 @@ public class GuiClick extends Screen implements Helper {
             if (mouseButton == 0) {
                 if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                     MaestroAPI.getProvider()
-                            .getPrimaryMaestro()
+                            .getPrimaryAgent()
                             .getSelectionManager()
                             .removeAllSelections();
                     MaestroAPI.getProvider()
-                            .getPrimaryMaestro()
+                            .getPrimaryAgent()
                             .getSelectionManager()
                             .addSelection(
                                     BetterBlockPos.from(clickStart),
@@ -94,7 +94,7 @@ public class GuiClick extends Screen implements Helper {
                     MutableComponent component =
                             Component.literal(
                                     "Selection made! For usage: "
-                                            + Maestro.settings().prefix.value
+                                            + Agent.settings().prefix.value
                                             + "help sel");
                     component.setStyle(
                             component
@@ -108,13 +108,13 @@ public class GuiClick extends Screen implements Helper {
                     clickStart = null;
                 } else {
                     MaestroAPI.getProvider()
-                            .getPrimaryMaestro()
+                            .getPrimaryAgent()
                             .getCustomGoalProcess()
                             .setGoalAndPath(new GoalBlock(currentMouseOver));
                 }
             } else if (mouseButton == 1) {
                 MaestroAPI.getProvider()
-                        .getPrimaryMaestro()
+                        .getPrimaryAgent()
                         .getCustomGoalProcess()
                         .setGoalAndPath(new GoalBlock(currentMouseOver.above()));
             }
@@ -143,7 +143,7 @@ public class GuiClick extends Screen implements Helper {
                 BufferBuilder bufferBuilder =
                         IRenderer.startLines(
                                 Color.RED,
-                                Maestro.settings().pathRenderLineWidthPixels.value,
+                                Agent.settings().pathRenderLineWidthPixels.value,
                                 true);
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
                 BetterBlockPos b = new BetterBlockPos(clickStart);

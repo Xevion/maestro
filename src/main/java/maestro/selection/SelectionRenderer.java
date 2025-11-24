@@ -2,7 +2,7 @@ package maestro.selection;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.event.listener.AbstractGameEventListener;
 import maestro.api.selection.ISelection;
@@ -15,7 +15,7 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
 
     private final SelectionManager manager;
 
-    SelectionRenderer(Maestro maestro, SelectionManager manager) {
+    SelectionRenderer(Agent maestro, SelectionManager manager) {
         this.manager = manager;
         maestro.getGameEventHandler().registerEventListener(this);
     }

@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -26,7 +26,7 @@ public class ExecutionControlCommands {
     Command pausedCommand;
     Command cancelCommand;
 
-    public ExecutionControlCommands(IMaestro maestro) {
+    public ExecutionControlCommands(IAgent maestro) {
         // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
         maestro.getPathingControlManager()

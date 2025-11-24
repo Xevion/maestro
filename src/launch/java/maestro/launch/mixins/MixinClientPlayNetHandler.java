@@ -2,8 +2,8 @@ package maestro.launch.mixins;
 
 import java.util.ArrayList;
 import java.util.List;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.BlockChangeEvent;
 import maestro.api.event.events.ChatEvent;
@@ -61,7 +61,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
     @Inject(method = "sendChat(Ljava/lang/String;)V", at = @At("HEAD"), cancellable = true)
     private void sendChatMessage(String string, CallbackInfo ci) {
         ChatEvent event = new ChatEvent(string);
-        IMaestro maestro = MaestroAPI.getProvider().getMaestroForPlayer(this.minecraft.player);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer(this.minecraft.player);
         if (maestro == null) {
             return;
         }
@@ -74,7 +74,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
     @Inject(method = "handleLevelChunkWithLight", at = @At("RETURN"))
     private void postHandleChunkData(
             ClientboundLevelChunkWithLightPacket packetIn, CallbackInfo ci) {
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             LocalPlayer player = maestro.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
                 maestro.getGameEventHandler()
@@ -92,7 +92,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
 
     @Inject(method = "handleForgetLevelChunk", at = @At("HEAD"))
     private void preChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             LocalPlayer player = maestro.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
                 maestro.getGameEventHandler()
@@ -108,7 +108,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
 
     @Inject(method = "handleForgetLevelChunk", at = @At("RETURN"))
     private void postChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             LocalPlayer player = maestro.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
                 maestro.getGameEventHandler()
@@ -124,13 +124,13 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
 
     @Inject(method = "handleBlockUpdate", at = @At("RETURN"))
     private void postHandleBlockChange(ClientboundBlockUpdatePacket packetIn, CallbackInfo ci) {
-        if (!Maestro.settings().repackOnAnyBlockChange.value) {
+        if (!Agent.settings().repackOnAnyBlockChange.value) {
             return;
         }
         if (!CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(packetIn.getBlockState().getBlock())) {
             return;
         }
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             LocalPlayer player = maestro.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
                 maestro.getGameEventHandler()
@@ -147,7 +147,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
     @Inject(method = "handleChunkBlocksUpdate", at = @At("RETURN"))
     private void postHandleMultiBlockChange(
             ClientboundSectionBlocksUpdatePacket packetIn, CallbackInfo ci) {
-        IMaestro maestro =
+        IAgent maestro =
                 MaestroAPI.getProvider()
                         .getMaestroForConnection((ClientPacketListener) (Object) this);
         if (maestro == null) {
@@ -175,7 +175,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
                             target =
                                     "Lnet/minecraft/client/player/LocalPlayer;shouldShowDeathScreen()Z"))
     private void onPlayerDeath(ClientboundPlayerCombatKillPacket packetIn, CallbackInfo ci) {
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             LocalPlayer player = maestro.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
                 maestro.getGameEventHandler().onPlayerDeath();

@@ -3,7 +3,7 @@ package maestro.process;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.pathing.goals.GoalComposite;
@@ -30,7 +30,7 @@ public final class FollowProcess extends MaestroProcessHelper implements IFollow
     private List<Entity> cache;
     private boolean into; // walk straight into the target, regardless of settings
 
-    public FollowProcess(Maestro maestro) {
+    public FollowProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -43,20 +43,20 @@ public final class FollowProcess extends MaestroProcessHelper implements IFollow
 
     private Goal towards(Entity following) {
         BlockPos pos;
-        if (Maestro.settings().followOffsetDistance.value == 0 || into) {
+        if (Agent.settings().followOffsetDistance.value == 0 || into) {
             pos = following.blockPosition();
         } else {
             GoalXZ g =
                     GoalXZ.fromDirection(
                             following.position(),
-                            Maestro.settings().followOffsetDirection.value,
-                            Maestro.settings().followOffsetDistance.value);
+                            Agent.settings().followOffsetDirection.value,
+                            Agent.settings().followOffsetDistance.value);
             pos = new BetterBlockPos(g.getX(), following.position().y, g.getZ());
         }
         if (into) {
             return new GoalBlock(pos);
         }
-        return new GoalNear(pos, Maestro.settings().followRadius.value);
+        return new GoalNear(pos, Agent.settings().followRadius.value);
     }
 
     private boolean followable(Entity entity) {
@@ -69,7 +69,7 @@ public final class FollowProcess extends MaestroProcessHelper implements IFollow
         if (entity.equals(ctx.player())) {
             return false;
         }
-        int maxDist = Maestro.settings().followTargetMaxDistance.value;
+        int maxDist = Agent.settings().followTargetMaxDistance.value;
         if (maxDist != 0 && entity.distanceToSqr(ctx.player()) > maxDist * maxDist) {
             return false;
         }

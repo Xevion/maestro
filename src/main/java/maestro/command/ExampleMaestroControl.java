@@ -5,7 +5,7 @@ import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.Settings;
 import maestro.api.command.argument.ICommandArgument;
@@ -31,7 +31,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
     private static final Settings settings = MaestroAPI.getSettings();
     private final ICommandManager manager;
 
-    public ExampleMaestroControl(Maestro maestro) {
+    public ExampleMaestroControl(Agent maestro) {
         super(maestro);
         this.manager = maestro.getCommandManager();
     }

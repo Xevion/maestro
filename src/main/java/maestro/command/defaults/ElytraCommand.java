@@ -5,8 +5,8 @@ import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -25,7 +25,7 @@ import net.minecraft.world.level.Level;
 
 public class ElytraCommand extends Command {
 
-    public ElytraCommand(IMaestro maestro) {
+    public ElytraCommand(IAgent maestro) {
         super(maestro, "elytra");
     }
 
@@ -42,7 +42,7 @@ public class ElytraCommand extends Command {
         }
 
         if (!args.hasAny()) {
-            if (Maestro.settings().elytraTermsAccepted.value) {
+            if (Agent.settings().elytraTermsAccepted.value) {
                 if (detectOn2b2t()) {
                     warn2b2t();
                 }
@@ -86,8 +86,8 @@ public class ElytraCommand extends Command {
     }
 
     private void warn2b2t() {
-        if (Maestro.settings().elytraPredictTerrain.value) {
-            long seed = Maestro.settings().elytraNetherSeed.value;
+        if (Agent.settings().elytraPredictTerrain.value) {
+            long seed = Agent.settings().elytraNetherSeed.value;
             if (seed != NEW_2B2T_SEED && seed != OLD_2B2T_SEED) {
                 logDirect(
                         Component.literal(
@@ -116,7 +116,7 @@ public class ElytraCommand extends Command {
                                 new HoverEvent(
                                         HoverEvent.Action.SHOW_TEXT,
                                         Component.literal(
-                                                Maestro.settings().prefix.value
+                                                Agent.settings().prefix.value
                                                         + "set elytraNetherSeed "
                                                         + OLD_2B2T_SEED)))
                         .withClickEvent(
@@ -139,7 +139,7 @@ public class ElytraCommand extends Command {
                                 new HoverEvent(
                                         HoverEvent.Action.SHOW_TEXT,
                                         Component.literal(
-                                                Maestro.settings().prefix.value
+                                                Agent.settings().prefix.value
                                                         + "set elytraNetherSeed "
                                                         + NEW_2B2T_SEED)))
                         .withClickEvent(
@@ -175,7 +175,7 @@ public class ElytraCommand extends Command {
                                 new HoverEvent(
                                         HoverEvent.Action.SHOW_TEXT,
                                         Component.literal(
-                                                Maestro.settings().prefix.value
+                                                Agent.settings().prefix.value
                                                         + "set elytraAutoJump true"))));
         gatekeep.append(gatekeep2);
         MutableComponent gatekeep3 =
@@ -189,9 +189,9 @@ public class ElytraCommand extends Command {
                                 new HoverEvent(
                                         HoverEvent.Action.SHOW_TEXT,
                                         Component.literal(
-                                                Maestro.settings().prefix.value
+                                                Agent.settings().prefix.value
                                                         + "set elytraConserveFireworks true\n"
-                                                        + Maestro.settings().prefix.value
+                                                        + Agent.settings().prefix.value
                                                         + "set elytraFireworkSpeed 0.6\n"
                                                         + "(the 0.6 number is just an example,"
                                                         + " tweak to your liking)"))));
@@ -211,44 +211,44 @@ public class ElytraCommand extends Command {
         if (detectOn2b2t()) {
             MutableComponent gatekeep5 = Component.literal("It looks like you're on 2b2t. ");
             gatekeep5.append(suggest2b2tSeeds());
-            if (!Maestro.settings().elytraPredictTerrain.value) {
+            if (!Agent.settings().elytraPredictTerrain.value) {
                 gatekeep5.append(
-                        Maestro.settings().prefix.value
+                        Agent.settings().prefix.value
                                 + "elytraPredictTerrain is currently disabled. ");
             } else {
-                if (Maestro.settings().elytraNetherSeed.value == NEW_2B2T_SEED) {
+                if (Agent.settings().elytraNetherSeed.value == NEW_2B2T_SEED) {
                     gatekeep5.append("You are using the newer seed. ");
-                } else if (Maestro.settings().elytraNetherSeed.value == OLD_2B2T_SEED) {
+                } else if (Agent.settings().elytraNetherSeed.value == OLD_2B2T_SEED) {
                     gatekeep5.append("You are using the older seed. ");
                 } else {
                     gatekeep5.append("Defaulting to the newer seed. ");
-                    Maestro.settings().elytraNetherSeed.value = NEW_2B2T_SEED;
+                    Agent.settings().elytraNetherSeed.value = NEW_2B2T_SEED;
                 }
             }
             gatekeep.append(gatekeep5);
         } else {
-            if (Maestro.settings().elytraNetherSeed.value == NEW_2B2T_SEED) {
+            if (Agent.settings().elytraNetherSeed.value == NEW_2B2T_SEED) {
                 MutableComponent gatekeep5 =
                         Component.literal(
                                 "Maestro doesn't know the seed of your world. Set it with: "
-                                        + Maestro.settings().prefix.value
+                                        + Agent.settings().prefix.value
                                         + "set elytraNetherSeed seedgoeshere\n");
                 gatekeep5.append(
                         "For the time being, elytraPredictTerrain is defaulting to false since the"
                                 + " seed is unknown.");
                 gatekeep.append(gatekeep5);
-                Maestro.settings().elytraPredictTerrain.value = false;
+                Agent.settings().elytraPredictTerrain.value = false;
             } else {
-                if (Maestro.settings().elytraPredictTerrain.value) {
+                if (Agent.settings().elytraPredictTerrain.value) {
                     MutableComponent gatekeep5 =
                             Component.literal(
                                     "Maestro Elytra is predicting terrain assuming that "
-                                            + Maestro.settings().elytraNetherSeed.value
+                                            + Agent.settings().elytraNetherSeed.value
                                             + " is the correct seed. Change that with "
-                                            + Maestro.settings().prefix.value
+                                            + Agent.settings().prefix.value
                                             + "set elytraNetherSeed seedgoeshere, or disable it"
                                             + " with "
-                                            + Maestro.settings().prefix.value
+                                            + Agent.settings().prefix.value
                                             + "set elytraPredictTerrain false");
                     gatekeep.append(gatekeep5);
                 } else {
@@ -257,10 +257,10 @@ public class ElytraCommand extends Command {
                                     "Maestro Elytra is not predicting terrain. If you don't know"
                                         + " the seed, this is the correct thing to do. If you do"
                                         + " know the seed, input it with "
-                                            + Maestro.settings().prefix.value
+                                            + Agent.settings().prefix.value
                                             + "set elytraNetherSeed seedgoeshere, and then enable"
                                             + " it with "
-                                            + Maestro.settings().prefix.value
+                                            + Agent.settings().prefix.value
                                             + "set elytraPredictTerrain true");
                     gatekeep.append(gatekeep5);
                 }

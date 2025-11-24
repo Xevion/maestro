@@ -1,7 +1,7 @@
 package maestro.launch.mixins;
 
 import java.util.function.BiFunction;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.PlayerUpdateEvent;
 import maestro.api.event.events.TickEvent;
@@ -32,7 +32,7 @@ public class MixinMinecraft {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void postInit(CallbackInfo ci) {
-        MaestroAPI.getProvider().getPrimaryMaestro();
+        MaestroAPI.getProvider().getPrimaryAgent();
     }
 
     @Inject(
@@ -55,7 +55,7 @@ public class MixinMinecraft {
     private void runTick(CallbackInfo ci) {
         this.tickProvider = TickEvent.createNextProvider();
 
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             TickEvent.Type type =
                     maestro.getPlayerContext().player() != null
                                     && maestro.getPlayerContext().world() != null
@@ -71,7 +71,7 @@ public class MixinMinecraft {
             return;
         }
 
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             TickEvent.Type type =
                     maestro.getPlayerContext().player() != null
                                     && maestro.getPlayerContext().world() != null
@@ -92,7 +92,7 @@ public class MixinMinecraft {
                             target = "net/minecraft/client/multiplayer/ClientLevel.tickEntities()V",
                             shift = At.Shift.AFTER))
     private void postUpdateEntities(CallbackInfo ci) {
-        IMaestro maestro = MaestroAPI.getProvider().getMaestroForPlayer(this.player);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer(this.player);
         if (maestro != null) {
             // Intentionally call this after all entities have been updated. That way, any
             // modification to rotations
@@ -112,7 +112,7 @@ public class MixinMinecraft {
         // mc.world changing is only the primary maestro
 
         MaestroAPI.getProvider()
-                .getPrimaryMaestro()
+                .getPrimaryAgent()
                 .getGameEventHandler()
                 .onWorldEvent(new WorldEvent(world, EventState.PRE));
     }
@@ -124,7 +124,7 @@ public class MixinMinecraft {
 
         // mc.world changing is only the primary maestro
         MaestroAPI.getProvider()
-                .getPrimaryMaestro()
+                .getPrimaryAgent()
                 .getGameEventHandler()
                 .onWorldEvent(new WorldEvent(world, EventState.POST));
     }
@@ -147,7 +147,7 @@ public class MixinMinecraft {
                             to = @At(value = "CONSTANT", args = "stringValue=Keybindings")))
     private Screen passEvents(Minecraft instance) {
         // allow user input is only the primary maestro
-        if (MaestroAPI.getProvider().getPrimaryMaestro().getPathingBehavior().isPathing()
+        if (MaestroAPI.getProvider().getPrimaryAgent().getPathingBehavior().isPathing()
                 && player != null) {
             return null;
         }

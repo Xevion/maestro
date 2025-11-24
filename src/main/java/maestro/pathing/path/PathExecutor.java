@@ -3,7 +3,7 @@ package maestro.pathing.path;
 import static maestro.api.pathing.movement.MovementStatus.*;
 
 import java.util.*;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
@@ -183,7 +183,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             // when this path was calculated, not the cost as it is right now
             currentMovementOriginalCostEstimate = movement.getCost();
             for (int i = 1;
-                    i < Maestro.settings().costVerificationLookahead.value
+                    i < Agent.settings().costVerificationLookahead.value
                             && pathPosition + i < path.length() - 1;
                     i++) {
                 if (((Movement) path.movements().get(pathPosition + i))
@@ -210,7 +210,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (!movement.calculatedWhileLoaded()
                 && currentCost - currentMovementOriginalCostEstimate
-                        > Maestro.settings().maxCostIncrease.value
+                        > Agent.settings().maxCostIncrease.value
                 && canCancel) {
             // don't do this if the movement was calculated while loaded
             // that means that this isn't a cache error, it's just part of the path interfering with
@@ -252,7 +252,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             ticksOnCurrent++;
             if (ticksOnCurrent
                     > currentMovementOriginalCostEstimate
-                            + Maestro.settings().movementTimeoutTicks.value) {
+                            + Agent.settings().movementTimeoutTicks.value) {
                 // only cancel if the total time has exceeded the initial estimate
                 // as you break the blocks required, the remaining cost goes down, to the point
                 // where
@@ -428,7 +428,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     // Since MovementDescend can't know the next movement we have to tell it
                     if (next instanceof MovementTraverse || next instanceof MovementParkour) {
                         boolean couldPlaceInstead =
-                                Maestro.settings().allowPlace.value
+                                Agent.settings().allowPlace.value
                                         && behavior.maestro
                                                 .getInventoryBehavior()
                                                 .hasGenericThrowaway()
@@ -637,7 +637,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private static boolean sprintableAscend(
             IPlayerContext ctx, MovementTraverse current, MovementAscend next, IMovement nextnext) {
-        if (!Maestro.settings().sprintAscends.value) {
+        if (!Agent.settings().sprintAscends.value) {
             return false;
         }
         if (!current.getDirection().equals(next.getDirection().below())) {
@@ -687,7 +687,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
         return next instanceof MovementDiagonal
-                && Maestro.settings().allowOvershootDiagonalDescend.value;
+                && Agent.settings().allowOvershootDiagonalDescend.value;
     }
 
     private void onChangeInPathPosition() {
@@ -737,8 +737,8 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private PathExecutor cutIfTooLong() {
-        if (pathPosition > Maestro.settings().maxPathHistoryLength.value) {
-            int cutoffAmt = Maestro.settings().pathHistoryCutoffAmount.value;
+        if (pathPosition > Agent.settings().maxPathHistoryLength.value) {
+            int cutoffAmt = Agent.settings().pathHistoryCutoffAmount.value;
             CutoffPath newPath = new CutoffPath(path, cutoffAmt, path.length() - 1);
             if (!newPath.getDest().equals(path.getDest())) {
                 throw new IllegalStateException(

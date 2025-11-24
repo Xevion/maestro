@@ -11,36 +11,36 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 
 /**
- * Provides the present {@link IMaestro} instances, as well as non-maestro instance related APIs.
+ * Provides the present {@link IAgent} instances, as well as non-maestro instance related APIs.
  */
 public interface IMaestroProvider {
 
     /**
-     * Returns the primary {@link IMaestro} instance. This instance is persistent, and is
+     * Returns the primary {@link IAgent} instance. This instance is persistent, and is
      * represented by the local player that is created by the game itself, not a "bot" player
      * through Maestro.
      *
-     * @return The primary {@link IMaestro} instance.
+     * @return The primary {@link IAgent} instance.
      */
-    IMaestro getPrimaryMaestro();
+    IAgent getPrimaryAgent();
 
     /**
-     * Returns all of the active {@link IMaestro} instances. This includes the local one returned by
-     * {@link #getPrimaryMaestro()}.
+     * Returns all of the active {@link IAgent} instances. This includes the local one returned by
+     * {@link #getPrimaryAgent()}.
      *
-     * @return All active {@link IMaestro} instances.
+     * @return All active {@link IAgent} instances.
      * @see #getMaestroForPlayer(LocalPlayer)
      */
-    List<IMaestro> getAllMaestros();
+    List<IAgent> getAllMaestros();
 
     /**
-     * Provides the {@link IMaestro} instance for a given {@link LocalPlayer}.
+     * Provides the {@link IAgent} instance for a given {@link LocalPlayer}.
      *
      * @param player The player
-     * @return The {@link IMaestro} instance.
+     * @return The {@link IAgent} instance.
      */
-    default IMaestro getMaestroForPlayer(LocalPlayer player) {
-        for (IMaestro maestro : this.getAllMaestros()) {
+    default IAgent getMaestroForPlayer(LocalPlayer player) {
+        for (IAgent maestro : this.getAllMaestros()) {
             if (Objects.equals(player, maestro.getPlayerContext().player())) {
                 return maestro;
             }
@@ -49,13 +49,13 @@ public interface IMaestroProvider {
     }
 
     /**
-     * Provides the {@link IMaestro} instance for a given {@link Minecraft}.
+     * Provides the {@link IAgent} instance for a given {@link Minecraft}.
      *
      * @param minecraft The minecraft
-     * @return The {@link IMaestro} instance.
+     * @return The {@link IAgent} instance.
      */
-    default IMaestro getMaestroForMinecraft(Minecraft minecraft) {
-        for (IMaestro maestro : this.getAllMaestros()) {
+    default IAgent getMaestroForMinecraft(Minecraft minecraft) {
+        for (IAgent maestro : this.getAllMaestros()) {
             if (Objects.equals(minecraft, maestro.getPlayerContext().minecraft())) {
                 return maestro;
             }
@@ -64,13 +64,13 @@ public interface IMaestroProvider {
     }
 
     /**
-     * Provides the {@link IMaestro} instance for the player with the specified connection.
+     * Provides the {@link IAgent} instance for the player with the specified connection.
      *
      * @param connection The connection
-     * @return The {@link IMaestro} instance.
+     * @return The {@link IAgent} instance.
      */
-    default IMaestro getMaestroForConnection(ClientPacketListener connection) {
-        for (IMaestro maestro : this.getAllMaestros()) {
+    default IAgent getMaestroForConnection(ClientPacketListener connection) {
+        for (IAgent maestro : this.getAllMaestros()) {
             final LocalPlayer player = maestro.getPlayerContext().player();
             if (player != null && player.connection == connection) {
                 return maestro;
@@ -80,34 +80,34 @@ public interface IMaestroProvider {
     }
 
     /**
-     * Creates and registers a new {@link IMaestro} instance using the specified {@link Minecraft}.
+     * Creates and registers a new {@link IAgent} instance using the specified {@link Minecraft}.
      * The existing instance is returned if already registered.
      *
      * @param minecraft The minecraft
-     * @return The {@link IMaestro} instance
+     * @return The {@link IAgent} instance
      */
-    IMaestro createMaestro(Minecraft minecraft);
+    IAgent createMaestro(Minecraft minecraft);
 
     /**
-     * Destroys and removes the specified {@link IMaestro} instance. If the specified instance is
-     * the {@link #getPrimaryMaestro() primary maestro}, this operation has no effect and will
+     * Destroys and removes the specified {@link IAgent} instance. If the specified instance is
+     * the {@link #getPrimaryAgent() primary maestro}, this operation has no effect and will
      * return {@code false}.
      *
      * @param maestro The maestro instance to remove
      * @return Whether the maestro instance was removed
      */
-    boolean destroyMaestro(IMaestro maestro);
+    boolean destroyMaestro(IAgent maestro);
 
     /**
-     * Returns the {@link IWorldScanner} instance. This is not a type returned by {@link IMaestro}
-     * implementation, because it is not linked with {@link IMaestro}.
+     * Returns the {@link IWorldScanner} instance. This is not a type returned by {@link IAgent}
+     * implementation, because it is not linked with {@link IAgent}.
      *
      * @return The {@link IWorldScanner} instance.
      */
     IWorldScanner getWorldScanner();
 
     /**
-     * Returns the {@link ICommandSystem} instance. This is not bound to a specific {@link IMaestro}
+     * Returns the {@link ICommandSystem} instance. This is not bound to a specific {@link IAgent}
      * instance because {@link ICommandSystem} itself controls global behavior for {@link
      * ICommand}s.
      *

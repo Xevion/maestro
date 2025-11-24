@@ -2,7 +2,7 @@ package maestro.event;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.event.events.*;
 import maestro.api.event.events.type.EventState;
 import maestro.api.event.listener.IEventBus;
@@ -19,11 +19,11 @@ import net.minecraft.world.level.chunk.LevelChunk;
 
 public final class GameEventHandler implements IEventBus, Helper {
 
-    private final Maestro maestro;
+    private final Agent maestro;
 
     private final List<IGameEventListener> listeners = new CopyOnWriteArrayList<>();
 
-    public GameEventHandler(Maestro maestro) {
+    public GameEventHandler(Agent maestro) {
         this.maestro = maestro;
     }
 
@@ -92,7 +92,7 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public void onBlockChange(BlockChangeEvent event) {
-        if (Maestro.settings().repackOnAnyBlockChange.value) {
+        if (Agent.settings().repackOnAnyBlockChange.value) {
             final boolean keepingTrackOf =
                     event.getBlocks().stream()
                             .map(Pair::second)

@@ -1,7 +1,7 @@
 package maestro.api.utils;
 
 import java.util.Optional;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -290,7 +290,7 @@ public final class RotationUtils {
     @Deprecated
     public static Optional<Rotation> reachable(
             LocalPlayer entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
-        IMaestro maestro = MaestroAPI.getProvider().getMaestroForPlayer(entity);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer(entity);
         IPlayerContext ctx = maestro.getPlayerContext();
         return reachable(ctx, pos, blockReachDistance, wouldSneak);
     }

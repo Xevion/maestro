@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.OptionalInt;
 import java.util.Random;
 import java.util.function.Predicate;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.event.events.TickEvent;
 import maestro.api.utils.Helper;
 import maestro.utils.ToolSet;
@@ -33,13 +33,13 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     // coming to a halt
 
-    public InventoryBehavior(Maestro maestro) {
+    public InventoryBehavior(Agent maestro) {
         super(maestro);
     }
 
     @Override
     public void onTick(TickEvent event) {
-        if (!Maestro.settings().allowInventory.value) {
+        if (!Agent.settings().allowInventory.value) {
             return;
         }
         if (event.getType() == TickEvent.Type.OUT) {
@@ -100,15 +100,15 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     private boolean requestSwapWithHotBar(int inInventory, int inHotbar) {
         lastTickRequestedMove = new int[] {inInventory, inHotbar};
-        if (ticksSinceLastInventoryMove < Maestro.settings().ticksBetweenInventoryMoves.value) {
+        if (ticksSinceLastInventoryMove < Agent.settings().ticksBetweenInventoryMoves.value) {
             logDebug(
                     "Inventory move requested but delaying "
                             + ticksSinceLastInventoryMove
                             + " "
-                            + Maestro.settings().ticksBetweenInventoryMoves.value);
+                            + Agent.settings().ticksBetweenInventoryMoves.value);
             return false;
         }
-        if (Maestro.settings().inventoryMoveOnlyIfStationary.value
+        if (Agent.settings().inventoryMoveOnlyIfStationary.value
                 && !maestro.getInventoryPauserProcess().stationaryForInventoryMove()) {
             logDebug("Inventory move requested but delaying until stationary");
             return false;
@@ -128,7 +128,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     private int firstValidThrowaway() { // TODO offhand idk
         NonNullList<ItemStack> invy = ctx.player().getInventory().items;
         for (int i = 0; i < invy.size(); i++) {
-            if (Maestro.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
+            if (Agent.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
                 return i;
             }
         }
@@ -144,8 +144,8 @@ public final class InventoryBehavior extends Behavior implements Helper {
             if (stack.isEmpty()) {
                 continue;
             }
-            if (Maestro.settings().itemSaver.value
-                    && (stack.getDamageValue() + Maestro.settings().itemSaverThreshold.value)
+            if (Agent.settings().itemSaver.value
+                    && (stack.getDamageValue() + Agent.settings().itemSaverThreshold.value)
                             >= stack.getMaxDamage()
                     && stack.getMaxDamage() > 1) {
                 continue;
@@ -164,7 +164,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean hasGenericThrowaway() {
-        for (Item item : Maestro.settings().acceptableThrowawayItems.value) {
+        for (Item item : Agent.settings().acceptableThrowawayItems.value) {
             if (throwaway(false, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
@@ -218,7 +218,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
                                                 .equals(maybe.getBlock()))) {
             return true;
         }
-        for (Item item : Maestro.settings().acceptableThrowawayItems.value) {
+        for (Item item : Agent.settings().acceptableThrowawayItems.value) {
             if (throwaway(select, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
@@ -227,7 +227,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
-        return throwaway(select, desired, Maestro.settings().allowInventory.value);
+        return throwaway(select, desired, Agent.settings().allowInventory.value);
     }
 
     public boolean throwaway(

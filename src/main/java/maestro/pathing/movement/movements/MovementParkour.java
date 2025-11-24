@@ -2,8 +2,8 @@ package maestro.pathing.movement.movements;
 
 import java.util.HashSet;
 import java.util.Set;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.input.Input;
@@ -29,7 +29,7 @@ public class MovementParkour extends Movement {
     private final boolean ascend;
 
     private MovementParkour(
-            IMaestro maestro, BetterBlockPos src, int dist, Direction dir, boolean ascend) {
+            IAgent maestro, BetterBlockPos src, int dist, Direction dir, boolean ascend) {
         super(
                 maestro,
                 src,
@@ -288,8 +288,8 @@ public class MovementParkour extends Movement {
         } else if (!ctx.playerFeet().equals(src)) {
             if (ctx.playerFeet().equals(src.relative(direction))
                     || ctx.player().position().y - src.y > 0.0001) {
-                if (Maestro.settings().allowPlace.value // see PR #3775
-                        && ((Maestro) maestro).getInventoryBehavior().hasGenericThrowaway()
+                if (Agent.settings().allowPlace.value // see PR #3775
+                        && ((Agent) maestro).getInventoryBehavior().hasGenericThrowaway()
                         && !MovementHelper.canWalkOn(ctx, dest.below())
                         && !ctx.player().onGround()
                         && MovementHelper.attemptToPlaceABlock(

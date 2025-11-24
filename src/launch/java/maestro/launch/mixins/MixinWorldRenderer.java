@@ -2,7 +2,7 @@ package maestro.launch.mixins;
 
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.RenderEvent;
 import net.minecraft.client.Camera;
@@ -28,7 +28,7 @@ public class MixinWorldRenderer {
             final Matrix4f matrix4f,
             final Matrix4f matrix4f2,
             final CallbackInfo ci) {
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
             PoseStack poseStack = new PoseStack();
             poseStack.mulPose(matrix4f);
             maestro.getGameEventHandler()

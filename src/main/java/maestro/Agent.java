@@ -8,7 +8,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.Settings;
 import maestro.api.behavior.IBehavior;
@@ -29,7 +29,7 @@ import maestro.utils.PathingControlManager;
 import maestro.utils.player.MaestroPlayerContext;
 import net.minecraft.client.Minecraft;
 
-public class Maestro implements IMaestro {
+public class Agent implements IAgent {
 
     private static final ThreadPoolExecutor threadPool;
 
@@ -68,7 +68,7 @@ public class Maestro implements IMaestro {
 
     public BlockStateInterface bsi;
 
-    Maestro(Minecraft mc) {
+    Agent(Minecraft mc) {
         this.mc = mc;
         this.gameEventHandler = new GameEventHandler(this);
 
@@ -115,13 +115,13 @@ public class Maestro implements IMaestro {
         this.gameEventHandler.registerEventListener(behavior);
     }
 
-    public <T extends IBehavior> T registerBehavior(Function<Maestro, T> constructor) {
+    public <T extends IBehavior> T registerBehavior(Function<Agent, T> constructor) {
         final T behavior = constructor.apply(this);
         this.registerBehavior(behavior);
         return behavior;
     }
 
-    public <T extends IMaestroProcess> T registerProcess(Function<Maestro, T> constructor) {
+    public <T extends IMaestroProcess> T registerProcess(Function<Agent, T> constructor) {
         final T behavior = constructor.apply(this);
         this.pathingControlManager.registerProcess(behavior);
         return behavior;

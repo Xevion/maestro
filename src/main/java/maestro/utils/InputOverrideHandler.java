@@ -2,7 +2,7 @@ package maestro.utils;
 
 import java.util.HashMap;
 import java.util.Map;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.TickEvent;
 import maestro.api.utils.IInputOverrideHandler;
@@ -25,7 +25,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     private final BlockBreakHelper blockBreakHelper;
     private final BlockPlaceHelper blockPlaceHelper;
 
-    public InputOverrideHandler(Maestro maestro) {
+    public InputOverrideHandler(Agent maestro) {
         super(maestro);
         this.blockBreakHelper = new BlockBreakHelper(maestro.getPlayerContext());
         this.blockPlaceHelper = new BlockPlaceHelper(maestro.getPlayerContext());
@@ -104,7 +104,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         // if we are not primary (a bot) we should set the movementinput even when idle (not
         // pathing)
         return maestro.getPathingBehavior().isPathing()
-                || maestro != MaestroAPI.getProvider().getPrimaryMaestro();
+                || maestro != MaestroAPI.getProvider().getPrimaryAgent();
     }
 
     public BlockBreakHelper getBlockBreakHelper() {

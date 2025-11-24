@@ -2,7 +2,7 @@ package maestro.pathing.movement.movements;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.pathing.movement.CalculationContext;
@@ -17,7 +17,7 @@ public class MovementDownward extends Movement {
 
     private int numTicks = 0;
 
-    public MovementDownward(IMaestro maestro, BetterBlockPos start, BetterBlockPos end) {
+    public MovementDownward(IAgent maestro, BetterBlockPos start, BetterBlockPos end) {
         super(maestro, start, end, new BetterBlockPos[] {end});
     }
 

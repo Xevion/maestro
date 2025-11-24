@@ -1,7 +1,7 @@
 package maestro.process;
 
 import java.util.*;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.pathing.goals.*;
 import maestro.api.process.IGetToBlockProcess;
 import maestro.api.process.PathingCommand;
@@ -30,7 +30,7 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
     private int tickCount = 0;
     private int arrivalTickCount = 0;
 
-    public GetToBlockProcess(Maestro maestro) {
+    public GetToBlockProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -55,7 +55,7 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
             rescan(new ArrayList<>(), new GetToBlockCalculationContext(false));
         }
         if (knownLocations.isEmpty()) {
-            if (Maestro.settings().exploreForBlocks.value && !calcFailed) {
+            if (Agent.settings().exploreForBlocks.value && !calcFailed) {
                 return new PathingCommand(
                         new GoalRunAway(1, start) {
                             @Override
@@ -80,7 +80,7 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
                 new GoalComposite(
                         knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
-            if (Maestro.settings().blacklistClosestOnFailure.value) {
+            if (Agent.settings().blacklistClosestOnFailure.value) {
                 logDirect(
                         "Unable to find any path to "
                                 + gettingTo
@@ -95,11 +95,11 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
                 return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
         }
-        int mineGoalUpdateInterval = Maestro.settings().mineGoalUpdateInterval.value;
+        int mineGoalUpdateInterval = Agent.settings().mineGoalUpdateInterval.value;
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             List<BlockPos> current = new ArrayList<>(knownLocations);
             CalculationContext context = new GetToBlockCalculationContext(true);
-            Maestro.getExecutor().execute(() -> rescan(current, context));
+            Agent.getExecutor().execute(() -> rescan(current, context));
         }
         if (goal.isInGoal(ctx.playerFeet())
                 && goal.isInGoal(maestro.getPathingBehavior().pathStart())
@@ -239,14 +239,14 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
     }
 
     private boolean walkIntoInsteadOfAdjacent(Block block) {
-        if (!Maestro.settings().enterPortal.value) {
+        if (!Agent.settings().enterPortal.value) {
             return false;
         }
         return block == Blocks.NETHER_PORTAL;
     }
 
     private boolean rightClickOnArrival(Block block) {
-        if (!Maestro.settings().rightClickContainerOnArrival.value) {
+        if (!Agent.settings().rightClickContainerOnArrival.value) {
             return false;
         }
         return block == Blocks.CRAFTING_TABLE

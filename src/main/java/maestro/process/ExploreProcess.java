@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.cache.ICachedWorld;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalComposite;
@@ -31,7 +31,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
 
     private int distanceCompleted;
 
-    public ExploreProcess(Maestro maestro) {
+    public ExploreProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -65,16 +65,16 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (calcFailed) {
             logDirect("Failed");
-            if (Maestro.settings().notificationOnExploreFinished.value) {
+            if (Agent.settings().notificationOnExploreFinished.value) {
                 logNotification("Exploration failed", true);
             }
             onLostControl();
             return null;
         }
         IChunkFilter filter = calcFilter();
-        if (!Maestro.settings().disableCompletionCheck.value && filter.countRemain() == 0) {
+        if (!Agent.settings().disableCompletionCheck.value && filter.countRemain() == 0) {
             logDirect("Explored all chunks");
-            if (Maestro.settings().notificationOnExploreFinished.value) {
+            if (Agent.settings().notificationOnExploreFinished.value) {
                 logNotification("Explored all chunks", false);
             }
             onLostControl();
@@ -94,9 +94,9 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
         int chunkX = center.getX() >> 4;
         int chunkZ = center.getZ() >> 4;
         int count =
-                Math.min(filter.countRemain(), Maestro.settings().exploreChunkSetMinimumSize.value);
+                Math.min(filter.countRemain(), Agent.settings().exploreChunkSetMinimumSize.value);
         List<BlockPos> centers = new ArrayList<>();
-        int renderDistance = Maestro.settings().worldExploringChunkOffset.value;
+        int renderDistance = Agent.settings().worldExploringChunkOffset.value;
         for (int dist = distanceCompleted; ; dist++) {
             for (int dx = -dist; dx <= dist; dx++) {
                 int zval = dist - Math.abs(dx);
@@ -138,7 +138,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
                 count =
                         Math.min(
                                 filter.countRemain(),
-                                Maestro.settings().exploreChunkSetMinimumSize.value);
+                                Agent.settings().exploreChunkSetMinimumSize.value);
             }
             if (centers.size() >= count) {
                 return centers.stream()
@@ -154,7 +154,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
     }
 
     private static Goal createGoal(int x, int z) {
-        if (Maestro.settings().exploreMaintainY.value == -1) {
+        if (Agent.settings().exploreMaintainY.value == -1) {
             return new GoalXZ(x, z);
         }
         // don't use a goalblock because we still want isInGoal to return true if X and Z are
@@ -165,7 +165,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
             @Override
             public double heuristic(int x, int y, int z) {
                 return super.heuristic(x, y, z)
-                        + GoalYLevel.calculate(Maestro.settings().exploreMaintainY.value, y);
+                        + GoalYLevel.calculate(Agent.settings().exploreMaintainY.value, y);
             }
         };
     }
@@ -196,7 +196,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
                 return Status.EXPLORED;
             }
             if (!((CachedWorld) cache).regionLoaded(centerX, centerZ)) {
-                Maestro.getExecutor()
+                Agent.getExecutor()
                         .execute(
                                 () -> {
                                     ((CachedWorld) cache)
@@ -266,7 +266,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
                 if (bcc.isAlreadyExplored(pos.x, pos.z) != Status.EXPLORED) {
                     // either waiting for it or dont have it at all
                     countRemain++;
-                    if (countRemain >= Maestro.settings().exploreChunkSetMinimumSize.value) {
+                    if (countRemain >= Agent.settings().exploreChunkSetMinimumSize.value) {
                         return countRemain;
                     }
                 }

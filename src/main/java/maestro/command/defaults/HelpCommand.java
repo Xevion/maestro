@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.IArgConsumer;
@@ -22,7 +22,7 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class HelpCommand extends Command {
 
-    public HelpCommand(IMaestro maestro) {
+    public HelpCommand(IAgent maestro) {
         super(maestro, "help", "?");
     }
 

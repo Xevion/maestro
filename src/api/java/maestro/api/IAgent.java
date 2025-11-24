@@ -11,7 +11,7 @@ import maestro.api.selection.ISelectionManager;
 import maestro.api.utils.IInputOverrideHandler;
 import maestro.api.utils.IPlayerContext;
 
-public interface IMaestro {
+public interface IAgent {
 
     /**
      * @return The {@link IPathingBehavior} instance
@@ -80,7 +80,7 @@ public interface IMaestro {
     IWorldProvider getWorldProvider();
 
     /**
-     * Returns the {@link IPathingControlManager} for this {@link IMaestro} instance, which is
+     * Returns the {@link IPathingControlManager} for this {@link IAgent} instance, which is
      * responsible for managing the {@link IMaestroProcess}es which control the {@link
      * IPathingBehavior} state.
      *

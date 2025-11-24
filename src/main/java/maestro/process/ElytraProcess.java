@@ -4,8 +4,8 @@ import static maestro.api.pathing.movement.ActionCosts.COST_INF;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.*;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.event.events.*;
 import maestro.api.event.events.type.EventState;
 import maestro.api.event.listener.AbstractGameEventListener;
@@ -62,12 +62,12 @@ public class ElytraProcess extends MaestroProcessHelper
         destroyBehaviorAsync();
     }
 
-    private ElytraProcess(Maestro maestro) {
+    private ElytraProcess(Agent maestro) {
         super(maestro);
         maestro.getGameEventHandler().registerEventListener(this);
     }
 
-    public static IElytraProcess create(final Maestro maestro) {
+    public static IElytraProcess create(final Agent maestro) {
         return NetherPathfinderContext.isSupported()
                 ? new ElytraProcess(maestro)
                 : new NullElytraProcess(maestro);
@@ -95,14 +95,14 @@ public class ElytraProcess extends MaestroProcessHelper
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        final long seedSetting = Maestro.settings().elytraNetherSeed.value;
+        final long seedSetting = Agent.settings().elytraNetherSeed.value;
         if (seedSetting != this.behavior.context.getSeed()) {
             logDirect("Nether seed changed, recalculating path");
             this.resetState();
         }
-        if (predictingTerrain != Maestro.settings().elytraPredictTerrain.value) {
+        if (predictingTerrain != Agent.settings().elytraPredictTerrain.value) {
             logDirect("elytraPredictTerrain setting changed, recalculating path");
-            predictingTerrain = Maestro.settings().elytraPredictTerrain.value;
+            predictingTerrain = Agent.settings().elytraPredictTerrain.value;
             this.resetState();
         }
 
@@ -116,7 +116,7 @@ public class ElytraProcess extends MaestroProcessHelper
 
         boolean safetyLanding = false;
         if (ctx.player().isFallFlying() && shouldLandForSafety()) {
-            if (Maestro.settings().elytraAllowEmergencyLand.value) {
+            if (Agent.settings().elytraAllowEmergencyLand.value) {
                 logDirect("Emergency landing - almost out of elytra durability or fireworks");
                 safetyLanding = true;
             } else {
@@ -145,10 +145,10 @@ public class ElytraProcess extends MaestroProcessHelper
             }
 
             if (last != null && ctx.player().position().distanceToSqr(last.getCenter()) < 1) {
-                if (Maestro.settings().notificationOnPathComplete.value && !reachedGoal) {
+                if (Agent.settings().notificationOnPathComplete.value && !reachedGoal) {
                     logNotification("Pathing complete", false);
                 }
-                if (Maestro.settings().disconnectOnArrival.value && !reachedGoal) {
+                if (Agent.settings().disconnectOnArrival.value && !reachedGoal) {
                     // don't be active when the user logs back in
                     this.onLostControl();
                     ctx.world().disconnect();
@@ -206,7 +206,7 @@ public class ElytraProcess extends MaestroProcessHelper
 
         if (this.state == State.FLYING || this.state == State.START_FLYING) {
             this.state =
-                    ctx.player().onGround() && Maestro.settings().elytraAutoJump.value
+                    ctx.player().onGround() && Agent.settings().elytraAutoJump.value
                             ? State.LOCATE_JUMP
                             : State.START_FLYING;
         }
@@ -308,7 +308,7 @@ public class ElytraProcess extends MaestroProcessHelper
         ElytraBehavior behavior = this.behavior;
         if (behavior != null) {
             this.behavior = null;
-            Maestro.getExecutor().execute(behavior::destroy);
+            Agent.getExecutor().execute(behavior::destroy);
         }
     }
 
@@ -344,7 +344,7 @@ public class ElytraProcess extends MaestroProcessHelper
             return;
         }
         this.onLostControl();
-        this.predictingTerrain = Maestro.settings().elytraPredictTerrain.value;
+        this.predictingTerrain = Agent.settings().elytraPredictTerrain.value;
         this.behavior = new ElytraBehavior(this.maestro, this, destination, appendDestination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
@@ -378,7 +378,7 @@ public class ElytraProcess extends MaestroProcessHelper
         ItemStack chest = ctx.player().getItemBySlot(EquipmentSlot.CHEST);
         if (chest.getItem() != Items.ELYTRA
                 || chest.getMaxDamage() - chest.getDamageValue()
-                        < Maestro.settings().elytraMinimumDurability.value) {
+                        < Agent.settings().elytraMinimumDurability.value) {
             // elytrabehavior replaces when durability <= minimumDurability, so if durability <
             // minimumDurability then we can reasonably assume that the elytra will soon be broken
             // without replacement
@@ -392,7 +392,7 @@ public class ElytraProcess extends MaestroProcessHelper
                 qty += inv.get(i).getCount();
             }
         }
-        return qty <= Maestro.settings().elytraMinFireworksBeforeLanding.value;
+        return qty <= Agent.settings().elytraMinFireworksBeforeLanding.value;
     }
 
     @Override
@@ -459,7 +459,7 @@ public class ElytraProcess extends MaestroProcessHelper
     /** Custom calculation context which makes the player fall into lava */
     public static final class WalkOffCalculationContext extends CalculationContext {
 
-        public WalkOffCalculationContext(IMaestro maestro) {
+        public WalkOffCalculationContext(IAgent maestro) {
             super(maestro, true);
             this.allowFallIntoLava = true;
             this.minFallHeight = 8;
@@ -490,7 +490,7 @@ public class ElytraProcess extends MaestroProcessHelper
         return block == Blocks.NETHERRACK
                 || block == Blocks.GRAVEL
                 || (block == Blocks.NETHER_BRICKS
-                        && Maestro.settings().elytraAllowLandOnNetherFortress.value);
+                        && Agent.settings().elytraAllowLandOnNetherFortress.value);
     }
 
     private boolean isSafeBlock(BlockPos pos) {

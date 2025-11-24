@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.event.events.BlockChangeEvent;
 import maestro.utils.accessor.IPalettedContainer;
 import net.minecraft.core.BlockPos;
@@ -110,7 +110,7 @@ public final class NetherPathfinderContext {
                                     true,
                                     false,
                                     10000,
-                                    !Maestro.settings().elytraPredictTerrain.value);
+                                    !Agent.settings().elytraPredictTerrain.value);
                     if (segment == null) {
                         throw new PathCalculationException("Path calculation failed");
                     }

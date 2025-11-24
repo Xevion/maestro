@@ -1,7 +1,7 @@
 package maestro.utils;
 
 import java.util.*;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.event.events.TickEvent;
 import maestro.api.event.listener.AbstractGameEventListener;
 import maestro.api.pathing.calc.IPathingControlManager;
@@ -15,14 +15,14 @@ import net.minecraft.core.BlockPos;
 
 public class PathingControlManager implements IPathingControlManager {
 
-    private final Maestro maestro;
+    private final Agent maestro;
     private final HashSet<IMaestroProcess> processes; // unGh
     private final List<IMaestroProcess> active;
     private IMaestroProcess inControlLastTick;
     private IMaestroProcess inControlThisTick;
     private PathingCommand command;
 
-    public PathingControlManager(Maestro maestro) {
+    public PathingControlManager(Agent maestro) {
         this.maestro = maestro;
         this.processes = new HashSet<>();
         this.active = new ArrayList<>();
@@ -138,7 +138,7 @@ public class PathingControlManager implements IPathingControlManager {
                 p.secretInternalSetGoalAndPath(command);
                 break;
             case REVALIDATE_GOAL_AND_PATH:
-                if (Maestro.settings().cancelOnGoalInvalidation.value
+                if (Agent.settings().cancelOnGoalInvalidation.value
                         && (command.goal == null || revalidateGoal(command.goal))) {
                     p.softCancelIfSafe();
                 }

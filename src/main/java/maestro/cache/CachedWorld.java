@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.cache.ICachedWorld;
 import maestro.api.cache.IWorldData;
@@ -56,8 +56,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
         }
         this.directory = directory.toString();
         this.dimension = dimension;
-        Maestro.getExecutor().execute(new PackerThread());
-        Maestro.getExecutor()
+        Agent.getExecutor().execute(new PackerThread());
+        Agent.getExecutor()
                 .execute(
                         () -> {
                             try {
@@ -135,7 +135,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     @Override
     public void save() {
-        if (!Maestro.settings().chunkCaching.value) {
+        if (!Agent.settings().chunkCaching.value) {
             allRegions()
                     .forEach(
                             region -> {
@@ -161,7 +161,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     /** Delete regions that are too far from the player */
     private synchronized void prune() {
-        if (!Maestro.settings().pruneRegionsFromRAM.value) {
+        if (!Agent.settings().pruneRegionsFromRAM.value) {
             return;
         }
         BlockPos pruneCenter = guessPosition();
@@ -184,7 +184,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * recently modified chunk
      */
     private BlockPos guessPosition() {
-        for (IMaestro imaestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (IAgent imaestro : MaestroAPI.getProvider().getAllMaestros()) {
             IWorldData data = imaestro.getWorldProvider().getCurrentWorld();
             if (data != null
                     && data.getCachedWorld() == this
@@ -294,7 +294,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
                 try {
                     ChunkPos pos = toPackQueue.take();
                     LevelChunk chunk = toPackMap.remove(pos);
-                    if (toPackQueue.size() > Maestro.settings().chunkPackerQueueMaxSize.value) {
+                    if (toPackQueue.size() > Agent.settings().chunkPackerQueueMaxSize.value) {
                         continue;
                     }
                     CachedChunk cached = ChunkPacker.pack(chunk);

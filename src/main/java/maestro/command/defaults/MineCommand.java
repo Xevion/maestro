@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -14,7 +14,7 @@ import maestro.api.utils.BlockOptionalMeta;
 
 public class MineCommand extends Command {
 
-    public MineCommand(IMaestro maestro) {
+    public MineCommand(IAgent maestro) {
         super(maestro, "mine");
     }
 

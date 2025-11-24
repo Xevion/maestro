@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.behavior.IPathingBehavior;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -14,7 +14,7 @@ import maestro.api.process.IMaestroProcess;
 
 public class ETACommand extends Command {
 
-    public ETACommand(IMaestro maestro) {
+    public ETACommand(IAgent maestro) {
         super(maestro, "eta");
     }
 

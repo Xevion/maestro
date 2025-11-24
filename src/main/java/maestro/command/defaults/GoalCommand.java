@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeCoordinate;
@@ -16,7 +16,7 @@ import maestro.api.utils.BetterBlockPos;
 
 public class GoalCommand extends Command {
 
-    public GoalCommand(IMaestro maestro) {
+    public GoalCommand(IAgent maestro) {
         super(maestro, "goal");
     }
 

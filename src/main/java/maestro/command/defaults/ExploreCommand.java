@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeGoalXZ;
@@ -12,7 +12,7 @@ import maestro.api.pathing.goals.GoalXZ;
 
 public class ExploreCommand extends Command {
 
-    public ExploreCommand(IMaestro maestro) {
+    public ExploreCommand(IAgent maestro) {
         super(maestro, "explore");
     }
 

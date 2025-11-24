@@ -2,7 +2,7 @@ package maestro.process;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
 import maestro.api.utils.input.Input;
@@ -20,7 +20,7 @@ public final class BackfillProcess extends MaestroProcessHelper {
 
     public HashMap<BlockPos, BlockState> blocksToReplace = new HashMap<>();
 
-    public BackfillProcess(Maestro maestro) {
+    public BackfillProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -29,12 +29,12 @@ public final class BackfillProcess extends MaestroProcessHelper {
         if (ctx.player() == null || ctx.world() == null) {
             return false;
         }
-        if (!Maestro.settings().backfill.value) {
+        if (!Agent.settings().backfill.value) {
             return false;
         }
-        if (Maestro.settings().allowParkour.value) {
+        if (Agent.settings().allowParkour.value) {
             logDirect("Backfill cannot be used with allowParkour true");
-            Maestro.settings().backfill.value = false;
+            Agent.settings().backfill.value = false;
             return false;
         }
         for (BlockPos pos : new ArrayList<>(blocksToReplace.keySet())) {

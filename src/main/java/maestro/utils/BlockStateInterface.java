@@ -1,6 +1,6 @@
 package maestro.utils;
 
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.utils.IPlayerContext;
 import maestro.cache.CachedRegion;
 import maestro.cache.WorldData;
@@ -51,7 +51,7 @@ public class BlockStateInterface {
         } else {
             this.provider = (ClientChunkCache) world.getChunkSource();
         }
-        this.useTheRealWorld = !Maestro.settings().pathThroughCachedOnly.value;
+        this.useTheRealWorld = !Agent.settings().pathThroughCachedOnly.value;
         if (!ctx.minecraft().isSameThread()) {
             throw new IllegalStateException(
                     "BlockStateInterface must be constructed on the main thread");

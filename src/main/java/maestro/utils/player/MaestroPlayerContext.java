@@ -1,6 +1,6 @@
 package maestro.utils.player;
 
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.cache.IWorldData;
 import maestro.api.utils.*;
 import net.minecraft.client.Minecraft;
@@ -17,11 +17,11 @@ import net.minecraft.world.phys.HitResult;
  */
 public final class MaestroPlayerContext implements IPlayerContext {
 
-    private final Maestro maestro;
+    private final Agent maestro;
     private final Minecraft mc;
     private final IPlayerController playerController;
 
-    public MaestroPlayerContext(Maestro maestro, Minecraft mc) {
+    public MaestroPlayerContext(Agent maestro, Minecraft mc) {
         this.maestro = maestro;
         this.mc = mc;
         this.playerController = new MaestroPlayerController(mc);

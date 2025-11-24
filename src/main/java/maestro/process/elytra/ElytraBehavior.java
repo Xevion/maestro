@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.function.UnaryOperator;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.Settings;
 import maestro.api.behavior.look.IAimProcessor;
 import maestro.api.behavior.look.ITickableAimProcessor;
@@ -49,7 +49,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public final class ElytraBehavior implements Helper {
-    private final Maestro maestro;
+    private final Agent maestro;
     private final IPlayerContext ctx;
 
     // Render stuff
@@ -102,7 +102,7 @@ public final class ElytraBehavior implements Helper {
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
     public ElytraBehavior(
-            Maestro maestro,
+            Agent maestro,
             ElytraProcess process,
             BlockPos destination,
             boolean appendDestination) {
@@ -117,7 +117,7 @@ public final class ElytraBehavior implements Helper {
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
 
-        this.context = new NetherPathfinderContext(Maestro.settings().elytraNetherSeed.value);
+        this.context = new NetherPathfinderContext(Agent.settings().elytraNetherSeed.value);
         this.boi = new BlockStateOctreeInterface(context);
     }
 
@@ -476,7 +476,7 @@ public final class ElytraBehavior implements Helper {
 
     public void onRenderPass(RenderEvent event) {
 
-        final Settings settings = Maestro.settings();
+        final Settings settings = Agent.settings();
         if (this.visiblePath != null) {
             PathRenderer.drawPath(
                     event.getModelViewStack(), this.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
@@ -501,7 +501,7 @@ public final class ElytraBehavior implements Helper {
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
-        if (!this.blockedLines.isEmpty() && Maestro.settings().elytraRenderRaytraces.value) {
+        if (!this.blockedLines.isEmpty() && Agent.settings().elytraRenderRaytraces.value) {
             BufferBuilder bufferBuilder =
                     IRenderer.startLines(
                             Color.BLUE,
@@ -513,7 +513,7 @@ public final class ElytraBehavior implements Helper {
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
-        if (this.simulationLine != null && Maestro.settings().elytraRenderSimulation.value) {
+        if (this.simulationLine != null && Agent.settings().elytraRenderSimulation.value) {
             BufferBuilder bufferBuilder =
                     IRenderer.startLines(
                             new Color(0x36CCDC),
@@ -546,13 +546,13 @@ public final class ElytraBehavior implements Helper {
                     .execute(
                             () -> {
                                 this.remainingSetBackTicks =
-                                        Maestro.settings().elytraFireworkSetbackUseDelay.value;
+                                        Agent.settings().elytraFireworkSetbackUseDelay.value;
                             });
         }
     }
 
     public void pathTo() {
-        if (!Maestro.settings().elytraAutoJump.value || ctx.player().isFallFlying()) {
+        if (!Agent.settings().elytraAutoJump.value || ctx.player().isFallFlying()) {
             this.pathManager.pathToDestination();
         }
     }
@@ -600,11 +600,11 @@ public final class ElytraBehavior implements Helper {
         }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000
-                > Maestro.settings().elytraTimeBetweenCacheCullSecs.value) {
+                > Agent.settings().elytraTimeBetweenCacheCullSecs.value) {
             this.context.queueCacheCulling(
                     ctx.player().chunkPosition().x,
                     ctx.player().chunkPosition().z,
-                    Maestro.settings().elytraCacheCullDistance.value,
+                    Agent.settings().elytraCacheCullDistance.value,
                     this.boi);
             this.timeLastCacheCull = now;
         }
@@ -822,7 +822,7 @@ public final class ElytraBehavior implements Helper {
                         }
                     }
 
-                    final double minAvoidance = Maestro.settings().elytraMinimumAvoidance.value;
+                    final double minAvoidance = Agent.settings().elytraMinimumAvoidance.value;
                     final Double growth =
                             relaxation == 2
                                     ? null
@@ -876,7 +876,7 @@ public final class ElytraBehavior implements Helper {
             return;
         }
         final boolean useOnDescend =
-                !Maestro.settings().elytraConserveFireworks.value
+                !Agent.settings().elytraConserveFireworks.value
                         || ctx.player().position().y < goingTo.y + 5;
         final double currentSpeed =
                 new Vec3(
@@ -889,7 +889,7 @@ public final class ElytraBehavior implements Helper {
                                 ctx.player().getDeltaMovement().z)
                         .lengthSqr();
 
-        final double elytraFireworkSpeed = Maestro.settings().elytraFireworkSpeed.value;
+        final double elytraFireworkSpeed = Agent.settings().elytraFireworkSpeed.value;
         if (this.remainingFireworkTicks <= 0
                 && (forceUseFirework
                         || (!isBoosted
@@ -1168,7 +1168,7 @@ public final class ElytraBehavior implements Helper {
                 };
 
         // Use non-batching method without early failure
-        if (Maestro.settings().elytraRenderHitboxRaytraces.value) {
+        if (Agent.settings().elytraRenderHitboxRaytraces.value) {
             boolean clear = true;
             for (int i = 0; i < 8; i++) {
                 final Vec3 s = new Vec3(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
@@ -1203,7 +1203,7 @@ public final class ElytraBehavior implements Helper {
                             == HitResult.Type.MISS;
         }
 
-        if (Maestro.settings().elytraRenderRaytraces.value) {
+        if (Agent.settings().elytraRenderRaytraces.value) {
             (clear ? this.clearLines : this.blockedLines).add(new Pair<>(start, dest));
         }
         return clear;
@@ -1214,11 +1214,11 @@ public final class ElytraBehavior implements Helper {
         final float minPitch =
                 desperate
                         ? -90
-                        : Math.max(goodPitch - Maestro.settings().elytraPitchRange.value, -89);
+                        : Math.max(goodPitch - Agent.settings().elytraPitchRange.value, -89);
         final float maxPitch =
                 desperate
                         ? 90
-                        : Math.min(goodPitch + Maestro.settings().elytraPitchRange.value, 89);
+                        : Math.min(goodPitch + Agent.settings().elytraPitchRange.value, 89);
 
         final FloatArrayList pitchValues = new FloatArrayList(fastCeil(maxPitch - minPitch) + 1);
         for (float pitch = goodPitch; pitch <= maxPitch; pitch++) {
@@ -1290,7 +1290,7 @@ public final class ElytraBehavior implements Helper {
                         ? 3
                         : context.boost.isBoosted()
                                 ? Math.max(5, context.boost.getGuaranteedBoostTicks())
-                                : Maestro.settings().elytraSimulationTicks.value;
+                                : Agent.settings().elytraSimulationTicks.value;
         tests.add(new IntTriple(ticks, context.boost.isBoosted() ? ticks : 0, 0));
 
         final Optional<PitchResult> result =
@@ -1508,7 +1508,7 @@ public final class ElytraBehavior implements Helper {
             Runnable r = invTransactionQueue.poll();
             if (r != null) {
                 r.run();
-                invTickCountdown = Maestro.settings().ticksBetweenInventoryMoves.value;
+                invTickCountdown = Agent.settings().ticksBetweenInventoryMoves.value;
             }
         }
         if (invTickCountdown > 0) invTickCountdown--;
@@ -1527,7 +1527,7 @@ public final class ElytraBehavior implements Helper {
             ItemStack slot = invy.get(i);
             if (slot.getItem() == Items.ELYTRA
                     && (slot.getMaxDamage() - slot.getDamageValue())
-                            > Maestro.settings().elytraMinimumDurability.value) {
+                            > Agent.settings().elytraMinimumDurability.value) {
                 return i;
             }
         }
@@ -1535,14 +1535,14 @@ public final class ElytraBehavior implements Helper {
     }
 
     private void trySwapElytra() {
-        if (!Maestro.settings().elytraAutoSwap.value || !invTransactionQueue.isEmpty()) {
+        if (!Agent.settings().elytraAutoSwap.value || !invTransactionQueue.isEmpty()) {
             return;
         }
 
         ItemStack chest = ctx.player().getItemBySlot(EquipmentSlot.CHEST);
         if (chest.getItem() != Items.ELYTRA
                 || chest.getMaxDamage() - chest.getDamageValue()
-                        > Maestro.settings().elytraMinimumDurability.value) {
+                        > Agent.settings().elytraMinimumDurability.value) {
             return;
         }
 
@@ -1558,7 +1558,7 @@ public final class ElytraBehavior implements Helper {
     }
 
     void logVerbose(String message) {
-        if (Maestro.settings().elytraChatSpam.value) {
+        if (Agent.settings().elytraChatSpam.value) {
             logDebug(message);
         }
     }

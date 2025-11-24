@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.Settings;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -29,7 +29,7 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class SetCommand extends Command {
 
-    public SetCommand(IMaestro maestro) {
+    public SetCommand(IAgent maestro) {
         super(maestro, "set", "setting", "settings");
     }
 
@@ -37,7 +37,7 @@ public class SetCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         String arg = args.hasAny() ? args.getString().toLowerCase(Locale.US) : "list";
         if (Arrays.asList("s", "save").contains(arg)) {
-            SettingsUtil.save(Maestro.settings());
+            SettingsUtil.save(Agent.settings());
             logDirect("Settings saved");
             return;
         }
@@ -47,9 +47,9 @@ public class SetCommand extends Command {
                 file = args.getString();
             }
             // reset to defaults
-            SettingsUtil.modifiedSettings(Maestro.settings()).forEach(Settings.Setting::reset);
+            SettingsUtil.modifiedSettings(Agent.settings()).forEach(Settings.Setting::reset);
             // then load from disk
-            SettingsUtil.readAndApply(Maestro.settings(), file);
+            SettingsUtil.readAndApply(Agent.settings(), file);
             logDirect("Settings reloaded from " + file);
             return;
         }
@@ -64,8 +64,8 @@ public class SetCommand extends Command {
             args.requireMax(1);
             List<? extends Settings.Setting> toPaginate =
                     (viewModified
-                                    ? SettingsUtil.modifiedSettings(Maestro.settings())
-                                    : Maestro.settings().allSettings)
+                                    ? SettingsUtil.modifiedSettings(Agent.settings())
+                                    : Agent.settings().allSettings)
                             .stream()
                                     .filter(s -> !s.isJavaOnly())
                                     .filter(
@@ -109,7 +109,7 @@ public class SetCommand extends Command {
                                 String.format(
                                         "\n\nDefault Value:\n%s", settingDefaultToString(setting)));
                         String commandSuggestion =
-                                Maestro.settings().prefix.value
+                                Agent.settings().prefix.value
                                         + String.format("set %s ", setting.getName());
                         MutableComponent component = Component.literal(setting.getName());
                         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
@@ -144,9 +144,9 @@ public class SetCommand extends Command {
                                 + " to see what will be reset.");
                 logDirect("Specify a setting name instead of 'all' to only reset one setting");
             } else if (args.peekString().equalsIgnoreCase("all")) {
-                SettingsUtil.modifiedSettings(Maestro.settings()).forEach(Settings.Setting::reset);
+                SettingsUtil.modifiedSettings(Agent.settings()).forEach(Settings.Setting::reset);
                 logDirect("All settings have been reset to their default values");
-                SettingsUtil.save(Maestro.settings());
+                SettingsUtil.save(Agent.settings());
                 return;
             }
         }
@@ -155,7 +155,7 @@ public class SetCommand extends Command {
         }
         String settingName = doingSomething ? args.getString() : arg;
         Settings.Setting<?> setting =
-                Maestro.settings().allSettings.stream()
+                Agent.settings().allSettings.stream()
                         .filter(s -> s.getName().equalsIgnoreCase(settingName))
                         .findFirst()
                         .orElse(null);
@@ -191,7 +191,7 @@ public class SetCommand extends Command {
             } else {
                 String newValue = args.getString();
                 try {
-                    SettingsUtil.parseAndApply(Maestro.settings(), arg, newValue);
+                    SettingsUtil.parseAndApply(Agent.settings(), arg, newValue);
                 } catch (Throwable t) {
                     t.printStackTrace();
                     throw new CommandInvalidTypeException(args.consumed(), "a valid value", t);
@@ -226,10 +226,10 @@ public class SetCommand extends Command {
             logDirect(oldValueComponent);
             if ((setting.getName().equals("chatControl")
                             && !(Boolean) setting.value
-                            && !Maestro.settings().chatControlAnyway.value)
+                            && !Agent.settings().chatControlAnyway.value)
                     || setting.getName().equals("chatControlAnyway")
                             && !(Boolean) setting.value
-                            && !Maestro.settings().chatControl.value) {
+                            && !Agent.settings().chatControl.value) {
                 logDirect(
                         "Warning: Chat commands will no longer work. If you want to revert this"
                                 + " change, use prefix control (if enabled) or click the old value"
@@ -243,7 +243,7 @@ public class SetCommand extends Command {
                         ChatFormatting.RED);
             }
         }
-        SettingsUtil.save(Maestro.settings());
+        SettingsUtil.save(Agent.settings());
     }
 
     @Override
@@ -273,7 +273,7 @@ public class SetCommand extends Command {
                                     .toFile());
                 }
                 Settings.Setting<?> setting =
-                        Maestro.settings().byLowerName.get(arg.toLowerCase(Locale.US));
+                        Agent.settings().byLowerName.get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();

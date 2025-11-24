@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
@@ -82,7 +82,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
                     Blocks.BAMBOO.asItem(),
                     Blocks.CACTUS.asItem());
 
-    public FarmProcess(Maestro maestro) {
+    public FarmProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -115,7 +115,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
         SUGARCANE(Blocks.SUGAR_CANE, null) {
             @Override
             public boolean readyToHarvest(Level world, BlockPos pos, BlockState state) {
-                if (Maestro.settings().replantCrops.value) {
+                if (Agent.settings().replantCrops.value) {
                     return world.getBlockState(pos.below()).getBlock() instanceof SugarCaneBlock;
                 }
                 return true;
@@ -124,7 +124,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
         BAMBOO(Blocks.BAMBOO, null) {
             @Override
             public boolean readyToHarvest(Level world, BlockPos pos, BlockState state) {
-                if (Maestro.settings().replantCrops.value) {
+                if (Agent.settings().replantCrops.value) {
                     return world.getBlockState(pos.below()).getBlock() instanceof BambooStalkBlock;
                 }
                 return true;
@@ -133,7 +133,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
         CACTUS(Blocks.CACTUS, null) {
             @Override
             public boolean readyToHarvest(Level world, BlockPos pos, BlockState state) {
-                if (Maestro.settings().replantCrops.value) {
+                if (Agent.settings().replantCrops.value) {
                     return world.getBlockState(pos.below()).getBlock() instanceof CactusBlock;
                 }
                 return true;
@@ -184,21 +184,21 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (Maestro.settings().mineGoalUpdateInterval.value != 0
-                && tickCount++ % Maestro.settings().mineGoalUpdateInterval.value == 0) {
+        if (Agent.settings().mineGoalUpdateInterval.value != 0
+                && tickCount++ % Agent.settings().mineGoalUpdateInterval.value == 0) {
             ArrayList<Block> scan = new ArrayList<>();
             for (Harvest harvest : Harvest.values()) {
                 scan.add(harvest.block);
             }
-            if (Maestro.settings().replantCrops.value) {
+            if (Agent.settings().replantCrops.value) {
                 scan.add(Blocks.FARMLAND);
                 scan.add(Blocks.JUNGLE_LOG);
-                if (Maestro.settings().replantNetherWart.value) {
+                if (Agent.settings().replantNetherWart.value) {
                     scan.add(Blocks.SOUL_SAND);
                 }
             }
 
-            Maestro.getExecutor()
+            Agent.getExecutor()
                     .execute(
                             () ->
                                     locations =
@@ -207,7 +207,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
                                                     .scanChunkRadius(
                                                             ctx,
                                                             scan,
-                                                            Maestro.settings()
+                                                            Agent.settings()
                                                                     .farmMaxScanSize
                                                                     .value,
                                                             10,
@@ -363,7 +363,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
 
         if (calcFailed) {
             logDirect("Farm failed");
-            if (Maestro.settings().notificationOnFarmFail.value) {
+            if (Agent.settings().notificationOnFarmFail.value) {
                 logNotification("Farm failed", true);
             }
             onLostControl();
@@ -414,7 +414,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
         }
         if (goalz.isEmpty()) {
             logDirect("Farm failed");
-            if (Maestro.settings().notificationOnFarmFail.value) {
+            if (Agent.settings().notificationOnFarmFail.value) {
                 logNotification("Farm failed", true);
             }
             onLostControl();

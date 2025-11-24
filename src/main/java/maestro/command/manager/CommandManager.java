@@ -3,8 +3,8 @@ package maestro.command.manager;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.exception.CommandException;
@@ -27,15 +27,15 @@ import net.minecraft.util.Tuple;
 public class CommandManager implements ICommandManager {
 
     private final Registry<ICommand> registry = new Registry<>();
-    private final Maestro maestro;
+    private final Agent maestro;
 
-    public CommandManager(Maestro maestro) {
+    public CommandManager(Agent maestro) {
         this.maestro = maestro;
         DefaultCommands.createAll(maestro).forEach(this.registry::register);
     }
 
     @Override
-    public IMaestro getMaestro() {
+    public IAgent getMaestro() {
         return this.maestro;
     }
 

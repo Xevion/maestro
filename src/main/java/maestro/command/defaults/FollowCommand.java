@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import maestro.KeepName;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.EntityClassById;
@@ -22,7 +22,7 @@ import net.minecraft.world.entity.player.Player;
 
 public class FollowCommand extends Command {
 
-    public FollowCommand(IMaestro maestro) {
+    public FollowCommand(IAgent maestro) {
         super(maestro, "follow");
     }
 

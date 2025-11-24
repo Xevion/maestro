@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.cache.IWorldProvider;
 import maestro.api.utils.IPlayerContext;
 import net.minecraft.client.multiplayer.ServerData;
@@ -21,7 +21,7 @@ public class WorldProvider implements IWorldProvider {
 
     private static final Map<Path, WorldData> worldCache = new HashMap<>();
 
-    private final Maestro maestro;
+    private final Agent maestro;
     private final IPlayerContext ctx;
     private WorldData currentWorld;
 
@@ -32,7 +32,7 @@ public class WorldProvider implements IWorldProvider {
      */
     private Level mcWorld;
 
-    public WorldProvider(Maestro maestro) {
+    public WorldProvider(Agent maestro) {
         this.maestro = maestro;
         this.ctx = maestro.getPlayerContext();
     }

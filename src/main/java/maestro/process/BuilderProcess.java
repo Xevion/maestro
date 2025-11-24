@@ -9,7 +9,7 @@ import java.io.FileInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.pathing.goals.GoalComposite;
@@ -95,7 +95,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
     private List<BlockState> approxPlaceable;
     public int stopAtHeight = 0;
 
-    public BuilderProcess(Maestro maestro) {
+    public BuilderProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -105,22 +105,22 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         this.schematic = schematic;
         this.realSchematic = null;
         boolean buildingSelectionSchematic = schematic instanceof SelectionSchematic;
-        if (!Maestro.settings().buildSubstitutes.value.isEmpty()) {
+        if (!Agent.settings().buildSubstitutes.value.isEmpty()) {
             this.schematic =
                     new SubstituteSchematic(
-                            this.schematic, Maestro.settings().buildSubstitutes.value);
+                            this.schematic, Agent.settings().buildSubstitutes.value);
         }
-        if (Maestro.settings().buildSchematicMirror.value
+        if (Agent.settings().buildSchematicMirror.value
                 != net.minecraft.world.level.block.Mirror.NONE) {
             this.schematic =
                     new MirroredSchematic(
-                            this.schematic, Maestro.settings().buildSchematicMirror.value);
+                            this.schematic, Agent.settings().buildSchematicMirror.value);
         }
-        if (Maestro.settings().buildSchematicRotation.value
+        if (Agent.settings().buildSchematicRotation.value
                 != net.minecraft.world.level.block.Rotation.NONE) {
             this.schematic =
                     new RotatedSchematic(
-                            this.schematic, Maestro.settings().buildSchematicRotation.value);
+                            this.schematic, Agent.settings().buildSchematicRotation.value);
         }
         // TODO this preserves the old behavior, but maybe we should bake the setting value right
         // here
@@ -130,7 +130,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                     public boolean partOfMask(int x, int y, int z, BlockState current) {
                         // partOfMask is only called inside the schematic so desiredState is not
                         // null
-                        return !Maestro.settings()
+                        return !Agent.settings()
                                 .buildSkipBlocks
                                 .value
                                 .contains(
@@ -141,27 +141,27 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         int x = origin.getX();
         int y = origin.getY();
         int z = origin.getZ();
-        if (Maestro.settings().schematicOrientationX.value) {
+        if (Agent.settings().schematicOrientationX.value) {
             x += schematic.widthX();
         }
-        if (Maestro.settings().schematicOrientationY.value) {
+        if (Agent.settings().schematicOrientationY.value) {
             y += schematic.heightY();
         }
-        if (Maestro.settings().schematicOrientationZ.value) {
+        if (Agent.settings().schematicOrientationZ.value) {
             z += schematic.lengthZ();
         }
         this.origin = new Vec3i(x, y, z);
         this.paused = false;
-        this.layer = Maestro.settings().startAtLayer.value;
+        this.layer = Agent.settings().startAtLayer.value;
         this.stopAtHeight = schematic.heightY();
-        if (Maestro.settings().buildOnlySelection.value
+        if (Agent.settings().buildOnlySelection.value
                 && buildingSelectionSchematic) { // currently redundant but safer maybe
             if (maestro.getSelectionManager().getSelections().length == 0) {
                 logDirect(
                         "Poor little kitten forgot to set a selection while BuildOnlySelection is"
                                 + " true");
                 this.stopAtHeight = 0;
-            } else if (Maestro.settings().buildInLayers.value) {
+            } else if (Agent.settings().buildInLayers.value) {
                 OptionalInt minim =
                         Stream.of(maestro.getSelectionManager().getSelections())
                                 .mapToInt(sel -> sel.min().y)
@@ -172,11 +172,11 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                                 .max();
                 if (minim.isPresent() && maxim.isPresent()) {
                     int startAtHeight =
-                            Maestro.settings().layerOrder.value
+                            Agent.settings().layerOrder.value
                                     ? y + schematic.heightY() - maxim.getAsInt()
                                     : minim.getAsInt() - y;
                     this.stopAtHeight =
-                            (Maestro.settings().layerOrder.value
+                            (Agent.settings().layerOrder.value
                                             ? y + schematic.heightY() - minim.getAsInt()
                                             : maxim.getAsInt() - y)
                                     + 1;
@@ -184,7 +184,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                             Math.max(
                                     this.layer,
                                     startAtHeight
-                                            / Maestro.settings()
+                                            / Agent.settings()
                                                     .layerHeight
                                                     .value); // startAtLayer or startAtHeight,
                     // whichever is highest
@@ -242,10 +242,10 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
 
     private ISchematic applyMapArtAndSelection(Vec3i origin, IStaticSchematic parsed) {
         ISchematic schematic = parsed;
-        if (Maestro.settings().mapArtMode.value) {
+        if (Agent.settings().mapArtMode.value) {
             schematic = new MapArtSchematic(parsed);
         }
-        if (Maestro.settings().buildOnlySelection.value) {
+        if (Agent.settings().buildOnlySelection.value) {
             schematic =
                     new SelectionSchematic(
                             schematic, origin, maestro.getSelectionManager().getSelections());
@@ -339,7 +339,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         BetterBlockPos center = ctx.playerFeet();
         BetterBlockPos pathStart = maestro.getPathingBehavior().pathStart();
         for (int dx = -5; dx <= 5; dx++) {
-            for (int dy = Maestro.settings().breakFromAbove.value ? -1 : 0; dy <= 5; dy++) {
+            for (int dy = Agent.settings().breakFromAbove.value ? -1 : 0; dy <= 5; dy++) {
                 for (int dz = -5; dz <= 5; dz++) {
                     int x = center.x + dx;
                     int y = center.y + dy;
@@ -578,7 +578,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         if (paused) {
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
-        if (Maestro.settings().buildInLayers.value) {
+        if (Agent.settings().buildInLayers.value) {
             if (realSchematic == null) {
                 realSchematic = schematic;
             }
@@ -589,12 +589,12 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             int maxYInclusive;
             // layer = 0 should be nothing
             // layer = realSchematic.heightY() should be everything
-            if (Maestro.settings().layerOrder.value) { // top to bottom
+            if (Agent.settings().layerOrder.value) { // top to bottom
                 maxYInclusive = realSchematic.heightY() - 1;
                 minYInclusive =
-                        realSchematic.heightY() - layer * Maestro.settings().layerHeight.value;
+                        realSchematic.heightY() - layer * Agent.settings().layerHeight.value;
             } else {
-                maxYInclusive = layer * Maestro.settings().layerHeight.value - 1;
+                maxYInclusive = layer * Agent.settings().layerHeight.value - 1;
                 minYInclusive = 0;
             }
             schematic =
@@ -641,18 +641,18 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
-            if (Maestro.settings().buildInLayers.value
-                    && layer * Maestro.settings().layerHeight.value < stopAtHeight) {
+            if (Agent.settings().buildInLayers.value
+                    && layer * Agent.settings().layerHeight.value < stopAtHeight) {
                 logDirect("Starting layer " + layer);
                 layer++;
                 return onTick(calcFailed, isSafeToCancel, recursions + 1);
             }
-            Vec3i repeat = Maestro.settings().buildRepeat.value;
-            int max = Maestro.settings().buildRepeatCount.value;
+            Vec3i repeat = Agent.settings().buildRepeat.value;
+            int max = Agent.settings().buildRepeatCount.value;
             numRepeats++;
             if (repeat.equals(new Vec3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
                 logDirect("Done building");
-                if (Maestro.settings().notificationOnBuildFinished.value) {
+                if (Agent.settings().notificationOnBuildFinished.value) {
                     logNotification("Done building", false);
                 }
                 onLostControl();
@@ -661,13 +661,13 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             // build repeat time
             layer = 0;
             origin = new BlockPos(origin).offset(repeat);
-            if (!Maestro.settings().buildRepeatSneaky.value) {
+            if (!Agent.settings().buildRepeatSneaky.value) {
                 schematic.reset();
             }
             logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
             return onTick(calcFailed, isSafeToCancel, recursions + 1);
         }
-        if (Maestro.settings().distanceTrim.value) {
+        if (Agent.settings().distanceTrim.value) {
             trim();
         }
 
@@ -710,7 +710,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
-        if (Maestro.settings().allowInventory.value) {
+        if (Agent.settings().allowInventory.value) {
             ArrayList<Integer> usefulSlots = new ArrayList<>();
             List<BlockState> noValidHotbarOption = new ArrayList<>();
             outer:
@@ -748,9 +748,9 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                             true); // we're far away, so assume that we have our whole inventory to
             // recalculate placeable properly
             if (goal == null) {
-                if (Maestro.settings().skipFailedLayers.value
-                        && Maestro.settings().buildInLayers.value
-                        && layer * Maestro.settings().layerHeight.value < realSchematic.heightY()) {
+                if (Agent.settings().skipFailedLayers.value
+                        && Agent.settings().buildInLayers.value
+                        && layer * Agent.settings().layerHeight.value < realSchematic.heightY()) {
                     logDirect("Skipping layer that I cannot construct! Layer #" + layer);
                     layer++;
                     return onTick(calcFailed, isSafeToCancel, recursions + 1);
@@ -789,7 +789,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
 
     private void recalcNearby(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
-        int radius = Maestro.settings().builderTickScanRadius.value;
+        int radius = Agent.settings().builderTickScanRadius.value;
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dz = -radius; dz <= radius; dz++) {
@@ -839,7 +839,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                             observedCompleted.remove(
                                     BetterBlockPos.longHash(blockX, blockY, blockZ));
                             if (incorrectPositions.size()
-                                    > Maestro.settings().incorrectSize.value) {
+                                    > Agent.settings().incorrectSize.value) {
                                 return;
                             }
                         }
@@ -851,7 +851,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                         // and we've never seen this position be correct
                         // therefore mark as incorrect
                         incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
-                        if (incorrectPositions.size() > Maestro.settings().incorrectSize.value) {
+                        if (incorrectPositions.size() > Agent.settings().incorrectSize.value) {
                             return;
                         }
                     }
@@ -1039,7 +1039,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
     }
 
     private Goal breakGoal(BlockPos pos, BuilderCalculationContext bcc) {
-        if (Maestro.settings().goalBreakFromAbove.value
+        if (Agent.settings().goalBreakFromAbove.value
                 && bcc.bsi.get0(pos.above()).getBlock() instanceof AirBlock
                 && bcc.bsi.get0(pos.above(2)).getBlock()
                         instanceof AirBlock) { // TODO maybe possible without the up(2) check?
@@ -1156,7 +1156,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         name = null;
         schematic = null;
         realSchematic = null;
-        layer = Maestro.settings().startAtLayer.value;
+        layer = Agent.settings().startAtLayer.value;
         numRepeats = 0;
         paused = false;
         observedCompleted = null;
@@ -1169,7 +1169,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
 
     @Override
     public Optional<Integer> getMinLayer() {
-        if (Maestro.settings().buildInLayers.value) {
+        if (Agent.settings().buildInLayers.value) {
             return Optional.of(this.layer);
         }
         return Optional.empty();
@@ -1177,7 +1177,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
 
     @Override
     public Optional<Integer> getMaxLayer() {
-        if (Maestro.settings().buildInLayers.value) {
+        if (Agent.settings().buildInLayers.value) {
             return Optional.of(this.stopAtHeight);
         }
         return Optional.empty();
@@ -1224,8 +1224,8 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         if (first.getBlock() != second.getBlock()) {
             return false;
         }
-        boolean ignoreDirection = Maestro.settings().buildIgnoreDirection.value;
-        List<String> ignoredProps = Maestro.settings().buildIgnoreProperties.value;
+        boolean ignoreDirection = Agent.settings().buildIgnoreDirection.value;
+        List<String> ignoredProps = Agent.settings().buildIgnoreProperties.value;
         if (!ignoreDirection && ignoredProps.isEmpty()) {
             return first.equals(second); // early return if no properties are being ignored
         }
@@ -1254,26 +1254,26 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         if (desired == null) {
             return true;
         }
-        if (current.getBlock() instanceof LiquidBlock && Maestro.settings().okIfWater.value) {
+        if (current.getBlock() instanceof LiquidBlock && Agent.settings().okIfWater.value) {
             return true;
         }
         if (current.getBlock() instanceof AirBlock && desired.getBlock() instanceof AirBlock) {
             return true;
         }
         if (current.getBlock() instanceof AirBlock
-                && Maestro.settings().okIfAir.value.contains(desired.getBlock())) {
+                && Agent.settings().okIfAir.value.contains(desired.getBlock())) {
             return true;
         }
         if (desired.getBlock() instanceof AirBlock
-                && Maestro.settings().buildIgnoreBlocks.value.contains(current.getBlock())) {
+                && Agent.settings().buildIgnoreBlocks.value.contains(current.getBlock())) {
             return true;
         }
         if (!(current.getBlock() instanceof AirBlock)
-                && Maestro.settings().buildIgnoreExisting.value
+                && Agent.settings().buildIgnoreExisting.value
                 && !itemVerify) {
             return true;
         }
-        if (Maestro.settings()
+        if (Agent.settings()
                         .buildValidSubstitutes
                         .value
                         .getOrDefault(desired.getBlock(), Collections.emptyList())
@@ -1334,7 +1334,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                     // we want this to be air, but they're asking if they can place here
                     // this won't be a schematic block, this will be a throwaway
                     return placeBlockCost
-                            * Maestro.settings()
+                            * Agent.settings()
                                     .placeIncorrectBlockPenaltyMultiplier
                                     .value; // we're going to have to break it eventually
                 }
@@ -1348,7 +1348,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 // even more of a pain to place something wrong
                 return placeBlockCost
                         * 1.5
-                        * Maestro.settings().placeIncorrectBlockPenaltyMultiplier.value;
+                        * Agent.settings().placeIncorrectBlockPenaltyMultiplier.value;
             } else {
                 if (hasThrowaway) {
                     return placeBlockCost;
@@ -1374,7 +1374,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 // it should be a real block
                 // is it already that block?
                 if (valid(bsi.get0(x, y, z), sch, false)) {
-                    return Maestro.settings().breakCorrectBlockPenaltyMultiplier.value;
+                    return Agent.settings().breakCorrectBlockPenaltyMultiplier.value;
                 } else {
                     // can break if it's wrong
                     // would be great to return less than 1 here, but that would actually make the

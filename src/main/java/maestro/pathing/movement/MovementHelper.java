@@ -4,8 +4,8 @@ import static maestro.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO
 import static maestro.pathing.precompute.Ternary.*;
 
 import java.util.Optional;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
@@ -52,7 +52,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return true;
         }
         Block b = state.getBlock();
-        return Maestro.settings().blocksToDisallowBreaking.value.contains(b)
+        return Agent.settings().blocksToDisallowBreaking.value.contains(b)
                 || b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof InfestedBlock // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no
@@ -79,7 +79,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 && block
                         instanceof
                         FallingBlock // obviously, this check is only valid for falling blocks
-                && Maestro.settings()
+                && Agent.settings()
                         .avoidUpdatingFallingBlocks
                         .value // and if the setting is enabled
                 && FallingBlock.isFree(
@@ -90,7 +90,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // only pure liquids for now
         // waterlogged blocks can have closed bottom sides and such
         if (block instanceof LiquidBlock) {
-            if (directlyAbove || Maestro.settings().strictLiquidCheck.value) {
+            if (directlyAbove || Agent.settings().strictLiquidCheck.value) {
                 return true;
             }
             int level = state.getValue(LiquidBlock.LEVEL);
@@ -161,7 +161,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.POWDER_SNOW) {
             return NO;
         }
-        if (Maestro.settings().blocksToAvoid.value.contains(block)) {
+        if (Agent.settings().blocksToAvoid.value.contains(block)) {
             return NO;
         }
         if (block instanceof DoorBlock || block instanceof FenceGateBlock) {
@@ -230,7 +230,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             // Everything after this point has to be a special case as it relies on the water not
             // being flowing, which means a special case is needed.
-            if (Maestro.settings().assumeWalkOnWater.value) {
+            if (Agent.settings().assumeWalkOnWater.value) {
                 return false;
             }
 
@@ -444,7 +444,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         if (block == Blocks.LADDER
                 || (block == Blocks.VINE
-                        && Maestro.settings().allowVines.value)) { // TODO reconsider this
+                        && Agent.settings().allowVines.value)) { // TODO reconsider this
             return YES;
         }
         if (block == Blocks.FARMLAND || block == Blocks.DIRT_PATH || block == Blocks.SOUL_SAND) {
@@ -462,11 +462,11 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (isWater(state)) {
             return MAYBE;
         }
-        if (MovementHelper.isLava(state) && Maestro.settings().assumeWalkOnLava.value) {
+        if (MovementHelper.isLava(state) && Agent.settings().assumeWalkOnLava.value) {
             return MAYBE;
         }
         if (block instanceof SlabBlock) {
-            if (!Maestro.settings().allowWalkOnBottomSlab.value) {
+            if (!Agent.settings().allowWalkOnBottomSlab.value) {
                 if (state.getValue(SlabBlock.TYPE) != SlabType.BOTTOM) {
                     return YES;
                 }
@@ -494,18 +494,18 @@ public interface MovementHelper extends ActionCosts, Helper {
                     || upState.getFluidState().getType() == Fluids.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still
                 // water with jesus off
-                return isWater(upState) && !Maestro.settings().assumeWalkOnWater.value;
+                return isWater(upState) && !Agent.settings().assumeWalkOnWater.value;
             }
             // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
-            return isWater(upState) ^ Maestro.settings().assumeWalkOnWater.value;
+            return isWater(upState) ^ Agent.settings().assumeWalkOnWater.value;
         }
 
         // if we get here it means that assumeWalkOnLava must be true, so
         // put it last
         return MovementHelper.isLava(state)
                 && !MovementHelper.isFlowing(x, y, z, state, bsi)
-                && Maestro.settings()
+                && Agent.settings()
                         .assumeWalkOnLava
                         .value; // If we don't recognise it then we want to just return false to be
         // safe.
@@ -692,7 +692,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void switchToBestToolFor(
             IPlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
-        if (Maestro.settings().autoTool.value && !Maestro.settings().assumeExternalAutoTool.value) {
+        if (Agent.settings().autoTool.value && !Agent.settings().assumeExternalAutoTool.value) {
             ctx.player().getInventory().selected = ts.getBestSlot(b.getBlock(), preferSilkTouch);
         }
     }
@@ -793,7 +793,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static PlaceResult attemptToPlaceABlock(
             MovementState state,
-            IMaestro maestro,
+            IAgent maestro,
             BlockPos placeAt,
             boolean preferDown,
             boolean wouldSneak) {
@@ -813,7 +813,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             BlockPos against1 =
                     placeAt.relative(HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                if (!((Maestro) maestro)
+                if (!((Agent) maestro)
                         .getInventoryBehavior()
                         .selectThrowawayForLocation(
                                 false,
@@ -869,7 +869,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 if (wouldSneak) {
                     state.setInput(Input.SNEAK, true);
                 }
-                ((Maestro) maestro)
+                ((Agent) maestro)
                         .getInventoryBehavior()
                         .selectThrowawayForLocation(
                                 true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
@@ -880,7 +880,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (wouldSneak) {
                 state.setInput(Input.SNEAK, true);
             }
-            ((Maestro) maestro)
+            ((Agent) maestro)
                     .getInventoryBehavior()
                     .selectThrowawayForLocation(
                             true, placeAt.getX(), placeAt.getY(), placeAt.getZ());

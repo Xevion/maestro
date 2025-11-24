@@ -2,7 +2,7 @@ package maestro.api.command.datatypes;
 
 import java.util.Comparator;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.cache.IWaypoint;
 import maestro.api.cache.IWaypointCollection;
 import maestro.api.command.exception.CommandException;
@@ -32,30 +32,30 @@ public enum ForWaypoints implements IDatatypeFor<IWaypoint[]> {
                         .stream();
     }
 
-    public static IWaypointCollection waypoints(IMaestro maestro) {
+    public static IWaypointCollection waypoints(IAgent maestro) {
         return maestro.getWorldProvider().getCurrentWorld().getWaypoints();
     }
 
-    public static IWaypoint[] getWaypoints(IMaestro maestro) {
+    public static IWaypoint[] getWaypoints(IAgent maestro) {
         return waypoints(maestro).getAllWaypoints().stream()
                 .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
                 .toArray(IWaypoint[]::new);
     }
 
-    public static String[] getWaypointNames(IMaestro maestro) {
+    public static String[] getWaypointNames(IAgent maestro) {
         return Stream.of(getWaypoints(maestro))
                 .map(IWaypoint::getName)
                 .filter(name -> !name.isEmpty())
                 .toArray(String[]::new);
     }
 
-    public static IWaypoint[] getWaypointsByTag(IMaestro maestro, IWaypoint.Tag tag) {
+    public static IWaypoint[] getWaypointsByTag(IAgent maestro, IWaypoint.Tag tag) {
         return waypoints(maestro).getByTag(tag).stream()
                 .sorted(Comparator.comparingLong(IWaypoint::getCreationTimestamp).reversed())
                 .toArray(IWaypoint[]::new);
     }
 
-    public static IWaypoint[] getWaypointsByName(IMaestro maestro, String name) {
+    public static IWaypoint[] getWaypointsByName(IAgent maestro, String name) {
         return Stream.of(getWaypoints(maestro))
                 .filter(waypoint -> waypoint.getName().equalsIgnoreCase(name))
                 .toArray(IWaypoint[]::new);

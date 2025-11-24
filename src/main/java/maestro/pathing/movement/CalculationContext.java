@@ -4,8 +4,8 @@ import static maestro.api.pathing.movement.ActionCosts.COST_INF;
 
 import java.util.ArrayList;
 import java.util.List;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.cache.WorldData;
 import maestro.pathing.precompute.PrecomputedData;
@@ -31,7 +31,7 @@ public class CalculationContext {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
     public final boolean safeForThreadedUse;
-    public final IMaestro maestro;
+    public final IAgent maestro;
     public final Level world;
     public final WorldData worldData;
     public final BlockStateInterface bsi;
@@ -64,11 +64,11 @@ public class CalculationContext {
 
     public final PrecomputedData precomputedData;
 
-    public CalculationContext(IMaestro maestro) {
+    public CalculationContext(IAgent maestro) {
         this(maestro, false);
     }
 
-    public CalculationContext(IMaestro maestro, boolean forUseOnAnotherThread) {
+    public CalculationContext(IAgent maestro, boolean forUseOnAnotherThread) {
         this.precomputedData = new PrecomputedData();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.maestro = maestro;
@@ -78,23 +78,23 @@ public class CalculationContext {
         this.bsi = new BlockStateInterface(maestro.getPlayerContext(), forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
         this.hasThrowaway =
-                Maestro.settings().allowPlace.value
-                        && ((Maestro) maestro).getInventoryBehavior().hasGenericThrowaway();
+                Agent.settings().allowPlace.value
+                        && ((Agent) maestro).getInventoryBehavior().hasGenericThrowaway();
         this.hasWaterBucket =
-                Maestro.settings().allowWaterBucketFall.value
+                Agent.settings().allowWaterBucketFall.value
                         && Inventory.isHotbarSlot(
                                 player.getInventory().findSlotMatchingItem(STACK_BUCKET_WATER))
                         && world.dimension() != Level.NETHER;
         this.canSprint =
-                Maestro.settings().allowSprint.value && player.getFoodData().getFoodLevel() > 6;
-        this.placeBlockCost = Maestro.settings().blockPlacementPenalty.value;
-        this.allowBreak = Maestro.settings().allowBreak.value;
-        this.allowBreakAnyway = new ArrayList<>(Maestro.settings().allowBreakAnyway.value);
-        this.allowParkour = Maestro.settings().allowParkour.value;
-        this.allowParkourPlace = Maestro.settings().allowParkourPlace.value;
-        this.allowJumpAtBuildLimit = Maestro.settings().allowJumpAtBuildLimit.value;
-        this.allowParkourAscend = Maestro.settings().allowParkourAscend.value;
-        this.assumeWalkOnWater = Maestro.settings().assumeWalkOnWater.value;
+                Agent.settings().allowSprint.value && player.getFoodData().getFoodLevel() > 6;
+        this.placeBlockCost = Agent.settings().blockPlacementPenalty.value;
+        this.allowBreak = Agent.settings().allowBreak.value;
+        this.allowBreakAnyway = new ArrayList<>(Agent.settings().allowBreakAnyway.value);
+        this.allowParkour = Agent.settings().allowParkour.value;
+        this.allowParkourPlace = Agent.settings().allowParkourPlace.value;
+        this.allowJumpAtBuildLimit = Agent.settings().allowJumpAtBuildLimit.value;
+        this.allowParkourAscend = Agent.settings().allowParkourAscend.value;
+        this.assumeWalkOnWater = Agent.settings().assumeWalkOnWater.value;
         this.allowFallIntoLava = false; // Super secret internal setting for ElytraBehavior
         // todo: technically there can now be datapack enchants that replace blocks with any other
         // at any range
@@ -109,12 +109,12 @@ public class CalculationContext {
             }
         }
         this.frostWalker = frostWalkerLevel;
-        this.allowDiagonalDescend = Maestro.settings().allowDiagonalDescend.value;
-        this.allowDiagonalAscend = Maestro.settings().allowDiagonalAscend.value;
-        this.allowDownward = Maestro.settings().allowDownward.value;
+        this.allowDiagonalDescend = Agent.settings().allowDiagonalDescend.value;
+        this.allowDiagonalAscend = Agent.settings().allowDiagonalAscend.value;
+        this.allowDownward = Agent.settings().allowDownward.value;
         this.minFallHeight = 3; // Minimum fall height used by MovementFall
-        this.maxFallHeightNoWater = Maestro.settings().maxFallHeightNoWater.value;
-        this.maxFallHeightBucket = Maestro.settings().maxFallHeightBucket.value;
+        this.maxFallHeightNoWater = Agent.settings().maxFallHeightNoWater.value;
+        this.maxFallHeightBucket = Agent.settings().maxFallHeightBucket.value;
         float waterSpeedMultiplier = 1.0f;
         OUTER:
         for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -136,18 +136,18 @@ public class CalculationContext {
         this.waterWalkSpeed =
                 ActionCosts.WALK_ONE_IN_WATER_COST * (1 - waterSpeedMultiplier)
                         + ActionCosts.WALK_ONE_BLOCK_COST * waterSpeedMultiplier;
-        this.breakBlockAdditionalCost = Maestro.settings().blockBreakAdditionalPenalty.value;
+        this.breakBlockAdditionalCost = Agent.settings().blockBreakAdditionalPenalty.value;
         this.backtrackCostFavoringCoefficient =
-                Maestro.settings().backtrackCostFavoringCoefficient.value;
-        this.jumpPenalty = Maestro.settings().jumpPenalty.value;
-        this.walkOnWaterOnePenalty = Maestro.settings().walkOnWaterOnePenalty.value;
+                Agent.settings().backtrackCostFavoringCoefficient.value;
+        this.jumpPenalty = Agent.settings().jumpPenalty.value;
+        this.walkOnWaterOnePenalty = Agent.settings().walkOnWaterOnePenalty.value;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
     }
 
-    public final IMaestro getMaestro() {
+    public final IAgent getMaestro() {
         return maestro;
     }
 
@@ -177,11 +177,11 @@ public class CalculationContext {
         if (!worldBorder.canPlaceAt(x, z)) {
             return COST_INF;
         }
-        if (!Maestro.settings().allowPlaceInFluidsSource.value
+        if (!Agent.settings().allowPlaceInFluidsSource.value
                 && current.getFluidState().isSource()) {
             return COST_INF;
         }
-        if (!Maestro.settings().allowPlaceInFluidsFlow.value
+        if (!Agent.settings().allowPlaceInFluidsFlow.value
                 && !current.getFluidState().isEmpty()
                 && !current.getFluidState().isSource()) {
             return COST_INF;

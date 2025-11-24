@@ -7,8 +7,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.cache.IWaypoint;
 import maestro.api.cache.IWorldData;
 import maestro.api.cache.Waypoint;
@@ -34,7 +34,7 @@ public class WaypointsCommand extends Command {
 
     private Map<IWorldData, List<IWaypoint>> deletedWaypoints = new HashMap<>();
 
-    public WaypointsCommand(IMaestro maestro) {
+    public WaypointsCommand(IAgent maestro) {
         super(maestro, "waypoints", "waypoint", "wp");
     }
 
@@ -287,7 +287,7 @@ public class WaypointsCommand extends Command {
                                                     ClickEvent.Action.SUGGEST_COMMAND,
                                                     String.format(
                                                             "%s%s save %s %s %s %s %s",
-                                                            Maestro.settings()
+                                                            Agent.settings()
                                                                     .prefix
                                                                     .value, // This uses the normal
                                                             // prefix because it is

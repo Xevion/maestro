@@ -1,6 +1,6 @@
 package maestro.process;
 
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
 import maestro.utils.MaestroProcessHelper;
@@ -11,7 +11,7 @@ public class InventoryPauserProcess extends MaestroProcessHelper {
     boolean safeToCancelLastTick;
     int ticksOfStationary;
 
-    public InventoryPauserProcess(Maestro maestro) {
+    public InventoryPauserProcess(Agent maestro) {
         super(maestro);
     }
 

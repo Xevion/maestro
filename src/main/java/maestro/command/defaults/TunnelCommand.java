@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -14,7 +14,7 @@ import net.minecraft.core.Direction;
 
 public class TunnelCommand extends Command {
 
-    public TunnelCommand(IMaestro maestro) {
+    public TunnelCommand(IAgent maestro) {
         super(maestro, "tunnel");
     }
 

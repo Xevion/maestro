@@ -2,8 +2,8 @@ package maestro.pathing.movement.movements;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.Rotation;
@@ -23,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class MovementPillar extends Movement {
 
-    public MovementPillar(IMaestro maestro, BetterBlockPos start, BetterBlockPos end) {
+    public MovementPillar(IAgent maestro, BetterBlockPos start, BetterBlockPos end) {
         super(maestro, start, end, new BetterBlockPos[] {start.above(2)}, start);
     }
 
@@ -242,7 +242,7 @@ public class MovementPillar extends Movement {
             return state;
         } else {
             // Get ready to place a throwaway block
-            if (!((Maestro) maestro)
+            if (!((Agent) maestro)
                     .getInventoryBehavior()
                     .selectThrowawayForLocation(true, src.x, src.y, src.z)) {
                 return state.setStatus(MovementStatus.UNREACHABLE);

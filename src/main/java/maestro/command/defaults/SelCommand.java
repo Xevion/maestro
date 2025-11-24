@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import maestro.Maestro;
-import maestro.api.IMaestro;
+import maestro.Agent;
+import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForAxis;
@@ -45,22 +45,22 @@ public class SelCommand extends Command {
     private ISchematic clipboard = null;
     private Vec3i clipboardOffset = null;
 
-    public SelCommand(IMaestro maestro) {
+    public SelCommand(IAgent maestro) {
         super(maestro, "sel", "selection", "s");
         maestro.getGameEventHandler()
                 .registerEventListener(
                         new AbstractGameEventListener() {
                             @Override
                             public void onRenderPass(RenderEvent event) {
-                                if (!Maestro.settings().renderSelectionCorners.value
+                                if (!Agent.settings().renderSelectionCorners.value
                                         || pos1 == null) {
                                     return;
                                 }
-                                Color color = Maestro.settings().colorSelectionPos1.value;
-                                float opacity = Maestro.settings().selectionOpacity.value;
-                                float lineWidth = Maestro.settings().selectionLineWidth.value;
+                                Color color = Agent.settings().colorSelectionPos1.value;
+                                float opacity = Agent.settings().selectionOpacity.value;
+                                float lineWidth = Agent.settings().selectionLineWidth.value;
                                 boolean ignoreDepth =
-                                        Maestro.settings().renderSelectionIgnoreDepth.value;
+                                        Agent.settings().renderSelectionIgnoreDepth.value;
                                 BufferBuilder bufferBuilder =
                                         IRenderer.startLines(
                                                 color, opacity, lineWidth, ignoreDepth);

@@ -2,7 +2,7 @@ package maestro.pathing.calc;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.Optional;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.calc.IPathFinder;
 import maestro.api.pathing.goals.Goal;
@@ -81,8 +81,8 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         this.context = context;
         this.map =
                 new Long2ObjectOpenHashMap<>(
-                        Maestro.settings().pathingMapDefaultSize.value,
-                        Maestro.settings().pathingMapLoadFactor.value);
+                        Agent.settings().pathingMapDefaultSize.value,
+                        Agent.settings().pathingMapLoadFactor.value);
     }
 
     public void cancel() {

@@ -2,7 +2,7 @@ package maestro.launch.mixins;
 
 import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
 
-import maestro.api.IMaestro;
+import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.ChatEvent;
 import maestro.utils.accessor.IGuiScreen;
@@ -37,7 +37,7 @@ public abstract class MixinScreen implements IGuiScreen {
         if (command == null || !command.startsWith(FORCE_COMMAND_PREFIX)) {
             return;
         }
-        IMaestro maestro = MaestroAPI.getProvider().getPrimaryMaestro();
+        IAgent maestro = MaestroAPI.getProvider().getPrimaryAgent();
         if (maestro != null) {
             maestro.getGameEventHandler().onSendChatMessage(new ChatEvent(command));
         }

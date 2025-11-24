@@ -4,7 +4,7 @@ import static maestro.api.pathing.movement.ActionCosts.COST_INF;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.pathing.goals.*;
 import maestro.api.process.IMineProcess;
@@ -44,7 +44,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
     private int desiredQuantity;
     private int tickCount;
 
-    public MineProcess(Maestro maestro) {
+    public MineProcess(Agent maestro) {
         super(maestro);
     }
 
@@ -69,12 +69,12 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         }
         if (calcFailed) {
             if (!knownOreLocations.isEmpty()
-                    && Maestro.settings().blacklistClosestOnFailure.value) {
+                    && Agent.settings().blacklistClosestOnFailure.value) {
                 logDirect(
                         "Unable to find any path to "
                                 + filter
                                 + ", blacklisting presumably unreachable closest instance...");
-                if (Maestro.settings().notificationOnMineFail.value) {
+                if (Agent.settings().notificationOnMineFail.value) {
                     logNotification(
                             "Unable to find any path to "
                                     + filter
@@ -87,7 +87,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
                 logDirect("Unable to find any path to " + filter + ", canceling mine");
-                if (Maestro.settings().notificationOnMineFail.value) {
+                if (Agent.settings().notificationOnMineFail.value) {
                     logNotification(
                             "Unable to find any path to " + filter + ", canceling mine", true);
                 }
@@ -97,13 +97,13 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         }
 
         updateLoucaSystem();
-        int mineGoalUpdateInterval = Maestro.settings().mineGoalUpdateInterval.value;
+        int mineGoalUpdateInterval = Agent.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             CalculationContext context = new CalculationContext(maestro, true);
-            Maestro.getExecutor().execute(() -> rescan(curr, context));
+            Agent.getExecutor().execute(() -> rescan(curr, context));
         }
-        if (Maestro.settings().legitMine.value) {
+        if (Agent.settings().legitMine.value) {
             if (!addNearby()) {
                 cancel();
                 return null;
@@ -161,7 +161,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                                 copy.put(
                                         pos,
                                         System.currentTimeMillis()
-                                                + Maestro.settings()
+                                                + Agent.settings()
                                                         .mineDropLoiterDurationMSThanksLouca
                                                         .value);
                             }
@@ -192,7 +192,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
             return null;
         }
 
-        boolean legit = Maestro.settings().legitMine.value;
+        boolean legit = Agent.settings().legitMine.value;
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
             CalculationContext context = new CalculationContext(maestro);
@@ -201,7 +201,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                             context,
                             new ArrayList<>(locs),
                             filter,
-                            Maestro.settings().mineMaxOreLocationsCount.value,
+                            Agent.settings().mineMaxOreLocationsCount.value,
                             blacklist,
                             droppedItemsScan());
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right
@@ -219,11 +219,11 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                             : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
         // we don't know any ore locations at the moment
-        if (!legit && !Maestro.settings().exploreForBlocks.value) {
+        if (!legit && !Agent.settings().exploreForBlocks.value) {
             return null;
         }
         // only when we should explore for blocks or are in legit mode we do this
-        int y = Maestro.settings().legitMineYLevel.value;
+        int y = Agent.settings().legitMineYLevel.value;
         if (branchPoint == null) {
             /*if (!maestro.getPathingBehavior().isPathing() && playerFeet().y == y) {
                 // cool, path is over and we are at desired y
@@ -258,7 +258,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         if (filter == null) {
             return;
         }
-        if (Maestro.settings().legitMine.value) {
+        if (Agent.settings().legitMine.value) {
             return;
         }
         List<BlockPos> dropped = droppedItemsScan();
@@ -266,14 +266,14 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                 searchWorld(
                         context,
                         filter,
-                        Maestro.settings().mineMaxOreLocationsCount.value,
+                        Agent.settings().mineMaxOreLocationsCount.value,
                         already,
                         blacklist,
                         dropped);
         locs.addAll(dropped);
-        if (locs.isEmpty() && !Maestro.settings().exploreForBlocks.value) {
+        if (locs.isEmpty() && !Agent.settings().exploreForBlocks.value) {
             logDirect("No locations for " + filter + " known, cancelling");
-            if (Maestro.settings().notificationOnMineFail.value) {
+            if (Agent.settings().notificationOnMineFail.value) {
                 logNotification("No locations for " + filter + " known, cancelling", true);
             }
             cancel();
@@ -290,7 +290,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
             return true;
         }
         BlockState state = context.bsi.get0(pos);
-        if (Maestro.settings().internalMiningAirException.value
+        if (Agent.settings().internalMiningAirException.value
                 && state.getBlock() instanceof AirBlock) {
             return true;
         }
@@ -300,7 +300,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
     private Goal coalesce(BlockPos loc, List<BlockPos> locs, CalculationContext context) {
         boolean assumeVerticalShaftMine =
                 !(maestro.bsi.get0(loc.above()).getBlock() instanceof FallingBlock);
-        if (!Maestro.settings().forceInternalMining.value) {
+        if (!Agent.settings().forceInternalMining.value) {
             if (assumeVerticalShaftMine) {
                 // we can get directly below the block
                 return new GoalThreeBlocks(loc);
@@ -386,7 +386,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
     }
 
     public List<BlockPos> droppedItemsScan() {
-        if (!Maestro.settings().mineScanDroppedItems.value) {
+        if (!Agent.settings().mineScanDroppedItems.value) {
             return Collections.emptyList();
         }
         List<BlockPos> ret = new ArrayList<>();
@@ -422,7 +422,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                                 .getCachedWorld()
                                 .getLocationsOf(
                                         BlockUtils.blockToString(block),
-                                        Maestro.settings().maxCachedWorldScanCount.value,
+                                        Agent.settings().maxCachedWorldScanCount.value,
                                         pf.x,
                                         pf.z,
                                         2));
@@ -434,7 +434,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         locs = prune(ctx, locs, filter, max, blacklist, dropped);
 
         if (!untracked.isEmpty()
-                || (Maestro.settings().extendCacheOnThreshold.value && locs.size() < max)) {
+                || (Agent.settings().extendCacheOnThreshold.value && locs.size() < max)) {
             locs.addAll(
                     MaestroAPI.getProvider()
                             .getWorldScanner()
@@ -475,7 +475,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                     // is an x-ray and it'll get caught
                     if (filter.has(bsi.get0(x, y, z))) {
                         BlockPos pos = new BlockPos(x, y, z);
-                        if ((Maestro.settings().legitMineIncludeDiagonals.value
+                        if ((Agent.settings().legitMineIncludeDiagonals.value
                                         && knownOreLocations.stream()
                                                 .anyMatch(
                                                         ore ->
@@ -494,7 +494,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                         new CalculationContext(maestro),
                         knownOreLocations,
                         filter,
-                        Maestro.settings().mineMaxOreLocationsCount.value,
+                        Agent.settings().mineMaxOreLocationsCount.value,
                         blacklist,
                         dropped);
         return true;
@@ -539,7 +539,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                         .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
                         .filter(
                                 pos -> {
-                                    if (Maestro.settings().allowOnlyExposedOres.value) {
+                                    if (Agent.settings().allowOnlyExposedOres.value) {
                                         return isNextToAir(ctx, pos);
                                     } else {
                                         return true;
@@ -548,9 +548,9 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                         .filter(
                                 pos ->
                                         pos.getY()
-                                                >= Maestro.settings().minYLevelWhileMining.value
+                                                >= Agent.settings().minYLevelWhileMining.value
                                                         + ctx.world.dimensionType().minY())
-                        .filter(pos -> pos.getY() <= Maestro.settings().maxYLevelWhileMining.value)
+                        .filter(pos -> pos.getY() <= Agent.settings().maxYLevelWhileMining.value)
                         .filter(pos -> !blacklist.contains(pos))
                         .sorted(
                                 Comparator.comparingDouble(
@@ -565,7 +565,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
     }
 
     public static boolean isNextToAir(CalculationContext ctx, BlockPos pos) {
-        int radius = Maestro.settings().allowOnlyExposedOresDistance.value;
+        int radius = Agent.settings().allowOnlyExposedOresDistance.value;
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dz = -radius; dz <= radius; dz++) {
@@ -623,13 +623,13 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         if (this.filter == null) {
             return null;
         }
-        if (!Maestro.settings().allowBreak.value) {
+        if (!Agent.settings().allowBreak.value) {
             BlockOptionalMetaLookup f =
                     new BlockOptionalMetaLookup(
                             this.filter.blocks().stream()
                                     .filter(
                                             e ->
-                                                    Maestro.settings()
+                                                    Agent.settings()
                                                             .allowBreakAnyway
                                                             .value
                                                             .contains(e.getBlock()))

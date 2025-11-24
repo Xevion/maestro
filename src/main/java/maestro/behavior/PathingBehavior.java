@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-import maestro.Maestro;
+import maestro.Agent;
 import maestro.api.behavior.IPathingBehavior;
 import maestro.api.event.events.*;
 import maestro.api.pathing.calc.IPath;
@@ -56,7 +56,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private final LinkedBlockingQueue<PathEvent> toDispatch = new LinkedBlockingQueue<>();
 
-    public PathingBehavior(Maestro maestro) {
+    public PathingBehavior(Agent maestro) {
         super(maestro);
     }
 
@@ -152,7 +152,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     logDebug("All done. At " + goal);
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
-                    if (Maestro.settings().disconnectOnArrival.value) {
+                    if (Agent.settings().disconnectOnArrival.value) {
                         ctx.world().disconnect();
                     }
                     return;
@@ -205,7 +205,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 current.onTick();
                 return;
             }
-            if (Maestro.settings().splicePath.value) {
+            if (Agent.settings().splicePath.value) {
                 current = current.trySplice(next);
             }
             if (next != null && current.getPath().getDest().equals(next.getPath().getDest())) {
@@ -225,7 +225,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     return;
                 }
                 if (ticksRemainingInSegment(false).get()
-                        < Maestro.settings().planningTickLookahead.value) {
+                        < Agent.settings().planningTickLookahead.value) {
                     // and this path has 7.5 seconds or less left
                     // don't include the current movement so a very long last movement (e.g.
                     // descend) doesn't trip it up
@@ -507,11 +507,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         long primaryTimeout;
         long failureTimeout;
         if (current == null) {
-            primaryTimeout = Maestro.settings().primaryTimeoutMS.value;
-            failureTimeout = Maestro.settings().failureTimeoutMS.value;
+            primaryTimeout = Agent.settings().primaryTimeoutMS.value;
+            failureTimeout = Agent.settings().failureTimeoutMS.value;
         } else {
-            primaryTimeout = Maestro.settings().planAheadPrimaryTimeoutMS.value;
-            failureTimeout = Maestro.settings().planAheadFailureTimeoutMS.value;
+            primaryTimeout = Agent.settings().planAheadPrimaryTimeoutMS.value;
+            failureTimeout = Agent.settings().planAheadFailureTimeoutMS.value;
         }
         AbstractNodeCostSearch pathfinder =
                 createPathfinder(start, goal, current == null ? null : current.getPath(), context);
@@ -521,7 +521,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
         }
         inProgress = pathfinder;
-        Maestro.getExecutor()
+        Agent.getExecutor()
                 .execute(
                         () -> {
                             if (talkAboutIt) {
@@ -624,7 +624,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private AbstractNodeCostSearch createPathfinder(
             BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
-        if (Maestro.settings().simplifyUnloadedYCoord.value && goal instanceof IGoalRenderPos) {
+        if (Agent.settings().simplifyUnloadedYCoord.value && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
             if (!context.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ())) {
                 transformed = new GoalXZ(pos.getX(), pos.getZ());
