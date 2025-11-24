@@ -187,7 +187,7 @@ public class SetCommand extends Command {
                 logDirect(
                         String.format(
                                 "Toggled setting %s to %s",
-                                setting.getName(), Boolean.toString((Boolean) setting.value)));
+                                setting.getName(), (Boolean) setting.value));
             } else {
                 String newValue = args.getString();
                 try {
@@ -272,7 +272,7 @@ public class SetCommand extends Command {
                                     .resolve("maestro")
                                     .toFile());
                 }
-                Settings.Setting setting =
+                Settings.Setting<?> setting =
                         Maestro.settings().byLowerName.get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
                     if (setting.getType() == Boolean.class) {

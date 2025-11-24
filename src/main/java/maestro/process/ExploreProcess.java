@@ -173,7 +173,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
     private enum Status {
         EXPLORED,
         NOT_EXPLORED,
-        UNKNOWN;
+        UNKNOWN
     }
 
     private interface IChunkFilter {
@@ -275,7 +275,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
         }
     }
 
-    private class EitherChunk implements IChunkFilter {
+    private static class EitherChunk implements IChunkFilter {
 
         private final IChunkFilter a;
         private final IChunkFilter b;

@@ -15,8 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import maestro.gradle.task.CreateDistTask
-import maestro.gradle.task.ProguardTask
+//import maestro.gradle.task.CreateDistTask
+//import maestro.gradle.task.ProguardTask
 
 plugins {
     id "com.github.johnrengelman.shadow" version "8.0.0"
@@ -94,16 +94,17 @@ components.java {
     }
 }
 
-task proguard(type: ProguardTask) {
-    proguardVersion "7.4.2"
-    compType "forge"
-}
-
-task createDist(type: CreateDistTask, dependsOn: proguard) {
-    compType "forge"
-}
-
-build.finalizedBy(createDist)
+// ProGuard disabled
+//task proguard(type: ProguardTask) {
+//    proguardVersion "7.4.2"
+//    compType "forge"
+//}
+//
+//task createDist(type: CreateDistTask, dependsOn: proguard) {
+//    compType "forge"
+//}
+//
+//build.finalizedBy(createDist)
 
 publishing {
     publications {

@@ -47,7 +47,7 @@ public final class CachedRegion implements ICachedRegion {
     }
 
     @Override
-    public final BlockState getBlock(int x, int y, int z) {
+    public BlockState getBlock(int x, int y, int z) {
         int adjY = y - dimension.minY();
         CachedChunk chunk = chunks[x >> 4][z >> 4];
         if (chunk != null) {
@@ -57,11 +57,11 @@ public final class CachedRegion implements ICachedRegion {
     }
 
     @Override
-    public final boolean isCached(int x, int z) {
+    public boolean isCached(int x, int z) {
         return chunks[x >> 4][z >> 4] != null;
     }
 
-    public final ArrayList<BlockPos> getLocationsOf(String block) {
+    public ArrayList<BlockPos> getLocationsOf(String block) {
         ArrayList<BlockPos> res = new ArrayList<>();
         for (int chunkX = 0; chunkX < 32; chunkX++) {
             for (int chunkZ = 0; chunkZ < 32; chunkZ++) {
@@ -77,12 +77,12 @@ public final class CachedRegion implements ICachedRegion {
         return res;
     }
 
-    public final synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
+    public synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
         this.chunks[chunkX][chunkZ] = chunk;
         hasUnsavedChanges = true;
     }
 
-    public final synchronized void save(String directory) {
+    public synchronized void save(String directory) {
         if (!hasUnsavedChanges) {
             return;
         }
@@ -92,7 +92,6 @@ public final class CachedRegion implements ICachedRegion {
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
             }
-            System.out.println("Saving region " + x + "," + z + " to disk " + path);
             Path regionFile = getRegionFile(path, this.x, this.z);
             if (!Files.exists(regionFile)) {
                 Files.createFile(regionFile);
@@ -131,7 +130,7 @@ public final class CachedRegion implements ICachedRegion {
                     for (int z = 0; z < 32; z++) {
                         if (chunks[x][z] != null) {
                             Map<String, List<BlockPos>> locs = chunks[x][z].getRelativeBlocks();
-                            out.writeShort(locs.entrySet().size());
+                            out.writeShort(locs.size());
                             for (Map.Entry<String, List<BlockPos>> entry : locs.entrySet()) {
                                 out.writeUTF(entry.getKey());
                                 out.writeShort(entry.getValue().size());
@@ -152,7 +151,6 @@ public final class CachedRegion implements ICachedRegion {
                 }
             }
             hasUnsavedChanges = false;
-            System.out.println("Saved region successfully");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -170,7 +168,6 @@ public final class CachedRegion implements ICachedRegion {
                 return;
             }
 
-            System.out.println("Loading region " + x + "," + z + " from disk " + path);
             long start = System.nanoTime() / 1000000L;
 
             try (FileInputStream fileIn = new FileInputStream(regionFile.toFile());
@@ -284,14 +281,13 @@ public final class CachedRegion implements ICachedRegion {
             removeExpired();
             hasUnsavedChanges = false;
             long end = System.nanoTime() / 1000000L;
-            System.out.println("Loaded region successfully in " + (end - start) + "ms");
         } catch (Exception ex) { // corrupted files can cause NullPointerExceptions as well as
             // IOExceptions
             ex.printStackTrace();
         }
     }
 
-    public final synchronized void removeExpired() {
+    public synchronized void removeExpired() {
         long expiry = Maestro.settings().cachedChunksExpirySeconds.value;
         if (expiry < 0) {
             return;
@@ -317,7 +313,7 @@ public final class CachedRegion implements ICachedRegion {
         }
     }
 
-    public final synchronized CachedChunk mostRecentlyModified() {
+    public synchronized CachedChunk mostRecentlyModified() {
         CachedChunk recent = null;
         for (int x = 0; x < 32; x++) {
             for (int z = 0; z < 32; z++) {
@@ -336,7 +332,7 @@ public final class CachedRegion implements ICachedRegion {
      * @return The region x coordinate
      */
     @Override
-    public final int getX() {
+    public int getX() {
         return this.x;
     }
 
@@ -344,7 +340,7 @@ public final class CachedRegion implements ICachedRegion {
      * @return The region z coordinate
      */
     @Override
-    public final int getZ() {
+    public int getZ() {
         return this.z;
     }
 

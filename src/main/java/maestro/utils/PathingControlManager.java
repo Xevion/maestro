@@ -102,7 +102,7 @@ public class PathingControlManager implements IPathingControlManager {
                 break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
             case REVALIDATE_GOAL_AND_PATH:
-                if (!p.isPathing() && !p.getInProgress().isPresent()) {
+                if (!p.isPathing() && p.getInProgress().isEmpty()) {
                     p.secretInternalSetGoalAndPath(command);
                 }
                 break;
@@ -164,11 +164,9 @@ public class PathingControlManager implements IPathingControlManager {
         if (current != null) {
             Goal intended = current.getPath().getGoal();
             BlockPos end = current.getPath().getDest();
-            if (intended.isInGoal(end) && !newGoal.isInGoal(end)) {
-                // this path used to end in the goal
-                // but the goal has changed, so there's no reason to continue...
-                return true;
-            }
+            // this path used to end in the goal
+            // but the goal has changed, so there's no reason to continue...
+            return intended.isInGoal(end) && !newGoal.isInGoal(end);
         }
         return false;
     }
@@ -178,7 +176,7 @@ public class PathingControlManager implements IPathingControlManager {
             if (process.isActive()) {
                 if (!active.contains(process)) {
                     // put a newly active process at the very front of the queue
-                    active.add(0, process);
+                    active.addFirst(process);
                 }
             } else {
                 active.remove(process);

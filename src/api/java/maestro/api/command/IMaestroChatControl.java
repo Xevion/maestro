@@ -19,5 +19,5 @@ public interface IMaestroChatControl {
      * always use this prefix. If you're suggesting a command (a component that puts text into your
      * text box, or something else), use {@link Settings#prefix}.
      */
-    String FORCE_COMMAND_PREFIX = String.format("<<%s>>", UUID.randomUUID().toString());
+    String FORCE_COMMAND_PREFIX = String.format("<<%s>>", UUID.randomUUID());
 }

@@ -41,11 +41,7 @@ public class WaypointBehavior extends Behavior {
                                 .getWaypoints()
                                 .getByTag(IWaypoint.Tag.BED);
                 boolean exists =
-                        waypoints.stream()
-                                .map(IWaypoint::getLocation)
-                                .filter(pos::equals)
-                                .findFirst()
-                                .isPresent();
+                        waypoints.stream().map(IWaypoint::getLocation).anyMatch(pos::equals);
                 if (!exists) {
                     maestro.getWorldProvider()
                             .getCurrentWorld()

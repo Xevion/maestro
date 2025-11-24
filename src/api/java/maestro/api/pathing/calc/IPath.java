@@ -65,7 +65,7 @@ public interface IPath {
      * @return The start position of this path
      */
     default BetterBlockPos getSrc() {
-        return positions().get(0);
+        return positions().getFirst();
     }
 
     /**
@@ -76,7 +76,7 @@ public interface IPath {
      */
     default BetterBlockPos getDest() {
         List<BetterBlockPos> pos = positions();
-        return pos.get(pos.size() - 1);
+        return pos.getLast();
     }
 
     /**
@@ -99,7 +99,7 @@ public interface IPath {
      * Cuts off this path at the loaded chunk border, and returns the resulting path. Default
      * implementation just returns this path, without the intended functionality.
      *
-     * <p>The argument is supposed to be a BlockStateInterface LOL LOL LOL LOL LOL
+     * <p>The argument is supposed to be a BlockStateInterface
      *
      * @param bsi The block state lookup, highly cursed
      * @return The result of this cut-off operation
@@ -125,10 +125,10 @@ public interface IPath {
     default void sanityCheck() {
         List<BetterBlockPos> path = positions();
         List<IMovement> movements = movements();
-        if (!getSrc().equals(path.get(0))) {
+        if (!getSrc().equals(path.getFirst())) {
             throw new IllegalStateException("Start node does not equal first path element");
         }
-        if (!getDest().equals(path.get(path.size() - 1))) {
+        if (!getDest().equals(path.getLast())) {
             throw new IllegalStateException("End node does not equal last path element");
         }
         if (path.size() != movements.size() + 1) {

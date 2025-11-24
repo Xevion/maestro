@@ -14,7 +14,7 @@ public final class PlayerUpdateEvent {
     /**
      * @return The state of the event
      */
-    public final EventState getState() {
+    public EventState getState() {
         return this.state;
     }
 }

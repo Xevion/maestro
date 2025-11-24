@@ -4,11 +4,11 @@ public final class SprintStateEvent {
 
     private Boolean state;
 
-    public final void setState(boolean state) {
+    public void setState(boolean state) {
         this.state = state;
     }
 
-    public final Boolean getState() {
+    public Boolean getState() {
         return this.state;
     }
 }

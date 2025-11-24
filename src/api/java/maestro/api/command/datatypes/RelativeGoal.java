@@ -2,7 +2,6 @@ package maestro.api.command.datatypes;
 
 import java.util.stream.Stream;
 import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.exception.CommandException;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.pathing.goals.GoalXZ;
@@ -13,7 +12,7 @@ public enum RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
     INSTANCE;
 
     @Override
-    public Goal apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+    public Goal apply(IDatatypeContext ctx, BetterBlockPos origin) {
         if (origin == null) {
             origin = BetterBlockPos.ORIGIN;
         }

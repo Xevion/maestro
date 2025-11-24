@@ -181,10 +181,6 @@ public abstract class Movement implements IMovement, MovementHelper {
                     }
                     return false;
                 }
-                // get rekt minecraft
-                // i'm doing it anyway
-                // i dont care if theres snow in the way!!!!!!!
-                // you dont own me!!!!
                 state.setTarget(
                         new MovementState.MovementTarget(
                                 RotationUtils.calcRotationFromVec3d(

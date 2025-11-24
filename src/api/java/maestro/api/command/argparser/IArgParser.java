@@ -18,10 +18,8 @@ public interface IArgParser<T> {
         /**
          * @param arg The argument to parse.
          * @return What it was parsed into.
-         * @throws RuntimeException if you want the parsing to fail. The exception will be caught
-         *     and turned into an appropriate error.
          */
-        T parseArg(ICommandArgument arg) throws Exception;
+        T parseArg(ICommandArgument arg);
     }
 
     /**
@@ -37,9 +35,7 @@ public interface IArgParser<T> {
          * @param arg The argument to parse.
          * @param state Can be anything.
          * @return What it was parsed into.
-         * @throws RuntimeException if you want the parsing to fail. The exception will be caught
-         *     and turned into an appropriate error.
          */
-        T parseArg(ICommandArgument arg, S state) throws Exception;
+        T parseArg(ICommandArgument arg, S state);
     }
 }

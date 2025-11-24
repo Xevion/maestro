@@ -225,7 +225,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
     @Override
     public boolean build(String name, File schematic, Vec3i origin) {
         Optional<ISchematicFormat> format = SchematicSystem.INSTANCE.getByFile(schematic);
-        if (!format.isPresent()) {
+        if (format.isEmpty()) {
             return false;
         }
         IStaticSchematic parsed;
@@ -902,7 +902,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                         }
                     }
                 });
-        incorrectPositions.removeAll(outOfBounds);
+        outOfBounds.forEach(incorrectPositions::remove);
         List<Goal> toBreak = new ArrayList<>();
         breakable.forEach(pos -> toBreak.add(breakGoal(pos, bcc)));
         List<Goal> toPlace = new ArrayList<>();
@@ -1339,12 +1339,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                                     .value; // we're going to have to break it eventually
                 }
                 if (placeable.contains(sch)) {
-                    return 0; // thats right we gonna make it FREE to place a block where it should
-                    // go in a structure
-                    // no place block penalty at all 😎
-                    // i'm such an idiot that i just tried to copy and paste the epic gamer moment
-                    // emoji too
-                    // get added to unicode when?
+                    return 0;
                 }
                 if (!hasThrowaway) {
                     return COST_INF;
@@ -1392,7 +1387,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 // TODO allow breaking blocks that we have a tool to harvest and immediately place
                 // back?
             } else {
-                return 1; // why not lol
+                return 1;
             }
         }
     }

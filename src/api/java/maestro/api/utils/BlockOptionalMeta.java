@@ -86,7 +86,7 @@ public final class BlockOptionalMeta {
 
         String props = matcher.group("properties");
         Map<Property<?>, ?> properties =
-                props == null || props.equals("")
+                props == null || props.isEmpty()
                         ? Collections.emptyMap()
                         : parseProperties(block, props);
 
@@ -187,7 +187,7 @@ public final class BlockOptionalMeta {
     }
 
     public BlockState getAnyBlockState() {
-        if (blockstates.size() > 0) {
+        if (!blockstates.isEmpty()) {
             return blockstates.iterator().next();
         }
 

@@ -391,8 +391,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         }
         List<BlockPos> ret = new ArrayList<>();
         for (Entity entity : ((ClientLevel) ctx.world()).entitiesForRendering()) {
-            if (entity instanceof ItemEntity) {
-                ItemEntity ei = (ItemEntity) entity;
+            if (entity instanceof ItemEntity ei) {
                 if (filter.has(ei.getItem())) {
                     ret.add(entity.blockPosition());
                 }

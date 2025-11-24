@@ -219,7 +219,7 @@ public class MovementTraverse extends Movement {
             if (dist < 0.83) {
                 return state;
             }
-            if (!state.getTarget().getRotation().isPresent()) {
+            if (state.getTarget().getRotation().isEmpty()) {
                 // this can happen rarely when the server lags and doesn't send the falling sand
                 // entity until you've already walked through the block and are now mining the next
                 // one
@@ -306,7 +306,6 @@ public class MovementTraverse extends Movement {
         if (feet.getY() != dest.getY() && !ladder) {
             logDebug("Wrong Y coordinate");
             if (feet.getY() < dest.getY()) {
-                System.out.println("In movement traverse");
                 return state.setInput(Input.JUMP, true);
             }
             return state;

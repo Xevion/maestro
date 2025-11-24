@@ -117,13 +117,6 @@ public class PathExecutor implements IPathExecutor, Helper {
         Tuple<Double, BlockPos> status = closestPathPos(path);
         if (possiblyOffPath(status, MAX_DIST_FROM_PATH)) {
             ticksAway++;
-            System.out.println(
-                    "FAR AWAY FROM PATH FOR "
-                            + ticksAway
-                            + " TICKS. Current distance: "
-                            + status.getA()
-                            + ". Threshold: "
-                            + MAX_DIST_FROM_PATH);
             if (ticksAway > MAX_TICKS_AWAY) {
                 logDebug("Too far away from path for too long, cancelling path");
                 cancel();
@@ -174,10 +167,6 @@ public class PathExecutor implements IPathExecutor, Helper {
             toWalkInto = newWalkInto;
             recalcBP = false;
         }
-        /*long end = System.nanoTime() / 1000000L;
-        if (end - start > 0) {
-            System.out.println("Recalculating break and place took " + (end - start) + "ms");
-        }*/
         if (pathPosition < path.movements().size() - 1) {
             IMovement next = path.movements().get(pathPosition + 1);
             if (!behavior.maestro.bsi.worldContainsLoadedChunk(
@@ -301,7 +290,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private boolean shouldPause() {
         Optional<AbstractNodeCostSearch> current = behavior.getInProgress();
-        if (!current.isPresent()) {
+        if (current.isEmpty()) {
             return false;
         }
         if (!ctx.player().onGround()) {
@@ -320,7 +309,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return false;
         }
         Optional<IPath> currentBest = current.get().bestPathSoFar();
-        if (!currentBest.isPresent()) {
+        if (currentBest.isEmpty()) {
             return false;
         }
         List<BetterBlockPos> positions = currentBest.get().positions();
@@ -707,7 +696,6 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private void clearKeys() {
-        // i'm just sick and tired of this snippet being everywhere lol
         behavior.maestro.getInputOverrideHandler().clearAllKeys();
     }
 

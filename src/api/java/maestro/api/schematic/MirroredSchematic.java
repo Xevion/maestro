@@ -58,25 +58,17 @@ public class MirroredSchematic implements ISchematic {
     }
 
     private static int mirrorX(int x, int sizeX, Mirror mirror) {
-        switch (mirror) {
-            case NONE:
-            case LEFT_RIGHT:
-                return x;
-            case FRONT_BACK:
-                return sizeX - x - 1;
-        }
-        throw new IllegalArgumentException("Unknown mirror");
+        return switch (mirror) {
+            case NONE, LEFT_RIGHT -> x;
+            case FRONT_BACK -> sizeX - x - 1;
+        };
     }
 
     private static int mirrorZ(int z, int sizeZ, Mirror mirror) {
-        switch (mirror) {
-            case NONE:
-            case FRONT_BACK:
-                return z;
-            case LEFT_RIGHT:
-                return sizeZ - z - 1;
-        }
-        throw new IllegalArgumentException("Unknown mirror");
+        return switch (mirror) {
+            case NONE, FRONT_BACK -> z;
+            case LEFT_RIGHT -> sizeZ - z - 1;
+        };
     }
 
     private static BlockState mirror(BlockState state, Mirror mirror) {

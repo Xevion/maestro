@@ -395,7 +395,7 @@ public class ArgConsumer implements IArgConsumer {
 
     @Override
     public String rawRest() {
-        return args.size() > 0 ? args.getFirst().getRawRest() : "";
+        return !args.isEmpty() ? args.getFirst().getRawRest() : "";
     }
 
     @Override
@@ -425,7 +425,7 @@ public class ArgConsumer implements IArgConsumer {
 
     @Override
     public ICommandArgument consumed() {
-        return consumed.size() > 0 ? consumed.getLast() : CommandArguments.unknown();
+        return !consumed.isEmpty() ? consumed.getLast() : CommandArguments.unknown();
     }
 
     @Override
@@ -444,12 +444,12 @@ public class ArgConsumer implements IArgConsumer {
     private final class Context implements IDatatypeContext {
 
         @Override
-        public final IMaestro getMaestro() {
+        public IMaestro getMaestro() {
             return ArgConsumer.this.manager.getMaestro();
         }
 
         @Override
-        public final ArgConsumer getConsumer() {
+        public ArgConsumer getConsumer() {
             return ArgConsumer.this;
         }
     }

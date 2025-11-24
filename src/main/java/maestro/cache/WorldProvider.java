@@ -56,13 +56,11 @@ public class WorldProvider implements IWorldProvider {
                             final Path readmeDir = dirs.getB();
 
                             try {
-                                // lol wtf is this baritone folder in my minecraft save?
-                                // good thing we have a readme
                                 Files.createDirectories(readmeDir);
-                                Files.write(
+                                Files.writeString(
                                         readmeDir.resolve("readme.txt"),
-                                        "https://github.com/cabaletta/baritone\n"
-                                                .getBytes(StandardCharsets.US_ASCII));
+                                        "https://github.com/cabaletta/baritone\n",
+                                        StandardCharsets.US_ASCII);
                             } catch (IOException ignored) {
                             }
 
@@ -73,7 +71,6 @@ public class WorldProvider implements IWorldProvider {
                             } catch (IOException ignored) {
                             }
 
-                            System.out.println("Maestro world data dir: " + worldDataDir);
                             synchronized (worldCache) {
                                 this.currentWorld =
                                         worldCache.computeIfAbsent(
@@ -102,7 +99,7 @@ public class WorldProvider implements IWorldProvider {
 
     /**
      * @param world The world
-     * @return An {@link Optional} containing the world's baritone dir and readme dir, or {@link
+     * @return An {@link Optional} containing the world's maestro dir and readme dir, or {@link
      *     Optional#empty()} if the world isn't valid for caching.
      */
     private Optional<Tuple<Path, Path>> getSaveDirectories(Level world) {
@@ -130,7 +127,6 @@ public class WorldProvider implements IWorldProvider {
                 folderName = serverData.isRealm() ? "realms" : serverData.ip;
             } else {
                 // replaymod causes null currentServer and false singleplayer.
-                System.out.println("World seems to be a replay. Not loading Maestro cache.");
                 currentWorld = null;
                 mcWorld = ctx.world();
                 return Optional.empty();
@@ -147,22 +143,19 @@ public class WorldProvider implements IWorldProvider {
         return Optional.of(new Tuple<>(worldDir, readmeDir));
     }
 
-    /** Why does this exist instead of fixing the event? Some mods break the event. Lol. */
+    /** Why does this exist instead of fixing the event? Some mods break the event. */
     private void detectAndHandleBrokenLoading() {
         if (this.mcWorld != ctx.world()) {
             if (this.currentWorld != null) {
-                System.out.println("mc.world unloaded unnoticed! Unloading Maestro cache now.");
                 closeWorld();
             }
             if (ctx.world() != null) {
-                System.out.println("mc.world loaded unnoticed! Loading Maestro cache now.");
                 initWorld(ctx.world());
             }
         } else if (this.currentWorld == null
                 && ctx.world() != null
                 && (ctx.minecraft().hasSingleplayerServer()
                         || ctx.minecraft().getCurrentServer() != null)) {
-            System.out.println("Retrying to load Maestro cache");
             initWorld(ctx.world());
         }
     }

@@ -1,6 +1,5 @@
 package maestro.api.command;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -33,10 +32,9 @@ public abstract class Command implements ICommand {
      */
     protected Command(IMaestro maestro, String... names) {
         this.names =
-                Collections.unmodifiableList(
-                        Stream.of(names)
-                                .map(s -> s.toLowerCase(Locale.US))
-                                .collect(Collectors.toList()));
+                Stream.of(names)
+                        .map(s -> s.toLowerCase(Locale.US))
+                        .collect(Collectors.toUnmodifiableList());
         this.maestro = maestro;
         this.ctx = maestro.getPlayerContext();
     }

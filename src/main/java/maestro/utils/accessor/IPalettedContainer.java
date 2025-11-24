@@ -9,7 +9,7 @@ public interface IPalettedContainer<T> {
 
     BitStorage getStorage();
 
-    public interface IData<T> {
+    interface IData<T> {
 
         Palette<T> getPalette();
 

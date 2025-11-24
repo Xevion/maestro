@@ -63,9 +63,7 @@ public class Waypoint implements IWaypoint {
     public String toString() {
         return String.format(
                 "%s %s %s",
-                name,
-                BetterBlockPos.from(location).toString(),
-                new Date(creationTimestamp).toString());
+                name, BetterBlockPos.from(location).toString(), new Date(creationTimestamp));
     }
 
     @Override
@@ -73,10 +71,9 @@ public class Waypoint implements IWaypoint {
         if (o == null) {
             return false;
         }
-        if (!(o instanceof IWaypoint)) {
+        if (!(o instanceof IWaypoint w)) {
             return false;
         }
-        IWaypoint w = (IWaypoint) o;
         return name.equals(w.getName()) && tag == w.getTag() && location.equals(w.getLocation());
     }
 }

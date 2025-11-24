@@ -242,7 +242,6 @@ public enum FasterWorldScanner implements IWorldScanner {
                     offset += bitsPerEntry, ++idx) {
                 int value = (int) ((l >> offset) & maxEntryValue);
                 if (isInFilter[value]) {
-                    //noinspection DuplicateExpressions
                     blocks.add(
                             new BlockPos(
                                     (int) chunkX + ((idx & 255) & 15),

@@ -86,7 +86,7 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
                                 + gettingTo
                                 + ", blacklisting presumably unreachable closest instances...");
                 blacklistClosest();
-                return onTick(false, isSafeToCancel); // gamer moment
+                return onTick(false, isSafeToCancel);
             } else {
                 logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
                 if (isSafeToCancel) {
@@ -138,10 +138,7 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
             // i can't do break; (codacy gets mad), and i can't do if(true){break}; (codacy gets
             // mad)
             // so i will do this
-            switch (newBlacklist.size()) {
-                default:
-                    break outer;
-            }
+            break outer;
         }
         logDebug("Blacklisting unreachable locations " + newBlacklist);
         blacklist.addAll(newBlacklist);
@@ -226,7 +223,6 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
                                     Input.CLICK_RIGHT,
                                     true); // TODO find some way to right click even if we're in an
                     // ESC menu
-                    System.out.println(ctx.player().containerMenu);
                     if (!(ctx.player().containerMenu instanceof InventoryMenu)) {
                         return true;
                     }

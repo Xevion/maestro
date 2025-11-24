@@ -10,16 +10,16 @@ public class MBlockPos extends BlockPos {
 
     @Override
     public int getX() {
-        throw new LinkageError("LOL");
+        throw new LinkageError("Unsupported operation");
     }
 
     @Override
     public int getY() {
-        throw new LinkageError("LOL");
+        throw new LinkageError("Unsupported operation");
     }
 
     @Override
     public int getZ() {
-        throw new LinkageError("LOL");
+        throw new LinkageError("Unsupported operation");
     }
 }

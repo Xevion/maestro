@@ -3,6 +3,7 @@ package maestro.api.event.listener;
 import maestro.api.event.events.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.Packet;
@@ -23,7 +24,7 @@ public interface IGameEventListener {
      * Run once per game tick after the tick is completed
      *
      * @param event The event
-     * @see Minecraft#runTick()
+     * @see Minecraft#runTick(boolean)
      */
     void onPostTick(TickEvent event);
 
@@ -75,7 +76,7 @@ public interface IGameEventListener {
      * Runs before and after whenever a new world is loaded
      *
      * @param event The event
-     * @see Minecraft#setLevel(ClientLevel)
+     * @see Minecraft#setLevel(ClientLevel, ReceivingLevelScreen.Reason)
      */
     void onWorldEvent(WorldEvent event);
 

@@ -13,9 +13,8 @@ public class CachedRegionTest {
                 for (int y = 0; y < 256; y++) {
                     byte part1 = (byte) (z << 4 | x);
                     byte part2 = (byte) (y);
-                    byte xz = part1;
-                    int X = xz & 0x0f;
-                    int Z = (xz >>> 4) & 0x0f;
+                    int X = part1 & 0x0f;
+                    int Z = (part1 >>> 4) & 0x0f;
                     int Y = part2 & 0xff;
                     if (x != X || y != Y || z != Z) {
                         System.out.println(x + " " + X + " " + y + " " + Y + " " + z + " " + Z);

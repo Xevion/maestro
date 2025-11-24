@@ -29,7 +29,7 @@ public class Determinizer {
 
         try (
                 JarFile jarFile = new JarFile(new File(inputPath));
-                JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File(outputPath)))
+                JarOutputStream jos = new JarOutputStream(new FileOutputStream(outputPath))
         ) {
 
             List<JarEntry> entries = jarFile.stream()
@@ -52,7 +52,7 @@ public class Determinizer {
                 } else if (entry.getName().equals("META-INF/MANIFEST.MF") && doForgeReplacementOfMetaInf) { // only replace for forge jar
                     ByteArrayOutputStream cancer = new ByteArrayOutputStream();
                     copy(jarFile.getInputStream(entry), cancer);
-                    String manifest = new String(cancer.toByteArray());
+                    String manifest = cancer.toString();
                     if (!manifest.contains("maestro.launch.tweaker.MaestroTweaker")) {
                         throw new IllegalStateException("unable to replace");
                     }
@@ -90,7 +90,7 @@ public class Determinizer {
         StringWriter writer = new StringWriter();
         JsonWriter jw = new JsonWriter(writer);
         ORDERED_JSON_WRITER.write(jw, in);
-        return writer.toString() + "\n";
+        return writer + "\n";
     }
 
     /**
@@ -132,7 +132,7 @@ public class Determinizer {
                 out.beginObject();
 
                 List<Map.Entry<String, JsonElement>> entries = new ArrayList<>(value.getAsJsonObject().entrySet());
-                entries.sort(Comparator.comparing(Map.Entry::getKey));
+                entries.sort(Map.Entry.comparingByKey());
                 for (Map.Entry<String, JsonElement> e : entries) {
                     out.name(e.getKey());
                     write(out, e.getValue());

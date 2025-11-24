@@ -187,7 +187,7 @@ public class SettingsUtil {
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue)
             throws IllegalStateException, NumberFormatException {
-        Settings.Setting setting = settings.byLowerName.get(settingName);
+        Settings.Setting<?> setting = settings.byLowerName.get(settingName);
         if (setting == null) {
             throw new IllegalStateException("No setting by that name");
         }
@@ -204,7 +204,12 @@ public class SettingsUtil {
                             + " which is "
                             + parsed.getClass());
         }
-        setting.value = parsed;
+        setSettingValue(setting, parsed);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> void setSettingValue(Settings.Setting<T> setting, Object value) {
+        setting.value = (T) value;
     }
 
     private interface ISettingParser<T> {

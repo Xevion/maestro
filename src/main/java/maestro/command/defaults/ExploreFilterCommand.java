@@ -45,7 +45,7 @@ public class ExploreFilterCommand extends Command {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        logDirect(String.format("Explore filter applied. Inverted: %s", Boolean.toString(invert)));
+        logDirect(String.format("Explore filter applied. Inverted: %s", invert));
     }
 
     @Override

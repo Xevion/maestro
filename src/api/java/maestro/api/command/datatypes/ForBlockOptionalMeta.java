@@ -21,7 +21,7 @@ public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
      * property and value use the same format as domain.
      */
     // Good luck reading this.
-    private static Pattern PATTERN =
+    private static final Pattern PATTERN =
             Pattern.compile(
                     "(?:[a-z0-9_.-]+:)?(?:[a-z0-9/_.-]+(?:\\[(?:(?:[a-z0-9_.-]+=[a-z0-9_.-]+,)*(?:[a-z0-9_.-]+(?:=(?:[a-z0-9_.-]+(?:\\])?)?)?)?|\\])?)?)?");
 

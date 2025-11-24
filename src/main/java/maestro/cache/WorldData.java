@@ -8,7 +8,7 @@ import maestro.api.cache.IWorldData;
 import net.minecraft.world.level.dimension.DimensionType;
 
 /**
- * Data about a world, from baritone's point of view. Includes cached chunks, waypoints, and map
+ * Data about a world, from maestro's point of view. Includes cached chunks, waypoints, and map
  * data.
  *
  * @author leijurv

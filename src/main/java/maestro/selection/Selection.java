@@ -90,16 +90,12 @@ public class Selection implements ISelection {
     private boolean isPos2(Direction facing) {
         boolean negative = facing.getAxisDirection().getStep() < 0;
 
-        switch (facing.getAxis()) {
-            case X:
-                return (pos2.x > pos1.x) ^ negative;
-            case Y:
-                return (pos2.y > pos1.y) ^ negative;
-            case Z:
-                return (pos2.z > pos1.z) ^ negative;
-            default:
-                throw new IllegalStateException("Bad Direction.Axis");
-        }
+        return switch (facing.getAxis()) {
+            case X -> (pos2.x > pos1.x) ^ negative;
+            case Y -> (pos2.y > pos1.y) ^ negative;
+            case Z -> (pos2.z > pos1.z) ^ negative;
+            default -> throw new IllegalStateException("Bad Direction.Axis");
+        };
     }
 
     @Override

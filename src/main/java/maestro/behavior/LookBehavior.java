@@ -137,11 +137,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onSendPacket(PacketEvent event) {
-        if (!(event.getPacket() instanceof ServerboundMovePlayerPacket)) {
+        if (!(event.getPacket() instanceof ServerboundMovePlayerPacket packet)) {
             return;
         }
 
-        final ServerboundMovePlayerPacket packet = (ServerboundMovePlayerPacket) event.getPacket();
         if (packet instanceof ServerboundMovePlayerPacket.Rot
                 || packet instanceof ServerboundMovePlayerPacket.PosRot) {
             this.serverRotation = new Rotation(packet.getYRot(0.0f), packet.getXRot(0.0f));
@@ -224,8 +223,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 desiredPitch = nudgeToLevel(desiredPitch);
             }
 
-            desiredYaw += this.randomYawOffset;
-            desiredPitch += this.randomPitchOffset;
+            desiredYaw += (float) this.randomYawOffset;
+            desiredPitch += (float) this.randomPitchOffset;
 
             return new Rotation(
                             this.calculateMouseMove(prev.getYaw(), desiredYaw),

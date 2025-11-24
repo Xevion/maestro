@@ -167,31 +167,30 @@ public class SelCommand extends Command {
                             final int h = fill.heightY();
                             final int l = fill.lengthZ();
 
-                            switch (action) {
-                                case WALLS:
-                                    return new WallsSchematic(fill);
-                                case SHELL:
-                                    return new ShellSchematic(fill);
-                                case REPLACE:
-                                    return new ReplaceSchematic(fill, replaces);
-                                case SPHERE:
-                                    return MaskSchematic.create(
-                                            fill, new SphereMask(w, h, l, true).compute());
-                                case HSPHERE:
-                                    return MaskSchematic.create(
-                                            fill, new SphereMask(w, h, l, false).compute());
-                                case CYLINDER:
-                                    return MaskSchematic.create(
-                                            fill,
-                                            new CylinderMask(w, h, l, true, alignment).compute());
-                                case HCYLINDER:
-                                    return MaskSchematic.create(
-                                            fill,
-                                            new CylinderMask(w, h, l, false, alignment).compute());
-                                default:
-                                    // Silent fail
-                                    return fill;
-                            }
+                            return switch (action) {
+                                case WALLS -> new WallsSchematic(fill);
+                                case SHELL -> new ShellSchematic(fill);
+                                case REPLACE -> new ReplaceSchematic(fill, replaces);
+                                case SPHERE ->
+                                        MaskSchematic.create(
+                                                fill, new SphereMask(w, h, l, true).compute());
+                                case HSPHERE ->
+                                        MaskSchematic.create(
+                                                fill, new SphereMask(w, h, l, false).compute());
+                                case CYLINDER ->
+                                        MaskSchematic.create(
+                                                fill,
+                                                new CylinderMask(w, h, l, true, alignment)
+                                                        .compute());
+                                case HCYLINDER ->
+                                        MaskSchematic.create(
+                                                fill,
+                                                new CylinderMask(w, h, l, false, alignment)
+                                                        .compute());
+                                default ->
+                                        // Silent fail
+                                        fill;
+                            };
                         };
 
                 ISchematic schematic =

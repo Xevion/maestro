@@ -37,7 +37,7 @@ public class MixinNetworkManager {
         for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
-                            == (Connection) (Object) this) {
+                            == (Object) this) {
                 maestro.getGameEventHandler()
                         .onSendPacket(
                                 new PacketEvent(
@@ -59,7 +59,7 @@ public class MixinNetworkManager {
         for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
-                            == (Connection) (Object) this) {
+                            == (Object) this) {
                 maestro.getGameEventHandler()
                         .onSendPacket(
                                 new PacketEvent(
@@ -83,7 +83,7 @@ public class MixinNetworkManager {
         for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
-                            == (Connection) (Object) this) {
+                            == (Object) this) {
                 maestro.getGameEventHandler()
                         .onReceivePacket(
                                 new PacketEvent(
@@ -101,7 +101,7 @@ public class MixinNetworkManager {
         for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
-                            == (Connection) (Object) this) {
+                            == (Object) this) {
                 maestro.getGameEventHandler()
                         .onReceivePacket(
                                 new PacketEvent(

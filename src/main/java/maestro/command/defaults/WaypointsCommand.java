@@ -153,7 +153,7 @@ public class WaypointsCommand extends Command {
             deletedWaypoints
                     .computeIfAbsent(
                             maestro.getWorldProvider().getCurrentWorld(), k -> new ArrayList<>())
-                    .addAll(Arrays.<IWaypoint>asList(waypoints));
+                    .addAll(Arrays.asList(waypoints));
             MutableComponent textComponent =
                     Component.literal(
                             String.format(

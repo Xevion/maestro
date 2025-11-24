@@ -132,7 +132,6 @@ public final class ElytraBehavior implements Helper {
         private int playerNear;
 
         public PathManager() {
-            // lol imagine initializing fields normally
             this.clear();
         }
 
@@ -163,9 +162,7 @@ public final class ElytraBehavior implements Helper {
                     .thenRun(
                             () -> {
                                 final double distance =
-                                        this.path
-                                                .get(0)
-                                                .distanceTo(this.path.get(this.path.size() - 1));
+                                        this.path.getFirst().distanceTo(this.path.getLast());
                                 if (this.completePath) {
                                     logVerbose(
                                             String.format(
@@ -215,7 +212,7 @@ public final class ElytraBehavior implements Helper {
                                             after.stream(),
                                             complete
                                                     || (segment.isFinished()
-                                                            && !upToIncl.isPresent())))
+                                                            && upToIncl.isEmpty())))
                     .whenComplete(
                             (result, ex) -> {
                                 this.recalculating = false;
@@ -248,7 +245,7 @@ public final class ElytraBehavior implements Helper {
                             () -> {
                                 final int recompute = this.path.size() - before.size() - 1;
                                 final double distance =
-                                        this.path.get(0).distanceTo(this.path.get(recompute));
+                                        this.path.getFirst().distanceTo(this.path.get(recompute));
 
                                 if (this.completePath) {
                                     logVerbose(
@@ -298,7 +295,7 @@ public final class ElytraBehavior implements Helper {
             List<BetterBlockPos> path = segment.collect();
             if (ElytraBehavior.this.appendDestination) {
                 BlockPos dest = ElytraBehavior.this.destination;
-                BlockPos last = !path.isEmpty() ? path.get(path.size() - 1) : null;
+                BlockPos last = !path.isEmpty() ? path.getLast() : null;
                 if (last != null
                         && ElytraBehavior.this.clearView(
                                 Vec3.atLowerCornerOf(dest), Vec3.atLowerCornerOf(last), false)) {
@@ -331,7 +328,7 @@ public final class ElytraBehavior implements Helper {
                     .pathFindAsync(src, dst)
                     .thenApply(UnpackedSegment::from)
                     .thenApply(operator)
-                    .thenAcceptAsync(this::setPath, ctx.minecraft()::execute);
+                    .thenAcceptAsync(this::setPath, ctx.minecraft());
         }
 
         private void pathfindAroundObstacles() {
@@ -636,7 +633,7 @@ public final class ElytraBehavior implements Helper {
         if (this.remainingSetBackTicks > 0) {
             this.remainingSetBackTicks--;
         }
-        if (!this.getAttachedFirework().isPresent()) {
+        if (this.getAttachedFirework().isEmpty()) {
             this.minimumBoostTicks = 0;
         }
 
@@ -712,7 +709,7 @@ public final class ElytraBehavior implements Helper {
         maestro.getLookBehavior().updateTarget(solution.rotation, false);
 
         if (!solution.solvedPitch) {
-            logVerbose("no pitch solution, probably gonna crash in a few ticks LOL!!!");
+            logVerbose("no pitch solution, probably gonna crash in a few ticks");
             return;
         } else {
             this.aimPos =
@@ -762,6 +759,7 @@ public final class ElytraBehavior implements Helper {
                             : 3; // ideally this would be expressed as a distance in blocks, rather
             // than a number of voxel steps
             // int minStep = Math.max(0, playerNear - relaxation);
+            @SuppressWarnings("UnnecessaryLocalVariable")
             int minStep = playerNear;
 
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
@@ -1348,7 +1346,7 @@ public final class ElytraBehavior implements Helper {
             if (displacement == null) {
                 continue;
             }
-            final Vec3 last = displacement.get(displacement.size() - 1);
+            final Vec3 last = displacement.getLast();
             double goodness = goalDirection.dot(last.normalize());
             if (landingMode) {
                 goodness = -goalDelta.subtract(last).length();
@@ -1373,9 +1371,7 @@ public final class ElytraBehavior implements Helper {
             } else {
                 // Ensure that the goal is visible from the final position
                 if (!clearView(
-                        context.start.add(result.steps.get(result.steps.size() - 1)),
-                        goal,
-                        context.ignoreLava)) {
+                        context.start.add(result.steps.getLast()), goal, context.ignoreLava)) {
                     continue;
                 }
             }
@@ -1437,7 +1433,7 @@ public final class ElytraBehavior implements Helper {
             }
 
             hitbox = hitbox.move(motion);
-            displacement.add(displacement.get(displacement.size() - 1).add(motion));
+            displacement.add(displacement.getLast().add(motion));
 
             if (i >= ticksBoostDelay && remainingTicksBoosted-- > 0) {
                 // See EntityFireworkRocket

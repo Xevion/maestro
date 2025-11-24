@@ -24,7 +24,6 @@ import maestro.command.manager.CommandManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.*;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Tuple;
 
 public class ExampleMaestroControl extends Behavior implements Helper {
@@ -96,7 +95,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
         String rest = msg.substring(pair.getA().length());
         ArgConsumer argc = new ArgConsumer(this.manager, pair.getB());
         if (!argc.hasAny()) {
-            Settings.Setting setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
+            Settings.Setting<?> setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
             if (setting != null) {
                 logRanCommand(command, rest);
                 if (setting.getValueClass() == Boolean.class) {
@@ -162,7 +161,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                                     .filterPrefix(argc.getString())
                                     .stream();
                 }
-                Settings.Setting setting =
+                Settings.Setting<?> setting =
                         settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
                 if (setting != null && !setting.isJavaOnly()) {
                     if (setting.getValueClass() == Boolean.class) {

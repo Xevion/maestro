@@ -55,7 +55,7 @@ public class SubstituteSchematic extends AbstractSchematic {
                 }
             }
         }
-        return substitutes.get(0).defaultBlockState();
+        return substitutes.getFirst().defaultBlockState();
     }
 
     private BlockState withBlock(BlockState state, Block block) {

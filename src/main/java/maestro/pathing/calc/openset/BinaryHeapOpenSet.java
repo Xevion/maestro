@@ -33,7 +33,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
     }
 
     @Override
-    public final void insert(PathNode value) {
+    public void insert(PathNode value) {
         if (size >= array.length - 1) {
             array = Arrays.copyOf(array, array.length << 1);
         }
@@ -44,7 +44,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
     }
 
     @Override
-    public final void update(PathNode val) {
+    public void update(PathNode val) {
         int index = val.heapPosition;
         int parentInd = index >>> 1;
         double cost = val.combinedCost;
@@ -61,12 +61,12 @@ public final class BinaryHeapOpenSet implements IOpenSet {
     }
 
     @Override
-    public final boolean isEmpty() {
+    public boolean isEmpty() {
         return size == 0;
     }
 
     @Override
-    public final PathNode removeLowest() {
+    public PathNode removeLowest() {
         if (size == 0) {
             throw new IllegalStateException("Cannot remove from empty heap");
         }

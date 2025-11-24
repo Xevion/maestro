@@ -60,7 +60,7 @@ public class GuiClick extends Screen implements Helper {
                     new Vec3(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
             LocalPlayer player =
                     MaestroAPI.getProvider().getPrimaryMaestro().getPlayerContext().player();
-            HitResult result =
+            BlockHitResult result =
                     player.level()
                             .clip(
                                     new ClipContext(
@@ -70,7 +70,7 @@ public class GuiClick extends Screen implements Helper {
                                             ClipContext.Fluid.NONE,
                                             player));
             if (result != null && result.getType() == HitResult.Type.BLOCK) {
-                currentMouseOver = ((BlockHitResult) result).getBlockPos();
+                currentMouseOver = result.getBlockPos();
             }
         }
     }

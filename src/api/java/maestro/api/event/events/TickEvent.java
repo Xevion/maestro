@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
  *
  * <p>When {@link #state} is {@link EventState#PRE}, the event is being called just prior to when
  * the current in-game screen is ticked. When {@link #state} is {@link EventState#POST}, the event
- * is being called at the very end of the {@link Minecraft#runTick()} method.
+ * is being called at the very end of the {@link Minecraft#runTick(boolean)} method.
  */
 public final class TickEvent {
 

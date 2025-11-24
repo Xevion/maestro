@@ -28,7 +28,7 @@ public final class MCEditSchematic extends StaticSchematic {
             byte[] addBlocks = schematic.getByteArray("AddBlocks");
             additional = new byte[addBlocks.length * 2];
             for (int i = 0; i < addBlocks.length; i++) {
-                additional[i * 2 + 0] = (byte) ((addBlocks[i] >> 4) & 0xF); // lower nibble
+                additional[i * 2] = (byte) ((addBlocks[i] >> 4) & 0xF); // lower nibble
                 additional[i * 2 + 1] = (byte) ((addBlocks[i] >> 0) & 0xF); // upper nibble
             }
         }

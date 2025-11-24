@@ -5,9 +5,9 @@ import com.github.lunatrius.schematica.api.ISchematic;
 
 public class SchematicWorld {
 
-    public final MBlockPos position = (MBlockPos) (Object) "cringe";
+    public final MBlockPos position = (MBlockPos) (Object) "stub";
 
     public ISchematic getSchematic() {
-        throw new LinkageError("LOL");
+        throw new LinkageError("Unsupported operation");
     }
 }

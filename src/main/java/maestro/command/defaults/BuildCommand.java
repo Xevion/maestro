@@ -50,7 +50,7 @@ public class BuildCommand extends Command {
             }
             throw new CommandInvalidStateException("Cannot find " + file);
         }
-        if (!SchematicSystem.INSTANCE.getByFile(file).isPresent()) {
+        if (SchematicSystem.INSTANCE.getByFile(file).isEmpty()) {
             StringJoiner formats = new StringJoiner(", ");
             SchematicSystem.INSTANCE.getFileExtensions().forEach(formats::add);
             throw new CommandInvalidStateException(

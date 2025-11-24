@@ -42,7 +42,6 @@ public class FollowCommand extends Command {
             while (args.hasAny()) {
                 Object gotten = args.getDatatypeFor(list.datatype);
                 if (gotten instanceof EntityType) {
-                    //noinspection unchecked
                     classes.add((EntityType) gotten);
                 } else if (gotten != null) {
                     entities.add((Entity) gotten);

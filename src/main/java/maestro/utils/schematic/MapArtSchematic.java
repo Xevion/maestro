@@ -38,12 +38,6 @@ public class MapArtSchematic extends MaskSchematic {
                 }
             }
         }
-        if (missingColumns != 0) {
-            System.out.println(
-                    missingColumns
-                            + " columns had no block despite being in a map art, letting them be"
-                            + " whatever");
-        }
         return heightMap;
     }
 

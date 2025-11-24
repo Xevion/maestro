@@ -62,16 +62,12 @@ public final class LitematicaHelper {
         } else if (mirror == Mirror.FRONT_BACK) {
             x = -x;
         }
-        switch (rotation) {
-            case CLOCKWISE_90:
-                return new Vec3i(-z, in.getY(), x);
-            case CLOCKWISE_180:
-                return new Vec3i(-x, in.getY(), -z);
-            case COUNTERCLOCKWISE_90:
-                return new Vec3i(z, in.getY(), -x);
-            default:
-                return new Vec3i(x, in.getY(), z);
-        }
+        return switch (rotation) {
+            case CLOCKWISE_90 -> new Vec3i(-z, in.getY(), x);
+            case CLOCKWISE_180 -> new Vec3i(-x, in.getY(), -z);
+            case COUNTERCLOCKWISE_90 -> new Vec3i(z, in.getY(), -x);
+            default -> new Vec3i(x, in.getY(), z);
+        };
     }
 
     /**

@@ -50,7 +50,6 @@ public abstract class MixinPalettedContainer<T> implements IPalettedContainer<T>
         try {
             rawGetter = MethodHandles.lookup().unreflectGetter(dataField);
         } catch (IllegalAccessException impossible) {
-            // we literally are the owning class, wtf?
             throw new IllegalStateException(
                     "PalettedContainer may not access its own field?!", impossible);
         }

@@ -6,10 +6,10 @@ import maestro.api.event.events.PathEvent;
 /**
  * A process that can control the PathingBehavior.
  *
- * <p>Differences between a baritone process and a behavior:
+ * <p>Differences between a maestro process and a behavior:
  *
  * <ul>
- *   <li>Only one baritone process can be active at a time
+ *   <li>Only one maestro process can be active at a time
  *   <li>PathingBehavior can only be controlled by a process
  * </ul>
  *
@@ -24,7 +24,7 @@ public interface IMaestroProcess {
      * automated mob avoidance that would be temporary and would forcefully take control. Same for
      * something that pauses pathing for auto eat, etc.
      *
-     * <p>The value is -1 beacuse that's what Impact 4.5's beta auto walk returns and I want to tie
+     * <p>The value is -1 because that's what Impact 4.5's beta auto walk returns and I want to tie
      * with it.
      */
     double DEFAULT_PRIORITY = -1;

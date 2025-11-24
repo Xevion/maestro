@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)
  *
  * <p>Is it really faster to subclass BlockPos and calculate a hash in the constructor like this,
- * taking everything into account? Yes. 20% faster actually. It's called BETTER BlockPos for a
+ * taking everything into account? Yes. 20% faster, actually. It's called BETTER BlockPos for a
  * reason. Source: <a
  * href="https://docs.google.com/spreadsheets/d/1GWjOjOZINkg_0MkRgKRPH1kUzxjsnEROD9u3UFh_DJc">Benchmark
  * Spreadsheet</a>
@@ -94,11 +94,7 @@ public final class BetterBlockPos extends BlockPos {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (o instanceof BetterBlockPos) {
-            BetterBlockPos oth = (BetterBlockPos) o;
+        if (o instanceof BetterBlockPos oth) {
             return oth.x == x && oth.y == y && oth.z == z;
         }
         // during path execution, like "if (whereShouldIBe.equals(whereAmI)) {"

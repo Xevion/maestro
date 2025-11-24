@@ -12,7 +12,7 @@ public class PrecomputedData {
 
     private final int[] data = new int[Block.BLOCK_STATE_REGISTRY.size()];
 
-    private static final int COMPLETED_MASK = 1 << 0;
+    private static final int COMPLETED_MASK = 1;
     private static final int CAN_WALK_ON_MASK = 1 << 1;
     private static final int CAN_WALK_ON_SPECIAL_MASK = 1 << 2;
     private static final int CAN_WALK_THROUGH_MASK = 1 << 3;

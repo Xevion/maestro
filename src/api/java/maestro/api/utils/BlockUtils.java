@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.Block;
 
 public class BlockUtils {
 
-    private static transient Map<String, Block> resourceCache = new HashMap<>();
+    private static Map<String, Block> resourceCache = new HashMap<>();
 
     public static String blockToString(Block block) {
         ResourceLocation loc = BuiltInRegistries.BLOCK.getKey(block);

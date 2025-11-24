@@ -30,7 +30,7 @@ public final class MaestroProvider implements IMaestroProvider {
 
     @Override
     public IMaestro getPrimaryMaestro() {
-        return this.all.get(0);
+        return this.all.getFirst();
     }
 
     @Override

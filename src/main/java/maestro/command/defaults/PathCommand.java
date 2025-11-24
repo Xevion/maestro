@@ -26,7 +26,7 @@ public class PathCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
         return Stream.empty();
     }
 

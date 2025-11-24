@@ -109,7 +109,7 @@ public class MixinMinecraft {
             return;
         }
 
-        // mc.world changing is only the primary baritone
+        // mc.world changing is only the primary maestro
 
         MaestroAPI.getProvider()
                 .getPrimaryMaestro()
@@ -122,7 +122,7 @@ public class MixinMinecraft {
             ClientLevel world, ReceivingLevelScreen.Reason arg2, CallbackInfo ci) {
         // still fire event for both null, as that means we've just finished exiting a world
 
-        // mc.world changing is only the primary baritone
+        // mc.world changing is only the primary maestro
         MaestroAPI.getProvider()
                 .getPrimaryMaestro()
                 .getGameEventHandler()
@@ -146,7 +146,7 @@ public class MixinMinecraft {
                                                     "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showDebugScreen()Z"),
                             to = @At(value = "CONSTANT", args = "stringValue=Keybindings")))
     private Screen passEvents(Minecraft instance) {
-        // allow user input is only the primary baritone
+        // allow user input is only the primary maestro
         if (MaestroAPI.getProvider().getPrimaryMaestro().getPathingBehavior().isPathing()
                 && player != null) {
             return null;
@@ -156,9 +156,6 @@ public class MixinMinecraft {
 
     // TODO
     // FIXME
-    // bradyfix
-    // i cant mixin
-    // lol
     // https://discordapp.com/channels/208753003996512258/503692253881958400/674760939681349652
     // https://discordapp.com/channels/208753003996512258/503692253881958400/674756457966862376
     /*@Inject(

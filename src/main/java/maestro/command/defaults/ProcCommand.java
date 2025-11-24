@@ -28,11 +28,13 @@ public class ProcCommand extends Command {
         }
         logDirect(
                 String.format(
-                        "Class: %s\n"
-                                + "Priority: %f\n"
-                                + "Temporary: %b\n"
-                                + "Display name: %s\n"
-                                + "Last command: %s",
+                        """
+                        Class: %s
+                        Priority: %f
+                        Temporary: %b
+                        Display name: %s
+                        Last command: %s\
+                        """,
                         process.getClass().getTypeName(),
                         process.priority(),
                         process.isTemporary(),

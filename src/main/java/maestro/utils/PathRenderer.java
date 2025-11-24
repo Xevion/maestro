@@ -311,7 +311,7 @@ public final class PathRenderer implements IRenderer {
                         MaestroAPI.getProvider()
                                 .getPrimaryMaestro()
                                 .getPlayerContext()); // TODO this assumes same dimension between
-        // primary baritone and render view? is this
+        // primary maestro and render view? is this
         // safe?
 
         positions.forEach(
@@ -393,8 +393,7 @@ public final class PathRenderer implements IRenderer {
                     y1,
                     y2,
                     setupRender);
-        } else if (goal instanceof GoalXZ) {
-            GoalXZ goalPos = (GoalXZ) goal;
+        } else if (goal instanceof GoalXZ goalPos) {
             minY = ctx.world().getMinY();
             maxY = ctx.world().getMaxY();
 
@@ -484,8 +483,7 @@ public final class PathRenderer implements IRenderer {
                     ((GoalInverted) goal).origin,
                     partialTicks,
                     settings.colorInvertedGoalBox.value);
-        } else if (goal instanceof GoalYLevel) {
-            GoalYLevel goalpos = (GoalYLevel) goal;
+        } else if (goal instanceof GoalYLevel goalpos) {
             minX = ctx.player().position().x - settings.yLevelBoxSize.value - renderPosX;
             minZ = ctx.player().position().z - settings.yLevelBoxSize.value - renderPosZ;
             maxX = ctx.player().position().x + settings.yLevelBoxSize.value - renderPosX;

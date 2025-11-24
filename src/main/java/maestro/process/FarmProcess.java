@@ -256,8 +256,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
                 toBreak.add(pos);
                 continue;
             }
-            if (state.getBlock() instanceof BonemealableBlock) {
-                BonemealableBlock ig = (BonemealableBlock) state.getBlock();
+            if (state.getBlock() instanceof BonemealableBlock ig) {
                 if (ig.isValidBonemealTarget(ctx.world(), pos, state)
                         && ig.isBonemealSuccess(ctx.world(), ctx.world().random, pos, state)) {
                     bonemealable.add(pos);
@@ -401,8 +400,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
             }
         }
         for (Entity entity : ctx.entities()) {
-            if (entity instanceof ItemEntity && entity.onGround()) {
-                ItemEntity ei = (ItemEntity) entity;
+            if (entity instanceof ItemEntity ei && entity.onGround()) {
                 if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
                     // +0.1 because of farmland's 0.9375 dummy height lol
                     goalz.add(

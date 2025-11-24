@@ -18,18 +18,18 @@ public final class VarInt {
     /**
      * @return The integer value that is represented by this {@link VarInt}.
      */
-    public final int getValue() {
+    public int getValue() {
         return this.value;
     }
 
     /**
      * @return The size of this {@link VarInt}, in bytes, once serialized.
      */
-    public final int getSize() {
+    public int getSize() {
         return this.size;
     }
 
-    public final byte[] serialize() {
+    public byte[] serialize() {
         return this.serialized;
     }
 

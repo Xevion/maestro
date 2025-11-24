@@ -1,6 +1,5 @@
 package maestro.api.command.helpers;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;

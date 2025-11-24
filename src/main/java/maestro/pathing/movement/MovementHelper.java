@@ -501,16 +501,14 @@ public interface MovementHelper extends ActionCosts, Helper {
             return isWater(upState) ^ Maestro.settings().assumeWalkOnWater.value;
         }
 
-        if (MovementHelper.isLava(state)
+        // if we get here it means that assumeWalkOnLava must be true, so
+        // put it last
+        return MovementHelper.isLava(state)
                 && !MovementHelper.isFlowing(x, y, z, state, bsi)
                 && Maestro.settings()
                         .assumeWalkOnLava
-                        .value) { // if we get here it means that assumeWalkOnLava must be true, so
-            // put it last
-            return true;
-        }
-
-        return false; // If we don't recognise it then we want to just return false to be safe.
+                        .value; // If we don't recognise it then we want to just return false to be
+        // safe.
     }
 
     static boolean canWalkOn(CalculationContext context, int x, int y, int z, BlockState state) {
@@ -597,9 +595,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return false;
             }
             Block blockAbove = context.getBlock(x, y + 1, z);
-            if (blockAbove instanceof LiquidBlock) {
-                return false;
-            }
+            return !(blockAbove instanceof LiquidBlock);
         }
         return true;
     }
@@ -896,7 +892,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     enum PlaceResult {
         READY_TO_PLACE,
         ATTEMPTING,
-        NO_OPTION;
+        NO_OPTION
     }
 
     static boolean isTransparent(Block b) {

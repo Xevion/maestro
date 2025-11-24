@@ -20,7 +20,7 @@ public final class RenderEvent {
     /**
      * @return The current render partial ticks
      */
-    public final float getPartialTicks() {
+    public float getPartialTicks() {
         return this.partialTicks;
     }
 

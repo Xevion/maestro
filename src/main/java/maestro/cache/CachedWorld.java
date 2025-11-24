@@ -56,7 +56,6 @@ public final class CachedWorld implements ICachedWorld, Helper {
         }
         this.directory = directory.toString();
         this.dimension = dimension;
-        System.out.println("Cached world directory: " + directory);
         Maestro.getExecutor().execute(new PackerThread());
         Maestro.getExecutor()
                 .execute(
@@ -78,14 +77,14 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     @Override
-    public final void queueForPacking(LevelChunk chunk) {
+    public void queueForPacking(LevelChunk chunk) {
         if (toPackMap.put(chunk.getPos(), chunk) == null) {
             toPackQueue.add(chunk.getPos());
         }
     }
 
     @Override
-    public final boolean isCached(int blockX, int blockZ) {
+    public boolean isCached(int blockX, int blockZ) {
         CachedRegion region = getRegion(blockX >> 9, blockZ >> 9);
         if (region == null) {
             return false;
@@ -93,12 +92,12 @@ public final class CachedWorld implements ICachedWorld, Helper {
         return region.isCached(blockX & 511, blockZ & 511);
     }
 
-    public final boolean regionLoaded(int blockX, int blockZ) {
+    public boolean regionLoaded(int blockX, int blockZ) {
         return getRegion(blockX >> 9, blockZ >> 9) != null;
     }
 
     @Override
-    public final ArrayList<BlockPos> getLocationsOf(
+    public ArrayList<BlockPos> getLocationsOf(
             String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
         ArrayList<BlockPos> res = new ArrayList<>();
         int centerRegionX = centerX >> 9;
@@ -135,9 +134,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     @Override
-    public final void save() {
+    public void save() {
         if (!Maestro.settings().chunkCaching.value) {
-            System.out.println("Not saving to disk; chunk caching is disabled.");
             allRegions()
                     .forEach(
                             region -> {
@@ -158,7 +156,6 @@ public final class CachedWorld implements ICachedWorld, Helper {
                             }
                         });
         long now = System.nanoTime() / 1000000L;
-        System.out.println("World save took " + (now - start) + "ms");
         prune();
     }
 
@@ -221,7 +218,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     @Override
-    public final void reloadAllFromDisk() {
+    public void reloadAllFromDisk() {
         long start = System.nanoTime() / 1000000L;
         allRegions()
                 .forEach(
@@ -231,11 +228,10 @@ public final class CachedWorld implements ICachedWorld, Helper {
                             }
                         });
         long now = System.nanoTime() / 1000000L;
-        System.out.println("World load took " + (now - start) + "ms");
     }
 
     @Override
-    public final synchronized CachedRegion getRegion(int regionX, int regionZ) {
+    public synchronized CachedRegion getRegion(int regionX, int regionZ) {
         return cachedRegions.get(getRegionID(regionX, regionZ));
     }
 

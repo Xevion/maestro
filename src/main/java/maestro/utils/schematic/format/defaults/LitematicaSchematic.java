@@ -27,8 +27,7 @@ import org.apache.commons.lang3.Validate;
 public final class LitematicaSchematic extends CompositeSchematic implements IStaticSchematic {
 
     /**
-     * @param nbtTagCompound a decompressed file stream aka nbt data.
-     * @param rotated if the schematic is rotated by 90°.
+     * @param nbt a decompressed file stream aka nbt data.
      */
     public LitematicaSchematic(CompoundTag nbt) {
         super(0, 0, 0);
@@ -88,9 +87,9 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
     private static BlockState getBlockState(Block block, CompoundTag properties) {
         BlockState blockState = block.defaultBlockState();
 
-        for (Object key : properties.getAllKeys()) {
-            Property<?> property = block.getStateDefinition().getProperty((String) key);
-            String propertyValue = properties.getString((String) key);
+        for (String key : properties.getAllKeys()) {
+            Property<?> property = block.getStateDefinition().getProperty(key);
+            String propertyValue = properties.getString(key);
             if (property != null) {
                 blockState = setPropertyValue(blockState, property, propertyValue);
             }

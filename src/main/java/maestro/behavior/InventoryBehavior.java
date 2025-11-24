@@ -72,9 +72,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     public boolean attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
         OptionalInt destination = getTempHotbarSlot(disallowedHotbar);
         if (destination.isPresent()) {
-            if (!requestSwapWithHotBar(inMainInvy, destination.getAsInt())) {
-                return false;
-            }
+            return requestSwapWithHotBar(inMainInvy, destination.getAsInt());
         }
         return true;
     }
@@ -250,7 +248,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
                 return true;
             }
         }
-        if (desired.test(p.getInventory().offhand.get(0))) {
+        if (desired.test(p.getInventory().offhand.getFirst())) {
             // main hand takes precedence over off hand
             // that means that if we have block A selected in main hand and block B in off hand,
             // right clicking places block B

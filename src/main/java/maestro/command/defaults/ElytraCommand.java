@@ -294,7 +294,7 @@ public class ElytraCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The elytra command tells baritone to, in the nether, automatically fly to the"
+                "The elytra command tells maestro to, in the nether, automatically fly to the"
                         + " current goal.",
                 "",
                 "Usage:",
@@ -303,7 +303,7 @@ public class ElytraCommand extends Command {
                         + " the same goal.",
                 "> elytra repack - Queues all of the chunks in render distance to be given to the"
                         + " native library.",
-                "> elytra supported - Tells you if baritone ships a native library that is"
+                "> elytra supported - Tells you if maestro ships a native library that is"
                         + " compatible with your PC.");
     }
 

@@ -222,16 +222,12 @@ public class MovementParkour extends Movement {
     }
 
     private static double costFromJumpDistance(int dist) {
-        switch (dist) {
-            case 2:
-                return WALK_ONE_BLOCK_COST * 2; // IDK LOL
-            case 3:
-                return WALK_ONE_BLOCK_COST * 3;
-            case 4:
-                return SPRINT_ONE_BLOCK_COST * 4;
-            default:
-                throw new IllegalStateException("LOL " + dist);
-        }
+        return switch (dist) {
+            case 2 -> WALK_ONE_BLOCK_COST * 2;
+            case 3 -> WALK_ONE_BLOCK_COST * 3;
+            case 4 -> SPRINT_ONE_BLOCK_COST * 4;
+            default -> throw new IllegalStateException("Invalid distance: " + dist);
+        };
     }
 
     @Override

@@ -22,14 +22,14 @@ public final class BlockInteractEvent {
     /**
      * @return The position of the block interacted with
      */
-    public final BlockPos getPos() {
+    public BlockPos getPos() {
         return this.pos;
     }
 
     /**
      * @return The type of interaction with the target block
      */
-    public final Type getType() {
+    public Type getType() {
         return this.type;
     }
 

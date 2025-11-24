@@ -54,11 +54,6 @@ public enum RelativeFile implements IDatatypePost<File, File> {
     public static Stream<String> tabComplete(IArgConsumer consumer, File base0)
             throws CommandException {
         // I will not make the caller deal with this, seriously
-        // Tab complete code is beautiful and I'm not going to bloat it with dumb ass checked
-        // exception bullshit -LoganDark
-
-        // lol owned -Brady
-
         File base = getCanonicalFileUnchecked(base0);
         String currentPathStringThing = consumer.getString();
         Path currentPath = FileSystems.getDefault().getPath(currentPathStringThing);

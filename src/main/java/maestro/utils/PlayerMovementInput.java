@@ -39,8 +39,8 @@ public class PlayerMovementInput extends ClientInput {
 
         boolean sneaking = handler.isInputForcedDown(Input.SNEAK);
         if (sneaking) {
-            this.leftImpulse *= 0.3D;
-            this.forwardImpulse *= 0.3D;
+            this.leftImpulse *= 0.3F;
+            this.forwardImpulse *= 0.3F;
         }
 
         boolean sprinting = handler.isInputForcedDown(Input.SPRINT);

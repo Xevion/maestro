@@ -37,7 +37,7 @@ public final class Settings {
     /** Allow Maestro to break blocks */
     public final Setting<Boolean> allowBreak = new Setting<>(true);
 
-    /** Blocks that baritone will be allowed to break even with allowBreak set to false */
+    /** Blocks that maestro will be allowed to break even with allowBreak set to false */
     public final Setting<List<Block>> allowBreakAnyway = new Setting<>(new ArrayList<>());
 
     /** Allow Maestro to sprint */
@@ -62,7 +62,7 @@ public final class Settings {
     public final Setting<Boolean> inventoryMoveOnlyIfStationary = new Setting<>(false);
 
     /**
-     * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto
+     * Disable maestro's auto-tool at runtime, but still assume that another mod will provide auto
      * tool functionality
      *
      * <p>Specifically, path calculation will still assume that an auto tool will run at execution
@@ -120,7 +120,7 @@ public final class Settings {
      */
     public final Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 
-    /** If you have Fire Resistance and Jesus then I guess you could turn this on lol */
+    /** If you have Fire Resistance and Jesus then I guess you could turn this on */
     public final Setting<Boolean> assumeWalkOnLava = new Setting<>(false);
 
     /** Assume step functionality; don't jump on an Ascend. */
@@ -204,7 +204,7 @@ public final class Settings {
                             // Leave Empty by Default
                             ));
 
-    /** blocks that baritone shouldn't break, but can if it needs to. */
+    /** blocks that maestro shouldn't break, but can if it needs to. */
     public final Setting<List<Block>> blocksToAvoidBreaking =
             new Setting<>(
                     new ArrayList<>(
@@ -223,8 +223,7 @@ public final class Settings {
      * <p>If a schematic asks for air at a certain position, and that position currently contains a
      * block on this list, it will be treated as correct.
      */
-    public final Setting<List<Block>> buildIgnoreBlocks =
-            new Setting<>(new ArrayList<>(Arrays.asList()));
+    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(List.of()));
 
     /**
      * A list of blocks to be treated as correct.
@@ -232,8 +231,7 @@ public final class Settings {
      * <p>If a schematic asks for any block on this list at a certain position, it will be treated
      * as correct, regardless of what it currently is.
      */
-    public final Setting<List<Block>> buildSkipBlocks =
-            new Setting<>(new ArrayList<>(Arrays.asList()));
+    public final Setting<List<Block>> buildSkipBlocks = new Setting<>(new ArrayList<>(List.of()));
 
     /**
      * A mapping of blocks to blocks treated as correct in their position
@@ -273,7 +271,7 @@ public final class Settings {
      * <p>If a schematic asks for a block on this list, only air will be accepted at that location
      * (and nothing on buildIgnoreBlocks)
      */
-    public final Setting<List<Block>> okIfAir = new Setting<>(new ArrayList<>(Arrays.asList()));
+    public final Setting<List<Block>> okIfAir = new Setting<>(new ArrayList<>(List.of()));
 
     /**
      * If this is true, the builder will treat all non-air blocks as correct. It will only place new
@@ -289,7 +287,7 @@ public final class Settings {
 
     /** A list of names of block properties the builder will ignore. */
     public final Setting<List<String>> buildIgnoreProperties =
-            new Setting<>(new ArrayList<>(Arrays.asList()));
+            new Setting<>(new ArrayList<>(List.of()));
 
     /**
      * If this setting is true, Maestro will never break a block that is adjacent to an unsupported
@@ -304,7 +302,7 @@ public final class Settings {
      * needed in real pathing scenarios. And they can cause Maestro to get trapped indefinitely in a
      * strange scenario.
      *
-     * <p>Almost never turn this on lol
+     * <p>Almost never turn this on
      */
     public final Setting<Boolean> allowVines = new Setting<>(false);
 
@@ -474,7 +472,7 @@ public final class Settings {
 
     /**
      * Stop 5 movements before anything that made the path COST_INF. For example, if lava has spread
-     * across the path, don't walk right up to it then recalculate, it might still be spreading lol
+     * across the path, don't walk right up to it then recalculate, it might still be spreading
      */
     public final Setting<Integer> costVerificationLookahead = new Setting<>(5);
 
@@ -580,10 +578,10 @@ public final class Settings {
     /** The alternative timeout number when slowPath is on */
     public final Setting<Long> slowPathTimeoutMS = new Setting<>(40000L);
 
-    /** allows baritone to save bed waypoints when interacting with beds */
+    /** allows maestro to save bed waypoints when interacting with beds */
     public final Setting<Boolean> doBedWaypoints = new Setting<>(true);
 
-    /** allows baritone to save death waypoints */
+    /** allows maestro to save death waypoints */
     public final Setting<Boolean> doDeathWaypoints = new Setting<>(true);
 
     /**
@@ -844,7 +842,7 @@ public final class Settings {
     public final Setting<Integer> maxYLevelWhileMining = new Setting<>(2031);
 
     /**
-     * This will only allow baritone to mine exposed ores, can be used to stop ore obfuscators on
+     * This will only allow maestro to mine exposed ores, can be used to stop ore obfuscators on
      * servers that use them.
      */
     public final Setting<Boolean> allowOnlyExposedOres = new Setting<>(false);
@@ -956,7 +954,7 @@ public final class Settings {
      */
     public final Setting<Boolean> goalBreakFromAbove = new Setting<>(false);
 
-    /** Build in map art mode, which makes baritone only care about the top block in each column */
+    /** Build in map art mode, which makes maestro only care about the top block in each column */
     public final Setting<Boolean> mapArtMode = new Setting<>(false);
 
     /** Override builder's behavior to not attempt to correct blocks that are currently water */
@@ -1097,8 +1095,7 @@ public final class Settings {
      * it won't consider anything touching lava, so it just ignores it. However, this setting
      * expands that and allows it to see the entire vein so it'll mine under the lava lake to get
      * the iron that it can reach without mining blocks adjacent to lava. This really defeats the
-     * purpose of legitMine since a player could never do that lol, so thats one reason why its
-     * disabled
+     * purpose of legitMine since a player could never do that, so thats one reason why its disabled
      */
     public final Setting<Boolean> legitMineIncludeDiagonals = new Setting<>(false);
 
@@ -1388,7 +1385,6 @@ public final class Settings {
         private String name;
         private boolean javaOnly;
 
-        @SuppressWarnings("unchecked")
         private Setting(T value) {
             if (value == null) {
                 throw new IllegalArgumentException("Cannot determine value type class from null");
@@ -1404,11 +1400,11 @@ public final class Settings {
          * @return the current setting value
          */
         @Deprecated
-        public final T get() {
+        public T get() {
             return value;
         }
 
-        public final String getName() {
+        public String getName() {
             return name;
         }
 
@@ -1427,7 +1423,7 @@ public final class Settings {
             value = defaultValue;
         }
 
-        public final Type getType() {
+        public Type getType() {
             return settingTypes.get(this);
         }
 

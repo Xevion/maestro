@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 import maestro.api.IMaestro;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.exception.CommandException;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.BetterBlockPos;
@@ -19,14 +18,14 @@ public class SurfaceCommand extends Command {
     }
 
     @Override
-    public void execute(String label, IArgConsumer args) throws CommandException {
+    public void execute(String label, IArgConsumer args) {
         final BetterBlockPos playerPos = ctx.playerFeet();
         final int surfaceLevel = ctx.world().getSeaLevel();
         final int worldHeight = ctx.world().getHeight();
 
         // Ensure this command will not run if you are above the surface level and the block above
         // you is air
-        // As this would imply that your are already on the open surface
+        // As this would imply that you are already on the open surface
         if (playerPos.getY() > surfaceLevel
                 && ctx.world().getBlockState(playerPos.above()).getBlock() instanceof AirBlock) {
             logDirect("Already at surface");
@@ -44,7 +43,7 @@ public class SurfaceCommand extends Command {
             if (!(ctx.world().getBlockState(newPos).getBlock() instanceof AirBlock)
                     && newPos.getY() > playerPos.getY()) {
                 Goal goal = new GoalBlock(newPos.above());
-                logDirect(String.format("Going to: %s", goal.toString()));
+                logDirect(String.format("Going to: %s", goal));
                 maestro.getCustomGoalProcess().setGoalAndPath(goal);
                 return;
             }

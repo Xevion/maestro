@@ -2,7 +2,6 @@ package maestro.command.defaults;
 
 import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +42,7 @@ public class HelpCommand extends Command {
                     () -> logDirect("All Maestro commands (clickable):"),
                     command -> {
                         String names = String.join("/", command.getNames());
-                        String name = command.getNames().get(0);
+                        String name = command.getNames().getFirst();
                         MutableComponent shortDescComponent =
                                 Component.literal(" - " + command.getShortDesc());
                         shortDescComponent.setStyle(
@@ -59,7 +58,8 @@ public class HelpCommand extends Command {
                         hoverComponent.append("\n\nClick to view full help");
                         String clickCommand =
                                 FORCE_COMMAND_PREFIX
-                                        + String.format("%s %s", label, command.getNames().get(0));
+                                        + String.format(
+                                                "%s %s", label, command.getNames().getFirst());
                         MutableComponent component = Component.literal(name);
                         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
                         component.append(shortDescComponent);

@@ -76,7 +76,7 @@ public final class BackfillProcess extends MaestroProcessHelper {
     }
 
     private void amIBreakingABlockHMMMMMMM() {
-        if (!ctx.getSelectedBlock().isPresent() || !maestro.getPathingBehavior().isPathing()) {
+        if (ctx.getSelectedBlock().isEmpty() || !maestro.getPathingBehavior().isPathing()) {
             return;
         }
         blocksToReplace.put(

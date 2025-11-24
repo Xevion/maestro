@@ -30,7 +30,7 @@ public final class NetherPath extends AbstractList<BetterBlockPos> {
      * @return The last position in the path, or {@code null} if empty
      */
     public BetterBlockPos getLast() {
-        return this.isEmpty() ? null : this.backing.get(this.backing.size() - 1);
+        return this.isEmpty() ? null : this.backing.getLast();
     }
 
     public Vec3 getVec(int index) {

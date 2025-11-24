@@ -14,7 +14,7 @@ public final class ChatEvent extends Cancellable {
     /**
      * @return The message being sent
      */
-    public final String getMessage() {
+    public String getMessage() {
         return this.message;
     }
 }

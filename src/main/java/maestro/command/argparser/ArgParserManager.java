@@ -37,7 +37,7 @@ public enum ArgParserManager implements IArgParserManager {
                 .map(IArgParser.Stated.class::cast)
                 .filter(parser -> parser.getTarget().isAssignableFrom(type))
                 .filter(parser -> parser.getStateType().isAssignableFrom(stateKlass))
-                .map(IArgParser.Stated.class::cast)
+                .map(stated -> stated)
                 .findFirst()
                 .orElse(null);
     }

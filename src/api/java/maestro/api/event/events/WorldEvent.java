@@ -19,14 +19,14 @@ public final class WorldEvent {
     /**
      * @return The new world that is being loaded. {@code null} if being unloaded.
      */
-    public final ClientLevel getWorld() {
+    public ClientLevel getWorld() {
         return this.world;
     }
 
     /**
      * @return The state of the event
      */
-    public final EventState getState() {
+    public EventState getState() {
         return this.state;
     }
 }

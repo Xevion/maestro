@@ -357,13 +357,11 @@ public class ElytraProcess extends MaestroProcessHelper
         final int x;
         final int y;
         final int z;
-        if (iGoal instanceof GoalXZ) {
-            GoalXZ goal = (GoalXZ) iGoal;
+        if (iGoal instanceof GoalXZ goal) {
             x = goal.getX();
             y = 64;
             z = goal.getZ();
-        } else if (iGoal instanceof GoalBlock) {
-            GoalBlock goal = (GoalBlock) iGoal;
+        } else if (iGoal instanceof GoalBlock goal) {
             x = goal.x;
             y = goal.y;
             z = goal.z;
@@ -394,10 +392,7 @@ public class ElytraProcess extends MaestroProcessHelper
                 qty += inv.get(i).getCount();
             }
         }
-        if (qty <= Maestro.settings().elytraMinFireworksBeforeLanding.value) {
-            return true;
-        }
-        return false;
+        return qty <= Maestro.settings().elytraMinFireworksBeforeLanding.value;
     }
 
     @Override

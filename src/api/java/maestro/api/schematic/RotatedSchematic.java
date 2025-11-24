@@ -67,32 +67,22 @@ public class RotatedSchematic implements ISchematic {
 
     /** The x component of x,y after applying the rotation */
     private static int rotateX(int x, int z, int sizeX, int sizeZ, Rotation rotation) {
-        switch (rotation) {
-            case NONE:
-                return x;
-            case CLOCKWISE_90:
-                return sizeZ - z - 1;
-            case CLOCKWISE_180:
-                return sizeX - x - 1;
-            case COUNTERCLOCKWISE_90:
-                return z;
-        }
-        throw new IllegalArgumentException("Unknown rotation");
+        return switch (rotation) {
+            case NONE -> x;
+            case CLOCKWISE_90 -> sizeZ - z - 1;
+            case CLOCKWISE_180 -> sizeX - x - 1;
+            case COUNTERCLOCKWISE_90 -> z;
+        };
     }
 
     /** The z component of x,y after applying the rotation */
     private static int rotateZ(int x, int z, int sizeX, int sizeZ, Rotation rotation) {
-        switch (rotation) {
-            case NONE:
-                return z;
-            case CLOCKWISE_90:
-                return x;
-            case CLOCKWISE_180:
-                return sizeZ - z - 1;
-            case COUNTERCLOCKWISE_90:
-                return sizeX - x - 1;
-        }
-        throw new IllegalArgumentException("Unknown rotation");
+        return switch (rotation) {
+            case NONE -> z;
+            case CLOCKWISE_90 -> x;
+            case CLOCKWISE_180 -> sizeZ - z - 1;
+            case COUNTERCLOCKWISE_90 -> sizeX - x - 1;
+        };
     }
 
     private static BlockState rotate(BlockState state, Rotation rotation) {

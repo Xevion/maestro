@@ -27,7 +27,7 @@ public class MineCommand extends Command {
             boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
         }
         MaestroAPI.getProvider().getWorldScanner().repack(ctx);
-        logDirect(String.format("Mining %s", boms.toString()));
+        logDirect(String.format("Mining %s", boms));
         maestro.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
     }
 

@@ -266,8 +266,7 @@ public class MovementPillar extends Movement {
                                     + ctx.player().getDeltaMovement().z
                                             * ctx.player().getDeltaMovement().z);
             if (dist > 0.17) { // why 0.17? because it seemed like a good number, that's why
-                // [explanation added after baritone port lol] also because it needs to be less than
-                // 0.2 because of the 0.3 sneak limit
+                // needs to be less than 0.2 because of the 0.3 sneak limit
                 // and 0.17 is reasonably less than 0.2
 
                 // If it's been more than forty ticks of trying to jump and we aren't done yet, go

@@ -30,16 +30,12 @@ public interface ISchematic {
     }
 
     default int size(Direction.Axis axis) {
-        switch (axis) {
-            case X:
-                return widthX();
-            case Y:
-                return heightY();
-            case Z:
-                return lengthZ();
-            default:
-                throw new UnsupportedOperationException(axis + "");
-        }
+        return switch (axis) {
+            case X -> widthX();
+            case Y -> heightY();
+            case Z -> lengthZ();
+            default -> throw new UnsupportedOperationException(axis + "");
+        };
     }
 
     /**

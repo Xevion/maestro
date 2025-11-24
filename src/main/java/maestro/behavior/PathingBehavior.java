@@ -129,7 +129,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                             && !calcFrom.equals(
                                     expectedSegmentStart) // if current starts in our playerFeet or
                             // pathStart, then we're ok
-                            && (!currentBest.isPresent()
+                            && (currentBest.isEmpty()
                                     || (!currentBest.get().positions().contains(ctx.playerFeet())
                                             && !currentBest
                                                     .get()
@@ -481,12 +481,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return feet;
     }
 
-    /**
-     * In a new thread, pathfind to target blockpos
-     *
-     * @param start
-     * @param talkAboutIt
-     */
+    /** In a new thread, pathfind to target blockpos */
     private void findPathInNewThread(
             final BlockPos start, final boolean talkAboutIt, CalculationContext context) {
         // this must be called with synchronization on pathCalcLock!
