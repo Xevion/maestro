@@ -838,8 +838,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                             incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
                             observedCompleted.remove(
                                     BetterBlockPos.longHash(blockX, blockY, blockZ));
-                            if (incorrectPositions.size()
-                                    > Agent.settings().incorrectSize.value) {
+                            if (incorrectPositions.size() > Agent.settings().incorrectSize.value) {
                                 return;
                             }
                         }

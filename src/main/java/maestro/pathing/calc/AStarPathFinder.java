@@ -68,11 +68,9 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                             + "ms");
         }
         long primaryTimeoutTime =
-                startTime
-                        + (slowPath ? Agent.settings().slowPathTimeoutMS.value : primaryTimeout);
+                startTime + (slowPath ? Agent.settings().slowPathTimeoutMS.value : primaryTimeout);
         long failureTimeoutTime =
-                startTime
-                        + (slowPath ? Agent.settings().slowPathTimeoutMS.value : failureTimeout);
+                startTime + (slowPath ? Agent.settings().slowPathTimeoutMS.value : failureTimeout);
         boolean failing = true;
         int numNodes = 0;
         int numMovementsConsidered = 0;

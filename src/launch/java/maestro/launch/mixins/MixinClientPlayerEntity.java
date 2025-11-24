@@ -45,8 +45,7 @@ public class MixinClientPlayerEntity {
                             target = "net/minecraft/client/player/AbstractClientPlayer.tick()V",
                             shift = At.Shift.AFTER))
     private void onPreUpdate(CallbackInfo ci) {
-        IAgent maestro =
-                MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro != null) {
             maestro.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
         }
@@ -60,8 +59,7 @@ public class MixinClientPlayerEntity {
                             target = "net/minecraft/world/entity/player/Abilities.mayfly:Z"))
     @Group(name = "mayFly", min = 1, max = 1)
     private boolean isAllowFlying(Abilities capabilities) {
-        IAgent maestro =
-                MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro == null) {
             return capabilities.mayfly;
         }
@@ -76,8 +74,7 @@ public class MixinClientPlayerEntity {
                             target = "Lnet/minecraft/client/player/LocalPlayer;mayFly()Z"))
     @Group(name = "mayFly", min = 1, max = 1)
     private boolean onMayFlyNeoforge(LocalPlayer instance) throws Throwable {
-        IAgent maestro =
-                MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro == null) {
             return (boolean) MAY_FLY.invokeExact(instance);
         }
@@ -88,8 +85,7 @@ public class MixinClientPlayerEntity {
             method = "aiStep",
             at = @At(value = "INVOKE", target = "net/minecraft/client/KeyMapping.isDown()Z"))
     private boolean isKeyDown(KeyMapping keyBinding) {
-        IAgent maestro =
-                MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro == null) {
             return keyBinding.isDown();
         }
@@ -107,8 +103,7 @@ public class MixinClientPlayerEntity {
 
     @Inject(method = "rideTick", at = @At(value = "HEAD"))
     private void updateRidden(CallbackInfo cb) {
-        IAgent maestro =
-                MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro != null) {
             ((LookBehavior) maestro.getLookBehavior()).pig();
         }

@@ -1,7 +1,7 @@
 package maestro.process.elytra;
 
-import static maestro.utils.MaestroMath.fastCeil;
-import static maestro.utils.MaestroMath.fastFloor;
+import static maestro.utils.MaestroMathKt.fastCeil;
+import static maestro.utils.MaestroMathKt.fastFloor;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -102,10 +102,7 @@ public final class ElytraBehavior implements Helper {
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
     public ElytraBehavior(
-            Agent maestro,
-            ElytraProcess process,
-            BlockPos destination,
-            boolean appendDestination) {
+            Agent maestro, ElytraProcess process, BlockPos destination, boolean appendDestination) {
         this.maestro = maestro;
         this.ctx = maestro.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
@@ -1216,9 +1213,7 @@ public final class ElytraBehavior implements Helper {
                         ? -90
                         : Math.max(goodPitch - Agent.settings().elytraPitchRange.value, -89);
         final float maxPitch =
-                desperate
-                        ? 90
-                        : Math.min(goodPitch + Agent.settings().elytraPitchRange.value, 89);
+                desperate ? 90 : Math.min(goodPitch + Agent.settings().elytraPitchRange.value, 89);
 
         final FloatArrayList pitchValues = new FloatArrayList(fastCeil(maxPitch - minPitch) + 1);
         for (float pitch = goodPitch; pitch <= maxPitch; pitch++) {
@@ -1416,15 +1411,15 @@ public final class ElytraBehavior implements Helper {
             // Collision box while the player is in motion, with additional padding for safety
             final AABB inMotion = hitbox.inflate(motion.x, motion.y, motion.z).inflate(0.01);
 
-            int xmin = fastFloor(inMotion.minX);
-            int xmax = fastCeil(inMotion.maxX);
-            int ymin = fastFloor(inMotion.minY);
-            int ymax = fastCeil(inMotion.maxY);
-            int zmin = fastFloor(inMotion.minZ);
-            int zmax = fastCeil(inMotion.maxZ);
-            for (int x = xmin; x < xmax; x++) {
-                for (int y = ymin; y < ymax; y++) {
-                    for (int z = zmin; z < zmax; z++) {
+            int xMin = fastFloor(inMotion.minX);
+            int xMax = fastCeil(inMotion.maxX);
+            int yMin = fastFloor(inMotion.minY);
+            int yMax = fastCeil(inMotion.maxY);
+            int zMin = fastFloor(inMotion.minZ);
+            int zMax = fastCeil(inMotion.maxZ);
+            for (int x = xMin; x < xMax; x++) {
+                for (int y = yMin; y < yMax; y++) {
+                    for (int z = zMin; z < zMax; z++) {
                         if (!this.passable(x, y, z, context.ignoreLava)) {
                             return null;
                         }

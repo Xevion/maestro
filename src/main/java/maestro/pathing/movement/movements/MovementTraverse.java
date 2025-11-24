@@ -336,8 +336,7 @@ public class MovementTraverse extends Movement {
             BlockState intoBelow = BlockStateInterface.get(ctx, into);
             BlockState intoAbove = BlockStateInterface.get(ctx, into.above());
             if (wasTheBridgeBlockAlwaysThere
-                    && (!MovementHelper.isLiquid(ctx, feet)
-                            || Agent.settings().sprintInWater.value)
+                    && (!MovementHelper.isLiquid(ctx, feet) || Agent.settings().sprintInWater.value)
                     && (!MovementHelper.avoidWalkingInto(intoBelow)
                             || MovementHelper.isWater(intoBelow))
                     && !MovementHelper.avoidWalkingInto(intoAbove)) {

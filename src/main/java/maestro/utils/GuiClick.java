@@ -142,9 +142,7 @@ public class GuiClick extends Screen implements Helper {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 BufferBuilder bufferBuilder =
                         IRenderer.startLines(
-                                Color.RED,
-                                Agent.settings().pathRenderLineWidthPixels.value,
-                                true);
+                                Color.RED, Agent.settings().pathRenderLineWidthPixels.value, true);
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
                 BetterBlockPos b = new BetterBlockPos(clickStart);
                 IRenderer.emitAABB(

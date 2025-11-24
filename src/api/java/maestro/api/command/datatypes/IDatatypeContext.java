@@ -12,8 +12,8 @@ import maestro.api.command.argument.IArgConsumer;
 public interface IDatatypeContext {
 
     /**
-     * Provides the {@link IAgent} instance that is associated with the action relating to
-     * datatype handling.
+     * Provides the {@link IAgent} instance that is associated with the action relating to datatype
+     * handling.
      *
      * @return The context {@link IAgent} instance.
      */

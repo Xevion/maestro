@@ -10,15 +10,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 
-/**
- * Provides the present {@link IAgent} instances, as well as non-maestro instance related APIs.
- */
+/** Provides the present {@link IAgent} instances, as well as non-maestro instance related APIs. */
 public interface IMaestroProvider {
 
     /**
-     * Returns the primary {@link IAgent} instance. This instance is persistent, and is
-     * represented by the local player that is created by the game itself, not a "bot" player
-     * through Maestro.
+     * Returns the primary {@link IAgent} instance. This instance is persistent, and is represented
+     * by the local player that is created by the game itself, not a "bot" player through Maestro.
      *
      * @return The primary {@link IAgent} instance.
      */
@@ -89,9 +86,9 @@ public interface IMaestroProvider {
     IAgent createMaestro(Minecraft minecraft);
 
     /**
-     * Destroys and removes the specified {@link IAgent} instance. If the specified instance is
-     * the {@link #getPrimaryAgent() primary maestro}, this operation has no effect and will
-     * return {@code false}.
+     * Destroys and removes the specified {@link IAgent} instance. If the specified instance is the
+     * {@link #getPrimaryAgent() primary maestro}, this operation has no effect and will return
+     * {@code false}.
      *
      * @param maestro The maestro instance to remove
      * @return Whether the maestro instance was removed

@@ -68,8 +68,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
             }
         }
         if (calcFailed) {
-            if (!knownOreLocations.isEmpty()
-                    && Agent.settings().blacklistClosestOnFailure.value) {
+            if (!knownOreLocations.isEmpty() && Agent.settings().blacklistClosestOnFailure.value) {
                 logDirect(
                         "Unable to find any path to "
                                 + filter

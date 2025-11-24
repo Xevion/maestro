@@ -207,9 +207,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
                                                     .scanChunkRadius(
                                                             ctx,
                                                             scan,
-                                                            Agent.settings()
-                                                                    .farmMaxScanSize
-                                                                    .value,
+                                                            Agent.settings().farmMaxScanSize.value,
                                                             10,
                                                             10));
         }

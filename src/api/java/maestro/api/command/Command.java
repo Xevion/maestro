@@ -9,8 +9,8 @@ import maestro.api.utils.IPlayerContext;
 
 /**
  * A default implementation of {@link ICommand} which provides easy access to the command's bound
- * {@link IAgent} instance, {@link IPlayerContext} and an easy way to provide multiple valid
- * command execution names through the default constructor.
+ * {@link IAgent} instance, {@link IPlayerContext} and an easy way to provide multiple valid command
+ * execution names through the default constructor.
  *
  * <p>So basically, you should use it because it provides a small amount of boilerplate, but you're
  * not forced to use it.
