@@ -43,6 +43,7 @@ dependencies {
         common sourceSet.output
         shadowCommon sourceSet.output
     }
+    shadowCommon 'org.jetbrains.kotlin:kotlin-stdlib'
 }
 
 shadowJar {

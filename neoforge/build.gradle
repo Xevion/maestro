@@ -44,6 +44,7 @@ dependencies {
         shadowCommon sourceSet.output
     }
     shadowCommon "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
+    shadowCommon 'org.jetbrains.kotlin:kotlin-stdlib'
 }
 
 processResources {
