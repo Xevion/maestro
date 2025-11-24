@@ -1,0 +1,66 @@
+package maestro.command.defaults;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+import maestro.api.IMaestro;
+import maestro.api.command.Command;
+import maestro.api.command.argument.IArgConsumer;
+import maestro.api.command.datatypes.ItemById;
+import maestro.api.command.exception.CommandException;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+
+public class PickupCommand extends Command {
+
+    public PickupCommand(IMaestro maestro) {
+        super(maestro, "pickup");
+    }
+
+    @Override
+    public void execute(String label, IArgConsumer args) throws CommandException {
+        Set<Item> collecting = new HashSet<>();
+        while (args.hasAny()) {
+            Item item = args.getDatatypeFor(ItemById.INSTANCE);
+            collecting.add(item);
+        }
+        if (collecting.isEmpty()) {
+            maestro.getFollowProcess().pickup(stack -> true);
+            logDirect("Picking up all items");
+        } else {
+            maestro.getFollowProcess().pickup(stack -> collecting.contains(stack.getItem()));
+            logDirect("Picking up these items:");
+            collecting.stream()
+                    .map(BuiltInRegistries.ITEM::getKey)
+                    .map(ResourceLocation::toString)
+                    .forEach(this::logDirect);
+        }
+    }
+
+    @Override
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
+        while (args.has(2)) {
+            if (args.peekDatatypeOrNull(ItemById.INSTANCE) == null) {
+                return Stream.empty();
+            }
+            args.get();
+        }
+        return args.tabCompleteDatatype(ItemById.INSTANCE);
+    }
+
+    @Override
+    public String getShortDesc() {
+        return "Pickup items";
+    }
+
+    @Override
+    public List<String> getLongDesc() {
+        return Arrays.asList(
+                "Usage:",
+                "> pickup - Pickup anything",
+                "> pickup <item1> <item2> <...> - Pickup certain items");
+    }
+}

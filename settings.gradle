@@ -39,7 +39,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'baritone'
+rootProject.name = 'maestro'
 
 include("tweaker")
 for (platform in available_loaders.split(",")) {

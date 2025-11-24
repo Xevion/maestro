@@ -15,9 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import baritone.gradle.task.CreateDistTask
-import baritone.gradle.task.ProguardTask
-//import baritone.gradle.task.TweakerJsonAssembler
+import maestro.gradle.task.CreateDistTask
+import maestro.gradle.task.ProguardTask
+//import maestro.gradle.task.TweakerJsonAssembler
 
 plugins {
     id "com.github.johnrengelman.shadow" version "8.0.0"
@@ -26,7 +26,7 @@ plugins {
 unimined.minecraft {
     runs.client = {
         mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
+        args.addAll(["--tweakClass", "maestro.launch.tweaker.MaestroTweaker"])
     }
 }
 
@@ -85,8 +85,8 @@ jar {
 
     manifest {
         attributes(
-                'MixinConfigs': 'mixins.baritone.json',
-                "MixinConnector": "baritone.launch.BaritoneMixinConnector",
+                'MixinConfigs': 'mixins.maestro.json',
+                "MixinConnector": "maestro.launch.MaestroMixinConnector",
 
                 'Implementation-Title': 'Baritone',
                 'Implementation-Version': version,

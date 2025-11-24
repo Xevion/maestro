@@ -89,7 +89,7 @@ allprojects {
     spotless {
         java {
             target 'src/*/java/**/*.java'
-            targetExclude 'src/launch/java/baritone/launch/mixins/MixinLootContextBuilder.java'
+            targetExclude 'src/launch/java/maestro/launch/mixins/MixinLootContextBuilder.java'
             googleJavaFormat('1.23.0').aosp().reflowLongStrings()
             removeUnusedImports()
             toggleOffOn()

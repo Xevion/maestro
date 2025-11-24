@@ -1,0 +1,49 @@
+package maestro.command.defaults;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+import maestro.api.IMaestro;
+import maestro.api.command.Command;
+import maestro.api.command.argument.IArgConsumer;
+
+public class CommandAlias extends Command {
+
+    private final String shortDesc;
+    public final String target;
+
+    public CommandAlias(IMaestro maestro, List<String> names, String shortDesc, String target) {
+        super(maestro, names.toArray(new String[0]));
+        this.shortDesc = shortDesc;
+        this.target = target;
+    }
+
+    public CommandAlias(IMaestro maestro, String name, String shortDesc, String target) {
+        super(maestro, name);
+        this.shortDesc = shortDesc;
+        this.target = target;
+    }
+
+    @Override
+    public void execute(String label, IArgConsumer args) {
+        this.maestro.getCommandManager().execute(String.format("%s %s", target, args.rawRest()));
+    }
+
+    @Override
+    public Stream<String> tabComplete(String label, IArgConsumer args) {
+        return this.maestro
+                .getCommandManager()
+                .tabComplete(String.format("%s %s", target, args.rawRest()));
+    }
+
+    @Override
+    public String getShortDesc() {
+        return shortDesc;
+    }
+
+    @Override
+    public List<String> getLongDesc() {
+        return Collections.singletonList(
+                String.format("This command is an alias, for: %s ...", target));
+    }
+}

@@ -13,11 +13,11 @@ issueTrackerURL="https://github.com/cabaletta/baritone/issues" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 # The modid of the mod
-modId="baritoe" #mandatory
+modId="maestro" #mandatory
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
 version="${version}" #mandatory
  # A display name for the mod
-displayName="Baritone" #mandatory
+displayName="Maestro" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="https://github.com/cabaletta/baritone" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
@@ -31,7 +31,7 @@ description='''
 A Minecraft pathfinder bot.
 '''
 
-[[dependencies.baritoe]]
+[[dependencies.maestro]]
 modId="minecraft"
 type="required"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version

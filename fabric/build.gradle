@@ -15,8 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import baritone.gradle.task.CreateDistTask
-import baritone.gradle.task.ProguardTask
+import maestro.gradle.task.CreateDistTask
+import maestro.gradle.task.ProguardTask
 
 plugins {
     id "com.github.johnrengelman.shadow" version "8.0.0"
