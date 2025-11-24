@@ -3,23 +3,23 @@ default: check
 
 # Quick type checking and linting
 check:
-    ./gradlew check --no-daemon
+    ./gradlew check -q --no-daemon
 
 # Format code
 fmt:
-    ./gradlew spotlessApply
+    ./gradlew spotlessApply -q
 
 # Check code formatting
 format-check:
-    ./gradlew spotlessCheck
+    ./gradlew spotlessCheck -q
 
 # Run all tests
 test:
-    ./gradlew test
+    ./gradlew test -q
 
 # Build production artifacts
 build:
-    ./gradlew build
+    ./gradlew build -q
 
 # Development server (run Minecraft client)
 dev:

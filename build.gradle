@@ -25,14 +25,14 @@ allprojects {
     try {
         vers = 'git describe --always --tags --first-parent --dirty'.execute().text.trim()
     } catch (Exception e) {
-        println "Version detection failed: " + e
+        logger.info "Version detection failed: " + e
     }
     if (!vers.startsWith("v")) {
-        println "using version number: " + rootProject.mod_version
+        logger.info "using version number: " + rootProject.mod_version
         version = rootProject.mod_version
     } else {
         version = vers.substring(1)
-        println "Detected version " + version
+        logger.info "Detected version " + version
     }
     group = rootProject.maven_group
 
