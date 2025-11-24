@@ -56,6 +56,12 @@ public interface IAgent {
     IFarmProcess getFarmProcess();
 
     /**
+     * @return The {@link IAttackProcess} instance
+     * @see IAttackProcess
+     */
+    IAttackProcess getAttackProcess();
+
+    /**
      * @return The {@link ICustomGoalProcess} instance
      * @see ICustomGoalProcess
      */

@@ -58,6 +58,7 @@ public class Agent implements IAgent {
     private final FarmProcess farmProcess;
     private final InventoryPauserProcess inventoryPauserProcess;
     private final IElytraProcess elytraProcess;
+    private final AttackProcess attackProcess;
 
     private final PathingControlManager pathingControlManager;
     private final SelectionManager selectionManager;
@@ -103,6 +104,7 @@ public class Agent implements IAgent {
             this.farmProcess = this.registerProcess(FarmProcess::new);
             this.inventoryPauserProcess = this.registerProcess(InventoryPauserProcess::new);
             this.elytraProcess = this.registerProcess(ElytraProcess::create);
+            this.attackProcess = this.registerProcess(AttackProcess::new);
             this.registerProcess(BackfillProcess::new);
         }
 
@@ -184,6 +186,11 @@ public class Agent implements IAgent {
     @Override
     public FarmProcess getFarmProcess() {
         return this.farmProcess;
+    }
+
+    @Override
+    public AttackProcess getAttackProcess() {
+        return this.attackProcess;
     }
 
     public InventoryPauserProcess getInventoryPauserProcess() {

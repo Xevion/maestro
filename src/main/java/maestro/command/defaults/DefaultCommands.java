@@ -45,6 +45,7 @@ public final class DefaultCommands {
                                 new RenderCommand(maestro),
                                 new FarmCommand(maestro),
                                 new FollowCommand(maestro),
+                                new AttackCommand(maestro),
                                 new PickupCommand(maestro),
                                 new ExploreFilterCommand(maestro),
                                 new ReloadAllCommand(maestro),
