@@ -28,3 +28,7 @@ dev:
 # Clean build
 clean:
     ./gradlew clean
+
+# Install git pre-commit hooks (requires uvx/uv)
+install-hooks:
+    uvx pre-commit install
