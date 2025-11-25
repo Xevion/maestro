@@ -43,6 +43,33 @@ public final class Settings {
     /** Allow Maestro to sprint */
     public final Setting<Boolean> allowSprint = new Setting<>(true);
 
+    /** Minimum range for ranged combat (blocks) */
+    public final Setting<Double> rangedCombatMinRange = new Setting<>(8.0);
+
+    /** Maximum range for ranged combat (blocks) */
+    public final Setting<Double> rangedCombatMaxRange = new Setting<>(40.0);
+
+    /** Enable moving target prediction for ranged combat */
+    public final Setting<Boolean> predictTargetMovement = new Setting<>(true);
+
+    /** Number of iterations for target prediction convergence */
+    public final Setting<Integer> targetPredictionIterations = new Setting<>(3);
+
+    /**
+     * Minimum bow charge required before releasing (0.0 to 1.0). Lower values shoot faster but with
+     * less damage and range.
+     */
+    public final Setting<Float> minimumBowCharge = new Setting<>(0.8f);
+
+    /** Render trajectory paths for debugging ranged combat */
+    public final Setting<Boolean> renderTrajectory = new Setting<>(false);
+
+    /** Color for trajectory rendering */
+    public final Setting<Color> trajectoryColor = new Setting<>(new Color(255, 100, 100));
+
+    /** Render predicted target positions */
+    public final Setting<Boolean> renderPredictedPosition = new Setting<>(false);
+
     /** Allow Maestro to place blocks */
     public final Setting<Boolean> allowPlace = new Setting<>(true);
 

@@ -62,6 +62,12 @@ public interface IAgent {
     IAttackProcess getAttackProcess();
 
     /**
+     * @return The {@link IRangedCombatProcess} instance
+     * @see IRangedCombatProcess
+     */
+    IRangedCombatProcess getRangedCombatProcess();
+
+    /**
      * @return The {@link ICustomGoalProcess} instance
      * @see ICustomGoalProcess
      */

@@ -61,6 +61,7 @@ public class Agent implements IAgent {
     private final InventoryPauserProcess inventoryPauserProcess;
     private final IElytraProcess elytraProcess;
     private final AttackProcess attackProcess;
+    private final RangedCombatProcess rangedCombatProcess;
 
     private final PathingControlManager pathingControlManager;
     private final SelectionManager selectionManager;
@@ -116,6 +117,9 @@ public class Agent implements IAgent {
             this.inventoryPauserProcess = this.registerProcess(InventoryPauserProcess::new);
             this.elytraProcess = this.registerProcess(ElytraProcess::create);
             this.attackProcess = this.registerProcess(AttackProcess::new);
+            this.rangedCombatProcess = this.registerProcess(RangedCombatProcess::new);
+            // Register ranged combat process for render events
+            this.gameEventHandler.registerEventListener(this.rangedCombatProcess);
             this.registerProcess(BackfillProcess::new);
         }
 
@@ -276,6 +280,11 @@ public class Agent implements IAgent {
     @Override
     public AttackProcess getAttackProcess() {
         return this.attackProcess;
+    }
+
+    @Override
+    public RangedCombatProcess getRangedCombatProcess() {
+        return this.rangedCombatProcess;
     }
 
     public InventoryPauserProcess getInventoryPauserProcess() {
