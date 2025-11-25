@@ -32,3 +32,7 @@ clean:
 # Install git pre-commit hooks (requires uvx/uv)
 install-hooks:
     uvx pre-commit install
+
+# Integration test - verify client starts and mixins load
+smoke platform="fabric":
+    bun ./scripts/smoke.ts {{platform}}
