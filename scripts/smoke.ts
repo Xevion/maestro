@@ -324,6 +324,14 @@ async function waitForCompletion(): Promise<void> {
         console.error('');
         console.error(failureReason);
         console.error('');
+        if (!process.env.VERBOSE) {
+          console.error('💡 Run with VERBOSE=1 for full output:');
+          console.error('   VERBOSE=1 just smoke');
+          console.error('');
+          console.error('💡 Or check the log file for errors:');
+          console.error(`   grep -i "error\\|exception\\|fatal" ${PLATFORM}/run/client/logs/latest.log | tail -50`);
+          console.error('');
+        }
         await cleanup();
         process.exit(failureExitCode);
       }
@@ -332,10 +340,22 @@ async function waitForCompletion(): Promise<void> {
       if (elapsed > TIMEOUT) {
         console.error('❌ Timeout exceeded!');
         console.error('');
-        console.error('Last 20 lines of output:');
-        const allOutput = outputBuffer + stderrBuffer;
-        const lines = allOutput.split('\n');
-        console.error(lines.slice(-20).join('\n'));
+        if (process.env.VERBOSE) {
+          console.error('Full output:');
+          const allOutput = outputBuffer + stderrBuffer;
+          console.error(allOutput);
+        } else {
+          console.error('Last 100 lines of output:');
+          const allOutput = outputBuffer + stderrBuffer;
+          const lines = allOutput.split('\n');
+          console.error(lines.slice(-100).join('\n'));
+          console.error('');
+          console.error('💡 Run with VERBOSE=1 for full output:');
+          console.error('   VERBOSE=1 just smoke');
+          console.error('');
+          console.error('💡 Or check the log file for errors:');
+          console.error(`   grep -i "error\\|exception\\|fatal" ${PLATFORM}/run/client/logs/latest.log | tail -50`);
+        }
         await cleanup();
         process.exit(3);
       }
@@ -344,14 +364,29 @@ async function waitForCompletion(): Promise<void> {
       if (gradlePid && !isProcessAlive(gradlePid)) {
         console.error('❌ Process died unexpectedly!');
         console.error('');
-        if (stderrBuffer) {
-          console.error('Last stderr output:');
-          console.error(stderrBuffer.split('\n').slice(-20).join('\n'));
+        if (process.env.VERBOSE) {
+          if (stderrBuffer) {
+            console.error('Full stderr output:');
+            console.error(stderrBuffer);
+          }
+          console.error('Full stdout output:');
+          console.error(outputBuffer);
         } else {
-          console.error('Last output:');
-          const allOutput = outputBuffer + stderrBuffer;
-          const lines = allOutput.split('\n');
-          console.error(lines.slice(-20).join('\n'));
+          if (stderrBuffer) {
+            console.error('Last 100 lines of stderr:');
+            console.error(stderrBuffer.split('\n').slice(-100).join('\n'));
+          } else {
+            console.error('Last 100 lines of output:');
+            const allOutput = outputBuffer + stderrBuffer;
+            const lines = allOutput.split('\n');
+            console.error(lines.slice(-100).join('\n'));
+          }
+          console.error('');
+          console.error('💡 Run with VERBOSE=1 for full output:');
+          console.error('   VERBOSE=1 just smoke');
+          console.error('');
+          console.error('💡 Or check the log file for errors:');
+          console.error(`   grep -i "error\\|exception\\|fatal" ${PLATFORM}/run/client/logs/latest.log | tail -50`);
         }
         await cleanup();
         process.exit(4);

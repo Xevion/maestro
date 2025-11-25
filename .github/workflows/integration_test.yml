@@ -30,7 +30,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
 
       - name: Build Fabric mod
-        run: ./gradlew :platforms:fabric:build -q
+        run: ./gradlew :fabric:build -q
 
       - name: Stage mod for testing
         run: |
@@ -66,7 +66,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
 
       - name: Build NeoForge mod
-        run: ./gradlew :platforms:neoforge:build -q
+        run: ./gradlew :neoforge:build -q
 
       - name: Stage mod for testing
         run: |
