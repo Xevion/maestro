@@ -38,7 +38,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private Goal goal;
     private CalculationContext context;
 
-    /** Movement provider for pathfinding. Configured based on enableDynamicSwimming setting. */
+    /**
+     * Movement provider for pathfinding. Combines ContinuousSwimmingProvider (dynamic 3D swimming)
+     * with EnumMovementProvider (terrestrial movements).
+     */
     private final IMovementProvider movementProvider;
 
     /*eta*/
@@ -69,21 +72,16 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     /**
-     * Creates movement provider based on enableDynamicSwimming feature flag. When flag is off, uses
-     * enum-based movements for backward compatibility. When flag is on, combines dynamic swimming
-     * with enum-based terrestrial movements.
+     * Creates movement provider combining continuous swimming (dynamic multi-directional with 3D
+     * diagonals) and enum-based terrestrial movements (walk, parkour, etc.).
      *
      * @return Configured movement provider
      */
     private IMovementProvider createMovementProvider() {
-        if (Agent.settings().enableDynamicSwimming.value) {
-            // Use dynamic swimming + basic movements
-            return new CompositeMovementProvider(
-                    new ContinuousSwimmingProvider(), new EnumMovementProvider());
-        } else {
-            // Use enum only (backward compatible)
-            return new EnumMovementProvider();
-        }
+        // Swimming uses ContinuousSwimmingProvider exclusively (configurable precision)
+        // Terrestrial movements use EnumMovementProvider (Walk, Parkour, etc.)
+        return new CompositeMovementProvider(
+                new ContinuousSwimmingProvider(), new EnumMovementProvider());
     }
 
     private void queuePathEvent(PathEvent event) {

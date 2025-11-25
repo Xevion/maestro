@@ -176,30 +176,27 @@ public final class Settings {
     public final Setting<Boolean> allowDiagonalSwimming = new Setting<>(true);
 
     /**
-     * Angular precision for swimming movements (4, 8, 16, or 32 directions). Higher values =
-     * smoother paths but more computational cost during pathfinding.
+     * Angular precision for horizontal swimming movements.
      *
      * <ul>
-     *   <li>4: Cardinal directions only (N, E, S, W) - fastest
-     *   <li>8: Cardinal + diagonal (N, NE, E, SE, S, SW, W, NW) - balanced
-     *   <li>16: 22.5° precision - smooth
-     *   <li>32: 11.25° precision - very smooth but expensive
+     *   <li>4: 4 directions (N, E, S, W) - basic
+     *   <li>8: 8 directions (N, NE, E, SE, S, SW, W, NW) - recommended default
+     *   <li>16: 16 directions (every 22.5°) - very smooth
+     *   <li>32: 32 directions (every 11.25°) - maximum smoothness but higher pathfinding cost
      * </ul>
+     *
+     * <p>Higher precision creates smoother paths but increases pathfinding branching factor.
      */
     public final Setting<Integer> swimAngularPrecision = new Setting<>(8);
 
     /**
-     * Vertical precision for swimming (currently fixed at 3: UP, LEVEL, DOWN). Reserved for future
-     * diagonal-vertical movements (e.g., NE_UP, SW_DOWN).
+     * Vertical precision for swimming. Currently always 3 (pure UP, LEVEL, pure DOWN). With 3D
+     * diagonals enabled, also generates UP-diagonal and DOWN-diagonal variants for each horizontal
+     * angle (e.g., UP_NE, DOWN_SW).
+     *
+     * <p>Reserved for future granular vertical precision (e.g., 5 or 7 vertical angles).
      */
     public final Setting<Integer> swimVerticalPrecision = new Setting<>(3);
-
-    /**
-     * Enable dynamic swimming movement generation with configurable precision. When false, uses
-     * hardcoded 6-direction swimming from Moves enum (backward compatible). When true, generates
-     * movements dynamically based on swimAngularPrecision.
-     */
-    public final Setting<Boolean> enableDynamicSwimming = new Setting<>(false);
 
     /** Assume step functionality; don't jump on an Ascend. */
     public final Setting<Boolean> assumeStep = new Setting<>(false);

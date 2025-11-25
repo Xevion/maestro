@@ -61,7 +61,32 @@ public class ContinuousSwimmingProvider implements IMovementProvider {
             movements.add(movement);
         }
 
-        // Generate vertical movements (UP, DOWN)
+        // Generate vertical-diagonal movements (3D diagonals)
+        for (int i = 0; i < angularPrecision; i++) {
+            double angle = i * angleStep;
+            int dx = (int) Math.round(Math.cos(angle));
+            int dz = (int) Math.round(Math.sin(angle));
+
+            if (dx == 0 && dz == 0) {
+                continue;
+            }
+
+            // UP-diagonal variant
+            BetterBlockPos upDest = new BetterBlockPos(from.x + dx, from.y + 1, from.z + dz);
+            MovementSwimHorizontal upDiag =
+                    new MovementSwimHorizontal(context.getMaestro(), from, upDest);
+            upDiag.override(upDiag.calculateCost(context));
+            movements.add(upDiag);
+
+            // DOWN-diagonal variant
+            BetterBlockPos downDest = new BetterBlockPos(from.x + dx, from.y - 1, from.z + dz);
+            MovementSwimHorizontal downDiag =
+                    new MovementSwimHorizontal(context.getMaestro(), from, downDest);
+            downDiag.override(downDiag.calculateCost(context));
+            movements.add(downDiag);
+        }
+
+        // Generate pure vertical movements (UP, DOWN)
         MovementSwimVertical upMovement =
                 new MovementSwimVertical(context.getMaestro(), from, from.above());
         upMovement.override(upMovement.calculateCost(context));

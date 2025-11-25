@@ -161,7 +161,14 @@ public class MovementSwimHorizontal extends Movement {
                             * UNDERWATER_MINING_MULTIPLIER;
         }
 
-        return baseCost + breakCost;
+        // Calculate Euclidean distance for correct diagonal/3D diagonal costs
+        // Without this, diagonal movements would have same cost as cardinal (artificially cheap)
+        double dx = destX - x;
+        double dy = destY - y;
+        double dz = destZ - z;
+        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        return (baseCost * distance) + breakCost;
     }
 
     @Override
