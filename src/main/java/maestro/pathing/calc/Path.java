@@ -100,7 +100,8 @@ class Path extends PathBase {
         }
         for (int i = 0; i < path.size() - 1; i++) {
             double cost = nodes.get(i + 1).cost - nodes.get(i).cost;
-            Movement move = runBackwards(path.get(i), path.get(i + 1), cost);
+            PathNode nextNode = nodes.get(i + 1);
+            Movement move = runBackwards(path.get(i), path.get(i + 1), nextNode, cost);
             if (move == null) {
                 return true;
             } else {
@@ -110,9 +111,12 @@ class Path extends PathBase {
         return false;
     }
 
-    private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
-        for (Moves moves : Moves.values()) {
-            Movement move = moves.apply0(context, src);
+    private Movement runBackwards(
+            BetterBlockPos src, BetterBlockPos dest, PathNode destNode, double cost) {
+        // Try recorded movement first (O(1) lookup)
+        Moves recordedMove = destNode.getMovement();
+        if (recordedMove != null) {
+            Movement move = recordedMove.apply0(context, src);
             if (move.getDest().equals(dest)) {
                 // have to calculate the cost at calculation time so we can accurately judge whether
                 // a cost increase happened between cached calculation and real execution
@@ -122,7 +126,25 @@ class Path extends PathBase {
                 move.override(Math.min(move.calculateCost(context), cost));
                 return move;
             }
+            // Recorded movement doesn't match destination (shouldn't happen)
+            Helper.HELPER.logDebug(
+                    "Recorded movement "
+                            + recordedMove
+                            + " from "
+                            + src
+                            + " doesn't match expected dest "
+                            + dest);
         }
+
+        // Fallback: Linear search through all movements (for backward compatibility)
+        for (Moves moves : Moves.values()) {
+            Movement move = moves.apply0(context, src);
+            if (move.getDest().equals(dest)) {
+                move.override(Math.min(move.calculateCost(context), cost));
+                return move;
+            }
+        }
+
         // this is no longer called from bestPathSoFar, now it's in postprocessing
         Helper.HELPER.logDebug(
                 "Movement became impossible during calculation "

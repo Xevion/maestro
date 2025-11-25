@@ -759,6 +759,68 @@ public interface MovementHelper extends ActionCosts, Helper {
                 && fluidState.getType().getAmount(fluidState) != 8;
     }
 
+    /**
+     * Returns whether the block is flowing water (not a source block).
+     *
+     * @param state The block state
+     * @return Whether the block is flowing water
+     */
+    static boolean isFlowingWater(BlockState state) {
+        FluidState fluidState = state.getFluidState();
+        return fluidState.getType() == Fluids.FLOWING_WATER;
+    }
+
+    /**
+     * Returns whether the block is a water plant (kelp, seagrass, etc.).
+     *
+     * @param state The block state
+     * @return Whether the block is a water plant
+     */
+    static boolean isWaterPlant(BlockState state) {
+        Block block = state.getBlock();
+        return block == Blocks.KELP
+                || block == Blocks.KELP_PLANT
+                || block == Blocks.SEAGRASS
+                || block == Blocks.TALL_SEAGRASS;
+    }
+
+    /**
+     * Returns whether the block is a bubble column.
+     *
+     * @param state The block state
+     * @return Whether the block is a bubble column
+     */
+    static boolean isBubbleColumn(BlockState state) {
+        return state.getBlock() == Blocks.BUBBLE_COLUMN;
+    }
+
+    /**
+     * Returns whether the bubble column pushes upward (vs downward).
+     *
+     * @param state The block state
+     * @return Whether the bubble column pushes upward
+     */
+    static boolean isUpwardBubbleColumn(BlockState state) {
+        return isBubbleColumn(state) && !state.getValue(BubbleColumnBlock.DRAG_DOWN);
+    }
+
+    /**
+     * Returns whether the position is passable for swimming (water, air, bubble columns, plants).
+     *
+     * @param context The calculation context
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @return Whether the position is passable for swimming
+     */
+    static boolean canSwimThrough(CalculationContext context, int x, int y, int z) {
+        BlockState state = context.get(x, y, z);
+        return isWater(state)
+                || state.getBlock() instanceof AirBlock
+                || isBubbleColumn(state)
+                || isWaterPlant(state);
+    }
+
     static boolean isFlowing(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
         FluidState fluidState = state.getFluidState();
         if (!(fluidState.getType() instanceof FlowingFluid)) {

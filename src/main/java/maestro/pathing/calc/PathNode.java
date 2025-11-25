@@ -39,6 +39,12 @@ public final class PathNode {
      */
     public int heapPosition;
 
+    /**
+     * The movement enum ordinal used to reach this node from previous node. -1 indicates no
+     * movement recorded (start node or legacy path).
+     */
+    public byte movementOrdinal = -1;
+
     public PathNode(int x, int y, int z, Goal goal) {
         this.previous = null;
         this.cost = ActionCosts.COST_INF;
@@ -60,6 +66,17 @@ public final class PathNode {
 
     public boolean isOpen() {
         return heapPosition != -1;
+    }
+
+    /**
+     * Get the Moves enum value that was used to reach this node from its previous node.
+     *
+     * @return The Moves enum, or null if not recorded
+     */
+    public maestro.pathing.movement.Moves getMovement() {
+        return movementOrdinal < 0
+                ? null
+                : maestro.pathing.movement.Moves.values()[movementOrdinal];
     }
 
     /**

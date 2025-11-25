@@ -60,6 +60,9 @@ public class CalculationContext {
     public double backtrackCostFavoringCoefficient;
     public double jumpPenalty;
     public final double walkOnWaterOnePenalty;
+    public final boolean allowSwimming;
+    public final int minSwimmingDepth;
+    public final boolean allowDiagonalSwimming;
     public final BetterWorldBorder worldBorder;
 
     public final PrecomputedData precomputedData;
@@ -141,6 +144,10 @@ public class CalculationContext {
                 Agent.settings().backtrackCostFavoringCoefficient.value;
         this.jumpPenalty = Agent.settings().jumpPenalty.value;
         this.walkOnWaterOnePenalty = Agent.settings().walkOnWaterOnePenalty.value;
+        this.allowSwimming =
+                Agent.settings().allowSwimming.value && Agent.settings().enhancedSwimming.value;
+        this.minSwimmingDepth = Agent.settings().minSwimmingDepth.value;
+        this.allowDiagonalSwimming = Agent.settings().allowDiagonalSwimming.value;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.

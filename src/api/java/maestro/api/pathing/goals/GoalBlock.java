@@ -78,10 +78,14 @@ public class GoalBlock implements Goal, IGoalRenderPos {
     public static double calculate(double xDiff, int yDiff, double zDiff) {
         double heuristic = 0;
 
-        // if yDiff is 1 that means that currentY-goalY==1 which means that we're 1 block above
-        // where we should be
-        // therefore going from 0,yDiff,0 to a GoalYLevel of 0 is accurate
-        heuristic += GoalYLevel.calculate(0, yDiff);
+        // Vertical heuristic: Use swimming cost (3.5) as minimum estimate
+        // This provides a better heuristic for underwater goals than terrestrial movement costs
+        // TODO: Ideally this would detect if we're actually in water, but using the minimum
+        // of swimming vs terrestrial costs ensures the heuristic is admissible (never
+        // overestimates)
+        double verticalHeuristic = GoalYLevel.calculate(0, yDiff);
+        double swimmingVerticalHeuristic = Math.abs(yDiff) * 3.5; // SWIM_UP/DOWN cost
+        heuristic += Math.min(verticalHeuristic, swimmingVerticalHeuristic);
 
         // use the pythagorean and manhattan mixture from GoalXZ
         heuristic += GoalXZ.calculate(xDiff, zDiff);

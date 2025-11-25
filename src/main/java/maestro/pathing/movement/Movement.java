@@ -162,6 +162,10 @@ public abstract class Movement implements IMovement, MovementHelper {
         // If the current status indicates a completed movement
         if (currentState.getStatus().isComplete()) {
             maestro.getInputOverrideHandler().clearAllKeys();
+
+            // Deactivate swimming to restore camera control; without this, swimmingActive flag
+            // persists and camera remains locked
+            ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
         }
 
         return currentState.getStatus();

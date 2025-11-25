@@ -186,14 +186,21 @@ public class PathExecutor implements IPathExecutor, Helper {
                     i < Agent.settings().costVerificationLookahead.value
                             && pathPosition + i < path.length() - 1;
                     i++) {
-                if (((Movement) path.movements().get(pathPosition + i))
-                                        .calculateCost(
-                                                behavior.secretInternalGetCalculationContext())
-                                >= ActionCosts.COST_INF
-                        && canCancel) {
+                Movement futureMove = (Movement) path.movements().get(pathPosition + i);
+                double futureCost =
+                        futureMove.calculateCost(behavior.secretInternalGetCalculationContext());
+                if (futureCost >= ActionCosts.COST_INF && canCancel) {
                     logDebug(
                             "Something has changed in the world and a future movement has become"
                                     + " impossible. Cancelling.");
+                    logDebug(
+                            String.format(
+                                    "Failed movement #%d: %s from %s to %s (cost=%.1f)",
+                                    i,
+                                    futureMove.getClass().getSimpleName(),
+                                    futureMove.getSrc(),
+                                    futureMove.getDest(),
+                                    futureCost));
                     cancel();
                     return true;
                 }
@@ -205,6 +212,15 @@ public class PathExecutor implements IPathExecutor, Helper {
             logDebug(
                     "Something has changed in the world and this movement has become impossible."
                             + " Cancelling.");
+            logDebug(
+                    String.format(
+                            "Failed movement (current): %s from %s to %s (cost=%.1f,"
+                                    + " original=%.1f)",
+                            movement.getClass().getSimpleName(),
+                            movement.getSrc(),
+                            movement.getDest(),
+                            currentCost,
+                            currentMovementOriginalCostEstimate));
             cancel();
             return true;
         }

@@ -178,6 +178,7 @@ dependencies {
 
 jar {
     from sourceSets.main.output, sourceSets.launch.output, sourceSets.api.output
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 javadoc {

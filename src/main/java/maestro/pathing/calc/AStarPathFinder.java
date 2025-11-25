@@ -193,6 +193,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                     neighbor.previous = currentNode;
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
+                    neighbor.movementOrdinal = (byte) moves.ordinal();
                     if (neighbor.isOpen()) {
                         openSet.update(neighbor);
                     } else {

@@ -3,7 +3,6 @@ package maestro.command.defaults;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import maestro.KeepName;
 import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -115,7 +114,6 @@ public class FollowCommand extends Command {
                 "> follow player <username1> <username2> <...> - Follow certain players");
     }
 
-    @KeepName
     private enum FollowGroup {
         ENTITIES(LivingEntity.class::isInstance),
         PLAYERS(Player.class::isInstance); /* ,
@@ -128,7 +126,6 @@ public class FollowCommand extends Command {
         }
     }
 
-    @KeepName
     private enum FollowList {
         ENTITY(EntityClassById.INSTANCE),
         PLAYER(NearbyPlayer.INSTANCE);

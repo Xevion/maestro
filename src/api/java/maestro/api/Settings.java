@@ -149,6 +149,26 @@ public final class Settings {
     /** Enable debug logging for swimming behavior. Useful for tuning and troubleshooting. */
     public final Setting<Boolean> logSwimming = new Setting<>(false);
 
+    /**
+     * Allow swimming pathfinding (3D underwater movement). When enabled, the bot can pathfind
+     * through water in all directions (horizontal, vertical, diagonal) for true 3D navigation.
+     * Requires enhancedSwimming to be enabled.
+     */
+    public final Setting<Boolean> allowSwimming = new Setting<>(true);
+
+    /**
+     * Minimum depth of water required to enable swimming movements. Shallow water uses terrestrial
+     * movements instead. Default: 2 blocks deep.
+     */
+    public final Setting<Integer> minSwimmingDepth = new Setting<>(2);
+
+    /**
+     * Allow diagonal swimming movements for smoother underwater paths. When enabled, the bot can
+     * swim diagonally (NE, NW, SE, SW) and diagonally-vertical (NE_UP, SW_DOWN, etc.) for more
+     * direct routes through water.
+     */
+    public final Setting<Boolean> allowDiagonalSwimming = new Setting<>(true);
+
     /** Assume step functionality; don't jump on an Ascend. */
     public final Setting<Boolean> assumeStep = new Setting<>(false);
 

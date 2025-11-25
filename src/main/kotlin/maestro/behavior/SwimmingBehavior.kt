@@ -2,7 +2,6 @@ package maestro.behavior
 
 import maestro.Agent
 import maestro.api.utils.BetterBlockPos
-import maestro.api.utils.Helper
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.input.Input
 import maestro.pathing.movement.MovementState
@@ -71,6 +70,11 @@ class SwimmingBehavior(
         val currentY = player.y
         val deltaY = targetY - currentY
 
+        // CRITICAL FIX: Trigger vanilla swimming state and pose
+        // This enables true Minecraft 1.13+ swimming physics (not just velocity changes)
+        player.setSwimming(true)
+        player.setPose(net.minecraft.world.entity.Pose.SWIMMING)
+
         // Activate swimming mode (enables free-look camera)
         (maestro as Agent).setSwimmingActive(true)
 
@@ -90,18 +94,10 @@ class SwimmingBehavior(
             RotationManager.Priority.NORMAL,
         ) {
             // Callback: apply velocity after rotation
-            applyTargetVelocity(currentYaw, targetPitch)
-        }
-
-        if (Agent.settings().logSwimming.value) {
-            val velocity = player.deltaMovement
-            logDebug(
-                "Swimming: y=${"%.2f".format(currentY)} -> target=${"%.2f".format(targetY)} " +
-                    "(Δy=${"%.2f".format(deltaY)}), " +
-                    "pitch=${"%.1f".format(targetPitch)} (state=$pitchState), " +
-                    "vel=(${"%.3f".format(velocity.x)}, ${"%.3f".format(velocity.y)}, ${"%.3f".format(velocity.z)}), " +
-                    "swimming=${player.isSwimming}",
-            )
+            // Guard against executing callback after swimming stops
+            if ((maestro as Agent).isSwimmingActive() && isInWater()) {
+                applyTargetVelocity(currentYaw, targetPitch)
+            }
         }
     }
 
@@ -165,7 +161,7 @@ class SwimmingBehavior(
 
         // Get speed configuration (percentage of vanilla speed)
         val speedPercent = Agent.settings().swimSpeedPercent.value / 100.0
-        val baseSpeed = 0.08 // Vanilla underwater swimming speed (blocks/tick)
+        val baseSpeed = 0.197 // Vanilla sprint-swimming speed (blocks/tick, ~3.93 blocks/sec)
         val targetSpeed = (baseSpeed * speedPercent).coerceIn(0.01, 0.80)
 
         // Calculate target direction vector from yaw/pitch
@@ -187,8 +183,8 @@ class SwimmingBehavior(
 
         // Apply exponential damping + proportional correction
         val currentVelocity = player.deltaMovement
-        val damping = 0.92 // Retain 92% of velocity each tick
-        val acceleration = 0.02 // Proportional correction rate
+        val damping = 0.70 // Retain 70% of velocity (faster decay, reaches target in ~5 ticks)
+        val acceleration = 0.30 // Proportional correction rate (faster convergence to target velocity)
 
         val newVelocity =
             currentVelocity
@@ -220,19 +216,36 @@ class SwimmingBehavior(
             RotationManager.Priority.NORMAL,
         ) {
             // Callback: apply velocity after rotation complete
-            applyTargetVelocity(rotation.yaw, rotation.pitch)
+            // Guard callback execution
+            if ((maestro as Agent).isSwimmingActive() && isInWater()) {
+                applyTargetVelocity(rotation.yaw, rotation.pitch)
+            }
         }
     }
 
     /**
      * Deactivate swimming mode and restore normal camera control.
      * Should be called when player exits water or swimming behavior stops controlling movement.
+     *
+     * CRITICAL: Clears rotation queue to prevent stale rotations from executing after deactivation.
+     * CRITICAL: Resets pitch state machine to ensure clean initialization on next activation.
      */
     fun deactivateSwimming() {
-        (maestro as Agent).setSwimmingActive(false)
-    }
+        val player = ctx.player()
 
-    private fun logDebug(msg: String) {
-        Helper.HELPER.logDebug("SwimmingBehavior: $msg")
+        // CRITICAL FIX: Clear vanilla swimming state (restores normal physics)
+        player.setSwimming(false)
+
+        (maestro as Agent).setSwimmingActive(false)
+
+        // CRITICAL FIX: Clear pending rotations to prevent camera jerk after deactivation
+        // Without this, queued rotations from swimming (typically 5-20) continue executing
+        // after user regains control, causing 0.25-1 second of unwanted camera movement
+        (maestro as Agent).getRotationManager().clear()
+
+        // CRITICAL FIX: Reset pitch state machine to neutral for next swim session
+        // Without this, state persists (e.g., ASCENDING) and causes incorrect initial pitch
+        // calculation on the next swimming session
+        pitchState = SwimPitchState.NEUTRAL
     }
 }

@@ -14,6 +14,14 @@ public interface ActionCosts {
     double SPRINT_ONE_BLOCK_COST = 20 / 5.612; // 3.564
     double SPRINT_MULTIPLIER = SPRINT_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST; // 0.769
 
+    /** Swimming costs (3D underwater movement) */
+    double SWIM_ONE_BLOCK_COST = 3.5; // Base swimming speed (faster than surface walking)
+
+    double SWIM_VERTICAL_ONE_BLOCK_COST = 3.5; // Same as horizontal (true 3D movement)
+    double SWIM_FLOWING_WATER_MULTIPLIER = 1.3; // 30% slower against current
+    double SWIM_THROUGH_PLANTS_MULTIPLIER = 1.2; // 20% slower through kelp/seagrass
+    double UNDERWATER_MINING_MULTIPLIER = 5.0; // Vanilla mining speed underwater
+
     /** To walk off an edge you need to walk 0.5 to the edge then 0.3 to start falling off */
     double WALK_OFF_BLOCK_COST = WALK_ONE_BLOCK_COST * 0.8; // 3.706
 

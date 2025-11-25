@@ -339,6 +339,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         boolean doIt = isSafeToCancel();
         if (doIt) {
             secretInternalSegmentCancel();
+        } else {
+            // Restore user control even when pathing can't be safely cancelled to prevent stuck
+            // camera/input states
+            maestro.getInputOverrideHandler().clearAllKeys();
+            maestro.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+            ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
         }
         maestro.getPathingControlManager()
                 .cancelEverything(); // regardless of if we can stop the current segment, we can
@@ -354,10 +360,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         synchronized (pathPlanLock) {
             getInProgress().ifPresent(AbstractNodeCostSearch::cancel); // only cancel ours
             if (!isSafeToCancel()) {
+                // Deactivate swimming to prevent stuck camera state
+                ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
                 return;
             }
             current = null;
             next = null;
+            // Deactivate swimming to restore camera control
+            ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
         }
         cancelRequested = true;
         // do everything BUT clear keys
