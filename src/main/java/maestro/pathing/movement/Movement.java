@@ -111,9 +111,24 @@ public abstract class Movement implements IMovement, MovementHelper {
     public MovementStatus update() {
         ctx.player().getAbilities().flying = false;
         currentState = updateState(currentState);
-        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())
-                && ctx.player().position().y < dest.y + 0.6) {
-            currentState.setInput(Input.JUMP, true);
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+            var swimming = ((Agent) maestro).getSwimmingBehavior();
+            if (swimming.shouldActivateSwimming()) {
+                // Use Minecraft 1.13+ swimming mechanics (sprint + forward in water)
+                swimming.applySwimmingInputs(currentState, dest.y);
+                // Add jump input if we need to go up (for surface breaching or climbing out)
+                if (ctx.player().position().y < dest.y + 0.6) {
+                    currentState.setInput(Input.JUMP, true);
+                }
+            } else {
+                // Fallback to vanilla behavior (treading water)
+                if (ctx.player().position().y < dest.y + 0.6) {
+                    currentState.setInput(Input.JUMP, true);
+                }
+            }
+        } else {
+            // Deactivate swimming mode when exiting water
+            ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
         }
         if (ctx.player().isInWall()) {
             ctx.getSelectedBlock()

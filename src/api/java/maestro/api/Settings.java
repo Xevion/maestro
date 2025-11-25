@@ -123,6 +123,32 @@ public final class Settings {
     /** If you have Fire Resistance and Jesus then I guess you could turn this on */
     public final Setting<Boolean> assumeWalkOnLava = new Setting<>(false);
 
+    /**
+     * Enable enhanced swimming behavior that uses target velocity control for smooth water
+     * traversal. When disabled, falls back to vanilla-style jumping in water.
+     */
+    public final Setting<Boolean> enhancedSwimming = new Setting<>(true);
+
+    /**
+     * Swimming speed as percentage of vanilla underwater speed. Range: 1-1000%, default 100%
+     * (vanilla speed).
+     *
+     * <p>Examples: 100% = vanilla, 150% = 1.5x vanilla, 200% = 2x vanilla.
+     *
+     * <p>Uses clamped value to prevent errors from invalid inputs.
+     */
+    public final Setting<Integer> swimSpeedPercent = new Setting<>(100);
+
+    /**
+     * Enable free-look camera mode, allowing user to look around independently from bot's movement
+     * direction. When enabled, the rendered camera is decoupled from player rotation, so the bot
+     * can control look direction for swimming/pathing while the user maintains independent view.
+     */
+    public final Setting<Boolean> enableFreeLook = new Setting<>(true);
+
+    /** Enable debug logging for swimming behavior. Useful for tuning and troubleshooting. */
+    public final Setting<Boolean> logSwimming = new Setting<>(false);
+
     /** Assume step functionality; don't jump on an Ascend. */
     public final Setting<Boolean> assumeStep = new Setting<>(false);
 

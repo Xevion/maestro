@@ -48,6 +48,8 @@ public class Agent implements IAgent {
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
     private final InputOverrideHandler inputOverrideHandler;
+    private final SwimmingBehavior swimmingBehavior;
+    private final RotationManager rotationManager;
 
     private final FollowProcess followProcess;
     private final MineProcess mineProcess;
@@ -68,6 +70,13 @@ public class Agent implements IAgent {
     private final WorldProvider worldProvider;
 
     public BlockStateInterface bsi;
+
+    // Free-look camera state (independent from player rotation)
+    private float freeLookYaw = 0.0f;
+    private float freeLookPitch = 0.0f;
+
+    // Swimming active state (tracks when swimming behavior is controlling the bot)
+    private boolean swimmingActive = false;
 
     Agent(Minecraft mc) {
         this.mc = mc;
@@ -90,6 +99,8 @@ public class Agent implements IAgent {
             this.pathingBehavior = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
+            this.swimmingBehavior = this.registerBehavior(SwimmingBehavior::new);
+            this.rotationManager = this.registerBehavior(RotationManager::new);
             this.registerBehavior(WaypointBehavior::new);
         }
 
@@ -171,6 +182,80 @@ public class Agent implements IAgent {
     @Override
     public LookBehavior getLookBehavior() {
         return this.lookBehavior;
+    }
+
+    public SwimmingBehavior getSwimmingBehavior() {
+        return this.swimmingBehavior;
+    }
+
+    public RotationManager getRotationManager() {
+        return this.rotationManager;
+    }
+
+    /**
+     * Gets the free-look camera yaw (horizontal rotation). This is independent from the player's
+     * actual rotation when free-look is enabled.
+     */
+    public float getFreeLookYaw() {
+        return freeLookYaw;
+    }
+
+    /**
+     * Sets the free-look camera yaw. Called by mouse movement handling when free-look is enabled.
+     */
+    public void setFreeLookYaw(float yaw) {
+        this.freeLookYaw = yaw;
+    }
+
+    /**
+     * Gets the free-look camera pitch (vertical rotation). This is independent from the player's
+     * actual rotation when free-look is enabled.
+     */
+    public float getFreeLookPitch() {
+        return freeLookPitch;
+    }
+
+    /**
+     * Sets the free-look camera pitch. Called by mouse movement handling when free-look is enabled.
+     */
+    public void setFreeLookPitch(float pitch) {
+        this.freeLookPitch = pitch;
+    }
+
+    /**
+     * Updates free-look camera angles based on mouse delta. This allows the user to look around
+     * independently from the bot's movement direction.
+     */
+    public void updateFreeLook(double deltaX, double deltaY) {
+        // Similar to Minecraft's camera handling
+        float sensitivity = 0.6f + 0.2f; // Default sensitivity
+
+        freeLookYaw += (float) deltaX * 0.15f * sensitivity;
+        freeLookPitch += (float) deltaY * 0.15f * sensitivity;
+
+        // Clamp pitch to -90 to +90 degrees
+        freeLookPitch = Math.max(-90.0f, Math.min(90.0f, freeLookPitch));
+    }
+
+    /**
+     * Returns true if swimming behavior is actively controlling the bot. This is used to
+     * conditionally activate free-look camera mode only during autonomous swimming.
+     */
+    public boolean isSwimmingActive() {
+        return swimmingActive;
+    }
+
+    /**
+     * Sets whether swimming behavior is actively controlling the bot. When activating swimming,
+     * this initializes the free-look angles to the current player rotation for smooth transition.
+     */
+    public void setSwimmingActive(boolean active) {
+        // When activating swimming, initialize free-look to current player rotation
+        if (active && !swimmingActive && this.mc.player != null) {
+            this.freeLookYaw = this.mc.player.getYRot();
+            this.freeLookPitch = this.mc.player.getXRot();
+        }
+        this.swimmingActive = active;
     }
 
     @Override

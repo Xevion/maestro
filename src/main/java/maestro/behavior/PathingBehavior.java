@@ -373,6 +373,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 next = null;
                 maestro.getInputOverrideHandler().clearAllKeys();
                 maestro.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+                // Deactivate swimming mode to restore normal camera control
+                ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
             }
         }
     }

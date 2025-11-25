@@ -8,6 +8,7 @@
     "defaultRequire": 1
   },
   "client": [
+    "MixinCamera",
     "MixinChunkArray",
     "MixinClientChunkProvider",
     "MixinClientPlayerEntity",
@@ -21,6 +22,7 @@
     "MixinLootContextBuilder",
     "MixinLootTable",
     "MixinMinecraft",
+    "MixinMouseHandler",
     "MixinNetworkManager",
     "MixinPalettedContainer",
     "MixinPalettedContainer$Data",
