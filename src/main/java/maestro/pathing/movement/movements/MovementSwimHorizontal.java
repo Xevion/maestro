@@ -3,17 +3,26 @@ package maestro.pathing.movement.movements;
 import static maestro.api.pathing.movement.ActionCosts.*;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Optional;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.Rotation;
+import maestro.api.utils.RotationUtils;
+import maestro.api.utils.VecUtils;
+import maestro.api.utils.input.Input;
 import maestro.behavior.RotationManager;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.MovementState;
+import maestro.utils.BlockStateInterface;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Horizontal swimming movement in water (cardinal directions: N, S, E, W). This movement enables
@@ -159,14 +168,27 @@ public class MovementSwimHorizontal extends Movement {
     public MovementState updateState(MovementState state) {
         super.updateState(state);
 
-        // Check if we've reached the destination
-        if (ctx.playerFeet().equals(dest)) {
+        // Calculate current position and target for continuous error correction
+        Vec3 currentPos = ctx.player().position();
+        Vec3 targetPos = Vec3.atCenterOf(dest);
+
+        // Check if we've reached the destination (with tolerance for continuous movement)
+        if (isCloseEnough(currentPos, targetPos)) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
-        // Calculate yaw to face destination
-        float targetYaw = calculateYaw(src, dest);
-        float targetPitch = 5.0f; // Slight downward to stay submerged
+        // CRITICAL: Calculate rotation from CURRENT position, not stale src
+        // This enables continuous error correction for drift from water currents
+        double dx = targetPos.x - currentPos.x;
+        double dy = targetPos.y - currentPos.y;
+        double dz = targetPos.z - currentPos.z;
+        double horizontalDist = Math.sqrt(dx * dx + dz * dz);
+
+        // Calculate yaw to face destination (updated every tick)
+        float targetYaw = (float) (Math.atan2(dz, dx) * 180.0 / Math.PI) - 90.0f;
+
+        // CRITICAL: Dynamic pitch based on vertical error (not hardcoded 5.0°)
+        float targetPitch = calculateDynamicPitch(dy, horizontalDist);
 
         // Queue rotation and apply swimming inputs via RotationManager
         Agent agent = (Agent) maestro;
@@ -184,15 +206,104 @@ public class MovementSwimHorizontal extends Movement {
     }
 
     /**
-     * Calculate yaw angle to face from source to destination (horizontal only).
+     * Calculate dynamic pitch angle based on vertical and horizontal error. Uses arctangent of
+     * vertical/horizontal ratio for natural angle calculation, with approach damping to prevent
+     * overshooting when close to target.
      *
-     * @param src Source position
-     * @param dest Destination position
-     * @return Yaw angle in degrees
+     * @param verticalError Vertical distance to target (positive = need to go up)
+     * @param horizontalDist Horizontal distance to target
+     * @return Pitch angle (negative = up, positive = down)
      */
-    private float calculateYaw(BetterBlockPos src, BetterBlockPos dest) {
-        double dx = dest.x - src.x;
-        double dz = dest.z - src.z;
-        return (float) (Math.atan2(dz, dx) * 180.0 / Math.PI) - 90.0f;
+    private float calculateDynamicPitch(double verticalError, double horizontalDist) {
+        // Avoid division by zero
+        if (horizontalDist < 0.01) {
+            // Pure vertical movement, use steep angle
+            return verticalError > 0 ? -45.0f : 45.0f;
+        }
+
+        // Calculate angle from error ratio: atan(vertical/horizontal)
+        double angle = Math.atan2(verticalError, horizontalDist);
+        float pitch = (float) (-angle * 180.0 / Math.PI); // Negative because pitch is inverted
+
+        // Apply approach damping: reduce angle when very close to prevent overshooting
+        double totalDist =
+                Math.sqrt(verticalError * verticalError + horizontalDist * horizontalDist);
+        if (totalDist < 2.0) {
+            // Within 2 blocks: scale pitch down
+            // At 2 blocks: 100% pitch, at 1 block: 50% pitch, at 0.5 blocks: 25% pitch
+            float dampingFactor = (float) (totalDist / 2.0);
+            pitch *= dampingFactor;
+        }
+
+        // Clamp to reasonable range (-60° to +60°)
+        return Math.max(-60.0f, Math.min(60.0f, pitch));
+    }
+
+    /**
+     * Check if position is close enough to destination. Uses 0.5 block tolerance for continuous
+     * movement to allow smooth arrival without overshooting.
+     *
+     * @param current Current position
+     * @param target Target position
+     * @return True if within tolerance
+     */
+    private boolean isCloseEnough(Vec3 current, Vec3 target) {
+        return Math.abs(current.x - target.x) <= 0.5
+                && Math.abs(current.y - target.y) <= 0.5
+                && Math.abs(current.z - target.z) <= 0.5;
+    }
+
+    @Override
+    protected boolean prepared(MovementState state) {
+        if (state.getStatus() == MovementStatus.WAITING) {
+            return true;
+        }
+
+        boolean somethingInTheWay = false;
+        for (BetterBlockPos blockPos : positionsToBreak) {
+            // Check for falling blocks (same as base implementation)
+            if (!ctx.world()
+                            .getEntitiesOfClass(
+                                    FallingBlockEntity.class,
+                                    new AABB(0, 0, 0, 1, 1.1, 1).move(blockPos))
+                            .isEmpty()
+                    && Agent.settings().pauseMiningForFallingBlocks.value) {
+                return false;
+            }
+
+            // CRITICAL: Use canSwimThrough instead of canWalkThrough
+            // This prevents breaking water, water plants, bubble columns
+            if (!MovementHelper.canSwimThrough(ctx, blockPos)) {
+                somethingInTheWay = true;
+                MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
+                Optional<Rotation> reachable =
+                        RotationUtils.reachable(
+                                ctx, blockPos, ctx.playerController().getBlockReachDistance());
+                if (reachable.isPresent()) {
+                    Rotation rotTowardsBlock = reachable.get();
+                    state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
+                    if (ctx.isLookingAt(blockPos)
+                            || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
+                        state.setInput(Input.CLICK_LEFT, true);
+                    }
+                    return false;
+                }
+                // Fallback when can't see block directly
+                state.setTarget(
+                        new MovementState.MovementTarget(
+                                RotationUtils.calcRotationFromVec3d(
+                                        ctx.playerHead(),
+                                        VecUtils.getBlockPosCenter(blockPos),
+                                        ctx.playerRotations()),
+                                true));
+                state.setInput(Input.CLICK_LEFT, true);
+                return false;
+            }
+        }
+        if (somethingInTheWay) {
+            state.setStatus(MovementStatus.UNREACHABLE);
+            return true;
+        }
+        return true;
     }
 }

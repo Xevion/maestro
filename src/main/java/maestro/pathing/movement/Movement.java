@@ -124,17 +124,12 @@ public abstract class Movement implements IMovement, MovementHelper {
     public MovementStatus update() {
         ctx.player().getAbilities().flying = false;
         currentState = updateState(currentState);
+
+        // Swimming velocity is applied via RotationManager callback in updateState()
+        // Only handle non-swimming water cases here
         if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
-            var swimming = ((Agent) maestro).getSwimmingBehavior();
-            if (swimming.shouldActivateSwimming()) {
-                // Use Minecraft 1.13+ swimming mechanics (sprint + forward in water)
-                swimming.applySwimmingInputs(currentState, dest.y);
-                // Add jump input if we need to go up (for surface breaching or climbing out)
-                if (ctx.player().position().y < dest.y + 0.6) {
-                    currentState.setInput(Input.JUMP, true);
-                }
-            } else {
-                // Fallback to vanilla behavior (treading water)
+            if (!((Agent) maestro).getSwimmingBehavior().shouldActivateSwimming()) {
+                // Fallback: vanilla treading water when enhanced swimming disabled
                 if (ctx.player().position().y < dest.y + 0.6) {
                     currentState.setInput(Input.JUMP, true);
                 }
@@ -174,11 +169,14 @@ public abstract class Movement implements IMovement, MovementHelper {
 
         // If the current status indicates a completed movement
         if (currentState.getStatus().isComplete()) {
-            maestro.getInputOverrideHandler().clearAllKeys();
+            // Only clear keys if not swimming - preserve swimming inputs across transitions
+            Agent agent = (Agent) maestro;
+            if (!agent.getSwimmingBehavior().shouldActivateSwimming()) {
+                maestro.getInputOverrideHandler().clearAllKeys();
+            }
 
-            // Deactivate swimming to restore camera control; without this, swimmingActive flag
-            // persists and camera remains locked
-            ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
+            // Swimming stays active across movement transitions
+            // Only deactivates when exiting water (line 139) or path ends (PathingBehavior)
         }
 
         return currentState.getStatus();

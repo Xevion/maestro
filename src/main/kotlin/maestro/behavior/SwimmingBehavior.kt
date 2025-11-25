@@ -14,26 +14,12 @@ import net.minecraft.world.phys.Vec3
  * by sprinting + moving forward while in water. This triggers the "swimming" pose/state which allows
  * staying underwater and moving efficiently.
  *
- * Implementation uses target velocity with exponential damping to prevent velocity compounding,
- * and a state machine with hysteresis to prevent pitch oscillation.
+ * Implementation uses target velocity with exponential damping to prevent velocity compounding.
+ * Rotation (yaw/pitch) is controlled by Movement classes for continuous error correction.
  */
 class SwimmingBehavior(
     maestro: Agent,
 ) : Behavior(maestro) {
-    /** Pitch control state machine (prevents oscillation via hysteresis) */
-    private enum class SwimPitchState {
-        ASCENDING, // Swimming upward
-        NEUTRAL, // Swimming horizontally
-        DESCENDING, // Swimming downward
-    }
-
-    private var pitchState = SwimPitchState.NEUTRAL
-
-    // Hysteresis thresholds (prevent rapid state changes)
-    private val ascendThreshold = 0.8 // Must be >0.8 blocks above to start ascending
-    private val descendThreshold = -0.8 // Must be >0.8 blocks below to start descending
-    private val neutralBuffer = 0.3 // Hysteresis buffer zone
-
     /** Returns true if player is fully submerged underwater. */
     fun isSubmerged(): Boolean = ctx.player().isUnderWater
 
@@ -48,100 +34,47 @@ class SwimmingBehavior(
 
     /**
      * Apply swimming inputs to trigger Minecraft 1.13+ swimming state.
-     * This sets sprint + forward inputs + pitch control, which causes the player to enter
-     * swimming pose and stay horizontal underwater.
+     * Uses rotation already calculated by Movement class for continuous error correction.
      *
      * Key to MC 1.13+ swimming:
      * - Sprint + Forward = initiate swimming
-     * - Pitch down (look down) = stay underwater and maintain horizontal swimming pose
-     * - Pitch up = surface
+     * - Movement classes control pitch/yaw based on position error
      *
      * Uses target velocity approach with exponential damping to prevent velocity compounding.
-     * Uses state machine with hysteresis to prevent pitch oscillation.
      *
      * @param state The movement state to apply swimming inputs to
-     * @param targetY The Y coordinate we're trying to reach (for pitch adjustment)
+     * @param targetY The Y coordinate (unused, kept for API compatibility)
      */
     fun applySwimmingInputs(
         state: MovementState,
         targetY: Double,
     ) {
         val player = ctx.player()
-        val currentY = player.y
-        val deltaY = targetY - currentY
+        val agent = maestro as Agent
 
-        // CRITICAL FIX: Trigger vanilla swimming state and pose
-        // This enables true Minecraft 1.13+ swimming physics (not just velocity changes)
+        // Trigger vanilla swimming state and pose
         player.setSwimming(true)
         player.setPose(net.minecraft.world.entity.Pose.SWIMMING)
 
-        // Activate swimming mode (enables free-look camera)
-        (maestro as Agent).setSwimmingActive(true)
+        // Initialize freeLook angles on first activation (smooth transition)
+        if (!agent.isSwimmingActive()) {
+            agent.setFreeLookYaw(player.yRot)
+            agent.setFreeLookPitch(player.xRot)
+        }
 
-        // Core swimming inputs: Sprint + Forward = swimming pose in MC 1.13+
+        // Activate swimming mode (enables free-look camera)
+        agent.setSwimmingActive(true)
+
+        // Core swimming inputs: Sprint + Forward = swimming pose
         state.setInput(Input.SPRINT, true)
         state.setInput(Input.MOVE_FORWARD, true)
 
-        // Calculate pitch using state machine with hysteresis (prevents oscillation)
-        val targetPitch = calculatePitchWithHysteresis(deltaY)
+        // Apply velocity using rotation already set by Movement class
+        // Movement calculated optimal yaw/pitch based on position error
         val currentYaw = player.yRot
+        val currentPitch = player.xRot
 
-        // Queue rotation via RotationManager (bot controls direction)
-        val rotationMgr = (maestro as Agent).getRotationManager()
-        rotationMgr.queue(
-            currentYaw,
-            targetPitch,
-            RotationManager.Priority.NORMAL,
-        ) {
-            // Callback: apply velocity after rotation
-            // Guard against executing callback after swimming stops
-            if ((maestro as Agent).isSwimmingActive() && isInWater()) {
-                applyTargetVelocity(currentYaw, targetPitch)
-            }
-        }
-    }
-
-    /**
-     * Calculate pitch using state machine with hysteresis to prevent oscillation.
-     * State only changes when thresholds are exceeded, preventing rapid toggling.
-     *
-     * @param deltaY Vertical distance to target (positive = need to go up)
-     * @return Target pitch angle (negative = up, positive = down)
-     */
-    private fun calculatePitchWithHysteresis(deltaY: Double): Float {
-        // Update state machine based on deltaY with hysteresis
-        when (pitchState) {
-            SwimPitchState.NEUTRAL -> {
-                // Only change state if we significantly exceed threshold
-                if (deltaY > ascendThreshold) {
-                    pitchState = SwimPitchState.ASCENDING
-                } else if (deltaY < descendThreshold) {
-                    pitchState = SwimPitchState.DESCENDING
-                }
-            }
-
-            SwimPitchState.ASCENDING -> {
-                // Need to drop below -neutralBuffer to return to neutral
-                // (hysteresis prevents immediate switch back)
-                if (deltaY < -neutralBuffer) {
-                    pitchState = SwimPitchState.NEUTRAL
-                }
-            }
-
-            SwimPitchState.DESCENDING -> {
-                // Need to rise above +neutralBuffer to return to neutral
-                if (deltaY > neutralBuffer) {
-                    pitchState = SwimPitchState.NEUTRAL
-                }
-            }
-        }
-
-        // Return pitch based on current state
-        return when (pitchState) {
-            SwimPitchState.ASCENDING -> -30.0f // Look up to surface
-            SwimPitchState.DESCENDING -> 30.0f // Look down to descend
-            SwimPitchState.NEUTRAL -> 5.0f // Slight downward to stay submerged
-        }
+        applyTargetVelocity(currentYaw, currentPitch)
     }
 
     /**
@@ -162,7 +95,7 @@ class SwimmingBehavior(
         // Get speed configuration (percentage of vanilla speed)
         val speedPercent = Agent.settings().swimSpeedPercent.value / 100.0
         val baseSpeed = 0.197 // Vanilla sprint-swimming speed (blocks/tick, ~3.93 blocks/sec)
-        val targetSpeed = (baseSpeed * speedPercent).coerceIn(0.01, 0.80)
+        val targetSpeed = (baseSpeed * speedPercent).coerceAtLeast(0.01)
 
         // Calculate target direction vector from yaw/pitch
         val yawRad = Math.toRadians(yaw.toDouble())
@@ -228,24 +161,17 @@ class SwimmingBehavior(
      * Should be called when player exits water or swimming behavior stops controlling movement.
      *
      * CRITICAL: Clears rotation queue to prevent stale rotations from executing after deactivation.
-     * CRITICAL: Resets pitch state machine to ensure clean initialization on next activation.
      */
     fun deactivateSwimming() {
         val player = ctx.player()
 
-        // CRITICAL FIX: Clear vanilla swimming state (restores normal physics)
+        // Clear vanilla swimming state (restores normal physics)
         player.setSwimming(false)
 
         (maestro as Agent).setSwimmingActive(false)
 
-        // CRITICAL FIX: Clear pending rotations to prevent camera jerk after deactivation
-        // Without this, queued rotations from swimming (typically 5-20) continue executing
-        // after user regains control, causing 0.25-1 second of unwanted camera movement
+        // CRITICAL: Clear pending rotations to prevent camera jerk after deactivation
+        // Without this, queued rotations from swimming continue executing after user regains control
         (maestro as Agent).getRotationManager().clear()
-
-        // CRITICAL FIX: Reset pitch state machine to neutral for next swim session
-        // Without this, state persists (e.g., ASCENDING) and causes incorrect initial pitch
-        // calculation on the next swimming session
-        pitchState = SwimPitchState.NEUTRAL
     }
 }

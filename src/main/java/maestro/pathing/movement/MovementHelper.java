@@ -821,6 +821,18 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || isWaterPlant(state);
     }
 
+    static boolean canSwimThrough(IPlayerContext ctx, BetterBlockPos pos) {
+        return canSwimThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
+    }
+
+    static boolean canSwimThrough(BlockStateInterface bsi, int x, int y, int z) {
+        BlockState state = bsi.get0(x, y, z);
+        return isWater(state)
+                || state.getBlock() instanceof AirBlock
+                || isBubbleColumn(state)
+                || isWaterPlant(state);
+    }
+
     static boolean isFlowing(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
         FluidState fluidState = state.getFluidState();
         if (!(fluidState.getType() instanceof FlowingFluid)) {

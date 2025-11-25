@@ -179,7 +179,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (!behavior.maestro.bsi.worldContainsLoadedChunk(
                     next.getDest().x, next.getDest().z)) {
                 logDebug("Pausing since destination is at edge of loaded chunks");
-                clearKeys();
+                stopMovement();
                 return true;
             }
         }
@@ -249,7 +249,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (shouldPause()) {
             logDebug("Pausing since current best path is a backtrack");
-            clearKeys();
+            stopMovement();
             return true;
         }
         MovementStatus movementStatus = movement.update();
@@ -720,11 +720,26 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private void clearKeys() {
+        // Don't clear keys during swimming transitions - preserve swimming inputs
+        Agent agent = (Agent) behavior.maestro;
+        if (agent.getSwimmingBehavior().shouldActivateSwimming()) {
+            return; // Keep swimming inputs active across movement transitions
+        }
+        behavior.maestro.getInputOverrideHandler().clearAllKeys();
+    }
+
+    private void stopMovement() {
+        // Deactivate swimming mode if active, then clear all inputs
+        // Used when path execution stops (pause, cancel, goal reached, etc.)
+        Agent agent = (Agent) behavior.maestro;
+        if (agent.getSwimmingBehavior().shouldActivateSwimming()) {
+            agent.getSwimmingBehavior().deactivateSwimming();
+        }
         behavior.maestro.getInputOverrideHandler().clearAllKeys();
     }
 
     private void cancel() {
-        clearKeys();
+        stopMovement();
         behavior.maestro.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
         pathPosition = path.length() + 3;
         failed = true;

@@ -129,6 +129,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             if (unpausedLastTick) {
                 maestro.getInputOverrideHandler().clearAllKeys();
                 maestro.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+                // Deactivate swimming mode when pausing
+                ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
             }
             unpausedLastTick = false;
             pausedThisTick = true;
@@ -178,6 +180,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     logDebug("All done. At " + goal);
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
+                    // Deactivate swimming mode when goal reached
+                    ((Agent) maestro).getSwimmingBehavior().deactivateSwimming();
                     if (Agent.settings().disconnectOnArrival.value) {
                         ctx.world().disconnect();
                     }
