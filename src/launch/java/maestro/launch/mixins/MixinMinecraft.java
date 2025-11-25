@@ -7,6 +7,7 @@ import maestro.api.event.events.PlayerUpdateEvent;
 import maestro.api.event.events.TickEvent;
 import maestro.api.event.events.WorldEvent;
 import maestro.api.event.events.type.EventState;
+import maestro.debug.DebugKeybindings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -33,6 +34,7 @@ public class MixinMinecraft {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void postInit(CallbackInfo ci) {
         MaestroAPI.getProvider().getPrimaryAgent();
+        DebugKeybindings.init();
     }
 
     @Inject(
@@ -82,6 +84,9 @@ public class MixinMinecraft {
         }
 
         this.tickProvider = null;
+
+        // Process debug keybindings
+        DebugKeybindings.tick();
     }
 
     @Inject(

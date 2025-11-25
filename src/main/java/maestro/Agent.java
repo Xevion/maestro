@@ -19,6 +19,7 @@ import maestro.api.utils.IPlayerContext;
 import maestro.behavior.*;
 import maestro.cache.WorldProvider;
 import maestro.command.manager.CommandManager;
+import maestro.debug.MaestroDebugRenderer;
 import maestro.event.GameEventHandler;
 import maestro.process.*;
 import maestro.selection.SelectionManager;
@@ -66,6 +67,7 @@ public class Agent implements IAgent {
     private final PathingControlManager pathingControlManager;
     private final SelectionManager selectionManager;
     private final CommandManager commandManager;
+    private final MaestroDebugRenderer debugRenderer;
 
     private final IPlayerContext playerContext;
     private final WorldProvider worldProvider;
@@ -126,6 +128,10 @@ public class Agent implements IAgent {
         this.worldProvider = new WorldProvider(this);
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
+
+        // Register debug renderer
+        this.debugRenderer = new MaestroDebugRenderer(this);
+        this.gameEventHandler.registerEventListener(this.debugRenderer);
     }
 
     public void registerBehavior(IBehavior behavior) {
@@ -314,6 +320,10 @@ public class Agent implements IAgent {
     @Override
     public CommandManager getCommandManager() {
         return this.commandManager;
+    }
+
+    public MaestroDebugRenderer getDebugRenderer() {
+        return this.debugRenderer;
     }
 
     @Override

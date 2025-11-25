@@ -4,6 +4,7 @@ import maestro.api.behavior.ILookBehavior;
 import maestro.api.behavior.IPathingBehavior;
 import maestro.api.cache.IWorldProvider;
 import maestro.api.command.manager.ICommandManager;
+import maestro.api.debug.IDebugRenderer;
 import maestro.api.event.listener.IEventBus;
 import maestro.api.pathing.calc.IPathingControlManager;
 import maestro.api.process.*;
@@ -130,6 +131,12 @@ public interface IAgent {
      * @see ICommandManager
      */
     ICommandManager getCommandManager();
+
+    /**
+     * @return The {@link IDebugRenderer} instance
+     * @see IDebugRenderer
+     */
+    IDebugRenderer getDebugRenderer();
 
     /** Open click */
     void openClick();

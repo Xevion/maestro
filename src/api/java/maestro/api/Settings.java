@@ -1361,6 +1361,11 @@ public final class Settings {
     /** Render selection corners */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
+    // ===== Debug Rendering Settings =====
+
+    /** Enable debug rendering */
+    public final Setting<Boolean> debugEnabled = new Setting<>(false);
+
     /** Use sword to mine. */
     public final Setting<Boolean> useSwordToMine = new Setting<>(true);
 
