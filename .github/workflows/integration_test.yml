@@ -30,12 +30,12 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
 
       - name: Build Fabric mod
-        run: ./gradlew :fabric:build -q
+        run: ./gradlew :platforms:fabric:build -q
 
       - name: Stage mod for testing
         run: |
           mkdir -p run/mods
-          find fabric/build/libs -name "maestro-fabric-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
+          find platforms/fabric/build/libs -name "maestro-fabric-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
 
       - name: Run Minecraft client test
         uses: headlesshq/mc-runtime-test@4.1.0
@@ -66,12 +66,12 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
 
       - name: Build NeoForge mod
-        run: ./gradlew :neoforge:build -q
+        run: ./gradlew :platforms:neoforge:build -q
 
       - name: Stage mod for testing
         run: |
           mkdir -p run/mods
-          find neoforge/build/libs -name "maestro-neoforge-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
+          find platforms/neoforge/build/libs -name "maestro-neoforge-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
 
       - name: Run Minecraft client test
         uses: headlesshq/mc-runtime-test@4.1.0
