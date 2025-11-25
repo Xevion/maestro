@@ -55,6 +55,7 @@ public final class DefaultCommands {
                                 new FindCommand(maestro),
                                 new MineCommand(maestro),
                                 new ClickCommand(maestro),
+                                new FullbrightCommand(maestro),
                                 new SurfaceCommand(maestro),
                                 new ThisWayCommand(maestro),
                                 new WaypointsCommand(maestro),

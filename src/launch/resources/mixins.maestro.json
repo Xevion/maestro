@@ -3,6 +3,7 @@
   "package": "maestro.launch.mixins",
   "compatibilityLevel": "JAVA_17",
   "verbose": false,
+  "plugin": "com.llamalad7.mixinextras.MixinExtrasBootstrap",
   "injectors": {
     "maxShiftBy": 2,
     "defaultRequire": 1
@@ -19,6 +20,7 @@
     "MixinFireworkRocketEntity",
     "MixinItemStack",
     "MixinLivingEntity",
+    "MixinLightmapTextureManager",
     "MixinLootContextBuilder",
     "MixinLootTable",
     "MixinMinecraft",

@@ -150,6 +150,12 @@ public final class Settings {
     public final Setting<Boolean> logSwimming = new Setting<>(false);
 
     /**
+     * Enable gamma-mode fullbright (clears lightmap texture to full white). Provides maximum
+     * brightness in dark areas without affecting actual light levels.
+     */
+    public final Setting<Boolean> fullbright = new Setting<>(false);
+
+    /**
      * Allow swimming pathfinding (3D underwater movement). When enabled, the bot can pathfind
      * through water in all directions (horizontal, vertical, diagonal) for true 3D navigation.
      * Requires enhancedSwimming to be enabled.
