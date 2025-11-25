@@ -114,25 +114,51 @@ public final class PathRenderer implements IRenderer {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(
-                    event.getModelViewStack(),
-                    current.getPath().positions(),
-                    renderBegin,
-                    settings.colorCurrentPath.value,
-                    settings.fadePath.value,
-                    10,
-                    20);
+            try {
+                drawPathWithMovements(
+                        event.getModelViewStack(),
+                        current.getPath().positions(),
+                        current.getPath().movements(),
+                        renderBegin,
+                        settings.colorCurrentPath.value,
+                        settings.fadePath.value,
+                        10,
+                        20);
+            } catch (Exception e) {
+                // Fall back to old rendering if movements access fails
+                drawPath(
+                        event.getModelViewStack(),
+                        current.getPath().positions(),
+                        renderBegin,
+                        settings.colorCurrentPath.value,
+                        settings.fadePath.value,
+                        10,
+                        20);
+            }
         }
 
         if (next != null && next.getPath() != null) {
-            drawPath(
-                    event.getModelViewStack(),
-                    next.getPath().positions(),
-                    0,
-                    settings.colorNextPath.value,
-                    settings.fadePath.value,
-                    10,
-                    20);
+            try {
+                drawPathWithMovements(
+                        event.getModelViewStack(),
+                        next.getPath().positions(),
+                        next.getPath().movements(),
+                        0,
+                        settings.colorNextPath.value,
+                        settings.fadePath.value,
+                        10,
+                        20);
+            } catch (Exception e) {
+                // Fall back to old rendering if movements access fails
+                drawPath(
+                        event.getModelViewStack(),
+                        next.getPath().positions(),
+                        0,
+                        settings.colorNextPath.value,
+                        settings.fadePath.value,
+                        10,
+                        20);
+            }
         }
 
         // If there is a path calculation currently running, render the path calculation process
@@ -143,6 +169,8 @@ public final class PathRenderer implements IRenderer {
                                     .bestPathSoFar()
                                     .ifPresent(
                                             p -> {
+                                                // Best path so far is not verified, use old
+                                                // rendering
                                                 drawPath(
                                                         event.getModelViewStack(),
                                                         p.positions(),
@@ -238,6 +266,133 @@ public final class PathRenderer implements IRenderer {
         }
 
         IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
+    }
+
+    public static void drawPathWithMovements(
+            PoseStack stack,
+            List<BetterBlockPos> positions,
+            List<maestro.api.pathing.movement.IMovement> movements,
+            int startIndex,
+            Color color,
+            boolean fadeOut,
+            int fadeStart0,
+            int fadeEnd0) {
+        // Validate inputs
+        if (positions == null || movements == null) {
+            return;
+        }
+
+        if (positions.isEmpty() || movements.isEmpty()) {
+            return;
+        }
+
+        if (movements.size() != positions.size() - 1) {
+            drawPath(stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0);
+            return;
+        }
+
+        if (startIndex >= positions.size() - 1 || startIndex >= movements.size()) {
+            return;
+        }
+
+        int fadeStart = fadeStart0 + startIndex;
+        int fadeEnd = fadeEnd0 + startIndex;
+
+        BufferBuilder bufferBuilder =
+                IRenderer.startLines(
+                        color,
+                        settings.pathRenderLineWidthPixels.value,
+                        settings.renderPathIgnoreDepth.value);
+
+        for (int i = startIndex, next; i < positions.size() - 1; i = next) {
+            BetterBlockPos start = positions.get(i);
+            BetterBlockPos end = positions.get(next = i + 1);
+
+            maestro.api.pathing.movement.IMovement movement = movements.get(i);
+            if (movement == null) {
+                // Use default color if movement is null
+                IRenderer.glColor(color, 0.4F);
+                emitPathLine(
+                        bufferBuilder, stack, start.x, start.y, start.z, end.x, end.y, end.z, 0.5);
+                continue;
+            }
+            Color lineColor = getMovementColor(movement, color);
+
+            int dirX = end.x - start.x;
+            int dirY = end.y - start.y;
+            int dirZ = end.z - start.z;
+
+            while (next + 1 < positions.size()
+                    && (!fadeOut || next + 1 < fadeStart)
+                    && next < movements.size()
+                    && !isSwimmingMovement(movements.get(next))
+                    && (dirX == positions.get(next + 1).x - end.x
+                            && dirY == positions.get(next + 1).y - end.y
+                            && dirZ == positions.get(next + 1).z - end.z)) {
+                end = positions.get(++next);
+            }
+
+            if (fadeOut) {
+                float alpha;
+
+                if (i <= fadeStart) {
+                    alpha = 0.4F;
+                } else {
+                    if (i > fadeEnd) {
+                        break;
+                    }
+                    alpha = 0.4F * (1.0F - (float) (i - fadeStart) / (float) (fadeEnd - fadeStart));
+                }
+                IRenderer.glColor(lineColor, alpha);
+            } else {
+                IRenderer.glColor(lineColor, 0.4F);
+            }
+
+            emitPathLine(bufferBuilder, stack, start.x, start.y, start.z, end.x, end.y, end.z, 0.5);
+        }
+
+        IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
+
+        // Pass 2: Render directional arrows
+        BufferBuilder arrowBuffer =
+                IRenderer.startLines(
+                        Color.CYAN,
+                        settings.pathRenderLineWidthPixels.value,
+                        settings.renderPathIgnoreDepth.value);
+
+        int lastArrowIndex = -10;
+
+        for (int i = startIndex; i < movements.size(); i++) {
+            if (!shouldPlaceArrow(movements, i, lastArrowIndex)) {
+                continue;
+            }
+
+            maestro.api.pathing.movement.IMovement movement = movements.get(i);
+            if (movement == null) {
+                continue;
+            }
+            BetterBlockPos pos = movement.getSrc();
+
+            // Calculate direction vector
+            net.minecraft.world.phys.Vec3 direction =
+                    new net.minecraft.world.phys.Vec3(
+                                    movement.getDest().x - pos.x,
+                                    movement.getDest().y - pos.y,
+                                    movement.getDest().z - pos.z)
+                            .normalize();
+
+            // Set arrow color
+            Color arrowColor = getArrowColor(movement);
+            IRenderer.glColor(arrowColor, 0.6f);
+
+            // Emit arrow at movement source position
+            emitChevronArrow(
+                    arrowBuffer, stack, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, direction, 0.4);
+
+            lastArrowIndex = i;
+        }
+
+        IRenderer.endLines(arrowBuffer, settings.renderPathIgnoreDepth.value);
     }
 
     private static void emitPathLine(
@@ -559,5 +714,203 @@ public final class PathRenderer implements IRenderer {
             IRenderer.emitLine(bufferBuilder, stack, maxX, y, maxZ, minX, y, maxZ, -1.0, 0.0, 0.0);
             IRenderer.emitLine(bufferBuilder, stack, minX, y, maxZ, minX, y, minZ, 0.0, 0.0, -1.0);
         }
+    }
+
+    private static boolean isSwimmingMovement(maestro.api.pathing.movement.IMovement movement) {
+        if (movement == null) {
+            return false;
+        }
+        return movement instanceof maestro.pathing.movement.movements.MovementSwimHorizontal
+                || movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
+    }
+
+    private static boolean isVerticalSwimming(maestro.api.pathing.movement.IMovement movement) {
+        if (movement == null) {
+            return false;
+        }
+        return movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
+    }
+
+    private static boolean isAscending(maestro.api.pathing.movement.IMovement movement) {
+        if (movement == null) {
+            return false;
+        }
+        if (movement instanceof maestro.pathing.movement.movements.MovementSwimVertical) {
+            return movement.getDest().y > movement.getSrc().y;
+        }
+        return false;
+    }
+
+    private static Color getMovementColor(
+            maestro.api.pathing.movement.IMovement movement, Color defaultColor) {
+        if (!isSwimmingMovement(movement)) {
+            return defaultColor;
+        }
+
+        if (defaultColor.equals(Color.RED)) {
+            return Color.CYAN;
+        } else if (defaultColor.equals(Color.MAGENTA)) {
+            return new Color(0, 200, 200);
+        } else if (defaultColor.equals(Color.BLUE)) {
+            return new Color(0, 150, 150);
+        }
+        return Color.CYAN;
+    }
+
+    private static Color getArrowColor(maestro.api.pathing.movement.IMovement movement) {
+        if (isVerticalSwimming(movement)) {
+            return isAscending(movement) ? Color.YELLOW : Color.ORANGE;
+        }
+        return Color.CYAN;
+    }
+
+    private static boolean shouldPlaceArrow(
+            List<maestro.api.pathing.movement.IMovement> movements,
+            int currentIndex,
+            int lastArrowIndex) {
+        if (currentIndex >= movements.size()) {
+            return false;
+        }
+
+        maestro.api.pathing.movement.IMovement current = movements.get(currentIndex);
+        if (current == null) {
+            return false;
+        }
+
+        maestro.api.pathing.movement.IMovement previous =
+                currentIndex > 0 ? movements.get(currentIndex - 1) : null;
+
+        // Rule 1: Movement type change (walk↔swim, horizontal↔vertical)
+        if (previous != null) {
+            boolean wasSwimming = isSwimmingMovement(previous);
+            boolean isSwimming = isSwimmingMovement(current);
+            if (wasSwimming != isSwimming) {
+                return true;
+            }
+
+            boolean wasVertical = isVerticalSwimming(previous);
+            boolean isVertical = isVerticalSwimming(current);
+            if (wasVertical != isVertical) {
+                return true;
+            }
+        }
+
+        // Rule 2: Significant direction change (>45°)
+        if (previous != null && hasSignificantDirectionChange(previous, current)) {
+            return true;
+        }
+
+        // Rule 3: Periodic placement (every 5 blocks)
+        if (currentIndex - lastArrowIndex >= 5) {
+            return true;
+        }
+
+        // Rule 4: Minimum spacing (not closer than 3 blocks)
+        if (currentIndex - lastArrowIndex < 3) {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static boolean hasSignificantDirectionChange(
+            maestro.api.pathing.movement.IMovement previous,
+            maestro.api.pathing.movement.IMovement current) {
+        // Calculate horizontal direction vectors (ignore Y)
+        double prevDx = previous.getDest().x - previous.getSrc().x;
+        double prevDz = previous.getDest().z - previous.getSrc().z;
+        double currDx = current.getDest().x - current.getSrc().x;
+        double currDz = current.getDest().z - current.getSrc().z;
+
+        // Normalize
+        double prevLen = Math.sqrt(prevDx * prevDx + prevDz * prevDz);
+        double currLen = Math.sqrt(currDx * currDx + currDz * currDz);
+        if (prevLen == 0 || currLen == 0) {
+            return false;
+        }
+
+        prevDx /= prevLen;
+        prevDz /= prevLen;
+        currDx /= currLen;
+        currDz /= currLen;
+
+        // Dot product: cos(45°) ≈ 0.707
+        double dot = prevDx * currDx + prevDz * currDz;
+        return dot < 0.707; // Angle > 45°
+    }
+
+    private static void emitChevronArrow(
+            BufferBuilder bufferBuilder,
+            PoseStack stack,
+            double x,
+            double y,
+            double z,
+            net.minecraft.world.phys.Vec3 direction,
+            double size) {
+        // Calculate tip point (along direction)
+        double tipX = x + direction.x * size;
+        double tipY = y + direction.y * size;
+        double tipZ = z + direction.z * size;
+
+        // Calculate perpendicular vector for wings
+        net.minecraft.world.phys.Vec3 perp;
+        if (Math.abs(direction.y) < 0.9) {
+            // Horizontal: use Y-axis cross product
+            perp = new net.minecraft.world.phys.Vec3(-direction.z, 0, direction.x).normalize();
+        } else {
+            // Vertical: use X-axis cross product
+            perp = new net.minecraft.world.phys.Vec3(0, -direction.z, direction.y).normalize();
+        }
+
+        // Wing points (70% back from tip, 30% spread)
+        double backDist = size * 0.7;
+        double wingSpread = size * 0.3;
+        double wingX = x + direction.x * backDist;
+        double wingY = y + direction.y * backDist;
+        double wingZ = z + direction.z * backDist;
+
+        double leftX = wingX + perp.x * wingSpread;
+        double leftY = wingY + perp.y * wingSpread;
+        double leftZ = wingZ + perp.z * wingSpread;
+
+        double rightX = wingX - perp.x * wingSpread;
+        double rightY = wingY - perp.y * wingSpread;
+        double rightZ = wingZ - perp.z * wingSpread;
+
+        // Adjust for camera position
+        double vpX = posX();
+        double vpY = posY();
+        double vpZ = posZ();
+
+        // Emit 3 lines forming chevron
+        IRenderer.emitLine(
+                bufferBuilder,
+                stack,
+                leftX - vpX,
+                leftY - vpY,
+                leftZ - vpZ,
+                tipX - vpX,
+                tipY - vpY,
+                tipZ - vpZ);
+
+        IRenderer.emitLine(
+                bufferBuilder,
+                stack,
+                rightX - vpX,
+                rightY - vpY,
+                rightZ - vpZ,
+                tipX - vpX,
+                tipY - vpY,
+                tipZ - vpZ);
+
+        IRenderer.emitLine(
+                bufferBuilder,
+                stack,
+                leftX - vpX,
+                leftY - vpY,
+                leftZ - vpZ,
+                rightX - vpX,
+                rightY - vpY,
+                rightZ - vpZ);
     }
 }

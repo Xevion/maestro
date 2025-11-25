@@ -1,0 +1,24 @@
+package maestro.pathing.movement;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+import maestro.api.pathing.movement.IMovement;
+import maestro.api.utils.BetterBlockPos;
+
+/**
+ * Combines multiple movement providers. Allows mixing different movement generation strategies
+ * (e.g., enum-based terrestrial movements + dynamic swimming).
+ */
+public class CompositeMovementProvider implements IMovementProvider {
+    private final List<IMovementProvider> providers;
+
+    public CompositeMovementProvider(IMovementProvider... providers) {
+        this.providers = Arrays.asList(providers);
+    }
+
+    @Override
+    public Stream<IMovement> generateMovements(CalculationContext context, BetterBlockPos from) {
+        return providers.stream().flatMap(provider -> provider.generateMovements(context, from));
+    }
+}

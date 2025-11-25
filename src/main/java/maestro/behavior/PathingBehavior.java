@@ -19,6 +19,8 @@ import maestro.api.utils.interfaces.IGoalRenderPos;
 import maestro.pathing.calc.AStarPathFinder;
 import maestro.pathing.calc.AbstractNodeCostSearch;
 import maestro.pathing.movement.CalculationContext;
+import maestro.pathing.movement.CompositeMovementProvider;
+import maestro.pathing.movement.ContinuousSwimmingProvider;
 import maestro.pathing.movement.EnumMovementProvider;
 import maestro.pathing.movement.IMovementProvider;
 import maestro.pathing.movement.MovementHelper;
@@ -36,8 +38,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private Goal goal;
     private CalculationContext context;
 
-    /** Movement provider for pathfinding. Defaults to EnumMovementProvider for compatibility. */
-    private final IMovementProvider movementProvider = new EnumMovementProvider();
+    /** Movement provider for pathfinding. Configured based on enableDynamicSwimming setting. */
+    private final IMovementProvider movementProvider;
 
     /*eta*/
     private int ticksElapsedSoFar;
@@ -63,6 +65,25 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     public PathingBehavior(Agent maestro) {
         super(maestro);
+        this.movementProvider = createMovementProvider();
+    }
+
+    /**
+     * Creates movement provider based on enableDynamicSwimming feature flag. When flag is off, uses
+     * enum-based movements for backward compatibility. When flag is on, combines dynamic swimming
+     * with enum-based terrestrial movements.
+     *
+     * @return Configured movement provider
+     */
+    private IMovementProvider createMovementProvider() {
+        if (Agent.settings().enableDynamicSwimming.value) {
+            // Use dynamic swimming + basic movements
+            return new CompositeMovementProvider(
+                    new ContinuousSwimmingProvider(), new EnumMovementProvider());
+        } else {
+            // Use enum only (backward compatible)
+            return new EnumMovementProvider();
+        }
     }
 
     private void queuePathEvent(PathEvent event) {

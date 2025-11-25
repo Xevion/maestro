@@ -175,6 +175,32 @@ public final class Settings {
      */
     public final Setting<Boolean> allowDiagonalSwimming = new Setting<>(true);
 
+    /**
+     * Angular precision for swimming movements (4, 8, 16, or 32 directions). Higher values =
+     * smoother paths but more computational cost during pathfinding.
+     *
+     * <ul>
+     *   <li>4: Cardinal directions only (N, E, S, W) - fastest
+     *   <li>8: Cardinal + diagonal (N, NE, E, SE, S, SW, W, NW) - balanced
+     *   <li>16: 22.5° precision - smooth
+     *   <li>32: 11.25° precision - very smooth but expensive
+     * </ul>
+     */
+    public final Setting<Integer> swimAngularPrecision = new Setting<>(8);
+
+    /**
+     * Vertical precision for swimming (currently fixed at 3: UP, LEVEL, DOWN). Reserved for future
+     * diagonal-vertical movements (e.g., NE_UP, SW_DOWN).
+     */
+    public final Setting<Integer> swimVerticalPrecision = new Setting<>(3);
+
+    /**
+     * Enable dynamic swimming movement generation with configurable precision. When false, uses
+     * hardcoded 6-direction swimming from Moves enum (backward compatible). When true, generates
+     * movements dynamically based on swimAngularPrecision.
+     */
+    public final Setting<Boolean> enableDynamicSwimming = new Setting<>(false);
+
     /** Assume step functionality; don't jump on an Ascend. */
     public final Setting<Boolean> assumeStep = new Setting<>(false);
 
