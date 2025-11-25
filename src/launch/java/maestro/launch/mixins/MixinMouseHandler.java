@@ -41,8 +41,9 @@ public class MixinMouseHandler {
             return;
         }
 
-        // If swimming is active and free-look is enabled
-        if (Agent.settings().enableFreeLook.value && agent.isSwimmingActive()) {
+        // Freecam takes priority; if not active, swimming free-look can still work
+        if (agent.isFreecamActive()
+                || (Agent.settings().enableFreeLook.value && agent.isSwimmingActive())) {
             // Update free-look camera angles from mouse deltas
             agent.updateFreeLook(accumulatedDX, accumulatedDY);
 

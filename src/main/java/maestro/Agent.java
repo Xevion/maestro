@@ -28,7 +28,9 @@ import maestro.utils.GuiClick;
 import maestro.utils.InputOverrideHandler;
 import maestro.utils.PathingControlManager;
 import maestro.utils.player.MaestroPlayerContext;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
 
 public class Agent implements IAgent {
 
@@ -81,6 +83,13 @@ public class Agent implements IAgent {
     // Swimming active state (tracks when swimming behavior is controlling the bot)
     private boolean swimmingActive = false;
 
+    // Freecam state (independent camera position and activation)
+    private Vec3 freecamPosition = null;
+    private Vec3 prevFreecamPosition = null;
+    private boolean freecamActive = false;
+    private int savedFov = -1;
+    private boolean savedSmoothCamera = false;
+
     Agent(Minecraft mc) {
         this.mc = mc;
         this.gameEventHandler = new GameEventHandler(this);
@@ -105,6 +114,7 @@ public class Agent implements IAgent {
             this.swimmingBehavior = this.registerBehavior(SwimmingBehavior::new);
             this.rotationManager = this.registerBehavior(RotationManager::new);
             this.registerBehavior(WaypointBehavior::new);
+            this.registerBehavior(FreecamBehavior::new);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
@@ -261,11 +271,89 @@ public class Agent implements IAgent {
      */
     public void setSwimmingActive(boolean active) {
         // When activating swimming, initialize free-look to current player rotation
-        if (active && !swimmingActive && this.mc.player != null) {
+        // Don't override rotation if freecam is already active
+        if (active && !swimmingActive && !freecamActive && this.mc.player != null) {
             this.freeLookYaw = this.mc.player.getYRot();
             this.freeLookPitch = this.mc.player.getXRot();
         }
         this.swimmingActive = active;
+    }
+
+    /**
+     * Returns true if freecam is currently active. When active, the camera detaches from the player
+     * entity and can be controlled independently.
+     */
+    public boolean isFreecamActive() {
+        return freecamActive;
+    }
+
+    /** Gets the current freecam position. Returns null if freecam is not active. */
+    public Vec3 getFreecamPosition() {
+        return freecamPosition;
+    }
+
+    /** Sets the freecam position. Updates the previous position for interpolation. */
+    public void setFreecamPosition(Vec3 position) {
+        this.prevFreecamPosition = this.freecamPosition;
+        this.freecamPosition = position;
+    }
+
+    /** Gets interpolated freecam X coordinate for smooth rendering between ticks. */
+    public double getFreecamX(float tickDelta) {
+        if (freecamPosition == null || prevFreecamPosition == null) {
+            return freecamPosition != null ? freecamPosition.x : 0;
+        }
+        return prevFreecamPosition.x + (freecamPosition.x - prevFreecamPosition.x) * tickDelta;
+    }
+
+    /** Gets interpolated freecam Y coordinate for smooth rendering between ticks. */
+    public double getFreecamY(float tickDelta) {
+        if (freecamPosition == null || prevFreecamPosition == null) {
+            return freecamPosition != null ? freecamPosition.y : 0;
+        }
+        return prevFreecamPosition.y + (freecamPosition.y - prevFreecamPosition.y) * tickDelta;
+    }
+
+    /** Gets interpolated freecam Z coordinate for smooth rendering between ticks. */
+    public double getFreecamZ(float tickDelta) {
+        if (freecamPosition == null || prevFreecamPosition == null) {
+            return freecamPosition != null ? freecamPosition.z : 0;
+        }
+        return prevFreecamPosition.z + (freecamPosition.z - prevFreecamPosition.z) * tickDelta;
+    }
+
+    /**
+     * Activates freecam mode. Captures the current camera position and rotation as the initial
+     * freecam state, and saves FOV settings.
+     */
+    public void activateFreecam() {
+        if (!freecamActive && this.mc.player != null && this.mc.gameRenderer != null) {
+            Camera camera = this.mc.gameRenderer.getMainCamera();
+            this.freecamPosition = camera.getPosition();
+            this.prevFreecamPosition = this.freecamPosition;
+            this.freeLookYaw = camera.getYRot();
+            this.freeLookPitch = camera.getXRot();
+
+            // Save FOV settings
+            this.savedFov = this.mc.options.fov().get();
+            this.savedSmoothCamera = this.mc.options.smoothCamera;
+
+            this.freecamActive = true;
+        }
+    }
+
+    /** Deactivates freecam mode. Returns camera to normal player-following behavior. */
+    public void deactivateFreecam() {
+        this.freecamActive = false;
+        this.freecamPosition = null;
+        this.prevFreecamPosition = null;
+
+        // Restore FOV settings
+        if (this.savedFov >= 0) {
+            this.mc.options.fov().set(this.savedFov);
+            this.savedFov = -1;
+        }
+        this.mc.options.smoothCamera = this.savedSmoothCamera;
     }
 
     @Override

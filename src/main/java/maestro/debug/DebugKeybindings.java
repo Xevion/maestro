@@ -1,7 +1,9 @@
 package maestro.debug;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import maestro.Agent;
 import maestro.api.MaestroAPI;
+import maestro.utils.InputHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -25,6 +27,7 @@ public class DebugKeybindings {
 
     private static boolean wasGravePressed = false;
     private static boolean wasCtrlGravePressed = false;
+    private static boolean wasGPressed = false;
 
     /** Initialize keybindings. Called during client initialization. */
     public static void init() {
@@ -76,6 +79,13 @@ public class DebugKeybindings {
         } else {
             wasGravePressed = false;
         }
+
+        // G key: Toggle freecam
+        boolean gPressed = isGPressed();
+        if (gPressed && !wasGPressed) {
+            toggleFreecam();
+        }
+        wasGPressed = gPressed;
     }
 
     /** Toggle debug rendering on/off. */
@@ -90,14 +100,30 @@ public class DebugKeybindings {
 
     /** Check if CTRL key is pressed. */
     private static boolean isCtrlPressed() {
-        long window = Minecraft.getInstance().getWindow().getWindow();
-        return GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS
-                || GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_CONTROL) == GLFW.GLFW_PRESS;
+        return InputHelper.isCtrlPressed();
     }
 
     /** Check if grave accent key is pressed. */
     private static boolean isGravePressed() {
-        long window = Minecraft.getInstance().getWindow().getWindow();
-        return GLFW.glfwGetKey(window, GLFW.GLFW_KEY_GRAVE_ACCENT) == GLFW.GLFW_PRESS;
+        return InputHelper.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT);
+    }
+
+    /** Check if G key is pressed. */
+    private static boolean isGPressed() {
+        return InputHelper.isKeyPressed(GLFW.GLFW_KEY_G);
+    }
+
+    /** Toggle freecam on/off. */
+    private static void toggleFreecam() {
+        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        if (agent == null) {
+            return;
+        }
+
+        if (agent.isFreecamActive()) {
+            agent.deactivateFreecam();
+        } else {
+            agent.activateFreecam();
+        }
     }
 }

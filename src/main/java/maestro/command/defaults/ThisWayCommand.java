@@ -3,11 +3,13 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 import maestro.api.pathing.goals.GoalXZ;
+import net.minecraft.world.phys.Vec3;
 
 public class ThisWayCommand extends Command {
 
@@ -18,11 +20,21 @@ public class ThisWayCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireExactly(1);
-        GoalXZ goal =
-                GoalXZ.fromDirection(
-                        ctx.playerFeetAsVec(),
-                        ctx.player().getYHeadRot(),
-                        args.getAs(Double.class));
+
+        Vec3 origin;
+        float yaw;
+
+        // Use freecam perspective when active, otherwise use player's
+        Agent agent = (Agent) maestro;
+        if (agent.isFreecamActive()) {
+            origin = agent.getFreecamPosition();
+            yaw = agent.getFreeLookYaw();
+        } else {
+            origin = ctx.playerFeetAsVec();
+            yaw = ctx.player().getYHeadRot();
+        }
+
+        GoalXZ goal = GoalXZ.fromDirection(origin, yaw, args.getAs(Double.class));
         maestro.getCustomGoalProcess().setGoal(goal);
         logDirect(String.format("Goal: %s", goal));
     }
@@ -34,15 +46,17 @@ public class ThisWayCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Travel in your current direction";
+        return "Travel in your current direction (or freecam direction)";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "Creates a GoalXZ some amount of blocks in the direction you're currently looking",
+                "Creates a GoalXZ some amount of blocks in the direction you're currently looking.",
+                "When freecam is active, uses the camera's direction instead of the bot's"
+                        + " direction.",
                 "",
                 "Usage:",
-                "> thisway <distance> - makes a GoalXZ distance blocks in front of you");
+                "> thisway <distance> - Makes a goal distance blocks in your current direction");
     }
 }
