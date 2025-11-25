@@ -1,0 +1,50 @@
+package maestro.pathing.movement;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
+import maestro.api.pathing.movement.ActionCosts;
+import maestro.api.pathing.movement.IMovement;
+import maestro.api.utils.BetterBlockPos;
+import maestro.utils.pathing.MutableMoveResult;
+
+/**
+ * Wraps the existing {@link Moves} enum to implement {@link IMovementProvider}. Provides backward
+ * compatibility while enabling the provider pattern.
+ *
+ * <p>This implementation:
+ *
+ * <ul>
+ *   <li>Iterates through all {@link Moves} enum values
+ *   <li>Filters out impossible movements (cost >= {@link ActionCosts#COST_INF})
+ *   <li>Creates {@link Movement} instances with pre-calculated costs
+ *   <li>Reuses {@link MutableMoveResult} for efficiency during cost checking
+ * </ul>
+ */
+public class EnumMovementProvider implements IMovementProvider {
+
+    @Override
+    public Stream<IMovement> generateMovements(CalculationContext context, BetterBlockPos from) {
+        // Pre-allocate result object (reused for cost checking to avoid allocations)
+        MutableMoveResult res = new MutableMoveResult();
+
+        return Arrays.stream(Moves.values())
+                .filter(
+                        move -> {
+                            // Quick cost check using MutableMoveResult
+                            res.reset();
+                            move.apply(context, from.x, from.y, from.z, res);
+                            // Filter out impossible movements
+                            return res.cost < ActionCosts.COST_INF;
+                        })
+                .map(
+                        move -> {
+                            // Create actual Movement instance with calculated destination
+                            res.reset();
+                            move.apply(context, from.x, from.y, from.z, res);
+                            Movement movement = move.apply0(context, from);
+                            // Store pre-calculated cost to avoid recalculation later
+                            movement.override(res.cost);
+                            return (IMovement) movement;
+                        });
+    }
+}

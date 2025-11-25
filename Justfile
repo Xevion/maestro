@@ -23,7 +23,7 @@ build:
 
 # Development server (run Minecraft client)
 dev:
-    ./gradlew runClient
+    ./gradlew runClient --args="--username Dev{{`shuf -i 1000000-9999999 -n 1`}}"
 
 # Clean build
 clean:

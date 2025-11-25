@@ -43,6 +43,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     private static final double MAX_TICKS_AWAY = 200;
 
     private final IPath path;
+    private PathCorridor corridor;
     private int pathPosition;
     private int ticksAway;
     private int ticksOnCurrent;
@@ -63,6 +64,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         this.behavior = behavior;
         this.ctx = behavior.ctx;
         this.path = path;
+        this.corridor = new PathCorridor(path, 0);
         this.pathPosition = 0;
     }
 
@@ -114,22 +116,27 @@ public class PathExecutor implements IPathExecutor, Helper {
                 }
             }
         }
-        Tuple<Double, BlockPos> status = closestPathPos(path);
-        if (possiblyOffPath(status, MAX_DIST_FROM_PATH)) {
-            ticksAway++;
-            if (ticksAway > MAX_TICKS_AWAY) {
-                logDebug("Too far away from path for too long, cancelling path");
+        if (!corridor.isWithinCorridor(whereAmI)) {
+            double distToPath = corridor.distanceToPath(whereAmI);
+
+            if (distToPath > MAX_MAX_DIST_FROM_PATH) {
+                logDebug("too far from path (distance: " + distToPath + ")");
                 cancel();
                 return false;
             }
+
+            if (distToPath > MAX_DIST_FROM_PATH) {
+                ticksAway++;
+                if (ticksAway > MAX_TICKS_AWAY) {
+                    logDebug("Too far away from path for too long, cancelling path");
+                    cancel();
+                    return false;
+                }
+            } else {
+                ticksAway = Math.max(0, ticksAway - 5); // Decay counter
+            }
         } else {
             ticksAway = 0;
-        }
-        if (possiblyOffPath(
-                status, MAX_MAX_DIST_FROM_PATH)) { // ok, stop right away, we're way too far.
-            logDebug("too far from path");
-            cancel();
-            return false;
         }
         // long start = System.nanoTime() / 1000000L;
         BlockStateInterface bsi = new BlockStateInterface(ctx);
@@ -709,6 +716,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     private void onChangeInPathPosition() {
         clearKeys();
         ticksOnCurrent = 0;
+        corridor.updateSegment(pathPosition);
     }
 
     private void clearKeys() {
@@ -742,6 +750,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                             }
                             PathExecutor ret = new PathExecutor(behavior, path);
                             ret.pathPosition = pathPosition;
+                            ret.corridor = new PathCorridor(path, pathPosition);
                             ret.currentMovementOriginalCostEstimate =
                                     currentMovementOriginalCostEstimate;
                             ret.costEstimateIndex = costEstimateIndex;
@@ -769,6 +778,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                             + newPath.length());
             PathExecutor ret = new PathExecutor(behavior, newPath);
             ret.pathPosition = pathPosition - cutoffAmt;
+            ret.corridor = new PathCorridor(newPath, ret.pathPosition);
             ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
             if (costEstimateIndex != null) {
                 ret.costEstimateIndex = costEstimateIndex - cutoffAmt;

@@ -86,6 +86,19 @@ public abstract class Movement implements IMovement, MovementHelper {
         this.cost = cost;
     }
 
+    /**
+     * Get the Moves enum ordinal for this movement type. Used for backward compatibility when
+     * storing movement ordinals in PathNode. Subclasses created from Moves enum should override to
+     * return the corresponding ordinal.
+     *
+     * @return Moves enum ordinal, or -1 if not from Moves enum
+     */
+    public int getMovesOrdinal() {
+        // Default: unknown (for movements not from Moves enum)
+        // Subclasses should override if they correspond to a Moves enum value
+        return -1;
+    }
+
     protected abstract Set<BetterBlockPos> calculateValidPositions();
 
     public Set<BetterBlockPos> getValidPositions() {

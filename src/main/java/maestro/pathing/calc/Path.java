@@ -101,6 +101,25 @@ class Path extends PathBase {
         for (int i = 0; i < path.size() - 1; i++) {
             double cost = nodes.get(i + 1).cost - nodes.get(i).cost;
             PathNode nextNode = nodes.get(i + 1);
+
+            // NEW: Check if movement was stored directly in node
+            if (nextNode.previousMovement != null) {
+                Movement move = (Movement) nextNode.previousMovement;
+                // Verify destination matches (sanity check)
+                if (move.getDest().equals(path.get(i + 1))) {
+                    movements.add(move);
+                    continue;
+                } else {
+                    // Shouldn't happen, but log and fallback
+                    Helper.HELPER.logDebug(
+                            "Stored movement destination mismatch: expected "
+                                    + path.get(i + 1)
+                                    + ", got "
+                                    + move.getDest());
+                }
+            }
+
+            // FALLBACK: Use old runBackwards method for compatibility
             Movement move = runBackwards(path.get(i), path.get(i + 1), nextNode, cost);
             if (move == null) {
                 return true;

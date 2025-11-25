@@ -1,15 +1,20 @@
 package maestro.pathing.calc;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import maestro.Agent;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.ActionCosts;
+import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.SettingsUtil;
 import maestro.pathing.calc.openset.BinaryHeapOpenSet;
 import maestro.pathing.movement.CalculationContext;
-import maestro.pathing.movement.Moves;
+import maestro.pathing.movement.EnumMovementProvider;
+import maestro.pathing.movement.IMovementProvider;
+import maestro.pathing.movement.Movement;
 import maestro.utils.pathing.BetterWorldBorder;
 import maestro.utils.pathing.Favoring;
 import maestro.utils.pathing.MutableMoveResult;
@@ -23,6 +28,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
 
     private final Favoring favoring;
     private final CalculationContext calcContext;
+    private final IMovementProvider movementProvider;
 
     public AStarPathFinder(
             BetterBlockPos realStart,
@@ -31,10 +37,24 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             int startZ,
             Goal goal,
             Favoring favoring,
-            CalculationContext context) {
+            CalculationContext context,
+            IMovementProvider provider) {
         super(realStart, startX, startY, startZ, goal, context);
         this.favoring = favoring;
         this.calcContext = context;
+        this.movementProvider = provider != null ? provider : new EnumMovementProvider();
+    }
+
+    /** Backward compatibility constructor without movement provider. */
+    public AStarPathFinder(
+            BetterBlockPos realStart,
+            int startX,
+            int startY,
+            int startZ,
+            Goal goal,
+            Favoring favoring,
+            CalculationContext context) {
+        this(realStart, startX, startY, startZ, goal, favoring, context, null);
     }
 
     @Override
@@ -84,7 +104,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         // pathing doesn't cause a crash or unpredictable behavior
         double minimumImprovement =
                 Agent.settings().minimumImprovementRepropagation.value ? MIN_IMPROVEMENT : 0;
-        Moves[] allMoves = Moves.values();
         while (!openSet.isEmpty()
                 && numEmptyChunk < pathingMaxChunkBorderFetch
                 && !cancelRequested) {
@@ -115,92 +134,85 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 return Optional.of(
                         new Path(realStart, startNode, currentNode, numNodes, goal, calcContext));
             }
-            for (Moves moves : allMoves) {
-                int newX = currentNode.x + moves.xOffset;
-                int newZ = currentNode.z + moves.zOffset;
+
+            // Generate movements for current position
+            BetterBlockPos currentPos =
+                    new BetterBlockPos(currentNode.x, currentNode.y, currentNode.z);
+            List<IMovement> movements =
+                    movementProvider
+                            .generateMovements(calcContext, currentPos)
+                            .collect(Collectors.toList());
+
+            for (IMovement movement : movements) {
+                numMovementsConsidered++;
+
+                BetterBlockPos dest = movement.getDest();
+                int newX = dest.x;
+                int newY = dest.y;
+                int newZ = dest.z;
+
+                // Chunk loading check
                 if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4)
                         && !calcContext.isLoaded(newX, newZ)) {
-                    // only need to check if the destination is a loaded chunk if it's in a
-                    // different chunk than the start of the movement
-                    if (!moves.dynamicXZ) { // only increment the counter if the movement would have
-                        // gone out of bounds guaranteed
-                        numEmptyChunk++;
-                    }
+                    numEmptyChunk++;
                     continue;
                 }
-                if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
+
+                // World border check
+                if (!worldBorder.entirelyContains(newX, newZ)) {
                     continue;
                 }
-                if (currentNode.y + moves.yOffset > height
-                        || currentNode.y + moves.yOffset < minY) {
+
+                // Height bounds check
+                if (newY > height || newY < minY) {
                     continue;
                 }
-                res.reset();
-                moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z, res);
-                numMovementsConsidered++;
-                double actionCost = res.cost;
+
+                // Get cost (already calculated during movement creation)
+                double actionCost = movement.getCost();
                 if (actionCost >= ActionCosts.COST_INF) {
                     continue;
                 }
+
                 if (actionCost <= 0 || Double.isNaN(actionCost)) {
                     throw new IllegalStateException(
                             String.format(
                                     "%s from %s %s %s calculated implausible cost %s",
-                                    moves,
+                                    movement.getClass().getSimpleName(),
                                     SettingsUtil.maybeCensor(currentNode.x),
                                     SettingsUtil.maybeCensor(currentNode.y),
                                     SettingsUtil.maybeCensor(currentNode.z),
                                     actionCost));
                 }
-                // check destination after verifying it's not COST_INF -- some movements return
-                // COST_INF without adjusting the destination
-                if (moves.dynamicXZ
-                        && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
-                    continue;
-                }
-                if (!moves.dynamicXZ && (res.x != newX || res.z != newZ)) {
-                    throw new IllegalStateException(
-                            String.format(
-                                    "%s from %s %s %s ended at x z %s %s instead of %s %s",
-                                    moves,
-                                    SettingsUtil.maybeCensor(currentNode.x),
-                                    SettingsUtil.maybeCensor(currentNode.y),
-                                    SettingsUtil.maybeCensor(currentNode.z),
-                                    SettingsUtil.maybeCensor(res.x),
-                                    SettingsUtil.maybeCensor(res.z),
-                                    SettingsUtil.maybeCensor(newX),
-                                    SettingsUtil.maybeCensor(newZ)));
-                }
-                if (!moves.dynamicY && res.y != currentNode.y + moves.yOffset) {
-                    throw new IllegalStateException(
-                            String.format(
-                                    "%s from %s %s %s ended at y %s instead of %s",
-                                    moves,
-                                    SettingsUtil.maybeCensor(currentNode.x),
-                                    SettingsUtil.maybeCensor(currentNode.y),
-                                    SettingsUtil.maybeCensor(currentNode.z),
-                                    SettingsUtil.maybeCensor(res.y),
-                                    SettingsUtil.maybeCensor(currentNode.y + moves.yOffset)));
-                }
-                long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
+
+                long hashCode = BetterBlockPos.longHash(newX, newY, newZ);
                 if (isFavoring) {
                     // see issue #18
                     actionCost *= favoring.calculate(hashCode);
                 }
-                PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
+
+                PathNode neighbor = getNodeAtPosition(newX, newY, newZ, hashCode);
                 double tentativeCost = currentNode.cost + actionCost;
+
                 if (neighbor.cost - tentativeCost > minimumImprovement) {
                     neighbor.previous = currentNode;
                     neighbor.cost = tentativeCost;
                     neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
-                    neighbor.movementOrdinal = (byte) moves.ordinal();
+
+                    // Store movement reference directly in node
+                    neighbor.previousMovement = movement;
+
+                    // Keep ordinal for backward compatibility
+                    if (movement instanceof Movement) {
+                        neighbor.movementOrdinal = (byte) ((Movement) movement).getMovesOrdinal();
+                    }
+
                     if (neighbor.isOpen()) {
                         openSet.update(neighbor);
                     } else {
-                        openSet.insert(
-                                neighbor); // dont double count, dont insert into open set if it's
-                        // already there
+                        openSet.insert(neighbor);
                     }
+
                     for (int i = 0; i < COEFFICIENTS.length; i++) {
                         double heuristic =
                                 neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];

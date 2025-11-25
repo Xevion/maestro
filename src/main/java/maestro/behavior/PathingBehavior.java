@@ -19,6 +19,8 @@ import maestro.api.utils.interfaces.IGoalRenderPos;
 import maestro.pathing.calc.AStarPathFinder;
 import maestro.pathing.calc.AbstractNodeCostSearch;
 import maestro.pathing.movement.CalculationContext;
+import maestro.pathing.movement.EnumMovementProvider;
+import maestro.pathing.movement.IMovementProvider;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.path.PathExecutor;
 import maestro.utils.PathRenderer;
@@ -33,6 +35,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private Goal goal;
     private CalculationContext context;
+
+    /** Movement provider for pathfinding. Defaults to EnumMovementProvider for compatibility. */
+    private final IMovementProvider movementProvider = new EnumMovementProvider();
 
     /*eta*/
     private int ticksElapsedSoFar;
@@ -659,7 +664,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 start.getZ(),
                 transformed,
                 favoring,
-                context);
+                context,
+                movementProvider);
     }
 
     @Override

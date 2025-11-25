@@ -2,6 +2,7 @@ package maestro.pathing.calc;
 
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.ActionCosts;
+import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.SettingsUtil;
 
@@ -40,10 +41,20 @@ public final class PathNode {
     public int heapPosition;
 
     /**
-     * The movement enum ordinal used to reach this node from previous node. -1 indicates no
-     * movement recorded (start node or legacy path).
+     * The movement used to reach this node from previous node. Storing the movement directly
+     * eliminates the need to reconstruct it later via runBackwards(). If null, fallback to
+     * movementOrdinal lookup for backward compatibility.
      */
-    public byte movementOrdinal = -1;
+    public IMovement previousMovement = null;
+
+    /**
+     * The movement enum ordinal used to reach this node from previous node. -1 indicates no
+     * movement recorded (start node or legacy path). Kept for backward compatibility during
+     * migration; prefer using previousMovement when available.
+     *
+     * @deprecated Use {@link #previousMovement} instead for direct movement access
+     */
+    @Deprecated public byte movementOrdinal = -1;
 
     public PathNode(int x, int y, int z, Goal goal) {
         this.previous = null;
