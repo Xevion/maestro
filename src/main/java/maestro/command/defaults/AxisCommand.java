@@ -21,7 +21,7 @@ public class AxisCommand extends Command {
         args.requireMax(0);
         Goal goal = new GoalAxis();
         maestro.getCustomGoalProcess().setGoal(goal);
-        logDirect(String.format("Goal: %s", goal));
+        log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");
     }
 
     @Override

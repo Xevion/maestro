@@ -19,7 +19,7 @@ public class ComeCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         maestro.getCustomGoalProcess().setGoalAndPath(new GoalBlock(ctx.viewerPos()));
-        logDirect("Coming");
+        log.atInfo().log("Pathing to camera position");
     }
 
     @Override

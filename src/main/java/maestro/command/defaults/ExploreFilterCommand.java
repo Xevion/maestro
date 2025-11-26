@@ -13,8 +13,12 @@ import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.command.exception.CommandInvalidTypeException;
+import maestro.api.utils.MaestroLogger;
+import org.slf4j.Logger;
 
 public class ExploreFilterCommand extends Command {
+
+    private static final Logger log = MaestroLogger.get("cmd");
 
     public ExploreFilterCommand(IAgent maestro) {
         super(maestro, "explorefilter");
@@ -45,7 +49,7 @@ public class ExploreFilterCommand extends Command {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        logDirect(String.format("Explore filter applied. Inverted: %s", invert));
+        log.atInfo().addKeyValue("inverted", invert).log("Explore filter applied");
     }
 
     @Override

@@ -29,7 +29,7 @@ public class GotoCommand extends Command {
             args.requireMax(3);
             BetterBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
-            logDirect(String.format("Going to: %s", goal.toString()));
+            log.atInfo().addKeyValue("goal", goal.toString()).log("Going to goal");
             maestro.getCustomGoalProcess().setGoalAndPath(goal);
             return;
         }

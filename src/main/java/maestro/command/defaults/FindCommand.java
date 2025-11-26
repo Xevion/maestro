@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.api.IAgent;
+import maestro.api.MaestroAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.BlockById;
@@ -56,9 +57,21 @@ public class FindCommand extends Command {
                         .map(this::positionToComponent)
                         .toArray(Component[]::new);
         if (components.length > 0) {
-            Arrays.asList(components).forEach(this::logDirect);
+            // Send formatted component list to chat
+            maestro.utils.chat.ChatMessageRenderer renderer =
+                    new maestro.utils.chat.ChatMessageRenderer();
+            for (Component component : components) {
+                net.minecraft.network.chat.MutableComponent prefixed =
+                        net.minecraft.network.chat.Component.literal("");
+                prefixed.append(renderer.createCategoryPrefix("cmd"));
+                prefixed.append(" ");
+                prefixed.append(component);
+
+                net.minecraft.client.Minecraft.getInstance()
+                        .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+            }
         } else {
-            logDirect("No positions known, are you sure the blocks are cached?");
+            log.atInfo().log("No cached positions found for requested blocks");
         }
     }
 

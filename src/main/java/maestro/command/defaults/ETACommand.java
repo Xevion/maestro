@@ -32,15 +32,19 @@ public class ETACommand extends Command {
                 pathingBehavior.ticksRemainingInSegment().orElse(Double.NaN);
         double ticksRemainingInGoal = pathingBehavior.estimatedTicksToGoal().orElse(Double.NaN);
 
-        logDirect(
-                String.format(
-                        "Next segment: %.1fs (%.0f ticks)\n" + "Goal: %.1fs (%.0f ticks)",
-                        ticksRemainingInSegment
-                                / 20, // we just assume tps is 20, it isn't worth the effort that is
-                        // needed to calculate it exactly
-                        ticksRemainingInSegment,
-                        ticksRemainingInGoal / 20,
-                        ticksRemainingInGoal));
+        log.atInfo()
+                .addKeyValue(
+                        "segment_eta_sec",
+                        String.format(
+                                "%.1f",
+                                ticksRemainingInSegment
+                                        / 20)) // we just assume tps is 20, it isn't worth the
+                // effort
+                // that is needed to calculate it exactly
+                .addKeyValue("segment_eta_ticks", String.format("%.0f", ticksRemainingInSegment))
+                .addKeyValue("goal_eta_sec", String.format("%.1f", ticksRemainingInGoal / 20))
+                .addKeyValue("goal_eta_ticks", String.format("%.0f", ticksRemainingInGoal))
+                .log("Estimated time to arrival");
     }
 
     @Override

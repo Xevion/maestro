@@ -7,8 +7,12 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
+import maestro.api.utils.MaestroLogger;
+import org.slf4j.Logger;
 
 public class ReloadAllCommand extends Command {
+
+    private static final Logger log = MaestroLogger.get("cmd");
 
     public ReloadAllCommand(IAgent maestro) {
         super(maestro, "reloadall");
@@ -18,7 +22,7 @@ public class ReloadAllCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         ctx.worldData().getCachedWorld().reloadAllFromDisk();
-        logDirect("Reloaded");
+        log.atInfo().log("Reloaded");
     }
 
     @Override

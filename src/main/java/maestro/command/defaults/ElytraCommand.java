@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.MaestroAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -34,7 +35,7 @@ public class ElytraCommand extends Command {
         final ICustomGoalProcess customGoalProcess = maestro.getCustomGoalProcess();
         final IElytraProcess elytra = maestro.getElytraProcess();
         if (args.hasExactlyOne() && args.peekString().equals("supported")) {
-            logDirect(elytra.isLoaded() ? "yes" : unsupportedSystemMessage());
+            log.atInfo().log(elytra.isLoaded() ? "yes" : unsupportedSystemMessage());
             return;
         }
         if (!elytra.isLoaded()) {
@@ -69,13 +70,13 @@ public class ElytraCommand extends Command {
             case "reset":
                 {
                     elytra.resetState();
-                    logDirect("Reset state but still flying to same goal");
+                    log.atInfo().log("Reset state but still flying to same goal");
                     break;
                 }
             case "repack":
                 {
                     elytra.repackChunks();
-                    logDirect("Queued all loaded chunks for repacking");
+                    log.atInfo().log("Queued all loaded chunks for repacking");
                     break;
                 }
             default:
@@ -89,12 +90,28 @@ public class ElytraCommand extends Command {
         if (Agent.settings().elytraPredictTerrain.value) {
             long seed = Agent.settings().elytraNetherSeed.value;
             if (seed != NEW_2B2T_SEED && seed != OLD_2B2T_SEED) {
-                logDirect(
+                // Send rich component to chat manually
+                maestro.utils.chat.ChatMessageRenderer renderer =
+                        new maestro.utils.chat.ChatMessageRenderer();
+
+                MutableComponent msg1 =
                         Component.literal(
-                                "It looks like you're on 2b2t, but"
-                                        + " elytraNetherSeed is"
-                                        + " incorrect.")); // match color
-                logDirect(suggest2b2tSeeds());
+                                "It looks like you're on 2b2t, but elytraNetherSeed is"
+                                        + " incorrect.");
+                MutableComponent prefixed1 = Component.literal("");
+                prefixed1.append(renderer.createCategoryPrefix("cmd"));
+                prefixed1.append(" ");
+                prefixed1.append(msg1);
+                net.minecraft.client.Minecraft.getInstance()
+                        .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed1));
+
+                Component msg2 = suggest2b2tSeeds();
+                MutableComponent prefixed2 = Component.literal("");
+                prefixed2.append(renderer.createCategoryPrefix("cmd"));
+                prefixed2.append(" ");
+                prefixed2.append(msg2);
+                net.minecraft.client.Minecraft.getInstance()
+                        .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed2));
             }
         }
     }
@@ -266,7 +283,15 @@ public class ElytraCommand extends Command {
                 }
             }
         }
-        logDirect(gatekeep);
+        // Send rich component to chat manually
+        maestro.utils.chat.ChatMessageRenderer renderer =
+                new maestro.utils.chat.ChatMessageRenderer();
+        MutableComponent prefixed = Component.literal("");
+        prefixed.append(renderer.createCategoryPrefix("cmd"));
+        prefixed.append(" ");
+        prefixed.append(gatekeep);
+        net.minecraft.client.Minecraft.getInstance()
+                .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
     }
 
     private boolean detectOn2b2t() {

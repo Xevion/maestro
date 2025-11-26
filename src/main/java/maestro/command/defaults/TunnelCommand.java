@@ -28,9 +28,11 @@ public class TunnelCommand extends Command {
             int depth = Integer.parseInt(args.getArgs().get(2).getValue());
 
             if (width < 1 || height < 2 || depth < 1 || height > ctx.world().getMaxY()) {
-                logDirect(
-                        "Width and depth must at least be 1 block; Height must at least be 2"
-                                + " blocks, and cannot be greater than the build limit.");
+                log.atWarn()
+                        .log(
+                                "Width and depth must at least be 1 block; Height must at least"
+                                        + " be 2 blocks, and cannot be greater than the build"
+                                        + " limit.");
                 cont = false;
             }
 
@@ -91,17 +93,17 @@ public class TunnelCommand extends Command {
                                     throw new IllegalStateException(
                                             "Unexpected value: " + enumFacing);
                         };
-                logDirect(
-                        String.format(
-                                "Creating a tunnel %s block(s) high, %s block(s) wide, and %s"
-                                        + " block(s) deep",
-                                height + 1, width + 1, depth));
+                log.atInfo()
+                        .addKeyValue("height", height + 1)
+                        .addKeyValue("width", width + 1)
+                        .addKeyValue("depth", depth)
+                        .log("Creating tunnel");
                 maestro.getBuilderProcess().clearArea(corner1, corner2);
             }
         } else {
             Goal goal = new GoalStrictDirection(ctx.playerFeet(), ctx.player().getDirection());
             maestro.getCustomGoalProcess().setGoalAndPath(goal);
-            logDirect(String.format("Goal: %s", goal));
+            log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");
         }
     }
 

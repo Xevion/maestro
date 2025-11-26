@@ -18,10 +18,8 @@ public class RepackCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        logDirect(
-                String.format(
-                        "Queued %d chunks for repacking",
-                        MaestroAPI.getProvider().getWorldScanner().repack(ctx)));
+        int count = MaestroAPI.getProvider().getWorldScanner().repack(ctx);
+        log.atInfo().addKeyValue("chunk_count", count).log("Chunks queued for repacking");
     }
 
     @Override

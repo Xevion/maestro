@@ -27,16 +27,16 @@ public class GoalCommand extends Command {
             args.requireMax(1);
             if (goalProcess.getGoal() != null) {
                 goalProcess.setGoal(null);
-                logDirect("Cleared goal");
+                log.atInfo().log("Goal cleared");
             } else {
-                logDirect("There was no goal to clear");
+                log.atInfo().log("No goal to clear");
             }
         } else {
             args.requireMax(3);
             BetterBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             goalProcess.setGoal(goal);
-            logDirect(String.format("Goal: %s", goal.toString()));
+            log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");
         }
     }
 

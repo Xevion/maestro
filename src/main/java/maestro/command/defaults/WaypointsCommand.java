@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.MaestroAPI;
 import maestro.api.cache.IWaypoint;
 import maestro.api.cache.IWorldData;
 import maestro.api.cache.Waypoint;
@@ -24,7 +25,9 @@ import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.BetterBlockPos;
+import maestro.utils.chat.ChatMessageRenderer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -44,6 +47,7 @@ public class WaypointsCommand extends Command {
         if (action == null) {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
         }
+        ChatMessageRenderer renderer = new ChatMessageRenderer();
         BiFunction<IWaypoint, Action, Component> toComponent =
                 (waypoint, _action) -> {
                     MutableComponent component = Component.literal("");
@@ -103,7 +107,7 @@ public class WaypointsCommand extends Command {
                         args,
                         waypoints,
                         () ->
-                                logDirect(
+                                log.atInfo().log(
                                         tag != null
                                                 ? String.format(
                                                         "All waypoints by tag %s:", tag.name())
@@ -138,7 +142,14 @@ public class WaypointsCommand extends Command {
             MutableComponent component = Component.literal("Waypoint added: ");
             component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
             component.append(toComponent.apply(waypoint, Action.INFO));
-            logDirect(component);
+
+            MutableComponent prefixed = Component.literal("");
+            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(" ");
+            prefixed.append(component);
+
+            Minecraft.getInstance()
+                    .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
         } else if (action == Action.CLEAR) {
             args.requireMax(1);
             String name = args.getString();
@@ -176,7 +187,14 @@ public class WaypointsCommand extends Command {
                                                                                     wp
                                                                                             .getCreationTimestamp()))
                                                             .collect(Collectors.joining(" "))))));
-            logDirect(textComponent);
+
+            MutableComponent prefixed = Component.literal("");
+            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(" ");
+            prefixed.append(textComponent);
+
+            Minecraft.getInstance()
+                    .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
         } else if (action == Action.RESTORE) {
             List<IWaypoint> waypoints = new ArrayList<>();
             List<IWaypoint> deletedWaypoints =
@@ -203,7 +221,7 @@ public class WaypointsCommand extends Command {
             }
             waypoints.forEach(ForWaypoints.waypoints(this.maestro)::addWaypoint);
             deletedWaypoints.removeIf(waypoints::contains);
-            logDirect(String.format("Restored %d waypoints", waypoints.size()));
+            log.atInfo().log(String.format("Restored %d waypoints", waypoints.size()));
         } else {
             IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
             IWaypoint waypoint = null;
@@ -237,7 +255,7 @@ public class WaypointsCommand extends Command {
                 Paginator.paginate(
                         args,
                         waypoints,
-                        () -> logDirect("Multiple waypoints were found:"),
+                        () -> log.atInfo().log("Multiple waypoints were found:"),
                         transform,
                         String.format(
                                 "%s%s %s %s",
@@ -247,8 +265,15 @@ public class WaypointsCommand extends Command {
                                 args.consumedString()));
             } else {
                 if (action == Action.INFO) {
-                    logDirect(transform.apply(waypoint));
-                    logDirect(String.format("Position: %s", waypoint.getLocation()));
+                    MutableComponent waypointInfo = (MutableComponent) transform.apply(waypoint);
+                    MutableComponent prefixed1 = Component.literal("");
+                    prefixed1.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed1.append(" ");
+                    prefixed1.append(waypointInfo);
+                    Minecraft.getInstance()
+                            .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed1));
+
+                    log.atInfo().log(String.format("Position: %s", waypoint.getLocation()));
                     MutableComponent deleteComponent =
                             Component.literal("Click to delete this waypoint");
                     deleteComponent.setStyle(
@@ -309,10 +334,34 @@ public class WaypointsCommand extends Command {
                                                     String.format(
                                                             "%s%s list",
                                                             FORCE_COMMAND_PREFIX, label))));
-                    logDirect(deleteComponent);
-                    logDirect(goalComponent);
-                    logDirect(recreateComponent);
-                    logDirect(backComponent);
+
+                    MutableComponent prefixed2 = Component.literal("");
+                    prefixed2.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed2.append(" ");
+                    prefixed2.append(deleteComponent);
+                    Minecraft.getInstance()
+                            .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed2));
+
+                    MutableComponent prefixed3 = Component.literal("");
+                    prefixed3.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed3.append(" ");
+                    prefixed3.append(goalComponent);
+                    Minecraft.getInstance()
+                            .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed3));
+
+                    MutableComponent prefixed4 = Component.literal("");
+                    prefixed4.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed4.append(" ");
+                    prefixed4.append(recreateComponent);
+                    Minecraft.getInstance()
+                            .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed4));
+
+                    MutableComponent prefixed5 = Component.literal("");
+                    prefixed5.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed5.append(" ");
+                    prefixed5.append(backComponent);
+                    Minecraft.getInstance()
+                            .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed5));
                 } else if (action == Action.DELETE) {
                     ForWaypoints.waypoints(this.maestro).removeWaypoint(waypoint);
                     deletedWaypoints
@@ -335,15 +384,21 @@ public class WaypointsCommand extends Command {
                                                             FORCE_COMMAND_PREFIX,
                                                             label,
                                                             waypoint.getCreationTimestamp()))));
-                    logDirect(textComponent);
+
+                    MutableComponent prefixed6 = Component.literal("");
+                    prefixed6.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed6.append(" ");
+                    prefixed6.append(textComponent);
+                    Minecraft.getInstance()
+                            .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed6));
                 } else if (action == Action.GOAL) {
                     Goal goal = new GoalBlock(waypoint.getLocation());
                     maestro.getCustomGoalProcess().setGoal(goal);
-                    logDirect(String.format("Goal: %s", goal));
+                    log.atInfo().log(String.format("Goal: %s", goal));
                 } else if (action == Action.GOTO) {
                     Goal goal = new GoalBlock(waypoint.getLocation());
                     maestro.getCustomGoalProcess().setGoalAndPath(goal);
-                    logDirect(String.format("Going to: %s", goal));
+                    log.atInfo().log(String.format("Going to: %s", goal));
                 }
             }
         }

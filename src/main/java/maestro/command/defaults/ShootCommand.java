@@ -14,7 +14,6 @@ import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.selector.entity.EntityCategory;
 import maestro.api.selector.entity.EntitySelector;
 import maestro.api.selector.entity.EntitySelectorLookup;
-import net.minecraft.ChatFormatting;
 
 public class ShootCommand extends Command {
 
@@ -32,7 +31,7 @@ public class ShootCommand extends Command {
             if (arg.equalsIgnoreCase("stop")) {
                 args.getString(); // consume
                 maestro.getRangedCombatProcess().cancel();
-                logDirect("Stopped shooting");
+                log.atInfo().log("Shooting stopped");
                 return;
             }
         }
@@ -58,9 +57,9 @@ public class ShootCommand extends Command {
         // Warn about individual selectors that matched nothing
         for (EntitySelector selector : selectors) {
             if (selector.resolve().isEmpty()) {
-                logDirect(
-                        "Warning: '" + selector.getRawInput() + "' matched 0 entities",
-                        ChatFormatting.YELLOW);
+                log.atWarn()
+                        .addKeyValue("selector", selector.getRawInput())
+                        .log("Selector matched no entities");
             }
         }
 
@@ -71,7 +70,7 @@ public class ShootCommand extends Command {
 
         maestro.getRangedCombatProcess().shoot(lookup.toPredicate());
 
-        logDirect("Shooting at: " + lookup.toDisplayString());
+        log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Shooting started");
     }
 
     @Override

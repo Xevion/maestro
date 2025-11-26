@@ -10,6 +10,7 @@ import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.Helper;
 import maestro.api.utils.MaestroLogger;
+import maestro.utils.chat.ChatMessageBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -26,7 +27,7 @@ import org.joml.Vector4f;
 import org.slf4j.Logger;
 
 public class GuiClick extends Screen implements Helper {
-    private static final Logger log = MaestroLogger.get("cmd");
+    private static final Logger log = MaestroLogger.get("event");
 
     private Matrix4f projectionViewMatrix;
 
@@ -83,18 +84,31 @@ public class GuiClick extends Screen implements Helper {
                             .getPrimaryAgent()
                             .getSelectionManager()
                             .removeAllSelections();
+                    BetterBlockPos from = BetterBlockPos.from(clickStart);
+                    BetterBlockPos to = BetterBlockPos.from(currentMouseOver);
                     MaestroAPI.getProvider()
                             .getPrimaryAgent()
                             .getSelectionManager()
-                            .addSelection(
-                                    BetterBlockPos.from(clickStart),
-                                    BetterBlockPos.from(currentMouseOver));
-                    log.atInfo()
-                            .addKeyValue("from", BetterBlockPos.from(clickStart))
-                            .addKeyValue("to", BetterBlockPos.from(currentMouseOver))
-                            .log("Selection made");
-                    // TODO: Clickable component removed - will be restored with ChatMessenger
-                    // abstraction
+                            .addSelection(from, to);
+                    ChatMessageBuilder.info(log, "event")
+                            .message("Selection made")
+                            .key("from", from)
+                            .key("to", to)
+                            .withHover("Click to select region")
+                            .withClick(
+                                    "/maestro sel "
+                                            + from.getX()
+                                            + " "
+                                            + from.getY()
+                                            + " "
+                                            + from.getZ()
+                                            + " "
+                                            + to.getX()
+                                            + " "
+                                            + to.getY()
+                                            + " "
+                                            + to.getZ())
+                            .send();
                     clickStart = null;
                 } else {
                     MaestroAPI.getProvider()

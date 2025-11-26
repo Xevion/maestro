@@ -22,7 +22,7 @@ public class PathCommand extends Command {
         args.requireMax(0);
         MaestroAPI.getProvider().getWorldScanner().repack(ctx);
         customGoalProcess.path();
-        logDirect("Now pathing");
+        log.atInfo().log("Pathing started");
     }
 
     @Override

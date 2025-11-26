@@ -8,6 +8,7 @@ import maestro.api.pathing.goals.GoalNear
 import maestro.api.process.IRangedCombatProcess
 import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
+import maestro.api.utils.MaestroLogger
 import maestro.api.utils.Rotation
 import maestro.combat.BowController
 import maestro.combat.ProjectilePhysics
@@ -16,6 +17,7 @@ import maestro.combat.TrajectoryRenderer
 import maestro.utils.MaestroProcessHelper
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
+import org.slf4j.Logger
 import java.util.Comparator
 import java.util.function.Predicate
 import java.util.stream.Collectors
@@ -29,6 +31,8 @@ class RangedCombatProcess(
 ) : MaestroProcessHelper(maestro),
     IRangedCombatProcess,
     AbstractGameEventListener {
+    private val log: Logger = MaestroLogger.get("combat")
+
     companion object {
         private const val MIN_RANGE = 8.0
         private const val MAX_RANGE = 40.0
@@ -128,14 +132,14 @@ class RangedCombatProcess(
                 // Select bow if not already holding
                 if (!bowController.selectBow()) {
                     // No bow available
-                    logDirect("No bow found in hotbar")
+                    log.atWarn().log("No bow found in hotbar")
                     onLostControl()
                     return null
                 }
 
                 // Check for arrows
                 if (!bowController.hasArrows()) {
-                    logDirect("No arrows in inventory")
+                    log.atWarn().log("No arrows in inventory")
                     onLostControl()
                     return null
                 }

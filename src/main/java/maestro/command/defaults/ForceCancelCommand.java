@@ -21,7 +21,7 @@ public class ForceCancelCommand extends Command {
         IPathingBehavior pathingBehavior = maestro.getPathingBehavior();
         pathingBehavior.cancelEverything();
         pathingBehavior.forceCancel();
-        logDirect("ok force canceled");
+        log.atInfo().log("Pathing force canceled");
     }
 
     @Override

@@ -29,14 +29,16 @@ public class PickupCommand extends Command {
         }
         if (collecting.isEmpty()) {
             maestro.getFollowProcess().pickup(stack -> true);
-            logDirect("Picking up all items");
+            log.atInfo().log("Picking up all items");
         } else {
             maestro.getFollowProcess().pickup(stack -> collecting.contains(stack.getItem()));
-            logDirect("Picking up these items:");
+            log.atInfo()
+                    .addKeyValue("item_count", collecting.size())
+                    .log("Picking up specified items");
             collecting.stream()
                     .map(BuiltInRegistries.ITEM::getKey)
                     .map(ResourceLocation::toString)
-                    .forEach(this::logDirect);
+                    .forEach(item -> log.atInfo().addKeyValue("item", item).log("Item filter"));
         }
     }
 

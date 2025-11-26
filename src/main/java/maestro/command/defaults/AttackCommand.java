@@ -14,7 +14,6 @@ import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.selector.entity.EntityCategory;
 import maestro.api.selector.entity.EntitySelector;
 import maestro.api.selector.entity.EntitySelectorLookup;
-import net.minecraft.ChatFormatting;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AttackCommand extends Command {
@@ -33,7 +32,7 @@ public class AttackCommand extends Command {
             if (arg.equalsIgnoreCase("entities")) {
                 args.getString(); // consume the argument
                 maestro.getAttackProcess().attack(LivingEntity.class::isInstance);
-                logDirect("Attacking all entities");
+                log.atInfo().log("Attacking all entities");
                 return;
             }
         }
@@ -59,9 +58,9 @@ public class AttackCommand extends Command {
         // Warn about individual selectors that matched nothing
         for (EntitySelector selector : selectors) {
             if (selector.resolve().isEmpty()) {
-                logDirect(
-                        "Warning: '" + selector.getRawInput() + "' matched 0 entities",
-                        ChatFormatting.YELLOW);
+                log.atWarn()
+                        .addKeyValue("selector", selector.getRawInput())
+                        .log("Selector matched no entities");
             }
         }
 
@@ -72,7 +71,7 @@ public class AttackCommand extends Command {
 
         maestro.getAttackProcess().attack(lookup.toPredicate());
 
-        logDirect("Attacking: " + lookup.toDisplayString());
+        log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Attacking started");
     }
 
     @Override

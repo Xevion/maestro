@@ -1,11 +1,15 @@
 package maestro.api.command.exception;
 
-import static maestro.api.utils.Helper.HELPER;
-
 import java.util.List;
+import maestro.api.MaestroAPI;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.ICommandArgument;
+import maestro.api.utils.MaestroLogger;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import org.slf4j.Logger;
 
 /**
  * The base for a Maestro Command Exception, checked or unchecked. Provides a {@link
@@ -15,6 +19,8 @@ import net.minecraft.ChatFormatting;
  * <p>Anything implementing this interface should be assignable to {@link Exception}.
  */
 public interface ICommandException {
+
+    Logger log = MaestroLogger.get("cmd");
 
     /**
      * @return The exception details
@@ -29,6 +35,18 @@ public interface ICommandException {
      * @param args The arguments the command was called with.
      */
     default void handle(ICommand command, List<ICommandArgument> args) {
-        HELPER.logDirect(this.getMessage(), ChatFormatting.RED);
+        // Log error
+        log.atError().log(this.getMessage());
+
+        // Send to chat directly (bypasses appender to ensure it shows)
+        MutableComponent errorMsg = Component.literal("[cmd] ");
+        errorMsg.setStyle(errorMsg.getStyle().withColor(ChatFormatting.AQUA));
+
+        MutableComponent messageComponent = Component.literal(this.getMessage());
+        messageComponent.setStyle(messageComponent.getStyle().withColor(ChatFormatting.RED));
+        errorMsg.append(messageComponent);
+
+        Minecraft.getInstance()
+                .execute(() -> MaestroAPI.getSettings().logger.value.accept(errorMsg));
     }
 }

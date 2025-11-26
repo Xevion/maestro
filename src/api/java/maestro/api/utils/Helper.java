@@ -1,8 +1,6 @@
 package maestro.api.utils;
 
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.stream.Stream;
 import maestro.api.MaestroAPI;
 import maestro.api.Settings;
 import net.minecraft.ChatFormatting;
@@ -134,101 +132,20 @@ public interface Helper {
      */
     default void logDebug(String message) {
         if (!MaestroAPI.getSettings().chatDebug.value) {
-            // System.out.println("Suppressed debug message:");
-            // System.out.println(message);
             return;
         }
-        // We won't log debug chat into toasts
-        // Because only a madman would want that extreme spam -_-
-        logDirect(message, false);
-    }
+        // Send directly to chat without toast
+        MutableComponent component = Component.literal(message);
+        component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
 
-    /**
-     * Send components to chat with the [Maestro] prefix
-     *
-     * @param logAsToast Whether to log as a toast notification
-     * @param components The components to send
-     */
-    default void logDirect(boolean logAsToast, Component... components) {
-        MutableComponent component = Component.literal("");
-        if (!logAsToast && !MaestroAPI.getSettings().useMessageTag.value) {
-            component.append(getPrefix());
-            component.append(Component.literal(" "));
+        MutableComponent prefixed = Component.literal("");
+        if (!MaestroAPI.getSettings().useMessageTag.value) {
+            prefixed.append(getPrefix());
+            prefixed.append(Component.literal(" "));
         }
-        Arrays.asList(components).forEach(component::append);
-        if (logAsToast) {
-            logToast(getPrefix(), component);
-        } else {
-            Minecraft.getInstance()
-                    .execute(() -> MaestroAPI.getSettings().logger.value.accept(component));
-        }
-    }
+        prefixed.append(component);
 
-    /**
-     * Send components to chat with the [Maestro] prefix
-     *
-     * @param components The components to send
-     */
-    default void logDirect(Component... components) {
-        logDirect(MaestroAPI.getSettings().logAsToast.value, components);
-    }
-
-    /**
-     * Send a message to chat regardless of chatDebug (should only be used for critically important
-     * messages, or as a direct response to a chat command)
-     *
-     * @param message The message to display in chat
-     * @param color The color to print that message in
-     * @param logAsToast Whether to log as a toast notification
-     */
-    default void logDirect(String message, ChatFormatting color, boolean logAsToast) {
-        Stream.of(message.split("\n"))
-                .forEach(
-                        line -> {
-                            MutableComponent component =
-                                    Component.literal(line.replace("\t", "    "));
-                            component.setStyle(component.getStyle().withColor(color));
-                            logDirect(logAsToast, component);
-                        });
-    }
-
-    /**
-     * Send a message to chat regardless of chatDebug (should only be used for critically important
-     * messages, or as a direct response to a chat command)
-     *
-     * @param message The message to display in chat
-     * @param color The color to print that message in
-     */
-    default void logDirect(String message, ChatFormatting color) {
-        logDirect(message, color, MaestroAPI.getSettings().logAsToast.value);
-    }
-
-    /**
-     * Send a message to chat regardless of chatDebug (should only be used for critically important
-     * messages, or as a direct response to a chat command)
-     *
-     * @param message The message to display in chat
-     * @param logAsToast Whether to log as a toast notification
-     */
-    default void logDirect(String message, boolean logAsToast) {
-        logDirect(message, ChatFormatting.GRAY, logAsToast);
-    }
-
-    /**
-     * Send a message to chat regardless of chatDebug (should only be used for critically important
-     * messages, or as a direct response to a chat command)
-     *
-     * @param message The message to display in chat
-     */
-    default void logDirect(String message) {
-        logDirect(message, MaestroAPI.getSettings().logAsToast.value);
-    }
-
-    default void logUnhandledException(final Throwable exception) {
-        HELPER.logDirect(
-                "An unhandled exception occurred. The error is in your game's log, please report"
-                        + " this at https://github.com/cabaletta/baritone/issues",
-                ChatFormatting.RED);
-        exception.printStackTrace();
+        Minecraft.getInstance()
+                .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
     }
 }

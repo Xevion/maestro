@@ -23,7 +23,7 @@ public class VersionCommand extends Command {
             throw new CommandInvalidStateException(
                     "Null version (this is normal in a dev environment)");
         } else {
-            logDirect(String.format("You are running Maestro v%s", version));
+            log.atInfo().addKeyValue("version", version).log("Maestro version");
         }
     }
 

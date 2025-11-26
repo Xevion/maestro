@@ -42,7 +42,7 @@ public class FarmCommand extends Command {
         }
 
         maestro.getFarmProcess().farm(range, origin);
-        logDirect("Farming");
+        log.atInfo().log("Farming started");
     }
 
     @Override

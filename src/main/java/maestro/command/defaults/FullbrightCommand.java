@@ -21,7 +21,7 @@ public class FullbrightCommand extends Command {
         boolean enabled = Agent.settings().fullbright.value;
         Agent.settings().fullbright.value = !enabled;
         String state = Agent.settings().fullbright.value ? "enabled" : "disabled";
-        logDirect(String.format("Fullbright %s", state));
+        log.atInfo().log(String.format("Fullbright %s", state));
     }
 
     @Override

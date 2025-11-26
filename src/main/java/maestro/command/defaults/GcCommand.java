@@ -18,7 +18,7 @@ public class GcCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         System.gc();
-        logDirect("ok called System.gc()");
+        log.atInfo().log("Garbage collection requested");
     }
 
     @Override

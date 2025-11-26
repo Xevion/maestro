@@ -8,6 +8,7 @@ import maestro.api.event.events.BlockInteractEvent;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
 import maestro.utils.BlockStateInterface;
+import maestro.utils.chat.ChatMessageBuilder;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
@@ -52,10 +53,12 @@ public class WaypointBehavior extends Behavior {
         if (!Agent.settings().doDeathWaypoints.value) return;
         Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
         maestro.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
-        log.atInfo()
-                .addKeyValue("waypoint_type", "death")
-                .addKeyValue("position", ctx.playerFeet())
-                .log("Death position saved");
-        // TODO: Clickable component removed - will be restored with ChatMessenger abstraction
+        BetterBlockPos pos = ctx.playerFeet();
+        ChatMessageBuilder.info(log, "waypoint")
+                .message("Death waypoint saved")
+                .key("position", pos)
+                .withHover("Click to teleport to death location")
+                .withClick("/maestro goto " + pos.getX() + " " + pos.getY() + " " + pos.getZ())
+                .send();
     }
 }

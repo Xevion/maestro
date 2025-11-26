@@ -4,10 +4,9 @@ import java.util.List;
 import java.util.stream.Stream;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.Helper;
 
 /** The base for a command. */
-public interface ICommand extends Helper {
+public interface ICommand {
 
     /** Called when this command is executed. */
     void execute(String label, IArgConsumer args) throws CommandException;

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender for development/debugging -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%-5level] [%logger{0}] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Chat appender for in-game messages -->
+    <appender name="CHAT" class="maestro.utils.chat.ChatAppender" />
+
+    <!-- Configure all MaestroLogger categories to route to both console and chat -->
+    <logger name="cmd" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="path" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="mine" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="farm" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="build" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="combat" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="swim" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="cache" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="move" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="rotation" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="event" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="api" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="waypoint" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <logger name="inventory" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
+    </logger>
+
+    <!-- Root logger for all other logs -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>

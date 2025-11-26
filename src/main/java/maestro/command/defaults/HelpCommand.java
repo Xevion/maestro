@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.api.IAgent;
+import maestro.api.MaestroAPI;
 import maestro.api.command.Command;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.IArgConsumer;
@@ -14,7 +15,9 @@ import maestro.api.command.exception.CommandException;
 import maestro.api.command.exception.CommandNotFoundException;
 import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
+import maestro.utils.chat.ChatMessageRenderer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -30,6 +33,7 @@ public class HelpCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(1);
         if (!args.hasAny() || args.is(Integer.class)) {
+            ChatMessageRenderer renderer = new ChatMessageRenderer();
             Paginator.paginate(
                     args,
                     new Paginator<>(
@@ -39,7 +43,7 @@ public class HelpCommand extends Command {
                                     .descendingStream()
                                     .filter(command -> !command.hiddenFromHelp())
                                     .collect(Collectors.toList())),
-                    () -> logDirect("All Maestro commands (clickable):"),
+                    () -> log.atInfo().log("All Maestro commands (clickable):"),
                     command -> {
                         String names = String.join("/", command.getNames());
                         String name = command.getNames().getFirst();
@@ -74,6 +78,20 @@ public class HelpCommand extends Command {
                                                 new ClickEvent(
                                                         ClickEvent.Action.RUN_COMMAND,
                                                         clickCommand)));
+
+                        MutableComponent prefixed = Component.literal("");
+                        prefixed.append(renderer.createCategoryPrefix("cmd"));
+                        prefixed.append(" ");
+                        prefixed.append(component);
+
+                        Minecraft.getInstance()
+                                .execute(
+                                        () ->
+                                                MaestroAPI.getSettings()
+                                                        .logger
+                                                        .value
+                                                        .accept(prefixed));
+
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + label);
@@ -83,13 +101,15 @@ public class HelpCommand extends Command {
             if (command == null) {
                 throw new CommandNotFoundException(commandName);
             }
-            logDirect(
+            log.atInfo().log(
                     String.format(
                             "%s - %s",
                             String.join(" / ", command.getNames()), command.getShortDesc()));
-            logDirect("");
-            command.getLongDesc().forEach(this::logDirect);
-            logDirect("");
+            log.atInfo().log("");
+            command.getLongDesc().forEach(line -> log.atInfo().log(line));
+            log.atInfo().log("");
+
+            ChatMessageRenderer renderer = new ChatMessageRenderer();
             MutableComponent returnComponent =
                     Component.literal("Click to return to the help menu");
             returnComponent.setStyle(
@@ -99,7 +119,14 @@ public class HelpCommand extends Command {
                                     new ClickEvent(
                                             ClickEvent.Action.RUN_COMMAND,
                                             FORCE_COMMAND_PREFIX + label)));
-            logDirect(returnComponent);
+
+            MutableComponent prefixed = Component.literal("");
+            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(" ");
+            prefixed.append(returnComponent);
+
+            Minecraft.getInstance()
+                    .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
         }
     }
 

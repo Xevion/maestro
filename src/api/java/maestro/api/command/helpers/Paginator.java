@@ -3,17 +3,18 @@ package maestro.api.command.helpers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import maestro.api.MaestroAPI;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.exception.CommandInvalidTypeException;
-import maestro.api.utils.Helper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 
-public class Paginator<E> implements Helper {
+public class Paginator<E> {
 
     public final List<E> entries;
     public int pageSize = 8;
@@ -49,9 +50,11 @@ public class Paginator<E> implements Helper {
         int offset = (page - 1) * pageSize;
         for (int i = offset; i < offset + pageSize; i++) {
             if (i < entries.size()) {
-                logDirect(transform.apply(entries.get(i)));
+                sendToChat(transform.apply(entries.get(i)));
             } else {
-                logDirect("--", ChatFormatting.DARK_GRAY);
+                MutableComponent placeholder = Component.literal("--");
+                placeholder.setStyle(placeholder.getStyle().withColor(ChatFormatting.DARK_GRAY));
+                sendToChat(placeholder);
             }
         }
         boolean hasPrevPage = commandPrefix != null && validPage(page - 1);
@@ -96,7 +99,21 @@ public class Paginator<E> implements Helper {
         pagerComponent.append(" | ");
         pagerComponent.append(nextPageComponent);
         pagerComponent.append(String.format(" %d/%d", page, getMaxPage()));
-        logDirect(pagerComponent);
+        sendToChat(pagerComponent);
+    }
+
+    private void sendToChat(Component component) {
+        // Add [cmd] prefix manually
+        MutableComponent prefix = Component.literal("[cmd]");
+        prefix.setStyle(prefix.getStyle().withColor(ChatFormatting.AQUA));
+
+        MutableComponent prefixed = Component.literal("");
+        prefixed.append(prefix);
+        prefixed.append(" ");
+        prefixed.append(component);
+
+        Minecraft.getInstance()
+                .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
     }
 
     public void display(Function<E, Component> transform) {

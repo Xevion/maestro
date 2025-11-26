@@ -12,7 +12,6 @@ import maestro.api.command.exception.CommandException;
 import maestro.api.command.exception.CommandInvalidTypeException;
 import maestro.api.command.exception.CommandNotEnoughArgumentsException;
 import maestro.api.command.exception.CommandTooManyArgumentsException;
-import maestro.api.utils.Helper;
 import net.minecraft.core.Direction;
 
 /**
@@ -33,9 +32,8 @@ import net.minecraft.core.Direction;
  *   <li>It's very easy to throw detailed exceptions. The {@link IArgConsumer}} has many different
  *       methods that can enforce the number of arguments, the type of arguments, and more, throwing
  *       different types of {@link CommandException}s if something seems off. You're recommended to
- *       do all validation and store all needed data in variables BEFORE logging any data to chat
- *       via {@link Helper#logDirect(String)}, so that the error handlers can do their job and log
- *       the error to chat.
+ *       do all validation and store all needed data in variables BEFORE logging any data, so that
+ *       the error handlers can do their job and log the error to chat.
  * </ul>
  */
 public interface IArgConsumer {

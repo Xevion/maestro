@@ -18,7 +18,7 @@ public class ClickCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         maestro.openClick();
-        logDirect("aight dude");
+        log.atInfo().log("aight dude");
     }
 
     @Override

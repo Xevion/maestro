@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.MaestroAPI;
 import maestro.api.Settings;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -20,6 +21,7 @@ import maestro.api.command.exception.CommandInvalidTypeException;
 import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.utils.SettingsUtil;
+import maestro.utils.chat.ChatMessageRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
@@ -38,7 +40,7 @@ public class SetCommand extends Command {
         String arg = args.hasAny() ? args.getString().toLowerCase(Locale.US) : "list";
         if (Arrays.asList("s", "save").contains(arg)) {
             SettingsUtil.save(Agent.settings());
-            logDirect("Settings saved");
+            log.atInfo().log("Settings saved");
             return;
         }
         if (Arrays.asList("load", "ld").contains(arg)) {
@@ -50,7 +52,7 @@ public class SetCommand extends Command {
             SettingsUtil.modifiedSettings(Agent.settings()).forEach(Settings.Setting::reset);
             // then load from disk
             SettingsUtil.readAndApply(Agent.settings(), file);
-            logDirect("Settings reloaded from " + file);
+            log.atInfo().log("Settings reloaded from " + file);
             return;
         }
         boolean viewModified = Arrays.asList("m", "mod", "modified").contains(arg);
@@ -79,11 +81,12 @@ public class SetCommand extends Command {
                                                     String.CASE_INSENSITIVE_ORDER.compare(
                                                             s1.getName(), s2.getName()))
                                     .collect(Collectors.toList());
+            ChatMessageRenderer renderer = new ChatMessageRenderer();
             Paginator.paginate(
                     args,
                     new Paginator<>(toPaginate),
                     () ->
-                            logDirect(
+                            log.atInfo().log(
                                     !search.isEmpty()
                                             ? String.format(
                                                     "All %ssettings containing the string '%s':",
@@ -125,6 +128,20 @@ public class SetCommand extends Command {
                                                 new ClickEvent(
                                                         ClickEvent.Action.SUGGEST_COMMAND,
                                                         commandSuggestion)));
+
+                        MutableComponent prefixed = Component.literal("");
+                        prefixed.append(renderer.createCategoryPrefix("cmd"));
+                        prefixed.append(" ");
+                        prefixed.append(component);
+
+                        Minecraft.getInstance()
+                                .execute(
+                                        () ->
+                                                MaestroAPI.getSettings()
+                                                        .logger
+                                                        .value
+                                                        .accept(prefixed));
+
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + "set " + arg + " " + search);
@@ -136,16 +153,17 @@ public class SetCommand extends Command {
         boolean doingSomething = resetting || toggling;
         if (resetting) {
             if (!args.hasAny()) {
-                logDirect(
+                log.atInfo().log(
                         "Please specify 'all' as an argument to reset to confirm you'd really like"
                                 + " to do this");
-                logDirect(
+                log.atInfo().log(
                         "ALL settings will be reset. Use the 'set modified' or 'modified' commands"
                                 + " to see what will be reset.");
-                logDirect("Specify a setting name instead of 'all' to only reset one setting");
+                log.atInfo().log(
+                        "Specify a setting name instead of 'all' to only reset one setting");
             } else if (args.peekString().equalsIgnoreCase("all")) {
                 SettingsUtil.modifiedSettings(Agent.settings()).forEach(Settings.Setting::reset);
-                logDirect("All settings have been reset to their default values");
+                log.atInfo().log("All settings have been reset to their default values");
                 SettingsUtil.save(Agent.settings());
                 return;
             }
@@ -170,8 +188,8 @@ public class SetCommand extends Command {
                     String.format("Setting %s can only be used via the api.", setting.getName()));
         }
         if (!doingSomething && !args.hasAny()) {
-            logDirect(String.format("Value of setting %s:", setting.getName()));
-            logDirect(settingValueToString(setting));
+            log.atInfo().log(String.format("Value of setting %s:", setting.getName()));
+            log.atInfo().log(settingValueToString(setting));
         } else {
             String oldValue = settingValueToString(setting);
             if (resetting) {
@@ -184,7 +202,7 @@ public class SetCommand extends Command {
                 //noinspection unchecked
                 Settings.Setting<Boolean> asBoolSetting = (Settings.Setting<Boolean>) setting;
                 asBoolSetting.value ^= true;
-                logDirect(
+                log.atInfo().log(
                         String.format(
                                 "Toggled setting %s to %s",
                                 setting.getName(), (Boolean) setting.value));
@@ -198,13 +216,15 @@ public class SetCommand extends Command {
                 }
             }
             if (!toggling) {
-                logDirect(
+                log.atInfo().log(
                         String.format(
                                 "Successfully %s %s to %s",
                                 resetting ? "reset" : "set",
                                 setting.getName(),
                                 settingValueToString(setting)));
             }
+
+            ChatMessageRenderer renderer = new ChatMessageRenderer();
             MutableComponent oldValueComponent =
                     Component.literal(String.format("Old value: %s", oldValue));
             oldValueComponent.setStyle(
@@ -223,24 +243,32 @@ public class SetCommand extends Command {
                                                     + String.format(
                                                             "set %s %s",
                                                             setting.getName(), oldValue))));
-            logDirect(oldValueComponent);
+
+            MutableComponent prefixed = Component.literal("");
+            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(" ");
+            prefixed.append(oldValueComponent);
+
+            Minecraft.getInstance()
+                    .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+
             if ((setting.getName().equals("chatControl")
                             && !(Boolean) setting.value
                             && !Agent.settings().chatControlAnyway.value)
                     || setting.getName().equals("chatControlAnyway")
                             && !(Boolean) setting.value
                             && !Agent.settings().chatControl.value) {
-                logDirect(
-                        "Warning: Chat commands will no longer work. If you want to revert this"
-                                + " change, use prefix control (if enabled) or click the old value"
-                                + " listed above.",
-                        ChatFormatting.RED);
+                log.atWarn()
+                        .log(
+                                "Warning: Chat commands will no longer work. If you want to revert"
+                                    + " this change, use prefix control (if enabled) or click the"
+                                    + " old value listed above.");
             } else if (setting.getName().equals("prefixControl") && !(Boolean) setting.value) {
-                logDirect(
-                        "Warning: Prefixed commands will no longer work. If you want to revert this"
-                            + " change, use chat control (if enabled) or click the old value listed"
-                            + " above.",
-                        ChatFormatting.RED);
+                log.atWarn()
+                        .log(
+                                "Warning: Prefixed commands will no longer work. If you want to"
+                                    + " revert this change, use chat control (if enabled) or click"
+                                    + " the old value listed above.");
             }
         }
         SettingsUtil.save(Agent.settings());

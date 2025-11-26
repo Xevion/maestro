@@ -29,7 +29,7 @@ public class RenderCommand extends Command {
                         origin.x + renderDistance,
                         ctx.world().getMaxY(),
                         origin.z + renderDistance);
-        logDirect("Done");
+        log.atInfo().log("Done");
     }
 
     @Override

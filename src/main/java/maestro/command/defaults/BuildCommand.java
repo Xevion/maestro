@@ -73,9 +73,7 @@ public class BuildCommand extends Command {
                     "Couldn't load the schematic. Either your schematic is corrupt or this is a"
                             + " bug.");
         }
-        logDirect(
-                String.format(
-                        "Successfully loaded schematic for building\nOrigin: %s", buildOrigin));
+        log.atInfo().addKeyValue("origin", buildOrigin).log("Schematic loaded for building");
     }
 
     @Override

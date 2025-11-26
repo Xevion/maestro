@@ -71,7 +71,7 @@ public class ExecutionControlCommands {
                             throw new CommandInvalidStateException("Already paused");
                         }
                         paused[0] = true;
-                        logDirect("Paused");
+                        log.atInfo().log("Execution paused");
                     }
 
                     @Override
@@ -108,7 +108,7 @@ public class ExecutionControlCommands {
                             throw new CommandInvalidStateException("Not paused");
                         }
                         paused[0] = false;
-                        logDirect("Resumed");
+                        log.atInfo().log("Execution resumed");
                     }
 
                     @Override
@@ -136,7 +136,7 @@ public class ExecutionControlCommands {
                     @Override
                     public void execute(String label, IArgConsumer args) throws CommandException {
                         args.requireMax(0);
-                        logDirect(String.format("Maestro is %spaused", paused[0] ? "" : "not "));
+                        log.atInfo().addKeyValue("paused", paused[0]).log("Pause state reported");
                     }
 
                     @Override
@@ -168,7 +168,7 @@ public class ExecutionControlCommands {
                             paused[0] = false;
                         }
                         maestro.getPathingBehavior().cancelEverything();
-                        logDirect("ok canceled");
+                        log.atInfo().log("Pathing canceled");
                     }
 
                     @Override

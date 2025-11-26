@@ -54,19 +54,29 @@ public class FollowCommand extends Command {
                                     : e -> classes.stream().anyMatch(c -> e.getType().equals(c)));
         }
         if (group != null) {
-            logDirect(String.format("Following all %s", group.name().toLowerCase(Locale.US)));
+            log.atInfo()
+                    .addKeyValue("group", group.name().toLowerCase(Locale.US))
+                    .log("Following all entities in group");
         } else {
             if (classes.isEmpty()) {
                 if (entities.isEmpty()) throw new NoEntitiesException();
-                logDirect("Following these entities:");
-                entities.stream().map(Entity::toString).forEach(this::logDirect);
+                log.atInfo()
+                        .addKeyValue("count", entities.size())
+                        .log("Following specific entities");
+                entities.stream()
+                        .map(Entity::toString)
+                        .forEach(
+                                entity ->
+                                        log.atInfo()
+                                                .addKeyValue("entity", entity)
+                                                .log("Target entity"));
             } else {
-                logDirect("Following these types of entities:");
+                log.atInfo().addKeyValue("count", classes.size()).log("Following entity types");
                 classes.stream()
                         .map(BuiltInRegistries.ENTITY_TYPE::getKey)
                         .map(Objects::requireNonNull)
                         .map(ResourceLocation::toString)
-                        .forEach(this::logDirect);
+                        .forEach(type -> log.atInfo().addKeyValue("type", type).log("Target type"));
             }
         }
     }

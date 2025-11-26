@@ -26,23 +26,18 @@ public class ProcCommand extends Command {
         if (process == null) {
             throw new CommandInvalidStateException("No process in control");
         }
-        logDirect(
-                String.format(
-                        """
-                        Class: %s
-                        Priority: %f
-                        Temporary: %b
-                        Display name: %s
-                        Last command: %s\
-                        """,
-                        process.getClass().getTypeName(),
-                        process.priority(),
-                        process.isTemporary(),
-                        process.displayName(),
+        log.atInfo()
+                .addKeyValue("class", process.getClass().getTypeName())
+                .addKeyValue("priority", process.priority())
+                .addKeyValue("temporary", process.isTemporary())
+                .addKeyValue("display_name", process.displayName())
+                .addKeyValue(
+                        "last_command",
                         pathingControlManager
                                 .mostRecentCommand()
                                 .map(PathingCommand::toString)
-                                .orElse("None")));
+                                .orElse("None"))
+                .log("Process state information");
     }
 
     @Override

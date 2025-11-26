@@ -14,7 +14,6 @@ import maestro.api.command.exception.CommandException;
 import maestro.api.selector.block.BlockCategory;
 import maestro.api.selector.block.BlockSelector;
 import maestro.api.selector.block.BlockSelectorLookup;
-import net.minecraft.ChatFormatting;
 
 public class MineCommand extends Command {
 
@@ -48,9 +47,9 @@ public class MineCommand extends Command {
         // Warn about individual selectors that matched nothing
         for (BlockSelector selector : selectors) {
             if (selector.resolve().isEmpty()) {
-                logDirect(
-                        "Warning: '" + selector.getRawInput() + "' matched 0 blocks",
-                        ChatFormatting.YELLOW);
+                log.atWarn()
+                        .addKeyValue("selector", selector.getRawInput())
+                        .log("Selector matched no blocks");
             }
         }
 
@@ -60,7 +59,7 @@ public class MineCommand extends Command {
         }
 
         MaestroAPI.getProvider().getWorldScanner().repack(ctx);
-        logDirect("Mining: " + lookup.toDisplayString());
+        log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Mining started");
         maestro.getMineProcess().mine(quantity, lookup.toBlockOptionalMetaLookup());
     }
 

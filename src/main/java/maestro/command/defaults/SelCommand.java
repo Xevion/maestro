@@ -89,28 +89,29 @@ public class SelCommand extends Command {
             args.requireMax(0);
             if (action == Action.POS1) {
                 pos1 = pos;
-                logDirect("Position 1 has been set");
+                log.atInfo().log("Position 1 has been set");
             } else {
                 manager.addSelection(pos1, pos);
                 pos1 = null;
-                logDirect("Selection added");
+                log.atInfo().log("Selection added");
             }
         } else if (action == Action.CLEAR) {
             args.requireMax(0);
             pos1 = null;
-            logDirect(String.format("Removed %d selections", manager.removeAllSelections().length));
+            log.atInfo().log(
+                    String.format("Removed %d selections", manager.removeAllSelections().length));
         } else if (action == Action.UNDO) {
             args.requireMax(0);
             if (pos1 != null) {
                 pos1 = null;
-                logDirect("Undid pos1");
+                log.atInfo().log("Undid pos1");
             } else {
                 ISelection[] selections = manager.getSelections();
                 if (selections.length < 1) {
                     throw new CommandInvalidStateException("Nothing to undo!");
                 } else {
                     pos1 = manager.removeSelection(selections[selections.length - 1]).pos1();
-                    logDirect("Undid pos2");
+                    log.atInfo().log("Undid pos2");
                 }
             }
         } else if (action.isFillAction()) {
@@ -199,7 +200,7 @@ public class SelCommand extends Command {
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
             }
             maestro.getBuilderProcess().build("Fill", composite, origin);
-            logDirect("Filling now");
+            log.atInfo().log("Filling now");
         } else if (action == Action.COPY) {
             BetterBlockPos playerPos = ctx.viewerPos();
             BetterBlockPos pos =
@@ -239,7 +240,7 @@ public class SelCommand extends Command {
             }
             clipboard = composite;
             clipboardOffset = origin.subtract(pos);
-            logDirect("Selection copied");
+            log.atInfo().log("Selection copied");
         } else if (action == Action.PASTE) {
             BetterBlockPos playerPos = ctx.viewerPos();
             BetterBlockPos pos =
@@ -251,7 +252,7 @@ public class SelCommand extends Command {
                 throw new CommandInvalidStateException("You need to copy a selection first");
             }
             maestro.getBuilderProcess().build("Fill", clipboard, pos.offset(clipboardOffset));
-            logDirect("Building now");
+            log.atInfo().log("Building now");
         } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
             args.requireExactly(3);
             TransformTarget transformTarget = TransformTarget.getByName(args.getString());
@@ -274,7 +275,7 @@ public class SelCommand extends Command {
                     manager.shift(selection, direction, blocks);
                 }
             }
-            logDirect(String.format("Transformed %d selections", selections.length));
+            log.atInfo().log(String.format("Transformed %d selections", selections.length));
         }
     }
 

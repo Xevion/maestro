@@ -96,6 +96,10 @@ allprojects {
         compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
         annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
 
+        // SLF4J and Logback for structured logging
+        implementation 'org.slf4j:slf4j-api:2.0.9'
+        implementation 'ch.qos.logback:logback-classic:1.4.14'
+
         implementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
 
         implementation 'com.google.code.findbugs:jsr305:3.0.2'

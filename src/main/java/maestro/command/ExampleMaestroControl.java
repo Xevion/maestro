@@ -21,7 +21,9 @@ import maestro.behavior.Behavior;
 import maestro.command.argument.ArgConsumer;
 import maestro.command.argument.CommandArguments;
 import maestro.command.manager.CommandManager;
+import maestro.utils.chat.ChatMessageRenderer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.*;
 import net.minecraft.util.Tuple;
 
@@ -71,7 +73,14 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                                     new ClickEvent(
                                             ClickEvent.Action.RUN_COMMAND,
                                             FORCE_COMMAND_PREFIX + msg)));
-            logDirect(component);
+
+            // Send rich component to chat manually
+            ChatMessageRenderer renderer = new ChatMessageRenderer();
+            MutableComponent prefixed = Component.literal("");
+            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(" ");
+            prefixed.append(component);
+            Minecraft.getInstance().execute(() -> settings.logger.value.accept(prefixed));
         }
     }
 

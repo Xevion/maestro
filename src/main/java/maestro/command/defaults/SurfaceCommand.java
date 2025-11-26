@@ -28,7 +28,7 @@ public class SurfaceCommand extends Command {
         // As this would imply that you are already on the open surface
         if (playerPos.getY() > surfaceLevel
                 && ctx.world().getBlockState(playerPos.above()).getBlock() instanceof AirBlock) {
-            logDirect("Already at surface");
+            log.atInfo().log("Already at surface");
             return;
         }
 
@@ -43,12 +43,12 @@ public class SurfaceCommand extends Command {
             if (!(ctx.world().getBlockState(newPos).getBlock() instanceof AirBlock)
                     && newPos.getY() > playerPos.getY()) {
                 Goal goal = new GoalBlock(newPos.above());
-                logDirect(String.format("Going to: %s", goal));
+                log.atInfo().addKeyValue("goal", goal.toString()).log("Going to goal");
                 maestro.getCustomGoalProcess().setGoalAndPath(goal);
                 return;
             }
         }
-        logDirect("No higher location found");
+        log.atWarn().log("No higher location found");
     }
 
     @Override

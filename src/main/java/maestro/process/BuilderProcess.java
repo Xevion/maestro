@@ -160,9 +160,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         if (Agent.settings().buildOnlySelection.value
                 && buildingSelectionSchematic) { // currently redundant but safer maybe
             if (maestro.getSelectionManager().getSelections().length == 0) {
-                logDirect(
-                        "Poor little kitten forgot to set a selection while BuildOnlySelection is"
-                                + " true");
+                log.atWarn().log("No selection set while BuildOnlySelection is enabled");
                 this.stopAtHeight = 0;
             } else if (Agent.settings().buildInLayers.value) {
                 OptionalInt minim =
@@ -271,10 +269,10 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 ISchematic schem = applyMapArtAndSelection(origin, raw);
                 this.build(raw.toString(), schem, origin);
             } else {
-                logDirect("No schematic currently open");
+                log.atWarn().log("No schematic currently open");
             }
         } else {
-            logDirect("Schematica is not present");
+            log.atWarn().log("Schematica is not present");
         }
     }
 
@@ -288,10 +286,10 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 ISchematic schematic2 = applyMapArtAndSelection(correctedOrigin, schematic.getA());
                 build(schematic.getA().toString(), schematic2, correctedOrigin);
             } else {
-                logDirect(String.format("List of placements has no entry %s", i + 1));
+                log.atWarn().addKeyValue("index", i + 1).log("No placement found at index");
             }
         } else {
-            logDirect("Litematica is not present");
+            log.atWarn().log("Litematica is not present");
         }
     }
 

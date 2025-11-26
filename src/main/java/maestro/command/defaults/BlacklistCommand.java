@@ -24,7 +24,7 @@ public class BlacklistCommand extends Command {
             throw new CommandInvalidStateException("GetToBlockProcess is not currently active");
         }
         if (proc.blacklistClosest()) {
-            logDirect("Blacklisted closest instances");
+            log.atInfo().log("Blacklisted closest block instances");
         } else {
             throw new CommandInvalidStateException("No known locations, unable to blacklist");
         }

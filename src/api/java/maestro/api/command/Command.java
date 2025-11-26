@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.api.IAgent;
 import maestro.api.utils.IPlayerContext;
+import maestro.api.utils.MaestroLogger;
+import org.slf4j.Logger;
 
 /**
  * A default implementation of {@link ICommand} which provides easy access to the command's bound
@@ -22,6 +24,9 @@ public abstract class Command implements ICommand {
     protected IAgent maestro;
     protected IPlayerContext ctx;
 
+    /** Logger for command execution messages. Uses the "cmd" category. */
+    protected final Logger log;
+
     /** The names of this command. This is what you put after the command prefix. */
     protected final List<String> names;
 
@@ -37,6 +42,7 @@ public abstract class Command implements ICommand {
                         .collect(Collectors.toUnmodifiableList());
         this.maestro = maestro;
         this.ctx = maestro.getPlayerContext();
+        this.log = MaestroLogger.get("cmd");
     }
 
     @Override
