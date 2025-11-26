@@ -64,6 +64,11 @@ public class CalculationContext {
     public final int minSwimmingDepth;
     public final boolean allowDiagonalSwimming;
     public final BetterWorldBorder worldBorder;
+    public final boolean allowTeleport;
+    public final int teleportGenerationSparsity;
+    public final int teleportMinDistance;
+    public final int teleportMaxDistance;
+    public final double teleportCostMultiplier;
 
     public final PrecomputedData precomputedData;
 
@@ -148,6 +153,11 @@ public class CalculationContext {
                 Agent.settings().allowSwimming.value && Agent.settings().enhancedSwimming.value;
         this.minSwimmingDepth = Agent.settings().minSwimmingDepth.value;
         this.allowDiagonalSwimming = Agent.settings().allowDiagonalSwimming.value;
+        this.allowTeleport = Agent.settings().allowTeleport.value;
+        this.teleportGenerationSparsity = Agent.settings().teleportGenerationSparsity.value;
+        this.teleportMinDistance = Agent.settings().teleportMinDistance.value;
+        this.teleportMaxDistance = Agent.settings().teleportMaxDistance.value;
+        this.teleportCostMultiplier = Agent.settings().teleportCostMultiplier.value;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.

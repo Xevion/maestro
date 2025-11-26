@@ -24,6 +24,7 @@ import maestro.pathing.movement.ContinuousSwimmingProvider;
 import maestro.pathing.movement.EnumMovementProvider;
 import maestro.pathing.movement.IMovementProvider;
 import maestro.pathing.movement.MovementHelper;
+import maestro.pathing.movement.TeleportMovementProvider;
 import maestro.pathing.path.PathExecutor;
 import maestro.utils.PathRenderer;
 import maestro.utils.PathingCommandContext;
@@ -76,15 +77,18 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior 
 
     /**
      * Creates movement provider combining continuous swimming (dynamic multi-directional with 3D
-     * diagonals) and enum-based terrestrial movements (walk, parkour, etc.).
+     * diagonals), enum-based terrestrial movements (walk, parkour, etc.), and teleportation.
      *
      * @return Configured movement provider
      */
     private IMovementProvider createMovementProvider() {
         // Swimming uses ContinuousSwimmingProvider exclusively (configurable precision)
         // Terrestrial movements use EnumMovementProvider (Walk, Parkour, etc.)
+        // Teleportation uses TeleportMovementProvider (packet-based exploit)
         return new CompositeMovementProvider(
-                new ContinuousSwimmingProvider(), new EnumMovementProvider());
+                new ContinuousSwimmingProvider(),
+                new EnumMovementProvider(),
+                new TeleportMovementProvider());
     }
 
     private void queuePathEvent(PathEvent event) {

@@ -13,9 +13,12 @@ import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.SettingsUtil;
 import maestro.pathing.calc.openset.BinaryHeapOpenSet;
 import maestro.pathing.movement.CalculationContext;
+import maestro.pathing.movement.CompositeMovementProvider;
+import maestro.pathing.movement.ContinuousSwimmingProvider;
 import maestro.pathing.movement.EnumMovementProvider;
 import maestro.pathing.movement.IMovementProvider;
 import maestro.pathing.movement.Movement;
+import maestro.pathing.movement.TeleportMovementProvider;
 import maestro.utils.pathing.BetterWorldBorder;
 import maestro.utils.pathing.Favoring;
 import maestro.utils.pathing.MutableMoveResult;
@@ -46,7 +49,16 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         super(realStart, startX, startY, startZ, goal, context);
         this.favoring = favoring;
         this.calcContext = context;
-        this.movementProvider = provider != null ? provider : new EnumMovementProvider();
+        this.movementProvider = provider != null ? provider : createDefaultProvider();
+    }
+
+    /** Creates the default movement provider with all movement types. */
+    private static IMovementProvider createDefaultProvider() {
+        return new CompositeMovementProvider(
+                new EnumMovementProvider(), // Standard terrestrial movements
+                new ContinuousSwimmingProvider(), // Swimming movements
+                new TeleportMovementProvider() // Teleport movements (self-filters via settings)
+                );
     }
 
     /** Backward compatibility constructor without movement provider. */

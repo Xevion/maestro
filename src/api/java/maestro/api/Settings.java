@@ -432,6 +432,42 @@ public final class Settings {
     public final Setting<Boolean> allowParkourPlace = new Setting<>(false);
 
     /**
+     * Allow packet-based teleportation (exploit).
+     *
+     * <p>Enables instant teleportation up to 200 blocks by manipulating movement packets. This is a
+     * client-side exploit that may be detected by anticheat plugins.
+     *
+     * <p>Disabled by default. Use at your own risk.
+     */
+    public final Setting<Boolean> allowTeleport = new Setting<>(false);
+
+    /**
+     * How often to generate teleport movements (1/N nodes).
+     *
+     * <p>Lower values (e.g., 5) generate more teleport options but cost more performance. Higher
+     * values (e.g., 20) generate fewer options but are faster.
+     *
+     * <p>Default: 10 (generate at 10% of nodes)
+     */
+    public final Setting<Integer> teleportGenerationSparsity = new Setting<>(10);
+
+    /** Minimum teleport distance in blocks */
+    public final Setting<Integer> teleportMinDistance = new Setting<>(10);
+
+    /** Maximum teleport distance in blocks (hard limit: 200 due to packet exploit constraints) */
+    public final Setting<Integer> teleportMaxDistance = new Setting<>(200);
+
+    /**
+     * Cost multiplier for teleport movements.
+     *
+     * <p>Increase to make teleports less attractive to pathfinding, decrease to make them more
+     * attractive.
+     *
+     * <p>Default: 1.0
+     */
+    public final Setting<Double> teleportCostMultiplier = new Setting<>(1.0);
+
+    /**
      * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks
      * accordingly.
      */
