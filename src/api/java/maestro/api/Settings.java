@@ -468,6 +468,112 @@ public final class Settings {
     public final Setting<Double> teleportCostMultiplier = new Setting<>(1.0);
 
     /**
+     * How long to remember movement failures (in milliseconds).
+     *
+     * <p>When a movement fails (teleport rejected, world changed, timeout, etc.), the system tracks
+     * this failure and applies cost penalties to discourage immediate retries. Failures expire
+     * after this duration.
+     *
+     * <p>Default: 30000ms (30 seconds)
+     */
+    public final Setting<Long> movementFailureMemoryDuration = new Setting<>(30000L);
+
+    /**
+     * Cost multiplier applied per movement failure.
+     *
+     * <p>Each consecutive failure at a position increases cost by this multiplier raised to the
+     * power of attempt count. For example, with multiplier 5.0:
+     *
+     * <ul>
+     *   <li>1st failure: 5x cost penalty
+     *   <li>2nd failure: 25x cost penalty
+     *   <li>3rd failure: 125x cost penalty (capped by movementFailureMaxPenalty)
+     * </ul>
+     *
+     * <p>Default: 5.0
+     */
+    public final Setting<Double> movementFailurePenaltyMultiplier = new Setting<>(5.0);
+
+    /**
+     * Maximum cost penalty multiplier for failed movements.
+     *
+     * <p>Caps the exponential penalty to prevent extremely high costs.
+     *
+     * <p>Default: 50.0 (50x cost penalty max)
+     */
+    public final Setting<Double> movementFailureMaxPenalty = new Setting<>(50.0);
+
+    /**
+     * Maximum consecutive failures before treating a movement as impossible.
+     *
+     * <p>After this many failures at the same position with the same movement type, the movement
+     * will be filtered out entirely (treated as COST_INF).
+     *
+     * <p>Default: 3 attempts
+     */
+    public final Setting<Integer> movementFailureMaxAttempts = new Setting<>(3);
+
+    /**
+     * Enable smart path reconnection when deviating from corridor.
+     *
+     * <p>When enabled, the bot will attempt to reconnect to the existing path at an optimal point
+     * instead of immediately recalculating the entire path from scratch.
+     *
+     * <p>Default: true
+     */
+    public final Setting<Boolean> pathReconnectionEnabled = new Setting<>(true);
+
+    /**
+     * How many path segments to search ahead when finding reconnection points.
+     *
+     * <p>Larger values allow reconnecting further ahead in the path, but increase computational
+     * cost.
+     *
+     * <p>Default: 15 segments
+     */
+    public final Setting<Integer> pathReconnectionLookahead = new Setting<>(15);
+
+    /**
+     * How many path segments to search behind when finding reconnection points.
+     *
+     * <p>Allows reconnecting to earlier parts of the path if we overshot or were pushed backward.
+     *
+     * <p>Default: 5 segments
+     */
+    public final Setting<Integer> pathReconnectionLookbehind = new Setting<>(5);
+
+    /**
+     * Maximum A* nodes to explore when calculating partial reconnection path.
+     *
+     * <p>Limits the computational cost of reconnection attempts.
+     *
+     * <p>Default: 500 nodes
+     */
+    public final Setting<Integer> pathReconnectionMaxPartialNodes = new Setting<>(500);
+
+    /**
+     * Maximum time to spend calculating a partial reconnection path (in milliseconds).
+     *
+     * <p>If reconnection takes longer than this, fall back to full recalculation.
+     *
+     * <p>Default: 100ms
+     */
+    public final Setting<Integer> pathReconnectionTimeoutMs = new Setting<>(100);
+
+    /**
+     * Cost threshold for preferring reconnection over full recalculation.
+     *
+     * <p>Reconnection will be used if its total cost is less than this multiplier times the
+     * estimated cost of full recalculation. Higher values prefer reconnection more aggressively.
+     *
+     * <p>For example, 1.5 means reconnection will be used even if it's 50% more expensive than full
+     * recalc, to avoid the overhead of recalculation.
+     *
+     * <p>Default: 1.5
+     */
+    public final Setting<Double> pathReconnectionCostThreshold = new Setting<>(1.5);
+
+    /**
      * For example, if you have Mining Fatigue or Haste, adjust the costs of breaking blocks
      * accordingly.
      */

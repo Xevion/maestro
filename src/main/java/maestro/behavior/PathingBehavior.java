@@ -26,6 +26,7 @@ import maestro.pathing.movement.IMovementProvider;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.TeleportMovementProvider;
 import maestro.pathing.path.PathExecutor;
+import maestro.pathing.recovery.MovementFailureMemory;
 import maestro.utils.PathRenderer;
 import maestro.utils.PathingCommandContext;
 import maestro.utils.pathing.Favoring;
@@ -47,6 +48,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior 
      * with EnumMovementProvider (terrestrial movements).
      */
     private final IMovementProvider movementProvider;
+
+    /** Tracks recently failed movements to avoid retrying the same failures */
+    private final MovementFailureMemory failureMemory;
 
     /*eta*/
     private int ticksElapsedSoFar;
@@ -73,6 +77,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior 
     public PathingBehavior(Agent maestro) {
         super(maestro);
         this.movementProvider = createMovementProvider();
+        this.failureMemory = new MovementFailureMemory(maestro);
     }
 
     /**
@@ -117,6 +122,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior 
         maestro.getPathingControlManager().preTick();
         tickPath();
         ticksElapsedSoFar++;
+
+        // Cleanup expired failure records every 5 seconds
+        if (ticksElapsedSoFar % 100 == 0) {
+            failureMemory.cleanup();
+        }
+
         dispatchEvents();
     }
 
@@ -347,6 +358,15 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior 
     @Override
     public Optional<AbstractNodeCostSearch> getInProgress() {
         return Optional.ofNullable(inProgress);
+    }
+
+    /**
+     * Returns the movement failure memory for tracking recently failed movements.
+     *
+     * @return failure memory instance
+     */
+    public MovementFailureMemory getFailureMemory() {
+        return failureMemory;
     }
 
     public boolean isSafeToCancel() {

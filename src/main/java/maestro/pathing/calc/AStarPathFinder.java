@@ -186,6 +186,45 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                     continue;
                 }
 
+                // Apply failure memory penalties (only for Movement subclasses)
+                if (movement instanceof Movement) {
+                    @SuppressWarnings("unchecked")
+                    Class<? extends Movement> movementClass =
+                            (Class<? extends Movement>) movement.getClass();
+                    BetterBlockPos src =
+                            new BetterBlockPos(currentNode.x, currentNode.y, currentNode.z);
+
+                    // Check if movement should be filtered due to excessive failures
+                    if (calcContext.failureMemory.shouldFilter(src, dest, movementClass)) {
+                        log.atDebug()
+                                .addKeyValue("source", src)
+                                .addKeyValue("destination", dest)
+                                .addKeyValue("movement_type", movement.getClass().getSimpleName())
+                                .log("Filtered movement due to excessive failures");
+                        continue;
+                    }
+
+                    // Apply cost penalty based on failure history
+                    double penalty =
+                            calcContext.failureMemory.getCostPenalty(src, dest, movementClass);
+                    if (penalty > 1.0) {
+                        log.atDebug()
+                                .addKeyValue("source", src)
+                                .addKeyValue("destination", dest)
+                                .addKeyValue("movement_type", movement.getClass().getSimpleName())
+                                .addKeyValue("penalty", penalty)
+                                .addKeyValue("original_cost", actionCost)
+                                .addKeyValue("penalized_cost", actionCost * penalty)
+                                .log("Applying failure penalty");
+                        actionCost *= penalty;
+                    }
+
+                    // Re-check if penalized cost is now infinite
+                    if (actionCost >= ActionCosts.COST_INF) {
+                        continue;
+                    }
+                }
+
                 if (actionCost <= 0 || Double.isNaN(actionCost)) {
                     throw new IllegalStateException(
                             String.format(

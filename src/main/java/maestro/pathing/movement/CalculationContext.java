@@ -9,6 +9,7 @@ import maestro.api.IAgent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.cache.WorldData;
 import maestro.pathing.precompute.PrecomputedData;
+import maestro.pathing.recovery.MovementFailureMemory;
 import maestro.utils.BlockStateInterface;
 import maestro.utils.ToolSet;
 import maestro.utils.pathing.BetterWorldBorder;
@@ -69,6 +70,7 @@ public class CalculationContext {
     public final int teleportMinDistance;
     public final int teleportMaxDistance;
     public final double teleportCostMultiplier;
+    public final MovementFailureMemory failureMemory;
 
     public final PrecomputedData precomputedData;
 
@@ -158,6 +160,7 @@ public class CalculationContext {
         this.teleportMinDistance = Agent.settings().teleportMinDistance.value;
         this.teleportMaxDistance = Agent.settings().teleportMaxDistance.value;
         this.teleportCostMultiplier = Agent.settings().teleportCostMultiplier.value;
+        this.failureMemory = ((Agent) maestro).getPathingBehavior().getFailureMemory();
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.

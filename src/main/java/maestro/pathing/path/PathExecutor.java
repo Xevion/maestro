@@ -18,6 +18,7 @@ import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.movements.*;
+import maestro.pathing.recovery.FailureReason;
 import maestro.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -219,6 +220,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                             .addKeyValue("dest", futureMove.getDest())
                             .addKeyValue("cost", futureCost)
                             .log("Future movement became impossible, cancelling path");
+                    behavior.getFailureMemory().recordFailure(futureMove, FailureReason.BLOCKED);
                     cancel();
                     return true;
                 }
@@ -234,6 +236,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     .addKeyValue("current_cost", currentCost)
                     .addKeyValue("original_cost", currentMovementOriginalCostEstimate)
                     .log("Current movement became impossible, cancelling path");
+            behavior.getFailureMemory().recordFailure(movement, FailureReason.WORLD_CHANGED);
             cancel();
             return true;
         }
@@ -249,6 +252,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     .addKeyValue("current_cost", currentCost)
                     .addKeyValue("cost_increase", currentCost - currentMovementOriginalCostEstimate)
                     .log("Movement cost increased too much, cancelling");
+            behavior.getFailureMemory().recordFailure(movement, FailureReason.WORLD_CHANGED);
             cancel();
             return true;
         }
@@ -260,6 +264,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
             log.atDebug().addKeyValue("status", movementStatus).log("Movement failed");
+            FailureReason reason =
+                    movementStatus == UNREACHABLE
+                            ? FailureReason.UNREACHABLE
+                            : FailureReason.BLOCKED;
+            behavior.getFailureMemory().recordFailure(movement, reason);
             cancel();
             return true;
         }
@@ -292,6 +301,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                         .addKeyValue("expected_ticks", currentMovementOriginalCostEstimate)
                         .addKeyValue("timeout", Agent.settings().movementTimeoutTicks.value)
                         .log("Movement timeout exceeded, cancelling");
+                behavior.getFailureMemory().recordFailure(movement, FailureReason.TIMEOUT);
                 cancel();
                 return true;
             }
