@@ -12,10 +12,10 @@ const SESSION_ID = randomUUID();
 const SESSION_FILE = `/tmp/maestro-smoke-${SESSION_ID}.session`;
 
 // Paths
-const OPTIONS_PATH = `${PLATFORM}/run/options.txt`;
+const OPTIONS_PATH = `platforms/${PLATFORM}/run/options.txt`;
 
 // Timeout detection
-const ASSETS_PATH = `${PLATFORM}/run/.minecraft/assets`;
+const ASSETS_PATH = `platforms/${PLATFORM}/run/.minecraft/assets`;
 const hasAssets = existsSync(ASSETS_PATH);
 const TIMEOUT = hasAssets ? 120 : 300;
 
@@ -167,7 +167,7 @@ narrator:0
 showSubtitles:false
 fullscreen:false`;
 
-  await fs.mkdir(`${PLATFORM}/run`, { recursive: true });
+  await fs.mkdir(`platforms/${PLATFORM}/run`, { recursive: true });
   await fs.writeFile(OPTIONS_PATH, quietOptions);
 }
 
@@ -329,7 +329,7 @@ async function waitForCompletion(): Promise<void> {
           console.error('   VERBOSE=1 just smoke');
           console.error('');
           console.error('💡 Or check the log file for errors:');
-          console.error(`   grep -i "error\\|exception\\|fatal" ${PLATFORM}/run/client/logs/latest.log | tail -50`);
+          console.error(`   grep -i "error\\|exception\\|fatal" platforms/${PLATFORM}/run/client/logs/latest.log | tail -50`);
           console.error('');
         }
         await cleanup();
@@ -354,7 +354,7 @@ async function waitForCompletion(): Promise<void> {
           console.error('   VERBOSE=1 just smoke');
           console.error('');
           console.error('💡 Or check the log file for errors:');
-          console.error(`   grep -i "error\\|exception\\|fatal" ${PLATFORM}/run/client/logs/latest.log | tail -50`);
+          console.error(`   grep -i "error\\|exception\\|fatal" platforms/${PLATFORM}/run/client/logs/latest.log | tail -50`);
         }
         await cleanup();
         process.exit(3);
@@ -386,7 +386,7 @@ async function waitForCompletion(): Promise<void> {
           console.error('   VERBOSE=1 just smoke');
           console.error('');
           console.error('💡 Or check the log file for errors:');
-          console.error(`   grep -i "error\\|exception\\|fatal" ${PLATFORM}/run/client/logs/latest.log | tail -50`);
+          console.error(`   grep -i "error\\|exception\\|fatal" platforms/${PLATFORM}/run/client/logs/latest.log | tail -50`);
         }
         await cleanup();
         process.exit(4);
@@ -411,7 +411,7 @@ async function main(): Promise<void> {
     await fs.writeFile(SESSION_FILE, SESSION_ID);
 
     // Pre-flight setup (still create options.txt for quiet mode)
-    await fs.mkdir(`${PLATFORM}/run`, { recursive: true });
+    await fs.mkdir(`platforms/${PLATFORM}/run`, { recursive: true });
     await createQuietOptions();
 
     // Launch Minecraft
