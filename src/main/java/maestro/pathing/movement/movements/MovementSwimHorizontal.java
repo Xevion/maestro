@@ -9,6 +9,7 @@ import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
@@ -23,6 +24,7 @@ import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 /**
  * Horizontal swimming movement in water (cardinal directions: N, S, E, W). This movement enables
@@ -40,6 +42,7 @@ import net.minecraft.world.phys.Vec3;
  * <p>Execution uses RotationManager + SwimmingBehavior for smooth movement.
  */
 public class MovementSwimHorizontal extends Movement {
+    private static final Logger log = MaestroLogger.get("swim");
 
     public MovementSwimHorizontal(IAgent maestro, BetterBlockPos from, BetterBlockPos to) {
         super(maestro, from, to, new BetterBlockPos[] {to});
@@ -74,8 +77,12 @@ public class MovementSwimHorizontal extends Movement {
         // Swimming must be enabled
         if (!context.allowSwimming) {
             if (Agent.settings().logSwimming.value) {
-                System.out.println(
-                        "[SwimH] COST_INF: Swimming disabled at " + x + "," + y + "," + z);
+                log.atDebug()
+                        .addKeyValue("x", x)
+                        .addKeyValue("y", y)
+                        .addKeyValue("z", z)
+                        .addKeyValue("reason", "swimming_disabled")
+                        .log("Horizontal swim rejected");
             }
             return COST_INF;
         }
@@ -87,23 +94,17 @@ public class MovementSwimHorizontal extends Movement {
         boolean destIsWater = MovementHelper.isWater(destState);
         if (!srcIsWater || !destIsWater) {
             if (Agent.settings().logSwimming.value) {
-                System.out.println(
-                        "[SwimH] COST_INF: Not water - src="
-                                + srcIsWater
-                                + " dest="
-                                + destIsWater
-                                + " at "
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + " -> "
-                                + destX
-                                + ","
-                                + destY
-                                + ","
-                                + destZ);
+                log.atDebug()
+                        .addKeyValue("src_x", x)
+                        .addKeyValue("src_y", y)
+                        .addKeyValue("src_z", z)
+                        .addKeyValue("dest_x", destX)
+                        .addKeyValue("dest_y", destY)
+                        .addKeyValue("dest_z", destZ)
+                        .addKeyValue("src_water", srcIsWater)
+                        .addKeyValue("dest_water", destIsWater)
+                        .addKeyValue("reason", "not_water")
+                        .log("Horizontal swim rejected");
             }
             return COST_INF;
         }
@@ -111,33 +112,26 @@ public class MovementSwimHorizontal extends Movement {
         // Destination must be passable for swimming
         if (!MovementHelper.canSwimThrough(context, destX, destY, destZ)) {
             if (Agent.settings().logSwimming.value) {
-                System.out.println(
-                        "[SwimH] COST_INF: Can't swim through at "
-                                + destX
-                                + ","
-                                + destY
-                                + ","
-                                + destZ);
+                log.atDebug()
+                        .addKeyValue("x", destX)
+                        .addKeyValue("y", destY)
+                        .addKeyValue("z", destZ)
+                        .addKeyValue("reason", "blocked")
+                        .log("Horizontal swim rejected");
             }
             return COST_INF;
         }
 
         if (Agent.settings().logSwimming.value) {
-            System.out.println(
-                    "[SwimH] Cost="
-                            + baseCost
-                            + " at "
-                            + x
-                            + ","
-                            + y
-                            + ","
-                            + z
-                            + " -> "
-                            + destX
-                            + ","
-                            + destY
-                            + ","
-                            + destZ);
+            log.atDebug()
+                    .addKeyValue("cost", baseCost)
+                    .addKeyValue("src_x", x)
+                    .addKeyValue("src_y", y)
+                    .addKeyValue("src_z", z)
+                    .addKeyValue("dest_x", destX)
+                    .addKeyValue("dest_y", destY)
+                    .addKeyValue("dest_z", destZ)
+                    .log("Horizontal swim cost calculated");
         }
 
         // Apply flowing water penalty (30% slower)

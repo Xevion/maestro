@@ -19,6 +19,7 @@ import maestro.api.behavior.look.ITickableAimProcessor;
 import maestro.api.event.events.*;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.*;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.MovementHelper;
 import maestro.process.ElytraProcess;
@@ -47,8 +48,12 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
-public final class ElytraBehavior implements Helper {
+public final class ElytraBehavior {
+
+    private static final Logger log = MaestroLogger.get("path");
+
     private final Agent maestro;
     private final IPlayerContext ctx;
 
@@ -161,16 +166,23 @@ public final class ElytraBehavior implements Helper {
                                 final double distance =
                                         this.path.getFirst().distanceTo(this.path.getLast());
                                 if (this.completePath) {
-                                    logVerbose(
-                                            String.format(
-                                                    "Computed path (%.1f blocks in %.4f seconds)",
-                                                    distance, (System.nanoTime() - start) / 1e9d));
+                                    if (Agent.settings().elytraChatSpam.value) {
+                                        log.atDebug()
+                                                .addKeyValue("distance_blocks", distance)
+                                                .addKeyValue(
+                                                        "duration_sec",
+                                                        (System.nanoTime() - start) / 1e9d)
+                                                .log("Computed path");
+                                    }
                                 } else {
-                                    logVerbose(
-                                            String.format(
-                                                    "Computed segment (Next %.1f blocks in %.4f"
-                                                            + " seconds)",
-                                                    distance, (System.nanoTime() - start) / 1e9d));
+                                    if (Agent.settings().elytraChatSpam.value) {
+                                        log.atDebug()
+                                                .addKeyValue("distance_blocks", distance)
+                                                .addKeyValue(
+                                                        "duration_sec",
+                                                        (System.nanoTime() - start) / 1e9d)
+                                                .log("Computed segment");
+                                    }
                                 }
                             })
                     .whenComplete(
@@ -179,9 +191,11 @@ public final class ElytraBehavior implements Helper {
                                 if (ex != null) {
                                     final Throwable cause = ex.getCause();
                                     if (cause instanceof PathCalculationException) {
-                                        logDirect("Failed to compute path to destination");
+                                        log.atInfo().log("Failed to compute path to destination");
                                     } else {
-                                        logUnhandledException(cause);
+                                        log.atError()
+                                                .setCause(cause)
+                                                .log("Unhandled exception during pathfinding");
                                     }
                                 }
                             });
@@ -216,9 +230,13 @@ public final class ElytraBehavior implements Helper {
                                 if (ex != null) {
                                     final Throwable cause = ex.getCause();
                                     if (cause instanceof PathCalculationException) {
-                                        logDirect("Failed to recompute segment");
+                                        log.atInfo().log("Failed to recompute segment");
                                     } else {
-                                        logUnhandledException(cause);
+                                        log.atError()
+                                                .setCause(cause)
+                                                .log(
+                                                        "Unhandled exception during segment"
+                                                                + " recalculation");
                                     }
                                 }
                             });
@@ -245,16 +263,23 @@ public final class ElytraBehavior implements Helper {
                                         this.path.getFirst().distanceTo(this.path.get(recompute));
 
                                 if (this.completePath) {
-                                    logVerbose(
-                                            String.format(
-                                                    "Computed path (%.1f blocks in %.4f seconds)",
-                                                    distance, (System.nanoTime() - start) / 1e9d));
+                                    if (Agent.settings().elytraChatSpam.value) {
+                                        log.atDebug()
+                                                .addKeyValue("distance_blocks", distance)
+                                                .addKeyValue(
+                                                        "duration_sec",
+                                                        (System.nanoTime() - start) / 1e9d)
+                                                .log("Computed path");
+                                    }
                                 } else {
-                                    logVerbose(
-                                            String.format(
-                                                    "Computed segment (Next %.1f blocks in %.4f"
-                                                            + " seconds)",
-                                                    distance, (System.nanoTime() - start) / 1e9d));
+                                    if (Agent.settings().elytraChatSpam.value) {
+                                        log.atDebug()
+                                                .addKeyValue("distance_blocks", distance)
+                                                .addKeyValue(
+                                                        "duration_sec",
+                                                        (System.nanoTime() - start) / 1e9d)
+                                                .log("Computed segment");
+                                    }
                                 }
                             })
                     .whenComplete(
@@ -263,17 +288,22 @@ public final class ElytraBehavior implements Helper {
                                 if (ex != null) {
                                     final Throwable cause = ex.getCause();
                                     if (cause instanceof PathCalculationException) {
-                                        logDirect("Failed to compute next segment");
+                                        log.atInfo().log("Failed to compute next segment");
                                         if (ctx.player().distanceToSqr(pathStart.getCenter())
                                                 < 16 * 16) {
-                                            logVerbose(
-                                                    "Player is near the segment start, therefore"
-                                                            + " repeating this calculation is"
-                                                            + " pointless. Marking as complete");
+                                            if (Agent.settings().elytraChatSpam.value) {
+                                                log.atDebug().log(
+                                                        "Player near segment start, marking as"
+                                                                + " complete");
+                                            }
                                             completePath = true;
                                         }
                                     } else {
-                                        logUnhandledException(cause);
+                                        log.atError()
+                                                .setCause(cause)
+                                                .log(
+                                                        "Unhandled exception during next segment"
+                                                                + " computation");
                                     }
                                 }
                             });
@@ -298,7 +328,9 @@ public final class ElytraBehavior implements Helper {
                                 Vec3.atLowerCornerOf(dest), Vec3.atLowerCornerOf(last), false)) {
                     path.add(new BetterBlockPos(dest));
                 } else {
-                    logDirect("unable to land at " + ElytraBehavior.this.destination);
+                    log.atInfo()
+                            .addKeyValue("destination", ElytraBehavior.this.destination)
+                            .log("Unable to land at destination");
                     process.landingSpotIsBad(new BetterBlockPos(ElytraBehavior.this.destination));
                 }
             }
@@ -357,8 +389,11 @@ public final class ElytraBehavior implements Helper {
                 this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
                         .thenRun(
                                 () -> {
-                                    logVerbose(
-                                            "Recalculating segment, no progress in last 100 ticks");
+                                    if (Agent.settings().elytraChatSpam.value) {
+                                        log.atDebug().log(
+                                                "Recalculating segment, no progress in last 100"
+                                                        + " ticks");
+                                    }
                                 });
                 this.ticksNearUnchanged = 0;
                 return;
@@ -399,16 +434,25 @@ public final class ElytraBehavior implements Helper {
                     this.pathRecalcSegment(rejoinMainPathAt)
                             .thenRun(
                                     () -> {
-                                        logVerbose(
-                                                String.format(
-                                                        "Recalculated segment around path blockage"
-                                                            + " near %s %s %s (next %.1f blocks in"
-                                                            + " %.4f seconds)",
-                                                        SettingsUtil.maybeCensor(blockage.x),
-                                                        SettingsUtil.maybeCensor(blockage.y),
-                                                        SettingsUtil.maybeCensor(blockage.z),
-                                                        distance,
-                                                        (System.nanoTime() - start) / 1e9d));
+                                        if (Agent.settings().elytraChatSpam.value) {
+                                            log.atDebug()
+                                                    .addKeyValue(
+                                                            "blockage_x",
+                                                            SettingsUtil.maybeCensor(blockage.x))
+                                                    .addKeyValue(
+                                                            "blockage_y",
+                                                            SettingsUtil.maybeCensor(blockage.y))
+                                                    .addKeyValue(
+                                                            "blockage_z",
+                                                            SettingsUtil.maybeCensor(blockage.z))
+                                                    .addKeyValue("distance_blocks", distance)
+                                                    .addKeyValue(
+                                                            "duration_sec",
+                                                            (System.nanoTime() - start) / 1e9d)
+                                                    .log(
+                                                            "Recalculated segment around path"
+                                                                    + " blockage");
+                                        }
                                     });
                     return;
                 }
@@ -418,10 +462,12 @@ public final class ElytraBehavior implements Helper {
                     && process.state != ElytraProcess.State.GET_TO_JUMP) {
                 this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
                         .thenRun(
-                                () ->
-                                        logVerbose(
-                                                "Recalculated segment since no path points were"
-                                                        + " visible"));
+                                () -> {
+                                    if (Agent.settings().elytraChatSpam.value) {
+                                        log.atDebug().log(
+                                                "Recalculated segment, no path points visible");
+                                    }
+                                });
             }
         }
 
@@ -562,7 +608,7 @@ public final class ElytraBehavior implements Helper {
         try {
             while (!this.solverExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {}
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.atDebug().setCause(e).log("Solver executor interrupted");
         }
         this.context.destroy();
     }
@@ -670,10 +716,14 @@ public final class ElytraBehavior implements Helper {
         trySwapElytra();
 
         if (ctx.player().horizontalCollision) {
-            logVerbose("hbonk");
+            if (Agent.settings().elytraChatSpam.value) {
+                log.atDebug().log("Horizontal collision");
+            }
         }
         if (ctx.player().verticalCollision) {
-            logVerbose("vbonk");
+            if (Agent.settings().elytraChatSpam.value) {
+                log.atDebug().log("Vertical collision");
+            }
         }
 
         final SolverContext solverContext = this.new SolverContext(false);
@@ -699,14 +749,18 @@ public final class ElytraBehavior implements Helper {
         }
 
         if (solution == null) {
-            logVerbose("no solution");
+            if (Agent.settings().elytraChatSpam.value) {
+                log.atDebug().log("No solution found");
+            }
             return;
         }
 
         maestro.getLookBehavior().updateTarget(solution.rotation, false);
 
         if (!solution.solvedPitch) {
-            logVerbose("no pitch solution, probably gonna crash in a few ticks");
+            if (Agent.settings().elytraChatSpam.value) {
+                log.atDebug().log("No pitch solution, collision likely");
+            }
             return;
         } else {
             this.aimPos =
@@ -866,7 +920,9 @@ public final class ElytraBehavior implements Helper {
             final boolean isBoosted,
             final boolean forceUseFirework) {
         if (this.remainingSetBackTicks > 0) {
-            logDebug("waiting for elytraFireworkSetbackUseDelay: " + this.remainingSetBackTicks);
+            log.atDebug()
+                    .addKeyValue("remaining_ticks", this.remainingSetBackTicks)
+                    .log("Waiting for firework setback delay");
             return;
         }
         if (this.landingMode) {
@@ -904,10 +960,14 @@ public final class ElytraBehavior implements Helper {
             if (!maestro.getInventoryBehavior().throwaway(true, ElytraBehavior::isBoostingFireworks)
                     && !maestro.getInventoryBehavior()
                             .throwaway(true, ElytraBehavior::isFireworks)) {
-                logDirect("no fireworks");
+                log.atInfo().log("No fireworks available");
                 return;
             }
-            logVerbose("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
+            if (Agent.settings().elytraChatSpam.value) {
+                log.atDebug()
+                        .addKeyValue("forced", forceUseFirework)
+                        .log("Attempting to use firework");
+            }
             ctx.playerController()
                     .processRightClick(ctx.player(), ctx.world(), InteractionHand.MAIN_HAND);
             this.minimumBoostTicks =
@@ -1549,12 +1609,6 @@ public final class ElytraBehavior implements Helper {
             queueWindowClick(
                     ctx.player().inventoryMenu.containerId, CHEST_SLOT, 0, ClickType.PICKUP);
             queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
-        }
-    }
-
-    void logVerbose(String message) {
-        if (Agent.settings().elytraChatSpam.value) {
-            logDebug(message);
         }
     }
 }

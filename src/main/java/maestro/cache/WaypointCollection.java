@@ -9,6 +9,8 @@ import maestro.api.cache.IWaypoint;
 import maestro.api.cache.IWaypointCollection;
 import maestro.api.cache.Waypoint;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
+import org.slf4j.Logger;
 
 /**
  * Waypoints for a world
@@ -16,6 +18,8 @@ import maestro.api.utils.BetterBlockPos;
  * @author leijurv
  */
 public class WaypointCollection implements IWaypointCollection {
+
+    private static final Logger log = MaestroLogger.get("cache");
 
     /** Magic value to detect invalid waypoint files */
     private static final long WAYPOINT_MAGIC_VALUE = 121977993584L; // good value
@@ -31,7 +35,7 @@ public class WaypointCollection implements IWaypointCollection {
             } catch (IOException ignored) {
             }
         }
-        System.out.println("Would save waypoints to " + directory);
+        log.atDebug().addKeyValue("directory", directory).log("Waypoint directory initialized");
         this.waypoints = new HashMap<>();
         load();
     }
@@ -91,7 +95,10 @@ public class WaypointCollection implements IWaypointCollection {
                 out.writeInt(waypoint.getLocation().getZ());
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.atError()
+                    .setCause(ex)
+                    .addKeyValue("tag", tag.name())
+                    .log("Failed to save waypoints");
         }
     }
 

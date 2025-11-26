@@ -15,13 +15,16 @@ import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.cache.ICachedWorld;
 import maestro.api.cache.IWorldData;
-import maestro.api.utils.Helper;
+import maestro.api.utils.MaestroLogger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
+import org.slf4j.Logger;
 
-public final class CachedWorld implements ICachedWorld, Helper {
+public final class CachedWorld implements ICachedWorld {
+
+    private static final Logger log = MaestroLogger.get("cache");
 
     /** The maximum number of regions in any direction from (0,0) */
     private static final int REGION_MAX = 30_000_000 / 512 + 1;
@@ -71,7 +74,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
                                     Thread.sleep(600000);
                                 }
                             } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                log.atDebug().setCause(e).log("Autosave thread interrupted");
                             }
                         });
     }
@@ -173,7 +176,11 @@ public final class CachedWorld implements ICachedWorld, Helper {
             int distZ = ((region.getZ() << 9) + 256) - pruneCenter.getZ();
             double dist = Math.sqrt(distX * distX + distZ * distZ);
             if (dist > 1024) {
-                logDebug("Deleting cached region from ram");
+                log.atDebug()
+                        .addKeyValue("region_x", region.getX())
+                        .addKeyValue("region_z", region.getZ())
+                        .addKeyValue("distance", (int) dist)
+                        .log("Region pruned from RAM");
                 cachedRegions.remove(getRegionID(region.getX(), region.getZ()));
             }
         }
@@ -291,8 +298,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
         public void run() {
             while (true) {
+                ChunkPos pos = null;
                 try {
-                    ChunkPos pos = toPackQueue.take();
+                    pos = toPackQueue.take();
                     LevelChunk chunk = toPackMap.remove(pos);
                     if (toPackQueue.size() > Agent.settings().chunkPackerQueueMaxSize.value) {
                         continue;
@@ -301,12 +309,20 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     CachedWorld.this.updateCachedChunk(cached);
                     // System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.atDebug().setCause(e).log("Packer thread interrupted");
                     break;
                 } catch (Throwable th) {
                     // in the case of an exception, keep consuming from the queue so as not to leak
                     // memory
-                    th.printStackTrace();
+                    if (pos != null) {
+                        log.atError()
+                                .setCause(th)
+                                .addKeyValue("chunk_x", pos.x)
+                                .addKeyValue("chunk_z", pos.z)
+                                .log("Failed to pack chunk");
+                    } else {
+                        log.atError().setCause(th).log("Failed to pack chunk");
+                    }
                 }
             }
         }

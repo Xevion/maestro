@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import maestro.Agent;
 import maestro.api.event.events.TickEvent;
 import maestro.api.utils.Helper;
+import maestro.api.utils.MaestroLogger;
 import maestro.utils.ToolSet;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
@@ -25,8 +26,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public final class InventoryBehavior extends Behavior implements Helper {
+    private static final Logger log = MaestroLogger.get("inventory");
 
     int ticksSinceLastInventoryMove;
     int[] lastTickRequestedMove; // not everything asks every tick, so remember the request while
@@ -59,12 +62,10 @@ public final class InventoryBehavior extends Behavior implements Helper {
             requestSwapWithHotBar(pick, 0);
         }
         if (lastTickRequestedMove != null) {
-            logDebug(
-                    "Remembering to move "
-                            + lastTickRequestedMove[0]
-                            + " "
-                            + lastTickRequestedMove[1]
-                            + " from a previous tick");
+            log.atDebug()
+                    .addKeyValue("from_slot", lastTickRequestedMove[0])
+                    .addKeyValue("to_slot", lastTickRequestedMove[1])
+                    .log("Inventory move deferred from previous tick");
             requestSwapWithHotBar(lastTickRequestedMove[0], lastTickRequestedMove[1]);
         }
     }
@@ -101,16 +102,16 @@ public final class InventoryBehavior extends Behavior implements Helper {
     private boolean requestSwapWithHotBar(int inInventory, int inHotbar) {
         lastTickRequestedMove = new int[] {inInventory, inHotbar};
         if (ticksSinceLastInventoryMove < Agent.settings().ticksBetweenInventoryMoves.value) {
-            logDebug(
-                    "Inventory move requested but delaying "
-                            + ticksSinceLastInventoryMove
-                            + " "
-                            + Agent.settings().ticksBetweenInventoryMoves.value);
+            log.atDebug()
+                    .addKeyValue("ticks_since_move", ticksSinceLastInventoryMove)
+                    .addKeyValue(
+                            "min_ticks_required", Agent.settings().ticksBetweenInventoryMoves.value)
+                    .log("Inventory move throttled");
             return false;
         }
         if (Agent.settings().inventoryMoveOnlyIfStationary.value
                 && !maestro.getInventoryPauserProcess().stationaryForInventoryMove()) {
-            logDebug("Inventory move requested but delaying until stationary");
+            log.atDebug().log("Inventory move deferred until stationary");
             return false;
         }
         ctx.playerController()

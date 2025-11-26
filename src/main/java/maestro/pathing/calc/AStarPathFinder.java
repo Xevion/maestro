@@ -9,6 +9,7 @@ import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.SettingsUtil;
 import maestro.pathing.calc.openset.BinaryHeapOpenSet;
 import maestro.pathing.movement.CalculationContext;
@@ -18,6 +19,7 @@ import maestro.pathing.movement.Movement;
 import maestro.utils.pathing.BetterWorldBorder;
 import maestro.utils.pathing.Favoring;
 import maestro.utils.pathing.MutableMoveResult;
+import org.slf4j.Logger;
 
 /**
  * The actual A* pathfinding
@@ -25,6 +27,8 @@ import maestro.utils.pathing.MutableMoveResult;
  * @author leijurv
  */
 public final class AStarPathFinder extends AbstractNodeCostSearch {
+
+    private static final Logger log = MaestroLogger.get("path");
 
     private final Favoring favoring;
     private final CalculationContext calcContext;
@@ -80,12 +84,10 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         long startTime = System.currentTimeMillis();
         boolean slowPath = Agent.settings().slowPath.value;
         if (slowPath) {
-            logDebug(
-                    "slowPath is on, path timeout will be "
-                            + Agent.settings().slowPathTimeoutMS.value
-                            + "ms instead of "
-                            + primaryTimeout
-                            + "ms");
+            log.atDebug()
+                    .addKeyValue("slow_timeout_ms", Agent.settings().slowPathTimeoutMS.value)
+                    .addKeyValue("normal_timeout_ms", primaryTimeout)
+                    .log("Slow path enabled");
         }
         long primaryTimeoutTime =
                 startTime + (slowPath ? Agent.settings().slowPathTimeoutMS.value : primaryTimeout);
@@ -125,12 +127,10 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             mostRecentConsidered = currentNode;
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
-                logDebug(
-                        "Took "
-                                + (System.currentTimeMillis() - startTime)
-                                + "ms, "
-                                + numMovementsConsidered
-                                + " movements considered");
+                log.atDebug()
+                        .addKeyValue("duration_ms", System.currentTimeMillis() - startTime)
+                        .addKeyValue("movements_considered", numMovementsConsidered)
+                        .log("Path found");
                 return Optional.of(
                         new Path(realStart, startNode, currentNode, numNodes, goal, calcContext));
             }
@@ -234,12 +234,10 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         }
         Optional<IPath> result = bestSoFar(true, numNodes);
         if (result.isPresent()) {
-            logDebug(
-                    "Took "
-                            + (System.currentTimeMillis() - startTime)
-                            + "ms, "
-                            + numMovementsConsidered
-                            + " movements considered");
+            log.atDebug()
+                    .addKeyValue("duration_ms", System.currentTimeMillis() - startTime)
+                    .addKeyValue("movements_considered", numMovementsConsidered)
+                    .log("Path segment found");
         }
         return result;
     }

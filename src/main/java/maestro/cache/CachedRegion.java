@@ -10,11 +10,15 @@ import java.util.zip.GZIPOutputStream;
 import maestro.Agent;
 import maestro.api.cache.ICachedRegion;
 import maestro.api.utils.BlockUtils;
+import maestro.api.utils.MaestroLogger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
+import org.slf4j.Logger;
 
 public final class CachedRegion implements ICachedRegion {
+
+    private static final Logger log = MaestroLogger.get("cache");
 
     private static final byte CHUNK_NOT_PRESENT = 0;
     private static final byte CHUNK_PRESENT = 1;
@@ -152,7 +156,11 @@ public final class CachedRegion implements ICachedRegion {
             }
             hasUnsavedChanges = false;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.atError()
+                    .setCause(ex)
+                    .addKeyValue("region_x", x)
+                    .addKeyValue("region_z", z)
+                    .log("Failed to save region");
         }
     }
 
@@ -281,9 +289,18 @@ public final class CachedRegion implements ICachedRegion {
             removeExpired();
             hasUnsavedChanges = false;
             long end = System.nanoTime() / 1000000L;
+            log.atDebug()
+                    .addKeyValue("region_x", x)
+                    .addKeyValue("region_z", z)
+                    .addKeyValue("duration_ms", end - start)
+                    .log("Region loaded");
         } catch (Exception ex) { // corrupted files can cause NullPointerExceptions as well as
             // IOExceptions
-            ex.printStackTrace();
+            log.atError()
+                    .setCause(ex)
+                    .addKeyValue("region_x", x)
+                    .addKeyValue("region_z", z)
+                    .log("Failed to load region");
         }
     }
 
@@ -298,15 +315,13 @@ public final class CachedRegion implements ICachedRegion {
             for (int z = 0; z < 32; z++) {
                 if (this.chunks[x][z] != null
                         && this.chunks[x][z].cacheTimestamp < oldestAcceptableAge) {
-                    System.out.println(
-                            "Removing chunk "
-                                    + (x + 32 * this.x)
-                                    + ","
-                                    + (z + 32 * this.z)
-                                    + " because it was cached "
-                                    + (now - this.chunks[x][z].cacheTimestamp) / 1000L
-                                    + " seconds ago, and max age is "
-                                    + expiry);
+                    log.atDebug()
+                            .addKeyValue("chunk_x", x + 32 * this.x)
+                            .addKeyValue("chunk_z", z + 32 * this.z)
+                            .addKeyValue(
+                                    "age_seconds", (now - this.chunks[x][z].cacheTimestamp) / 1000L)
+                            .addKeyValue("max_age_seconds", expiry)
+                            .log("Chunk expired and removed");
                     this.chunks[x][z] = null;
                 }
             }

@@ -17,13 +17,16 @@ import maestro.api.pathing.goals.GoalYLevel;
 import maestro.api.process.IExploreProcess;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.MyChunkPos;
 import maestro.cache.CachedWorld;
 import maestro.utils.MaestroProcessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
+import org.slf4j.Logger;
 
 public final class ExploreProcess extends MaestroProcessHelper implements IExploreProcess {
+    private static final Logger log = MaestroLogger.get("path");
 
     private BlockPos explorationOrigin;
 
@@ -64,7 +67,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (calcFailed) {
-            logDirect("Failed");
+            log.atWarn().addKeyValue("reason", "path_calculation_failed").log("Exploration failed");
             if (Agent.settings().notificationOnExploreFinished.value) {
                 logNotification("Exploration failed", true);
             }
@@ -73,7 +76,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
         }
         IChunkFilter filter = calcFilter();
         if (!Agent.settings().disableCompletionCheck.value && filter.countRemain() == 0) {
-            logDirect("Explored all chunks");
+            log.atInfo().log("Exploration complete - all chunks explored");
             if (Agent.settings().notificationOnExploreFinished.value) {
                 logNotification("Explored all chunks", false);
             }
@@ -82,7 +85,7 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
         }
         Goal[] closestUncached = closestUncachedChunks(explorationOrigin, filter);
         if (closestUncached == null) {
-            logDebug("awaiting region load from disk");
+            log.atDebug().log("Awaiting region load from disk");
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
         return new PathingCommand(
@@ -230,7 +233,9 @@ public final class ExploreProcess extends MaestroProcessHelper implements IExplo
             positions =
                     gson.fromJson(
                             new InputStreamReader(Files.newInputStream(path)), MyChunkPos[].class);
-            logDirect("Loaded " + positions.length + " positions");
+            log.atInfo()
+                    .addKeyValue("position_count", positions.length)
+                    .log("Loaded exploration filter positions");
             inFilter = new LongOpenHashSet();
             for (MyChunkPos mcp : positions) {
                 inFilter.add(ChunkPos.asLong(mcp.x, mcp.z));

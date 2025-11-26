@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import maestro.api.utils.MaestroLogger;
 import maestro.utils.schematic.StaticSchematic;
 import maestro.utils.type.VarInt;
 import net.minecraft.core.Holder;
@@ -16,8 +17,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.slf4j.Logger;
 
 public final class SpongeSchematic extends StaticSchematic {
+
+    private static final Logger log = MaestroLogger.get("build");
 
     public SpongeSchematic(CompoundTag nbt) {
         this.x = nbt.getInt("Width");
@@ -138,7 +142,10 @@ public final class SpongeSchematic extends StaticSchematic {
 
                 return new SerializedBlockState(resourceLocation, propertiesMap);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.atError()
+                        .setCause(e)
+                        .addKeyValue("block_state", s)
+                        .log("Failed to deserialize block state");
                 return null;
             }
         }

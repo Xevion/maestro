@@ -8,6 +8,7 @@ import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
 import maestro.api.utils.BlockOptionalMeta;
 import maestro.api.utils.BlockOptionalMetaLookup;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.input.Input;
@@ -19,8 +20,10 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.slf4j.Logger;
 
 public final class GetToBlockProcess extends MaestroProcessHelper implements IGetToBlockProcess {
+    private static final Logger log = MaestroLogger.get("path");
 
     private BlockOptionalMeta gettingTo;
     private List<BlockPos> knownLocations;
@@ -70,7 +73,9 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
                         },
                         PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
             }
-            logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
+            log.atWarn()
+                    .addKeyValue("target_block", gettingTo)
+                    .log("No known locations found, canceling GetToBlock");
             if (isSafeToCancel) {
                 onLostControl();
             }
@@ -81,14 +86,16 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
                         knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
             if (Agent.settings().blacklistClosestOnFailure.value) {
-                logDirect(
-                        "Unable to find any path to "
-                                + gettingTo
-                                + ", blacklisting presumably unreachable closest instances...");
+                log.atWarn()
+                        .addKeyValue("target_block", gettingTo)
+                        .addKeyValue("action", "blacklist_closest")
+                        .log("Unable to find path, blacklisting closest unreachable instances");
                 blacklistClosest();
                 return onTick(false, isSafeToCancel);
             } else {
-                logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
+                log.atWarn()
+                        .addKeyValue("target_block", gettingTo)
+                        .log("Unable to find path, canceling GetToBlock");
                 if (isSafeToCancel) {
                     onLostControl();
                 }
@@ -140,7 +147,9 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
             // so i will do this
             break outer;
         }
-        logDebug("Blacklisting unreachable locations " + newBlacklist);
+        log.atDebug()
+                .addKeyValue("blacklist_count", newBlacklist.size())
+                .log("Blacklisting unreachable block locations");
         blacklist.addAll(newBlacklist);
         return !newBlacklist.isEmpty();
     }
@@ -228,13 +237,15 @@ public final class GetToBlockProcess extends MaestroProcessHelper implements IGe
                     }
                 }
                 if (arrivalTickCount++ > 20) {
-                    logDirect("Right click timed out");
+                    log.atWarn()
+                            .addKeyValue("timeout_ticks", arrivalTickCount)
+                            .log("Right-click timeout");
                     return true;
                 }
                 return false; // trying to right click, will do it next tick or so
             }
         }
-        logDirect("Arrived but failed to right click open");
+        log.atWarn().log("Arrived at target but failed to right-click open");
         return true;
     }
 

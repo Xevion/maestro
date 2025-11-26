@@ -4,6 +4,7 @@ import static maestro.utils.BlockStateInterface.getFromChunk;
 
 import java.util.*;
 import maestro.api.utils.BlockUtils;
+import maestro.api.utils.MaestroLogger;
 import maestro.pathing.movement.MovementHelper;
 import maestro.utils.pathing.PathingBlockType;
 import net.minecraft.core.BlockPos;
@@ -20,8 +21,11 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public final class ChunkPacker {
+
+    private static final Logger log = MaestroLogger.get("cache");
 
     private ChunkPacker() {}
 
@@ -72,7 +76,11 @@ public final class ChunkPacker {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.atError()
+                    .setCause(e)
+                    .addKeyValue("chunk_x", chunk.getPos().x)
+                    .addKeyValue("chunk_z", chunk.getPos().z)
+                    .log("Failed to pack chunk");
         }
         // long end = System.nanoTime() / 1000000L;
         // System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," +

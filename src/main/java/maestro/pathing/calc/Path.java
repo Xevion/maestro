@@ -8,12 +8,13 @@ import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.BetterBlockPos;
-import maestro.api.utils.Helper;
+import maestro.api.utils.MaestroLogger;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.Moves;
 import maestro.pathing.path.CutoffPath;
 import maestro.utils.pathing.PathBase;
+import org.slf4j.Logger;
 
 /**
  * A node based implementation of IPath
@@ -21,6 +22,7 @@ import maestro.utils.pathing.PathBase;
  * @author leijurv
  */
 class Path extends PathBase {
+    private static final Logger log = MaestroLogger.get("path");
 
     /** The start position of this path */
     private final BetterBlockPos start;
@@ -111,11 +113,10 @@ class Path extends PathBase {
                     continue;
                 } else {
                     // Shouldn't happen, but log and fallback
-                    Helper.HELPER.logDebug(
-                            "Stored movement destination mismatch: expected "
-                                    + path.get(i + 1)
-                                    + ", got "
-                                    + move.getDest());
+                    log.atDebug()
+                            .addKeyValue("expected_dest", path.get(i + 1))
+                            .addKeyValue("actual_dest", move.getDest())
+                            .log("Stored movement destination mismatch");
                 }
             }
 
@@ -146,13 +147,11 @@ class Path extends PathBase {
                 return move;
             }
             // Recorded movement doesn't match destination (shouldn't happen)
-            Helper.HELPER.logDebug(
-                    "Recorded movement "
-                            + recordedMove
-                            + " from "
-                            + src
-                            + " doesn't match expected dest "
-                            + dest);
+            log.atDebug()
+                    .addKeyValue("recorded_movement", recordedMove)
+                    .addKeyValue("source", src)
+                    .addKeyValue("expected_dest", dest)
+                    .log("Recorded movement doesn't match expected destination");
         }
 
         // Fallback: Linear search through all movements (for backward compatibility)
@@ -165,13 +164,11 @@ class Path extends PathBase {
         }
 
         // this is no longer called from bestPathSoFar, now it's in postprocessing
-        Helper.HELPER.logDebug(
-                "Movement became impossible during calculation "
-                        + src
-                        + " "
-                        + dest
-                        + " "
-                        + dest.subtract(src));
+        log.atDebug()
+                .addKeyValue("source", src)
+                .addKeyValue("dest", dest)
+                .addKeyValue("delta", dest.subtract(src))
+                .log("Movement became impossible during calculation");
         return null;
     }
 

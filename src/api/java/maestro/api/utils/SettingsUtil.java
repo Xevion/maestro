@@ -30,8 +30,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import org.slf4j.Logger;
 
 public class SettingsUtil {
+    private static final Logger log = MaestroLogger.get("api");
 
     public static final String SETTINGS_DEFAULT_NAME = "settings.txt";
     private static final Pattern SETTING_PATTERN =
@@ -61,7 +63,9 @@ public class SettingsUtil {
                     line -> {
                         Matcher matcher = SETTING_PATTERN.matcher(line);
                         if (!matcher.matches()) {
-                            Helper.HELPER.logDirect("Invalid syntax in setting file: " + line);
+                            log.atInfo()
+                                    .addKeyValue("line", line)
+                                    .log("Invalid syntax in setting file");
                             return;
                         }
 
@@ -74,17 +78,20 @@ public class SettingsUtil {
                         try {
                             parseAndApply(settings, settingName, settingValue);
                         } catch (Exception ex) {
-                            Helper.HELPER.logDirect("Unable to parse line " + line);
-                            ex.printStackTrace();
+                            log.atWarn()
+                                    .setCause(ex)
+                                    .addKeyValue("line", line)
+                                    .log("Unable to parse setting line");
                         }
                     });
         } catch (NoSuchFileException ignored) {
-            Helper.HELPER.logDirect("Maestro settings file not found, resetting.");
+            log.atInfo()
+                    .addKeyValue("settings_file", settingsName)
+                    .log("Settings file not found, using defaults");
         } catch (Exception ex) {
-            Helper.HELPER.logDirect(
-                    "Exception while reading Maestro settings, some settings may be reset to"
-                            + " default values!");
-            ex.printStackTrace();
+            log.atWarn()
+                    .setCause(ex)
+                    .log("Exception while reading settings, some may be reset to defaults");
         }
     }
 
@@ -94,8 +101,7 @@ public class SettingsUtil {
                 out.write(settingToString(setting) + "\n");
             }
         } catch (Exception ex) {
-            Helper.HELPER.logDirect("Exception thrown while saving Maestro settings!");
-            ex.printStackTrace();
+            log.atError().setCause(ex).log("Exception while saving settings");
         }
     }
 

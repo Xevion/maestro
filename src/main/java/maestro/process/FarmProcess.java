@@ -15,6 +15,7 @@ import maestro.api.process.IFarmProcess;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.RayTraceUtils;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
@@ -43,8 +44,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public final class FarmProcess extends MaestroProcessHelper implements IFarmProcess {
+    private static final Logger log = MaestroLogger.get("farm");
 
     private boolean active;
 
@@ -360,7 +363,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
         }
 
         if (calcFailed) {
-            logDirect("Farm failed");
+            log.atError().log("Farming failed - pathfinding failed");
             if (Agent.settings().notificationOnFarmFail.value) {
                 logNotification("Farm failed", true);
             }
@@ -411,7 +414,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
             }
         }
         if (goalz.isEmpty()) {
-            logDirect("Farm failed");
+            log.atError().log("Farming failed - no valid goals");
             if (Agent.settings().notificationOnFarmFail.value) {
                 logNotification("Farm failed", true);
             }

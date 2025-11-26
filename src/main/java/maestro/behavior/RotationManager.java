@@ -5,7 +5,9 @@ import java.util.PriorityQueue;
 import maestro.Agent;
 import maestro.api.event.events.PlayerUpdateEvent;
 import maestro.api.event.events.TickEvent;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
+import org.slf4j.Logger;
 
 /**
  * Manages bot rotations with priority-based queueing, separating bot control from user camera view.
@@ -22,6 +24,8 @@ import maestro.api.utils.Rotation;
  * </ul>
  */
 public final class RotationManager extends Behavior {
+
+    private static final Logger log = MaestroLogger.get("rotation");
 
     private final PriorityQueue<PendingRotation> rotations;
     private PendingRotation currentRotation = null;
@@ -85,8 +89,7 @@ public final class RotationManager extends Behavior {
                 try {
                     currentRotation.callback.run();
                 } catch (Exception e) {
-                    // Log error but don't crash
-                    System.err.println("RotationManager callback error: " + e.getMessage());
+                    log.atError().setCause(e).log("Rotation callback failed");
                 }
             }
 
@@ -99,10 +102,9 @@ public final class RotationManager extends Behavior {
     public void onTick(TickEvent event) {
         // Clear old rotations if queue gets too large (prevent memory leak)
         if (rotations.size() > 100) {
-            System.err.println(
-                    "RotationManager: Queue overflow ("
-                            + rotations.size()
-                            + " rotations), clearing queue");
+            log.atWarn()
+                    .addKeyValue("queue_size", rotations.size())
+                    .log("Queue overflow, clearing rotations");
             rotations.clear();
         }
     }

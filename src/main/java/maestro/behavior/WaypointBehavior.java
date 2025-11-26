@@ -1,25 +1,20 @@
 package maestro.behavior;
 
-import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
-
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.cache.IWaypoint;
 import maestro.api.cache.Waypoint;
 import maestro.api.event.events.BlockInteractEvent;
 import maestro.api.utils.BetterBlockPos;
-import maestro.api.utils.Helper;
+import maestro.api.utils.MaestroLogger;
 import maestro.utils.BlockStateInterface;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import org.slf4j.Logger;
 
 public class WaypointBehavior extends Behavior {
+    private static final Logger log = MaestroLogger.get("waypoint");
 
     public WaypointBehavior(Agent maestro) {
         super(maestro);
@@ -57,24 +52,10 @@ public class WaypointBehavior extends Behavior {
         if (!Agent.settings().doDeathWaypoints.value) return;
         Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
         maestro.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
-        MutableComponent component = Component.literal("Death position saved.");
-        component.setStyle(
-                component
-                        .getStyle()
-                        .withColor(ChatFormatting.WHITE)
-                        .withHoverEvent(
-                                new HoverEvent(
-                                        HoverEvent.Action.SHOW_TEXT,
-                                        Component.literal("Click to goto death")))
-                        .withClickEvent(
-                                new ClickEvent(
-                                        ClickEvent.Action.RUN_COMMAND,
-                                        String.format(
-                                                "%s%s goto %s @ %d",
-                                                FORCE_COMMAND_PREFIX,
-                                                "wp",
-                                                deathWaypoint.getTag().getName(),
-                                                deathWaypoint.getCreationTimestamp()))));
-        Helper.HELPER.logDirect(component);
+        log.atInfo()
+                .addKeyValue("waypoint_type", "death")
+                .addKeyValue("position", ctx.playerFeet())
+                .log("Death position saved");
+        // TODO: Clickable component removed - will be restored with ChatMessenger abstraction
     }
 }

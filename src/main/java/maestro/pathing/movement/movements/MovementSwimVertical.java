@@ -9,6 +9,7 @@ import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 /**
  * Vertical swimming movement in water (UP and DOWN). This movement enables true 3D underwater
@@ -43,6 +45,7 @@ import net.minecraft.world.phys.Vec3;
  * <p>Execution uses RotationManager + SwimmingBehavior with vertical pitch control.
  */
 public class MovementSwimVertical extends Movement {
+    private static final Logger log = MaestroLogger.get("swim");
 
     private final boolean ascending;
 
@@ -77,8 +80,12 @@ public class MovementSwimVertical extends Movement {
         // Swimming must be enabled
         if (!context.allowSwimming) {
             if (Agent.settings().logSwimming.value) {
-                System.out.println(
-                        "[SwimV] COST_INF: Swimming disabled at " + x + "," + y + "," + z);
+                log.atDebug()
+                        .addKeyValue("x", x)
+                        .addKeyValue("y", y)
+                        .addKeyValue("z", z)
+                        .addKeyValue("reason", "swimming_disabled")
+                        .log("Vertical swim rejected");
             }
             return COST_INF;
         }
@@ -92,26 +99,16 @@ public class MovementSwimVertical extends Movement {
         boolean destIsWater = MovementHelper.isWater(destState);
         if (!srcIsWater || !destIsWater) {
             if (Agent.settings().logSwimming.value) {
-                System.out.println(
-                        "[SwimV] COST_INF: Not water - src="
-                                + srcIsWater
-                                + " dest="
-                                + destIsWater
-                                + " at "
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + " -> "
-                                + x
-                                + ","
-                                + destY
-                                + ","
-                                + z
-                                + " (ascending="
-                                + ascending
-                                + ")");
+                log.atDebug()
+                        .addKeyValue("x", x)
+                        .addKeyValue("src_y", y)
+                        .addKeyValue("dest_y", destY)
+                        .addKeyValue("z", z)
+                        .addKeyValue("src_water", srcIsWater)
+                        .addKeyValue("dest_water", destIsWater)
+                        .addKeyValue("ascending", ascending)
+                        .addKeyValue("reason", "not_water")
+                        .log("Vertical swim rejected");
             }
             return COST_INF;
         }
@@ -119,31 +116,25 @@ public class MovementSwimVertical extends Movement {
         // Destination must be passable for swimming
         if (!MovementHelper.canSwimThrough(context, x, destY, z)) {
             if (Agent.settings().logSwimming.value) {
-                System.out.println(
-                        "[SwimV] COST_INF: Can't swim through at " + x + "," + destY + "," + z);
+                log.atDebug()
+                        .addKeyValue("x", x)
+                        .addKeyValue("y", destY)
+                        .addKeyValue("z", z)
+                        .addKeyValue("reason", "blocked")
+                        .log("Vertical swim rejected");
             }
             return COST_INF;
         }
 
         if (Agent.settings().logSwimming.value) {
-            System.out.println(
-                    "[SwimV] Cost="
-                            + baseCost
-                            + " at "
-                            + x
-                            + ","
-                            + y
-                            + ","
-                            + z
-                            + " -> "
-                            + x
-                            + ","
-                            + destY
-                            + ","
-                            + z
-                            + " (ascending="
-                            + ascending
-                            + ")");
+            log.atDebug()
+                    .addKeyValue("cost", baseCost)
+                    .addKeyValue("x", x)
+                    .addKeyValue("src_y", y)
+                    .addKeyValue("dest_y", destY)
+                    .addKeyValue("z", z)
+                    .addKeyValue("ascending", ascending)
+                    .log("Vertical swim cost calculated");
         }
 
         // Bubble column handling (0.5x with assist, 2.0x against)

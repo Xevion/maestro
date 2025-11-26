@@ -7,16 +7,19 @@ import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.calc.IPathFinder;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.utils.BetterBlockPos;
-import maestro.api.utils.Helper;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PathCalculationResult;
 import maestro.pathing.movement.CalculationContext;
+import org.slf4j.Logger;
 
 /**
  * Any pathfinding algorithm that keeps track of nodes recursively by their cost (e.g. A*, dijkstra)
  *
  * @author leijurv
  */
-public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
+public abstract class AbstractNodeCostSearch implements IPathFinder {
+
+    private static final Logger log = MaestroLogger.get("path");
 
     protected final BetterBlockPos realStart;
     protected final int startX;
@@ -107,15 +110,20 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
             int previousLength = path.length();
             path = path.cutoffAtLoadedChunks(context.bsi);
             if (path.length() < previousLength) {
-                Helper.HELPER.logDebug("Cutting off path at edge of loaded chunks");
-                Helper.HELPER.logDebug("Length decreased by " + (previousLength - path.length()));
+                log.atDebug().log("Cutting off path at edge of loaded chunks");
+                log.atDebug()
+                        .addKeyValue("length_decrease", previousLength - path.length())
+                        .log("Path length decreased");
             } else {
-                Helper.HELPER.logDebug("Path ends within loaded chunks");
+                log.atDebug().log("Path ends within loaded chunks");
             }
             previousLength = path.length();
             path = path.staticCutoff(goal);
             if (path.length() < previousLength) {
-                Helper.HELPER.logDebug("Static cutoff " + previousLength + " to " + path.length());
+                log.atDebug()
+                        .addKeyValue("previous_length", previousLength)
+                        .addKeyValue("new_length", path.length())
+                        .log("Static cutoff applied");
             }
             if (goal.isInGoal(path.getDest())) {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_TO_GOAL, path);
@@ -123,8 +131,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
                 return new PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path);
             }
         } catch (Exception e) {
-            Helper.HELPER.logDirect("Pathing exception: " + e);
-            e.printStackTrace();
+            log.atError().setCause(e).log("Pathing exception");
             return new PathCalculationResult(PathCalculationResult.Type.EXCEPTION);
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
@@ -199,7 +206,9 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
                             * MIN_DIST_PATH) { // square the comparison since distFromStartSq is
                 // squared
                 if (logInfo) {
-                    logDebug("A* cost coefficient " + COEFFICIENTS[i]);
+                    log.atDebug()
+                            .addKeyValue("cost_coefficient", COEFFICIENTS[i])
+                            .log("Using A* cost coefficient");
                 }
                 return Optional.of(
                         new Path(realStart, startNode, bestSoFar[i], numNodes, goal, context));
@@ -209,14 +218,11 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         // if it actually won't find any path, don't make them think it will by rendering a dark
         // blue that will never actually happen
         if (logInfo) {
-            logDebug(
-                    "Even with a cost coefficient of "
-                            + COEFFICIENTS[COEFFICIENTS.length - 1]
-                            + ", I couldn't get more than "
-                            + Math.sqrt(bestDist)
-                            + " blocks");
-            logDebug("No path found =(");
-            logNotification("No path found =(", true);
+            log.atDebug()
+                    .addKeyValue("max_coefficient", COEFFICIENTS[COEFFICIENTS.length - 1])
+                    .addKeyValue("max_distance_blocks", Math.sqrt(bestDist))
+                    .log("Could not find path with any coefficient");
+            log.atInfo().log("No path found");
         }
         return Optional.empty();
     }

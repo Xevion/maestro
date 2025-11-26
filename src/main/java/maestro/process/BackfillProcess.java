@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import maestro.Agent;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
@@ -15,8 +16,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.EmptyLevelChunk;
+import org.slf4j.Logger;
 
 public final class BackfillProcess extends MaestroProcessHelper {
+    private static final Logger log = MaestroLogger.get("move");
 
     public HashMap<BlockPos, BlockState> blocksToReplace = new HashMap<>();
 
@@ -33,7 +36,11 @@ public final class BackfillProcess extends MaestroProcessHelper {
             return false;
         }
         if (Agent.settings().allowParkour.value) {
-            logDirect("Backfill cannot be used with allowParkour true");
+            log.atWarn()
+                    .addKeyValue("reason", "incompatible_settings")
+                    .addKeyValue("setting_1", "backfill")
+                    .addKeyValue("setting_2", "allowParkour")
+                    .log("Backfill disabled due to incompatible settings");
             Agent.settings().backfill.value = false;
             return false;
         }

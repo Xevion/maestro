@@ -20,6 +20,7 @@ import maestro.api.process.IMaestroProcess;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.input.Input;
@@ -41,9 +42,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public class ElytraProcess extends MaestroProcessHelper
         implements IMaestroProcess, IElytraProcess, AbstractGameEventListener {
+    private static final Logger log = MaestroLogger.get("path");
+
     public State state;
     private boolean goingToLandingSpot;
     private BetterBlockPos landingSpot;
@@ -97,11 +101,17 @@ public class ElytraProcess extends MaestroProcessHelper
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         final long seedSetting = Agent.settings().elytraNetherSeed.value;
         if (seedSetting != this.behavior.context.getSeed()) {
-            logDirect("Nether seed changed, recalculating path");
+            log.atInfo()
+                    .addKeyValue("previous_seed", this.behavior.context.getSeed())
+                    .addKeyValue("new_seed", seedSetting)
+                    .log("Nether seed changed, recalculating path");
             this.resetState();
         }
         if (predictingTerrain != Agent.settings().elytraPredictTerrain.value) {
-            logDirect("elytraPredictTerrain setting changed, recalculating path");
+            log.atInfo()
+                    .addKeyValue("setting", "elytraPredictTerrain")
+                    .addKeyValue("new_value", Agent.settings().elytraPredictTerrain.value)
+                    .log("Setting changed, recalculating path");
             predictingTerrain = Agent.settings().elytraPredictTerrain.value;
             this.resetState();
         }
@@ -110,19 +120,22 @@ public class ElytraProcess extends MaestroProcessHelper
 
         if (calcFailed) {
             onLostControl();
-            logDirect(AUTO_JUMP_FAILURE_MSG);
+            log.atWarn().log("Failed to compute path for elytra auto-jump");
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
         boolean safetyLanding = false;
         if (ctx.player().isFallFlying() && shouldLandForSafety()) {
             if (Agent.settings().elytraAllowEmergencyLand.value) {
-                logDirect("Emergency landing - almost out of elytra durability or fireworks");
+                log.atInfo()
+                        .addKeyValue("reason", "low_resources")
+                        .log("Emergency landing initiated");
                 safetyLanding = true;
             } else {
-                logDirect(
-                        "almost out of elytra durability or fireworks, but I'm going to continue"
-                                + " since elytraAllowEmergencyLand is false");
+                log.atInfo()
+                        .addKeyValue("setting", "elytraAllowEmergencyLand")
+                        .addKeyValue("value", false)
+                        .log("Low resources but continuing due to setting");
             }
         }
         if (ctx.player().isFallFlying()
@@ -133,7 +146,7 @@ public class ElytraProcess extends MaestroProcessHelper
                     && (ctx.player().position().distanceToSqr(last.getCenter()) < (48 * 48)
                             || safetyLanding)
                     && (!goingToLandingSpot || (safetyLanding && this.landingSpot == null))) {
-                logDirect("Path complete, picking a nearby safe landing spot...");
+                log.atInfo().log("Path complete, picking landing spot");
                 BetterBlockPos landingSpot = findSafeLandingSpot(ctx.playerFeet());
                 // if this fails we will just keep orbiting the last node until we run out of
                 // rockets or the user intervenes
@@ -159,7 +172,9 @@ public class ElytraProcess extends MaestroProcessHelper
                 // we are goingToLandingSpot and we are in the last node of the path
                 if (this.goingToLandingSpot) {
                     this.state = State.LANDING;
-                    logDirect("Above the landing spot, landing...");
+                    log.atInfo()
+                            .addKeyValue("landing_spot", landingSpot)
+                            .log("Above landing spot, initiating landing");
                 }
             }
         }
@@ -180,7 +195,9 @@ public class ElytraProcess extends MaestroProcessHelper
                                 false); // this will be overwritten, probably, by behavior tick
 
                 if (ctx.player().position().y < endPos.y - LANDING_COLUMN_HEIGHT) {
-                    logDirect("bad landing spot, trying again...");
+                    log.atWarn()
+                            .addKeyValue("landing_spot", endPos)
+                            .log("Landing spot too low, selecting new spot");
                     landingSpotIsBad(endPos);
                 }
             }
@@ -194,11 +211,11 @@ public class ElytraProcess extends MaestroProcessHelper
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (this.state == State.LANDING) {
             if (ctx.playerMotion().multiply(1, 0, 1).length() > 0.001) {
-                logDirect("Landed, but still moving, waiting for velocity to die down... ");
+                log.atInfo().log("Landed, waiting for velocity to stabilize");
                 maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
-            logDirect("Done :)");
+            log.atInfo().log("Elytra path complete");
             maestro.getInputOverrideHandler().clearAllKeys();
             this.onLostControl();
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
@@ -213,9 +230,9 @@ public class ElytraProcess extends MaestroProcessHelper
 
         if (this.state == State.LOCATE_JUMP) {
             if (shouldLandForSafety()) {
-                logDirect(
-                        "Not taking off, because elytra durability or fireworks are so low that I"
-                                + " would immediately emergency land anyway.");
+                log.atWarn()
+                        .addKeyValue("reason", "insufficient_resources")
+                        .log("Not taking off due to low elytra durability or fireworks");
                 onLostControl();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
@@ -249,7 +266,7 @@ public class ElytraProcess extends MaestroProcessHelper
                     this.state = State.PAUSE;
                 } else {
                     onLostControl();
-                    logDirect(AUTO_JUMP_FAILURE_MSG);
+                    log.atWarn().log("Failed to compute walking path to jump point");
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
             }

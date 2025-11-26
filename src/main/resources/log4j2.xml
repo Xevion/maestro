@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <!-- Compact pattern: timestamp [LEVEL] [category] message key=value -->
+        <Property name="LOG_PATTERN">%d{HH:mm:ss.SSS} %highlight{[%-5level]}{ERROR=red, WARN=yellow, INFO=white, DEBUG=cyan} [%logger] %msg%notEmpty{ %X}%n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console output with ANSI colors -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}" disableAnsi="false"/>
+        </Console>
+
+        <!-- Async wrapper for performance -->
+        <Async name="AsyncConsole" includeLocation="false">
+            <AppenderRef ref="Console"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <!-- Maestro loggers (DEBUG level for development) -->
+        <Logger name="path" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="swim" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="combat" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="mine" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="farm" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="build" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="cache" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="move" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="rotation" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="event" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="cmd" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+        <Logger name="api" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <!-- Quiet down Minecraft/mod loader noise -->
+        <Logger name="net.minecraft" level="WARN"/>
+        <Logger name="net.minecraftforge" level="WARN"/>
+        <Logger name="cpw.mods" level="WARN"/>
+        <Logger name="net.fabricmc" level="WARN"/>
+
+        <!-- Root logger (fallback) -->
+        <Root level="INFO">
+            <AppenderRef ref="AsyncConsole"/>
+        </Root>
+    </Loggers>
+</Configuration>

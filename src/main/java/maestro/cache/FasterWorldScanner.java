@@ -11,6 +11,7 @@ import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.BlockOptionalMeta;
 import maestro.api.utils.BlockOptionalMetaLookup;
 import maestro.api.utils.IPlayerContext;
+import maestro.api.utils.MaestroLogger;
 import maestro.utils.accessor.IPalettedContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -25,9 +26,12 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.Palette;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.chunk.SingleValuePalette;
+import org.slf4j.Logger;
 
 public enum FasterWorldScanner implements IWorldScanner {
     INSTANCE;
+
+    private static final Logger log = MaestroLogger.get("cache");
 
     private static final BlockState[] PALETTE_REGISTRY_SENTINEL = new BlockState[0];
 
@@ -141,7 +145,10 @@ public enum FasterWorldScanner implements IWorldScanner {
             }
             return posStream.collect(Collectors.toList());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.atError()
+                    .setCause(e)
+                    .addKeyValue("chunk_count", chunkPositions.size())
+                    .log("Failed to scan chunks");
             throw e;
         }
     }

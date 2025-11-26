@@ -7,6 +7,7 @@ import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
@@ -28,8 +29,10 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public class MovementTraverse extends Movement {
+    private static final Logger log = MaestroLogger.get("move");
 
     /** Did we have to place a bridge block or was it always there */
     private boolean wasTheBridgeBlockAlwaysThere = true;
@@ -304,7 +307,12 @@ public class MovementTraverse extends Movement {
                         || MovementHelper.canUseFrostWalker(ctx, positionToPlace);
         BlockPos feet = ctx.playerFeet();
         if (feet.getY() != dest.getY() && !ladder) {
-            logDebug("Wrong Y coordinate");
+            log.atDebug()
+                    .addKeyValue("expected_y", dest.getY())
+                    .addKeyValue("actual_y", feet.getY())
+                    .addKeyValue("player_x", feet.getX())
+                    .addKeyValue("player_z", feet.getZ())
+                    .log("Movement Y coordinate mismatch");
             if (feet.getY() < dest.getY()) {
                 return state.setInput(Input.JUMP, true);
             }
@@ -356,7 +364,11 @@ public class MovementTraverse extends Movement {
                                 : dest.relative(
                                         destDown.getValue(LadderBlock.FACING).getOpposite());
                 if (against == null) {
-                    logDirect("Unable to climb vines. Consider disabling allowVines.");
+                    log.atError()
+                            .addKeyValue("vine_position_x", dest.below().getX())
+                            .addKeyValue("vine_position_y", dest.below().getY())
+                            .addKeyValue("vine_position_z", dest.below().getZ())
+                            .log("Cannot climb vines - no adjacent support blocks found");
                     return state.setStatus(MovementStatus.UNREACHABLE);
                 }
             }

@@ -10,6 +10,7 @@ import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.pathing.path.IPathExecutor;
 import maestro.api.utils.*;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.input.Input;
 import maestro.behavior.PathingBehavior;
 import maestro.pathing.calc.AbstractNodeCostSearch;
@@ -22,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 /**
  * Behavior to execute a precomputed path
@@ -29,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
  * @author leijurv
  */
 public class PathExecutor implements IPathExecutor, Helper {
+    private static final Logger log = MaestroLogger.get("path");
 
     private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;
@@ -106,7 +109,10 @@ public class PathExecutor implements IPathExecutor, Helper {
                 // also don't check pathPosition+2 because reasons
                 if (((Movement) path.movements().get(i)).getValidPositions().contains(whereAmI)) {
                     if (i - pathPosition > 2) {
-                        logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
+                        log.atDebug()
+                                .addKeyValue("skip_steps", i - pathPosition)
+                                .addKeyValue("new_position", i)
+                                .log("Skipping forward in path");
                     }
                     // System.out.println("Double skip sundae");
                     pathPosition = i - 1;
@@ -120,7 +126,10 @@ public class PathExecutor implements IPathExecutor, Helper {
             double distToPath = corridor.distanceToPath(whereAmI);
 
             if (distToPath > MAX_MAX_DIST_FROM_PATH) {
-                logDebug("too far from path (distance: " + distToPath + ")");
+                log.atDebug()
+                        .addKeyValue("distance", distToPath)
+                        .addKeyValue("max_distance", MAX_MAX_DIST_FROM_PATH)
+                        .log("Too far from path, cancelling");
                 cancel();
                 return false;
             }
@@ -128,7 +137,10 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (distToPath > MAX_DIST_FROM_PATH) {
                 ticksAway++;
                 if (ticksAway > MAX_TICKS_AWAY) {
-                    logDebug("Too far away from path for too long, cancelling path");
+                    log.atDebug()
+                            .addKeyValue("ticks_away", ticksAway)
+                            .addKeyValue("max_ticks", MAX_TICKS_AWAY)
+                            .log("Too far from path for too long, cancelling");
                     cancel();
                     return false;
                 }
@@ -178,7 +190,10 @@ public class PathExecutor implements IPathExecutor, Helper {
             IMovement next = path.movements().get(pathPosition + 1);
             if (!behavior.maestro.bsi.worldContainsLoadedChunk(
                     next.getDest().x, next.getDest().z)) {
-                logDebug("Pausing since destination is at edge of loaded chunks");
+                log.atDebug()
+                        .addKeyValue("dest_x", next.getDest().x)
+                        .addKeyValue("dest_z", next.getDest().z)
+                        .log("Pausing - destination at edge of loaded chunks");
                 stopMovement();
                 return true;
             }
@@ -197,17 +212,13 @@ public class PathExecutor implements IPathExecutor, Helper {
                 double futureCost =
                         futureMove.calculateCost(behavior.secretInternalGetCalculationContext());
                 if (futureCost >= ActionCosts.COST_INF && canCancel) {
-                    logDebug(
-                            "Something has changed in the world and a future movement has become"
-                                    + " impossible. Cancelling.");
-                    logDebug(
-                            String.format(
-                                    "Failed movement #%d: %s from %s to %s (cost=%.1f)",
-                                    i,
-                                    futureMove.getClass().getSimpleName(),
-                                    futureMove.getSrc(),
-                                    futureMove.getDest(),
-                                    futureCost));
+                    log.atDebug()
+                            .addKeyValue("movement_index", i)
+                            .addKeyValue("movement_type", futureMove.getClass().getSimpleName())
+                            .addKeyValue("source", futureMove.getSrc())
+                            .addKeyValue("dest", futureMove.getDest())
+                            .addKeyValue("cost", futureCost)
+                            .log("Future movement became impossible, cancelling path");
                     cancel();
                     return true;
                 }
@@ -216,18 +227,13 @@ public class PathExecutor implements IPathExecutor, Helper {
         double currentCost =
                 movement.recalculateCost(behavior.secretInternalGetCalculationContext());
         if (currentCost >= ActionCosts.COST_INF && canCancel) {
-            logDebug(
-                    "Something has changed in the world and this movement has become impossible."
-                            + " Cancelling.");
-            logDebug(
-                    String.format(
-                            "Failed movement (current): %s from %s to %s (cost=%.1f,"
-                                    + " original=%.1f)",
-                            movement.getClass().getSimpleName(),
-                            movement.getSrc(),
-                            movement.getDest(),
-                            currentCost,
-                            currentMovementOriginalCostEstimate));
+            log.atDebug()
+                    .addKeyValue("movement_type", movement.getClass().getSimpleName())
+                    .addKeyValue("source", movement.getSrc())
+                    .addKeyValue("dest", movement.getDest())
+                    .addKeyValue("current_cost", currentCost)
+                    .addKeyValue("original_cost", currentMovementOriginalCostEstimate)
+                    .log("Current movement became impossible, cancelling path");
             cancel();
             return true;
         }
@@ -238,23 +244,22 @@ public class PathExecutor implements IPathExecutor, Helper {
             // don't do this if the movement was calculated while loaded
             // that means that this isn't a cache error, it's just part of the path interfering with
             // a later part
-            logDebug(
-                    "Original cost "
-                            + currentMovementOriginalCostEstimate
-                            + " current cost "
-                            + currentCost
-                            + ". Cancelling.");
+            log.atDebug()
+                    .addKeyValue("original_cost", currentMovementOriginalCostEstimate)
+                    .addKeyValue("current_cost", currentCost)
+                    .addKeyValue("cost_increase", currentCost - currentMovementOriginalCostEstimate)
+                    .log("Movement cost increased too much, cancelling");
             cancel();
             return true;
         }
         if (shouldPause()) {
-            logDebug("Pausing since current best path is a backtrack");
+            log.atDebug().log("Pausing - current best path is a backtrack");
             stopMovement();
             return true;
         }
         MovementStatus movementStatus = movement.update();
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
-            logDebug("Movement returns status " + movementStatus);
+            log.atDebug().addKeyValue("status", movementStatus).log("Movement failed");
             cancel();
             return true;
         }
@@ -282,12 +287,11 @@ public class PathExecutor implements IPathExecutor, Helper {
                 // ticksOnCurrent is greater than recalculateCost + 100
                 // this is why we cache cost at the beginning, and don't recalculate for this
                 // comparison every tick
-                logDebug(
-                        "This movement has taken too long ("
-                                + ticksOnCurrent
-                                + " ticks, expected "
-                                + currentMovementOriginalCostEstimate
-                                + "). Cancelling.");
+                log.atDebug()
+                        .addKeyValue("ticks_taken", ticksOnCurrent)
+                        .addKeyValue("expected_ticks", currentMovementOriginalCostEstimate)
+                        .addKeyValue("timeout", Agent.settings().movementTimeoutTicks.value)
+                        .log("Movement timeout exceeded, cancelling");
                 cancel();
                 return true;
             }
@@ -420,14 +424,14 @@ public class PathExecutor implements IPathExecutor, Helper {
                             (MovementAscend) next,
                             path.movements().get(pathPosition + 2))) {
                 if (skipNow(ctx, current)) {
-                    logDebug("Skipping traverse to straight ascend");
+                    log.atDebug().log("Skipping traverse to straight ascend");
                     pathPosition++;
                     onChangeInPathPosition();
                     onTick();
                     behavior.maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
                     return true;
                 } else {
-                    logDebug("Too far to the side to safely sprint ascend");
+                    log.atDebug().log("Too far to the side to safely sprint ascend");
                 }
             }
         }
@@ -488,7 +492,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
             if (((MovementDescend) current).safeMode()
                     && !((MovementDescend) current).skipToAscend()) {
-                logDebug("Sprinting would be unsafe");
+                log.atDebug().log("Sprinting would be unsafe");
                 return false;
             }
 
@@ -502,7 +506,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     onTick();
                     // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't
                     // possible to repeat, since it's asymmetric
-                    logDebug("Skipping descend to straight ascend");
+                    log.atDebug().log("Skipping descend to straight ascend");
                     return true;
                 }
                 if (canSprintFromDescendInto(ctx, current, next)) {
@@ -786,11 +790,11 @@ public class PathExecutor implements IPathExecutor, Helper {
                                 "Path has end %s instead of %s after trimming its start",
                                 newPath.getDest(), path.getDest()));
             }
-            logDebug(
-                    "Discarding earliest segment movements, length cut from "
-                            + path.length()
-                            + " to "
-                            + newPath.length());
+            log.atDebug()
+                    .addKeyValue("old_length", path.length())
+                    .addKeyValue("new_length", newPath.length())
+                    .addKeyValue("cutoff_amount", cutoffAmt)
+                    .log("Discarding earliest segment movements");
             PathExecutor ret = new PathExecutor(behavior, newPath);
             ret.pathPosition = pathPosition - cutoffAmt;
             ret.corridor = new PathCorridor(newPath, ret.pathPosition);

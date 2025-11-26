@@ -6,6 +6,7 @@ import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -19,8 +20,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.WaterFluid;
+import org.slf4j.Logger;
 
 public class MovementParkour extends Movement {
+    private static final Logger log = MaestroLogger.get("move");
 
     private static final BetterBlockPos[] EMPTY = new BetterBlockPos[] {};
 
@@ -268,7 +271,10 @@ public class MovementParkour extends Movement {
         }
         if (ctx.playerFeet().y < src.y) {
             // we have fallen
-            logDebug("sorry");
+            log.atDebug()
+                    .addKeyValue("expected_y", src.y)
+                    .addKeyValue("actual_y", ctx.playerFeet().y)
+                    .log("Parkour jump failed - player fell below start position");
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (dist >= 4 || ascend) {

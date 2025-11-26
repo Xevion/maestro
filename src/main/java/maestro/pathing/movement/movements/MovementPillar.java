@@ -6,6 +6,7 @@ import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
@@ -20,8 +21,10 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public class MovementPillar extends Movement {
+    private static final Logger log = MaestroLogger.get("move");
 
     public MovementPillar(IAgent maestro, BetterBlockPos start, BetterBlockPos end) {
         super(maestro, start, end, new BetterBlockPos[] {start.above(2)}, start);
@@ -222,7 +225,11 @@ public class MovementPillar extends Movement {
                             ? getAgainst(new CalculationContext(maestro), src)
                             : src.relative(fromDown.getValue(LadderBlock.FACING).getOpposite());
             if (against == null) {
-                logDirect("Unable to climb vines. Consider disabling allowVines.");
+                log.atError()
+                        .addKeyValue("vine_position_x", src.getX())
+                        .addKeyValue("vine_position_y", src.getY())
+                        .addKeyValue("vine_position_z", src.getZ())
+                        .log("Cannot climb vines - no adjacent support blocks found");
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 

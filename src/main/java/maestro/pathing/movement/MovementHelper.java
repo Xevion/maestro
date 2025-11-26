@@ -10,6 +10,7 @@ import maestro.api.MaestroAPI;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.*;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.MovementState.MovementTarget;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 /**
  * Static helpers for cost calculation
@@ -46,6 +48,7 @@ import net.minecraft.world.phys.Vec3;
  * @author leijurv
  */
 public interface MovementHelper extends ActionCosts, Helper {
+    Logger log = MaestroLogger.get("move");
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, z)) {
@@ -894,7 +897,12 @@ public interface MovementHelper extends ActionCosts, Helper {
                                 placeAt.getX(),
                                 placeAt.getY(),
                                 placeAt.getZ())) { // get ready to place a throwaway block
-                    Helper.HELPER.logDebug("bb pls get me some blocks. dirt, netherrack, cobble");
+                    log.atWarn()
+                            .addKeyValue("block_type", "throwaway")
+                            .addKeyValue("position_x", placeAt.getX())
+                            .addKeyValue("position_y", placeAt.getY())
+                            .addKeyValue("position_z", placeAt.getZ())
+                            .log("No throwaway blocks available for placement");
                     state.setStatus(MovementStatus.UNREACHABLE);
                     return PlaceResult.NO_OPTION;
                 }

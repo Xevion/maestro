@@ -1,7 +1,5 @@
 package maestro.utils;
 
-import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
-
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.awt.*;
@@ -11,14 +9,12 @@ import maestro.api.MaestroAPI;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.Helper;
-import net.minecraft.ChatFormatting;
+import maestro.api.utils.MaestroLogger;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
@@ -27,8 +23,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.slf4j.Logger;
 
 public class GuiClick extends Screen implements Helper {
+    private static final Logger log = MaestroLogger.get("cmd");
 
     private Matrix4f projectionViewMatrix;
 
@@ -91,20 +89,12 @@ public class GuiClick extends Screen implements Helper {
                             .addSelection(
                                     BetterBlockPos.from(clickStart),
                                     BetterBlockPos.from(currentMouseOver));
-                    MutableComponent component =
-                            Component.literal(
-                                    "Selection made! For usage: "
-                                            + Agent.settings().prefix.value
-                                            + "help sel");
-                    component.setStyle(
-                            component
-                                    .getStyle()
-                                    .withColor(ChatFormatting.WHITE)
-                                    .withClickEvent(
-                                            new ClickEvent(
-                                                    ClickEvent.Action.RUN_COMMAND,
-                                                    FORCE_COMMAND_PREFIX + "help sel")));
-                    Helper.HELPER.logDirect(component);
+                    log.atInfo()
+                            .addKeyValue("from", BetterBlockPos.from(clickStart))
+                            .addKeyValue("to", BetterBlockPos.from(currentMouseOver))
+                            .log("Selection made");
+                    // TODO: Clickable component removed - will be restored with ChatMessenger
+                    // abstraction
                     clickStart = null;
                 } else {
                     MaestroAPI.getProvider()

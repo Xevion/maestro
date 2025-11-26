@@ -22,7 +22,6 @@ import maestro.command.argument.ArgConsumer;
 import maestro.command.argument.CommandArguments;
 import maestro.command.manager.CommandManager;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.network.chat.*;
 import net.minecraft.util.Tuple;
 
@@ -77,16 +76,6 @@ public class ExampleMaestroControl extends Behavior implements Helper {
     }
 
     public boolean runCommand(String msg) {
-        if (msg.trim().equalsIgnoreCase("damn")) {
-            logDirect("daniel");
-            return false;
-        } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
-            try {
-                Util.getPlatform().openUri("https://www.dominos.com/en/pages/order/");
-            } catch (Exception ignored) {
-            }
-            return false;
-        }
         if (msg.isEmpty()) {
             return this.runCommand("help");
         }

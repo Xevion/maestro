@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import maestro.Agent;
 import maestro.api.event.events.BlockChangeEvent;
+import maestro.api.utils.MaestroLogger;
 import maestro.utils.accessor.IPalettedContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.BitStorage;
@@ -20,8 +21,11 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public final class NetherPathfinderContext {
+
+    private static final Logger log = MaestroLogger.get("path");
 
     private static final BlockState AIR_BLOCK_STATE = Blocks.AIR.defaultBlockState();
     // This lock must be held while there are active pointers to chunks in java,
@@ -231,7 +235,7 @@ public final class NetherPathfinderContext {
         try {
             while (!this.executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {}
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.atDebug().setCause(e).log("Pathfinder executor interrupted");
         }
 
         NetherPathfinder.freeContext(this.context);
@@ -276,7 +280,7 @@ public final class NetherPathfinderContext {
             }
             Octree.setIsFromJava(ptr);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.atError().setCause(e).log("Failed to update octree chunk");
             throw new RuntimeException(e);
         }
     }

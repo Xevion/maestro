@@ -3,11 +3,13 @@ package maestro.utils.pathing;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.utils.BetterBlockPos;
-import maestro.api.utils.Helper;
 import maestro.api.utils.IPlayerContext;
+import maestro.api.utils.MaestroLogger;
 import maestro.pathing.movement.CalculationContext;
+import org.slf4j.Logger;
 
 public final class Favoring {
+    private static final Logger log = MaestroLogger.get("path");
 
     private final Long2DoubleOpenHashMap favorings;
 
@@ -16,7 +18,7 @@ public final class Favoring {
         for (Avoidance avoid : Avoidance.create(ctx)) {
             avoid.applySpherical(favorings);
         }
-        Helper.HELPER.logDebug("Favoring size: " + favorings.size());
+        log.atDebug().addKeyValue("favoring_size", favorings.size()).log("Favoring map created");
     }
 
     public Favoring(

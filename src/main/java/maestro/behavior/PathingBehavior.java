@@ -13,7 +13,7 @@ import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalXZ;
 import maestro.api.process.PathingCommand;
 import maestro.api.utils.BetterBlockPos;
-import maestro.api.utils.Helper;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PathCalculationResult;
 import maestro.api.utils.interfaces.IGoalRenderPos;
 import maestro.pathing.calc.AStarPathFinder;
@@ -29,8 +29,11 @@ import maestro.utils.PathRenderer;
 import maestro.utils.PathingCommandContext;
 import maestro.utils.pathing.Favoring;
 import net.minecraft.core.BlockPos;
+import org.slf4j.Logger;
 
-public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
+public final class PathingBehavior extends Behavior implements IPathingBehavior {
+
+    private static final Logger log = MaestroLogger.get("path");
 
     private PathExecutor current;
     private PathExecutor next;
@@ -175,7 +178,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             if (current.failed() || current.finished()) {
                 current = null;
                 if (goal == null || goal.isInGoal(ctx.playerFeet())) {
-                    logDebug("All done. At " + goal);
+                    log.atDebug().addKeyValue("goal", goal).log("All done");
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
                     // Deactivate swimming mode when goal reached
@@ -192,7 +195,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                                 .contains(expectedSegmentStart)) { // can contain either one
                     // if the current path failed, we may not actually be on the next one, so make
                     // sure
-                    logDebug("Discarding next path as it does not contain current position");
+                    log.atDebug().log("Discarding next path, does not contain current position");
                     // for example if we had a nicely planned ahead path that starts where current
                     // ends
                     // that's all fine and good
@@ -203,7 +206,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     next = null;
                 }
                 if (next != null) {
-                    logDebug("Continuing on to planned next path");
+                    log.atDebug().log("Continuing on to planned next path");
                     queuePathEvent(PathEvent.CONTINUING_ONTO_PLANNED_NEXT);
                     current = next;
                     next = null;
@@ -226,7 +229,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             // at this point, we know current is in progress
             if (safeToCancel && next != null && next.snipsnapifpossible()) {
                 // a movement just ended; jump directly onto the next path
-                logDebug("Splicing into planned next path early...");
+                log.atDebug().log("Splicing into planned next path early");
                 queuePathEvent(PathEvent.SPLICING_ONTO_NEXT_EARLY);
                 current = next;
                 next = null;
@@ -260,7 +263,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     // if we actually included current, it wouldn't start planning ahead until the
                     // last movement was done, if the last movement took more than 7.5 seconds on
                     // its own
-                    logDebug("Path almost over. Planning ahead...");
+                    log.atDebug().log("Path almost over, planning ahead");
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED);
                     findPathInNewThread(current.getPath().getDest(), false, context);
                 }
@@ -540,8 +543,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
         Goal goal = this.goal;
         if (goal == null) {
-            logDebug("no goal"); // TODO should this be an exception too? definitely should be
-            // checked by caller
+            log.atDebug().log("No goal set");
             return;
         }
         long primaryTimeout;
@@ -558,18 +560,19 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (!Objects.equals(
                 pathfinder.getGoal(),
                 goal)) { // will return the exact same object if simplification didn't happen
-            logDebug("Simplifying " + goal.getClass() + " to GoalXZ due to distance");
+            log.atDebug()
+                    .addKeyValue("from", goal.getClass().getSimpleName())
+                    .log("Simplifying goal to GoalXZ");
         }
         inProgress = pathfinder;
         Agent.getExecutor()
                 .execute(
                         () -> {
                             if (talkAboutIt) {
-                                logDebug(
-                                        "Starting to search for path from "
-                                                + start
-                                                + " to "
-                                                + goal);
+                                log.atDebug()
+                                        .addKeyValue("start", start)
+                                        .addKeyValue("goal", goal)
+                                        .log("Starting path search");
                             }
 
                             PathCalculationResult calcResult =
@@ -592,9 +595,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                                             current = executor.get();
                                             resetEstimatedTicksToGoal(start);
                                         } else {
-                                            logDebug(
-                                                    "Warning: discarding orphan path segment with"
-                                                            + " incorrect start");
+                                            log.atWarn()
+                                                    .log(
+                                                            "Discarding orphan path segment with"
+                                                                    + " incorrect start");
                                         }
                                     } else {
                                         if (calcResult.getType()
@@ -616,9 +620,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                                                         PathEvent.NEXT_SEGMENT_CALC_FINISHED);
                                                 next = executor.get();
                                             } else {
-                                                logDebug(
-                                                        "Warning: discarding orphan next segment"
-                                                                + " with incorrect start");
+                                                log.atWarn()
+                                                        .log(
+                                                                "Discarding orphan next segment"
+                                                                        + " with incorrect start");
                                             }
                                         } else {
                                             queuePathEvent(PathEvent.NEXT_CALC_FAILED);
@@ -628,30 +633,29 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                                         // do with this path");
                                         // no point in throwing an exception here, and it gets it
                                         // stuck with inProgress being not null
-                                        logDirect(
-                                                "Warning: PathingBehaivor illegal state! Discarding"
-                                                        + " invalid path!");
+                                        log.atWarn()
+                                                .log(
+                                                        "PathingBehavior illegal state, discarding"
+                                                                + " invalid path");
                                     }
                                 }
                                 if (talkAboutIt && current != null && current.getPath() != null) {
                                     if (goal.isInGoal(current.getPath().getDest())) {
-                                        logDebug(
-                                                "Finished finding a path from "
-                                                        + start
-                                                        + " to "
-                                                        + goal
-                                                        + ". "
-                                                        + current.getPath().getNumNodesConsidered()
-                                                        + " nodes considered");
+                                        log.atDebug()
+                                                .addKeyValue("start", start)
+                                                .addKeyValue("goal", goal)
+                                                .addKeyValue(
+                                                        "nodes_considered",
+                                                        current.getPath().getNumNodesConsidered())
+                                                .log("Finished finding path");
                                     } else {
-                                        logDebug(
-                                                "Found path segment from "
-                                                        + start
-                                                        + " towards "
-                                                        + goal
-                                                        + ". "
-                                                        + current.getPath().getNumNodesConsidered()
-                                                        + " nodes considered");
+                                        log.atDebug()
+                                                .addKeyValue("start", start)
+                                                .addKeyValue("goal", goal)
+                                                .addKeyValue(
+                                                        "nodes_considered",
+                                                        current.getPath().getNumNodesConsidered())
+                                                .log("Found path segment");
                                     }
                                 }
                                 synchronized (pathCalcLock) {

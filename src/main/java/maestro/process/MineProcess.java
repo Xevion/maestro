@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.slf4j.Logger;
 
 /**
  * Mine blocks of a certain type
@@ -34,6 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * @author leijurv
  */
 public final class MineProcess extends MaestroProcessHelper implements IMineProcess {
+    private static final Logger log = MaestroLogger.get("mine");
 
     private BlockOptionalMetaLookup filter;
     private List<BlockPos> knownOreLocations;
@@ -62,17 +64,21 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                             .mapToInt(ItemStack::getCount)
                             .sum();
             if (curr >= desiredQuantity) {
-                logDirect("Have " + curr + " valid items");
+                log.atInfo()
+                        .addKeyValue("count", curr)
+                        .addKeyValue("desired", desiredQuantity)
+                        .addKeyValue("filter", filter)
+                        .log("Mining complete");
                 cancel();
                 return null;
             }
         }
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Agent.settings().blacklistClosestOnFailure.value) {
-                logDirect(
-                        "Unable to find any path to "
-                                + filter
-                                + ", blacklisting presumably unreachable closest instance...");
+                log.atWarn()
+                        .addKeyValue("filter", filter)
+                        .addKeyValue("locations_remaining", knownOreLocations.size())
+                        .log("Pathfinding failed, blacklisting closest location");
                 if (Agent.settings().notificationOnMineFail.value) {
                     logNotification(
                             "Unable to find any path to "
@@ -85,7 +91,9 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                         .ifPresent(blacklist::add);
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
-                logDirect("Unable to find any path to " + filter + ", canceling mine");
+                log.atError()
+                        .addKeyValue("filter", filter)
+                        .log("Pathfinding failed, canceling mine");
                 if (Agent.settings().notificationOnMineFail.value) {
                     logNotification(
                             "Unable to find any path to " + filter + ", canceling mine", true);
@@ -271,7 +279,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                         dropped);
         locs.addAll(dropped);
         if (locs.isEmpty() && !Agent.settings().exploreForBlocks.value) {
-            logDirect("No locations for " + filter + " known, cancelling");
+            log.atWarn().addKeyValue("filter", filter).log("No known locations, cancelling mine");
             if (Agent.settings().notificationOnMineFail.value) {
                 logNotification("No locations for " + filter + " known, cancelling", true);
             }
@@ -634,9 +642,11 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                                                             .contains(e.getBlock()))
                                     .toArray(BlockOptionalMeta[]::new));
             if (f.blocks().isEmpty()) {
-                logDirect(
-                        "Unable to mine when allowBreak is false and target block is not in"
-                                + " allowBreakAnyway!");
+                log.atError()
+                        .addKeyValue("filter", filter)
+                        .log(
+                                "Mining rejected - allowBreak disabled and filter not in"
+                                        + " allowBreakAnyway");
                 return null;
             }
             return f;

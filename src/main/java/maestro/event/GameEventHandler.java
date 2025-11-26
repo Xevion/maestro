@@ -7,7 +7,7 @@ import maestro.api.event.events.*;
 import maestro.api.event.events.type.EventState;
 import maestro.api.event.listener.IEventBus;
 import maestro.api.event.listener.IGameEventListener;
-import maestro.api.utils.Helper;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Pair;
 import maestro.cache.CachedChunk;
 import maestro.cache.WorldProvider;
@@ -16,8 +16,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.slf4j.Logger;
 
-public final class GameEventHandler implements IEventBus, Helper {
+public final class GameEventHandler implements IEventBus {
+
+    private static final Logger log = MaestroLogger.get("event");
 
     private final Agent maestro;
 
@@ -33,7 +36,7 @@ public final class GameEventHandler implements IEventBus, Helper {
             try {
                 maestro.bsi = new BlockStateInterface(maestro.getPlayerContext(), true);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                log.atError().setCause(ex).log("Failed to create BlockStateInterface");
                 maestro.bsi = null;
             }
         } else {

@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.pathing.goals.Goal;
@@ -26,6 +25,7 @@ import maestro.api.schematic.RotatedSchematic;
 import maestro.api.schematic.SubstituteSchematic;
 import maestro.api.schematic.format.ISchematicFormat;
 import maestro.api.utils.*;
+import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -62,8 +62,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.slf4j.Logger;
 
 public final class BuilderProcess extends MaestroProcessHelper implements IBuilderProcess {
+
+    private static final Logger log = MaestroLogger.get("build");
 
     private static final Set<Property<?>> ORIENTATION_PROPS =
             ImmutableSet.of(
@@ -188,18 +191,18 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                                                     .layerHeight
                                                     .value); // startAtLayer or startAtHeight,
                     // whichever is highest
-                    logDebug(
-                            String.format(
-                                    "Schematic starts at y=%s with height %s",
-                                    y, schematic.heightY()));
-                    logDebug(
-                            String.format(
-                                    "Selection starts at y=%s and ends at y=%s",
-                                    minim.getAsInt(), maxim.getAsInt()));
-                    logDebug(
-                            String.format(
-                                    "Considering relevant height %s - %s",
-                                    startAtHeight, this.stopAtHeight));
+                    log.atDebug()
+                            .addKeyValue("schematic_y", y)
+                            .addKeyValue("schematic_height", schematic.heightY())
+                            .log("Schematic position info");
+                    log.atDebug()
+                            .addKeyValue("selection_min_y", minim.getAsInt())
+                            .addKeyValue("selection_max_y", maxim.getAsInt())
+                            .log("Selection bounds");
+                    log.atDebug()
+                            .addKeyValue("height_start", startAtHeight)
+                            .addKeyValue("height_end", this.stopAtHeight)
+                            .log("Relevant height range");
                 }
             }
         }
@@ -232,7 +235,11 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         try {
             parsed = format.get().parse(new FileInputStream(schematic));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.atError()
+                    .setCause(e)
+                    .addKeyValue("schematic", schematic.getAbsolutePath())
+                    .addKeyValue("format", format.get().getClass().getSimpleName())
+                    .log("Failed to parse schematic");
             return false;
         }
         ISchematic schem = applyMapArtAndSelection(origin, parsed);
@@ -643,7 +650,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         if (!recalc(bcc)) {
             if (Agent.settings().buildInLayers.value
                     && layer * Agent.settings().layerHeight.value < stopAtHeight) {
-                logDirect("Starting layer " + layer);
+                log.atInfo().addKeyValue("layer_number", layer).log("Starting layer");
                 layer++;
                 return onTick(calcFailed, isSafeToCancel, recursions + 1);
             }
@@ -651,7 +658,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             int max = Agent.settings().buildRepeatCount.value;
             numRepeats++;
             if (repeat.equals(new Vec3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
-                logDirect("Done building");
+                log.atInfo().log("Building complete");
                 if (Agent.settings().notificationOnBuildFinished.value) {
                     logNotification("Done building", false);
                 }
@@ -664,7 +671,10 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             if (!Agent.settings().buildRepeatSneaky.value) {
                 schematic.reset();
             }
-            logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
+            log.atInfo()
+                    .addKeyValue("repeat_vector", repeat)
+                    .addKeyValue("new_origin", origin)
+                    .log("Repeating build");
             return onTick(calcFailed, isSafeToCancel, recursions + 1);
         }
         if (Agent.settings().distanceTrim.value) {
@@ -751,11 +761,13 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 if (Agent.settings().skipFailedLayers.value
                         && Agent.settings().buildInLayers.value
                         && layer * Agent.settings().layerHeight.value < realSchematic.heightY()) {
-                    logDirect("Skipping layer that I cannot construct! Layer #" + layer);
+                    log.atInfo()
+                            .addKeyValue("layer_number", layer)
+                            .log("Skipping unconstructable layer");
                     layer++;
                     return onTick(calcFailed, isSafeToCancel, recursions + 1);
                 }
-                logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
+                log.atInfo().log("Build paused - use 'resume' to continue or 'cancel' to stop");
                 paused = true;
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
@@ -920,18 +932,27 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         }
         if (toBreak.isEmpty()) {
             if (logMissing && !missing.isEmpty()) {
-                logDirect("Missing materials for at least:");
-                logDirect(
-                        missing.entrySet().stream()
-                                .map(e -> String.format("%sx %s", e.getValue(), e.getKey()))
-                                .collect(Collectors.joining("\n")));
+                log.atWarn()
+                        .addKeyValue("missing_block_types", missing.size())
+                        .log("Missing materials for schematic");
+                missing.forEach(
+                        (blockState, count) ->
+                                log.atDebug()
+                                        .addKeyValue("block", blockState)
+                                        .addKeyValue("count", count)
+                                        .log("Missing material details"));
             }
             if (logMissing && !flowingLiquids.isEmpty()) {
-                logDirect("Unreplaceable liquids at at least:");
-                logDirect(
-                        flowingLiquids.stream()
-                                .map(p -> String.format("%s %s %s", p.x, p.y, p.z))
-                                .collect(Collectors.joining("\n")));
+                log.atWarn()
+                        .addKeyValue("liquid_positions", flowingLiquids.size())
+                        .log("Unreplaceable flowing liquids in schematic");
+                flowingLiquids.forEach(
+                        p ->
+                                log.atDebug()
+                                        .addKeyValue("position_x", p.x)
+                                        .addKeyValue("position_y", p.y)
+                                        .addKeyValue("position_z", p.z)
+                                        .log("Unreplaceable liquid location"));
             }
             return null;
         }

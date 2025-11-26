@@ -5,7 +5,9 @@ import maestro.Agent;
 import maestro.api.cache.ICachedWorld;
 import maestro.api.cache.IWaypointCollection;
 import maestro.api.cache.IWorldData;
+import maestro.api.utils.MaestroLogger;
 import net.minecraft.world.level.dimension.DimensionType;
+import org.slf4j.Logger;
 
 /**
  * Data about a world, from maestro's point of view. Includes cached chunks, waypoints, and map
@@ -14,6 +16,8 @@ import net.minecraft.world.level.dimension.DimensionType;
  * @author leijurv
  */
 public class WorldData implements IWorldData {
+
+    private static final Logger log = MaestroLogger.get("cache");
 
     public final CachedWorld cache;
     private final WaypointCollection waypoints;
@@ -32,7 +36,7 @@ public class WorldData implements IWorldData {
         Agent.getExecutor()
                 .execute(
                         () -> {
-                            System.out.println("Started saving the world in a new thread");
+                            log.atInfo().log("World save started");
                             cache.save();
                         });
     }
