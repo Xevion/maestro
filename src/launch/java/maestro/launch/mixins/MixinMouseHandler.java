@@ -29,7 +29,7 @@ public class MixinMouseHandler {
      *
      * @param ci Callback info for cancelling the method
      */
-    @Inject(method = "turnPlayer()V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
     private void onTurnPlayer(CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {

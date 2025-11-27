@@ -45,9 +45,6 @@ dependencies {
     }
     shadowCommon "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
     shadowCommon 'org.jetbrains.kotlin:kotlin-stdlib'
-    shadowCommon('io.github.llamalad7:mixinextras-neoforge:0.4.1') {
-        transitive = false
-    }
 }
 
 processResources {
