@@ -2,7 +2,6 @@ package maestro.api.command.helpers;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -177,11 +176,15 @@ public class TabCompleteHelper {
      * Filter out any element that doesn't start with {@code prefix} and return this object for
      * chaining
      *
+     * <p>This method now uses fuzzy search with a stricter threshold (70) to maintain prefix-like
+     * behavior while adding typo tolerance.
+     *
      * @param prefix The prefix to filter for
      * @return This {@link TabCompleteHelper}
+     * @see #filterFuzzy(String)
      */
     public TabCompleteHelper filterPrefix(String prefix) {
-        return filter(x -> x.toLowerCase(Locale.US).startsWith(prefix.toLowerCase(Locale.US)));
+        return filterFuzzy(prefix, 70, FuzzySearchHelper.DEFAULT_LIMIT);
     }
 
     /**
@@ -200,6 +203,39 @@ public class TabCompleteHelper {
             return this;
         }
         return filterPrefix(loc.toString());
+    }
+
+    /**
+     * Filter using fuzzy search with default threshold ({@value
+     * FuzzySearchHelper#DEFAULT_THRESHOLD}) and limit ({@value FuzzySearchHelper#DEFAULT_LIMIT}).
+     *
+     * <p>Uses Levenshtein distance-based matching with multi-stage algorithm: exact → prefix →
+     * fuzzy.
+     *
+     * @param query The search query (supports typos)
+     * @return This {@link TabCompleteHelper}
+     * @see FuzzySearchHelper
+     */
+    public TabCompleteHelper filterFuzzy(String query) {
+        return filterFuzzy(
+                query, FuzzySearchHelper.DEFAULT_THRESHOLD, FuzzySearchHelper.DEFAULT_LIMIT);
+    }
+
+    /**
+     * Filter using fuzzy search with custom threshold and limit.
+     *
+     * <p>Uses Levenshtein distance-based matching with multi-stage algorithm: exact → prefix →
+     * fuzzy.
+     *
+     * @param query The search query (supports typos)
+     * @param threshold Minimum fuzzy match score (0-100, higher = stricter)
+     * @param limit Maximum number of results to return
+     * @return This {@link TabCompleteHelper}
+     * @see FuzzySearchHelper
+     */
+    public TabCompleteHelper filterFuzzy(String query, int threshold, int limit) {
+        stream = FuzzySearchHelper.searchStream(query, stream, threshold, limit);
+        return this;
     }
 
     /**

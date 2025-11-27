@@ -18,6 +18,7 @@ import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.command.exception.CommandInvalidTypeException;
+import maestro.api.command.helpers.FuzzySearchHelper;
 import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.utils.SettingsUtil;
@@ -64,23 +65,29 @@ public class SetCommand extends Command {
                             ? args.getString()
                             : "";
             args.requireMax(1);
-            List<? extends Settings.Setting> toPaginate =
+
+            // Collect all candidates (filtered for Java-only)
+            List<Settings.Setting> allCandidates =
                     (viewModified
                                     ? SettingsUtil.modifiedSettings(Agent.settings())
                                     : Agent.settings().allSettings)
-                            .stream()
-                                    .filter(s -> !s.isJavaOnly())
-                                    .filter(
-                                            s ->
-                                                    s.getName()
-                                                            .toLowerCase(Locale.US)
-                                                            .contains(
-                                                                    search.toLowerCase(Locale.US)))
+                            .stream().filter(s -> !s.isJavaOnly()).collect(Collectors.toList());
+
+            // Use fuzzy search for non-empty queries, alphabetical sort for empty
+            List<? extends Settings.Setting> toPaginate =
+                    search.isEmpty()
+                            ? allCandidates.stream()
                                     .sorted(
                                             (s1, s2) ->
                                                     String.CASE_INSENSITIVE_ORDER.compare(
                                                             s1.getName(), s2.getName()))
-                                    .collect(Collectors.toList());
+                                    .collect(Collectors.toList())
+                            : FuzzySearchHelper.search(
+                                    search,
+                                    allCandidates,
+                                    Settings.Setting::getName,
+                                    60,
+                                    Integer.MAX_VALUE);
             ChatMessageRenderer renderer = new ChatMessageRenderer();
             Paginator.paginate(
                     args,
