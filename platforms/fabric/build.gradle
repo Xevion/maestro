@@ -28,6 +28,7 @@ dependencies {
     shadowCommon 'org.jetbrains.kotlin:kotlin-stdlib'
     include "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
     include 'io.github.llamalad7:mixinextras-fabric:0.4.1'
+    include 'me.xdrop:fuzzywuzzy:1.4.0'
 }
 
 processResources {
