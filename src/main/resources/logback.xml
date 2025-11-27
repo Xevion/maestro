@@ -3,86 +3,31 @@
     <!-- Console appender for development/debugging -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%-5level] [%logger{0}] %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%-5level] [%logger{0}] %msg%kvp%n</pattern>
         </encoder>
     </appender>
 
     <!-- Chat appender for in-game messages -->
     <appender name="CHAT" class="maestro.utils.chat.ChatAppender" />
 
-    <!-- Configure all MaestroLogger categories to route to both console and chat -->
-    <logger name="cmd" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
+    <!--
+        Maestro category loggers are configured programmatically.
+        See: maestro.api.utils.LoggerConfigurator
 
-    <logger name="path" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
+        All category loggers (path, swim, combat, mine, farm, build, cache,
+        move, rotation, event, cmd, api, waypoint, inventory) receive:
+        - Level: DEBUG
+        - Appenders: CONSOLE + CHAT
+        - Additivity: false (no propagation to root logger)
 
-    <logger name="mine" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
+        Adding a new category only requires updating MaestroLogger.CATEGORIES.
+    -->
 
-    <logger name="farm" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="build" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="combat" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="swim" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="cache" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="move" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="rotation" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="event" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="api" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="waypoint" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <logger name="inventory" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-    </logger>
-
-    <!-- Root logger for all other logs -->
+    <!-- Root logger for all other logs
+         Note: CHAT appender attached here so LoggerConfigurator can retrieve it,
+         but non-Maestro logs are filtered out by ChatAppender's internal filter -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CHAT" />
     </root>
 </configuration>

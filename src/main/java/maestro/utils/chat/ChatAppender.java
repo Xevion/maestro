@@ -1,11 +1,11 @@
 package maestro.utils.chat;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import maestro.api.utils.MaestroLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import org.slf4j.event.Level;
 
 /**
  * Custom Logback appender that routes MaestroLogger events to Minecraft chat.
@@ -29,7 +29,7 @@ public class ChatAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent event) {
         // Filter: INFO+ only (no DEBUG)
-        if (event.getLevel().toInt() < Level.INFO.toInt()) {
+        if (!event.getLevel().isGreaterOrEqual(Level.INFO)) {
             return;
         }
 

@@ -112,23 +112,39 @@ public class ChatMessageRenderer {
     }
 
     /**
-     * Formats key-value pairs inline as dark grey text.
+     * Formats key-value pairs with colored keys and values for better readability.
      *
      * @param pairs List of key-value pairs from the log event
-     * @return Component like "key1=value1 key2=value2" in dark grey
+     * @return Component with keys in dark aqua and values in gray
      */
     private Component formatKeyValuePairs(List<KeyValuePair> pairs) {
-        StringBuilder sb = new StringBuilder();
+        MutableComponent result = Component.literal("");
+
         for (int i = 0; i < pairs.size(); i++) {
             KeyValuePair pair = pairs.get(i);
-            sb.append(pair.key).append("=").append(pair.value);
+
+            // Key in dark aqua
+            MutableComponent keyComponent = Component.literal(pair.key);
+            keyComponent.setStyle(keyComponent.getStyle().withColor(ChatFormatting.DARK_AQUA));
+            result.append(keyComponent);
+
+            // Equals sign in dark gray
+            MutableComponent equalsComponent = Component.literal("=");
+            equalsComponent.setStyle(
+                    equalsComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
+            result.append(equalsComponent);
+
+            // Value in gray
+            MutableComponent valueComponent = Component.literal(String.valueOf(pair.value));
+            valueComponent.setStyle(valueComponent.getStyle().withColor(ChatFormatting.GRAY));
+            result.append(valueComponent);
+
+            // Space separator between pairs
             if (i < pairs.size() - 1) {
-                sb.append(" ");
+                result.append(" ");
             }
         }
 
-        MutableComponent kvComponent = Component.literal(sb.toString());
-        kvComponent.setStyle(kvComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
-        return kvComponent;
+        return result;
     }
 }

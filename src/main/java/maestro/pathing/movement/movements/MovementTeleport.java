@@ -168,10 +168,6 @@ public class MovementTeleport extends Movement {
 
         // Check if already at destination
         if (ctx.playerFeet().equals(dest)) {
-            log.atDebug()
-                    .addKeyValue("src", src)
-                    .addKeyValue("dest", dest)
-                    .log("Teleport successful");
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
@@ -187,11 +183,11 @@ public class MovementTeleport extends Movement {
         // After teleport attempt: check if player moved from source
         if (ctx.playerFeet().equals(src)) {
             // Still at source - teleport was rejected
+            double distance = Math.sqrt(dest.distSqr(src));
             log.atWarn()
-                    .addKeyValue("src", src)
-                    .addKeyValue("arrival", teleportArrival)
-                    .addKeyValue("dest", dest)
-                    .log("Teleport rejected - player did not move");
+                    .addKeyValue("distance", String.format("%.1f", distance))
+                    .addKeyValue("fall_height", teleportArrival.y - dest.y)
+                    .log("Teleport rejected by server");
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
@@ -202,12 +198,14 @@ public class MovementTeleport extends Movement {
 
         // Player is falling - verify they're in a valid intermediate position
         if (!getValidPositions().contains(ctx.playerFeet())) {
+            int offsetX = ctx.playerFeet().x - dest.x;
+            int offsetY = ctx.playerFeet().y - dest.y;
+            int offsetZ = ctx.playerFeet().z - dest.z;
             log.atWarn()
-                    .addKeyValue("src", src)
-                    .addKeyValue("arrival", teleportArrival)
-                    .addKeyValue("dest", dest)
-                    .addKeyValue("actual", ctx.playerFeet())
-                    .log("Teleport partially failed - unexpected position");
+                    .addKeyValue("offset_x", offsetX)
+                    .addKeyValue("offset_y", offsetY)
+                    .addKeyValue("offset_z", offsetZ)
+                    .log("Teleport landed at unexpected position");
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
@@ -241,15 +239,6 @@ public class MovementTeleport extends Movement {
 
         // Update client-side position to arrival (player will fall to landing)
         ctx.player().setPos(arrivalX, arrivalY, arrivalZ);
-
-        log.atInfo()
-                .addKeyValue("src", src)
-                .addKeyValue("arrival", teleportArrival)
-                .addKeyValue("landing", dest)
-                .addKeyValue("distance", String.format("%.1f", distance))
-                .addKeyValue("fall_height", teleportArrival.y - dest.y)
-                .addKeyValue("packets", packetsRequired)
-                .log("Teleport executed");
     }
 
     @Override

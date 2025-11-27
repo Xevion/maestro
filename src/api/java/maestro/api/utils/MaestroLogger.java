@@ -1,6 +1,7 @@
 package maestro.api.utils;
 
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,9 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Available categories: path, swim, combat, mine, farm, build, cache, move, rotation, event,
  * cmd, api, waypoint, inventory
+ *
+ * <p>Logger configuration (DEBUG level, CONSOLE + CHAT appenders) is performed programmatically via
+ * {@link LoggerConfigurator} during class initialization.
  */
 public final class MaestroLogger {
 
@@ -42,6 +46,11 @@ public final class MaestroLogger {
                     Map.entry("api", "api"),
                     Map.entry("waypoint", "waypoint"),
                     Map.entry("inventory", "inventory"));
+
+    static {
+        // Configure all loggers programmatically on class initialization
+        LoggerConfigurator.configure();
+    }
 
     private MaestroLogger() {}
 
@@ -71,5 +80,16 @@ public final class MaestroLogger {
      */
     public static boolean hasCategory(String category) {
         return CATEGORIES.containsKey(category);
+    }
+
+    /**
+     * Get all valid category names.
+     *
+     * <p>Package-private for LoggerConfigurator access.
+     *
+     * @return set of all category names
+     */
+    static Set<String> getAllCategories() {
+        return CATEGORIES.keySet();
     }
 }
