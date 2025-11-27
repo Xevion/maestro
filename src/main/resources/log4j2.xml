@@ -11,9 +11,18 @@
             <PatternLayout pattern="${LOG_PATTERN}" disableAnsi="false"/>
         </Console>
 
+        <!-- JSON file output for structured logging -->
+        <File name="JsonFile" fileName="downloads/log.json" append="false">
+            <JsonLayout compact="true" eventEol="true" properties="true" locationInfo="true"/>
+        </File>
+
         <!-- Async wrapper for performance -->
         <Async name="AsyncConsole" includeLocation="false">
             <AppenderRef ref="Console"/>
+        </Async>
+
+        <Async name="AsyncJsonFile" includeLocation="true">
+            <AppenderRef ref="JsonFile"/>
         </Async>
     </Appenders>
 
@@ -21,39 +30,51 @@
         <!-- Maestro loggers (DEBUG level for development) -->
         <Logger name="path" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="swim" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="combat" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="mine" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="farm" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="build" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="cache" level="INFO" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="move" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="rotation" level="DEBUG" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="event" level="INFO" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="cmd" level="INFO" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
         <Logger name="api" level="INFO" additivity="false">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Logger>
 
         <!-- Quiet down Minecraft/mod loader noise -->
@@ -65,6 +86,7 @@
         <!-- Root logger (fallback) -->
         <Root level="INFO">
             <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncJsonFile"/>
         </Root>
     </Loggers>
 </Configuration>

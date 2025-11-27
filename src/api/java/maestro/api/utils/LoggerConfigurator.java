@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  *
  * <ul>
  *   <li>Level: DEBUG
- *   <li>Appenders: CONSOLE, CHAT
+ *   <li>Appenders: CONSOLE, CHAT, JSON_FILE
  *   <li>Additivity: false (no propagation to root logger)
  * </ul>
  *
@@ -48,6 +48,7 @@ public final class LoggerConfigurator {
             Logger rootLogger = context.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
             Appender<ILoggingEvent> consoleAppender = rootLogger.getAppender("CONSOLE");
             Appender<ILoggingEvent> chatAppender = rootLogger.getAppender("CHAT");
+            Appender<ILoggingEvent> jsonFileAppender = rootLogger.getAppender("JSON_FILE");
 
             // Validate appenders (warn but continue with degraded behavior)
             if (consoleAppender == null) {
@@ -55,6 +56,10 @@ public final class LoggerConfigurator {
             }
             if (chatAppender == null) {
                 System.err.println("[Maestro] WARNING: CHAT appender not found in logback.xml");
+            }
+            if (jsonFileAppender == null) {
+                System.err.println(
+                        "[Maestro] WARNING: JSON_FILE appender not found in logback.xml");
             }
 
             // Configure each category
@@ -69,6 +74,9 @@ public final class LoggerConfigurator {
                 }
                 if (chatAppender != null) {
                     logger.addAppender(chatAppender);
+                }
+                if (jsonFileAppender != null) {
+                    logger.addAppender(jsonFileAppender);
                 }
 
                 categoryCount++;

@@ -907,25 +907,64 @@ public class PathExecutor implements IPathExecutor, Helper {
             return this;
         }
 
-        return SplicedPath.trySplice(path, next.path, false)
+        // When pathPosition > 0, create a CutoffPath to realign indices before splicing
+        // This ensures the splice logic works correctly by making the current position
+        // the start of the path (index 0)
+        IPath currentPath = path;
+        int adjustedPathPosition = pathPosition;
+
+        if (pathPosition > 0) {
+            // Edge case: if we're at the very end of the path, don't create cutoff
+            if (pathPosition >= path.length() - 1) {
+                log.atDebug()
+                        .addKeyValue("path_position", pathPosition)
+                        .addKeyValue("path_length", path.length())
+                        .log("Skipping splice - at end of path");
+                return cutIfTooLong();
+            }
+
+            // Create cutoff path from current position to end
+            currentPath = new CutoffPath(path, pathPosition, path.length() - 1);
+            adjustedPathPosition = 0; // We're now at the start of the cutoff path
+
+            log.atDebug()
+                    .addKeyValue("original_position", pathPosition)
+                    .addKeyValue("cutoff_start", pathPosition)
+                    .addKeyValue("cutoff_end", path.length() - 1)
+                    .addKeyValue("new_length", currentPath.length())
+                    .log("Created cutoff path for mid-path splice");
+        }
+
+        final int finalAdjustedPosition = adjustedPathPosition;
+        return SplicedPath.trySplice(currentPath, next.path, false)
                 .map(
-                        path -> {
-                            if (!path.getDest().equals(next.getPath().getDest())) {
+                        splicedPath -> {
+                            if (!splicedPath.getDest().equals(next.getPath().getDest())) {
                                 throw new IllegalStateException(
                                         String.format(
                                                 "Path has end %s instead of %s after splicing",
-                                                path.getDest(), next.getPath().getDest()));
+                                                splicedPath.getDest(), next.getPath().getDest()));
                             }
-                            PathExecutor ret = new PathExecutor(behavior, path);
-                            ret.pathPosition = pathPosition;
-                            ret.corridor = new PathCorridor(path, pathPosition);
+                            PathExecutor ret = new PathExecutor(behavior, splicedPath);
+                            ret.pathPosition = finalAdjustedPosition;
+                            ret.corridor = new PathCorridor(splicedPath, finalAdjustedPosition);
                             ret.currentMovementOriginalCostEstimate =
                                     currentMovementOriginalCostEstimate;
                             ret.costEstimateIndex = costEstimateIndex;
                             ret.ticksOnCurrent = ticksOnCurrent;
+
+                            log.atDebug()
+                                    .addKeyValue("spliced_length", splicedPath.length())
+                                    .addKeyValue("position", finalAdjustedPosition)
+                                    .log("Successfully spliced paths");
+
                             return ret;
                         })
-                .orElseGet(this::cutIfTooLong); // dont actually call cutIfTooLong every tick if we
+                .orElseGet(
+                        () -> {
+                            log.atDebug().log("Splice failed, falling back to cutIfTooLong");
+                            return cutIfTooLong();
+                        }); // dont actually call cutIfTooLong every tick if we
         // won't actually use it, use a method reference
     }
 
