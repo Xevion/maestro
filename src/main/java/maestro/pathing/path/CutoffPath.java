@@ -1,5 +1,6 @@
 package maestro.pathing.path;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import maestro.api.pathing.calc.IPath;
@@ -20,7 +21,9 @@ public class CutoffPath extends PathBase {
 
     public CutoffPath(IPath prev, int firstPositionToInclude, int lastPositionToInclude) {
         path = prev.positions().subList(firstPositionToInclude, lastPositionToInclude + 1);
-        movements = prev.movements().subList(firstPositionToInclude, lastPositionToInclude);
+        movements =
+                new ArrayList<>(
+                        prev.movements().subList(firstPositionToInclude, lastPositionToInclude));
         numNodes = prev.getNumNodesConsidered();
         goal = prev.getGoal();
         sanityCheck();
@@ -48,5 +51,17 @@ public class CutoffPath extends PathBase {
     @Override
     public int getNumNodesConsidered() {
         return numNodes;
+    }
+
+    @Override
+    public void replaceMovement(int index, IMovement newMovement) {
+        if (index < 0 || index >= movements.size()) {
+            throw new IndexOutOfBoundsException(
+                    "Index "
+                            + index
+                            + " out of bounds for movements list of size "
+                            + movements.size());
+        }
+        movements.set(index, newMovement);
     }
 }

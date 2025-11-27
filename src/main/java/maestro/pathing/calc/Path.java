@@ -221,4 +221,19 @@ class Path extends PathBase {
     public BetterBlockPos getDest() {
         return end;
     }
+
+    @Override
+    public void replaceMovement(int index, IMovement newMovement) {
+        if (!verified) {
+            throw new IllegalStateException("Cannot replace movement in unverified path");
+        }
+        if (index < 0 || index >= movements.size()) {
+            throw new IndexOutOfBoundsException(
+                    "Index "
+                            + index
+                            + " out of bounds for movements list of size "
+                            + movements.size());
+        }
+        movements.set(index, (Movement) newMovement);
+    }
 }

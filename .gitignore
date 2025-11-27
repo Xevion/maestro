@@ -10,6 +10,7 @@ volderyarn/
 # Gradle
 build/
 .gradle/
+.kotlin/
 classes/
 *.class
 

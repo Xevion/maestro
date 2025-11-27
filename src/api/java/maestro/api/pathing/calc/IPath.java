@@ -121,6 +121,19 @@ public interface IPath {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Replaces a movement at the specified index with a new movement. This is used by the path
+     * executor to try alternative movements when the original fails.
+     *
+     * @param index The index of the movement to replace
+     * @param newMovement The new movement to use
+     * @throws UnsupportedOperationException if this path implementation does not support movement
+     *     replacement
+     */
+    default void replaceMovement(int index, IMovement newMovement) {
+        throw new UnsupportedOperationException();
+    }
+
     /** Performs a series of checks to ensure that the assembly of the path went as expected. */
     default void sanityCheck() {
         List<BetterBlockPos> path = positions();

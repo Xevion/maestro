@@ -54,6 +54,18 @@ public class SplicedPath extends PathBase {
         return path.size();
     }
 
+    @Override
+    public void replaceMovement(int index, IMovement newMovement) {
+        if (index < 0 || index >= movements.size()) {
+            throw new IndexOutOfBoundsException(
+                    "Index "
+                            + index
+                            + " out of bounds for movements list of size "
+                            + movements.size());
+        }
+        movements.set(index, newMovement);
+    }
+
     public static Optional<SplicedPath> trySplice(
             IPath first, IPath second, boolean allowOverlapCutoff) {
         if (second == null || first == null) {

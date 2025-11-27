@@ -369,6 +369,15 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior 
         return failureMemory;
     }
 
+    /**
+     * Returns movement provider for generating possible movements.
+     *
+     * @return movement provider instance
+     */
+    public IMovementProvider getMovementProvider() {
+        return movementProvider;
+    }
+
     public boolean isSafeToCancel() {
         if (current == null) {
             return !maestro.getElytraProcess().isActive()

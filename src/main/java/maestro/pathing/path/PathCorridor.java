@@ -64,6 +64,15 @@ public class PathCorridor {
     }
 
     /**
+     * Gets the current segment index.
+     *
+     * @return Current segment index in path
+     */
+    public int currentSegment() {
+        return currentSegment;
+    }
+
+    /**
      * Checks if position is within corridor tolerance.
      *
      * @param pos Position to check

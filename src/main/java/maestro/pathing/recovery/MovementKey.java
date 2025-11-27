@@ -24,7 +24,7 @@ public class MovementKey {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MovementKey that = (MovementKey) o;
-        return source.equals(that.source) && destination.equals(that.destination);
+        return (source.equals(that.source) && destination.equals(that.destination));
     }
 
     @Override

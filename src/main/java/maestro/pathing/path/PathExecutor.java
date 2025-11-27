@@ -19,6 +19,7 @@ import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.movements.*;
 import maestro.pathing.recovery.FailureReason;
+import maestro.pathing.recovery.PathRecoveryManager;
 import maestro.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -62,7 +63,13 @@ public class PathExecutor implements IPathExecutor, Helper {
     private final PathingBehavior behavior;
     private final IPlayerContext ctx;
 
+    private final PathRecoveryManager recoveryManager;
+
     private boolean sprintNextTick;
+
+    // Prevent splicing immediately after reconnection to avoid state corruption
+    private int ticksSinceReconnection = -1; // -1 means no recent reconnection
+    private static final int RECONNECTION_SPLICE_DELAY_TICKS = 4;
 
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
@@ -70,6 +77,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         this.path = path;
         this.corridor = new PathCorridor(path, 0);
         this.pathPosition = 0;
+        this.recoveryManager = new PathRecoveryManager(behavior);
     }
 
     /**
@@ -83,8 +91,19 @@ public class PathExecutor implements IPathExecutor, Helper {
             pathPosition++;
         }
         if (pathPosition >= path.length()) {
+            ticksSinceReconnection = -1; // Clear for next path
             return true; // stop bugging me, I'm done
         }
+
+        // Increment reconnection counter to allow splicing after delay
+        if (ticksSinceReconnection >= 0) {
+            if (ticksSinceReconnection < RECONNECTION_SPLICE_DELAY_TICKS) {
+                ticksSinceReconnection++;
+            } else if (ticksSinceReconnection == RECONNECTION_SPLICE_DELAY_TICKS) {
+                ticksSinceReconnection = -1; // Reset after delay expires
+            }
+        }
+
         Movement movement = (Movement) path.movements().get(pathPosition);
         BetterBlockPos whereAmI = ctx.playerFeet();
         if (!movement.getValidPositions().contains(whereAmI)) {
@@ -138,6 +157,38 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (distToPath > MAX_DIST_FROM_PATH) {
                 ticksAway++;
                 if (ticksAway > MAX_TICKS_AWAY) {
+                    // Try recovery via reconnection
+                    if (movement.safeToCancel()) {
+                        PathRecoveryManager.RecoveryAction action =
+                                recoveryManager.handleCorridorDeviation(
+                                        whereAmI,
+                                        path,
+                                        corridor.currentSegment(),
+                                        behavior.secretInternalGetCalculationContext());
+
+                        switch (action.type()) {
+                            case RECONNECT_PATH:
+                                jumpToReconnectionPoint(action.reconnectionIndex());
+                                ticksAway = 0;
+                                log.atInfo()
+                                        .addKeyValue("distance", distToPath)
+                                        .addKeyValue("ticks_away", ticksAway)
+                                        .log("Successfully reconnected to path");
+                                return false;
+                            case CANCEL_PATH:
+                                // Fall through to cancel below
+                                break;
+                            case CONTINUE:
+                                // Recovery wants us to keep trying - don't cancel yet
+                                return false;
+                            default:
+                                throw new IllegalStateException(
+                                        "Unknown recovery type: " + action.type());
+                        }
+                    }
+
+                    // Only reached if movement not safe to cancel OR recovery returned
+                    // CANCEL_PATH
                     log.atDebug()
                             .addKeyValue("ticks_away", ticksAway)
                             .addKeyValue("max_ticks", MAX_TICKS_AWAY)
@@ -269,8 +320,24 @@ public class PathExecutor implements IPathExecutor, Helper {
                             ? FailureReason.UNREACHABLE
                             : FailureReason.BLOCKED;
             behavior.getFailureMemory().recordFailure(movement, reason);
-            cancel();
-            return true;
+
+            // Try recovery via alternative movements
+            PathRecoveryManager.RecoveryAction action =
+                    recoveryManager.handleMovementFailure(
+                            movement, ctx.playerFeet(), path, pathPosition, movementStatus, reason);
+
+            switch (action.type()) {
+                case RETRY_MOVEMENT:
+                    replaceCurrentMovement(action.movement());
+                    return false; // Don't cancel - continue with alternative
+                case CANCEL_PATH:
+                    cancel();
+                    return true;
+                case CONTINUE:
+                    return false; // Keep trying current movement
+                default:
+                    throw new IllegalStateException("Unknown recovery type: " + action.type());
+            }
         }
         if (movementStatus == SUCCESS) {
             // System.out.println("Movement done, next path");
@@ -731,6 +798,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         clearKeys();
         ticksOnCurrent = 0;
         corridor.updateSegment(pathPosition);
+        recoveryManager.resetRetryBudget(); // Reset retry budget when moving to next position
     }
 
     private void clearKeys() {
@@ -752,6 +820,65 @@ public class PathExecutor implements IPathExecutor, Helper {
         behavior.maestro.getInputOverrideHandler().clearAllKeys();
     }
 
+    /**
+     * Replaces the current movement with an alternative.
+     *
+     * <p>Resets the current movement state and replaces it in the path's movement list. This allows
+     * trying alternative movements (e.g., walking instead of teleporting) without recalculating the
+     * entire path.
+     *
+     * @param newMovement the alternative movement to try
+     */
+    private void replaceCurrentMovement(Movement newMovement) {
+        // Reset current movement state
+        Movement currentMovement = (Movement) path.movements().get(pathPosition);
+        currentMovement.reset();
+
+        // Replace in path's movement list using dedicated IPath method
+        path.replaceMovement(pathPosition, newMovement);
+
+        // Update corridor to reflect new movement geometry
+        corridor.updateSegment(pathPosition);
+
+        // Reset timing and cost tracking for new movement
+        ticksOnCurrent = 0;
+        currentMovementOriginalCostEstimate = newMovement.getCost();
+
+        log.atDebug()
+                .addKeyValue("position", pathPosition)
+                .addKeyValue("new_movement", newMovement.getClass().getSimpleName())
+                .addKeyValue("cost", newMovement.getCost())
+                .log("Replaced current movement with alternative");
+    }
+
+    /**
+     * Jumps execution to a reconnection point in the existing path.
+     *
+     * <p>Updates path position and corridor to resume execution from the reconnection point. This
+     * allows recovery from corridor deviation without full recalculation.
+     *
+     * @param index Index in the path to jump to
+     */
+    private void jumpToReconnectionPoint(int index) {
+        // Reset old movement state if valid
+        if (pathPosition >= 0 && pathPosition < path.movements().size()) {
+            Movement oldMovement = (Movement) path.movements().get(pathPosition);
+            oldMovement.reset();
+        }
+
+        // Update position and corridor
+        pathPosition = index;
+        corridor = new PathCorridor(path, index);
+        ticksSinceReconnection = 0;
+
+        // Reset timing and cost tracking for new position
+        ticksOnCurrent = 0;
+        currentMovementOriginalCostEstimate = null;
+        costEstimateIndex = null;
+
+        log.atDebug().addKeyValue("reconnection_index", index).log("Jumped to reconnection point");
+    }
+
     private void cancel() {
         stopMovement();
         behavior.maestro.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
@@ -768,6 +895,18 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (next == null) {
             return cutIfTooLong();
         }
+
+        // Prevent splicing immediately after reconnection to avoid state corruption
+        // When we jump to a reconnection point mid-path, the path's position doesn't align
+        // with splicing assumptions (which expect pathPosition = 0)
+        if (ticksSinceReconnection >= 0
+                && ticksSinceReconnection < RECONNECTION_SPLICE_DELAY_TICKS) {
+            log.atDebug()
+                    .addKeyValue("ticks_since_reconnection", ticksSinceReconnection)
+                    .log("Skipping splice due to recent reconnection");
+            return this;
+        }
+
         return SplicedPath.trySplice(path, next.path, false)
                 .map(
                         path -> {

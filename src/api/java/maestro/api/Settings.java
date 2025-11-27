@@ -556,9 +556,9 @@ public final class Settings {
      *
      * <p>If reconnection takes longer than this, fall back to full recalculation.
      *
-     * <p>Default: 100ms
+     * <p>Default: 200ms
      */
-    public final Setting<Integer> pathReconnectionTimeoutMs = new Setting<>(100);
+    public final Setting<Integer> pathReconnectionTimeoutMs = new Setting<>(200);
 
     /**
      * Cost threshold for preferring reconnection over full recalculation.
