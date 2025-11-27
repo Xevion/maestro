@@ -522,7 +522,16 @@ public final class ElytraBehavior {
         final Settings settings = Agent.settings();
         if (this.visiblePath != null) {
             PathRenderer.drawPath(
-                    event.getModelViewStack(), this.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
+                    event.getModelViewStack(),
+                    this.visiblePath,
+                    0,
+                    Color.RED,
+                    false,
+                    0,
+                    0,
+                    0.0D,
+                    -1,
+                    0.8f);
         }
         if (this.aimPos != null) {
             PathRenderer.drawGoal(

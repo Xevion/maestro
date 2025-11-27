@@ -34,7 +34,7 @@ public interface IRenderer {
     static BufferBuilder startLines(
             Color color, float alpha, float lineWidth, boolean ignoreDepth) {
         RenderSystem.enableBlend();
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
         RenderSystem.blendFuncSeparate(
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
@@ -48,7 +48,6 @@ public interface IRenderer {
         if (ignoreDepth) {
             RenderSystem.disableDepthTest();
         }
-        RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
         return tessellator.begin(
                 VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
     }

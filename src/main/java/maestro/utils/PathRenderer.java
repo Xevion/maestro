@@ -123,7 +123,9 @@ public final class PathRenderer implements IRenderer {
                         settings.colorCurrentPath.value,
                         settings.fadePath.value,
                         10,
-                        20);
+                        20,
+                        current.getPosition(),
+                        0.4f);
             } catch (Exception e) {
                 // Fall back to old rendering if movements access fails
                 drawPath(
@@ -133,7 +135,10 @@ public final class PathRenderer implements IRenderer {
                         settings.colorCurrentPath.value,
                         settings.fadePath.value,
                         10,
-                        20);
+                        20,
+                        0.5D,
+                        current.getPosition(),
+                        0.4f);
             }
         }
 
@@ -147,7 +152,9 @@ public final class PathRenderer implements IRenderer {
                         settings.colorNextPath.value,
                         settings.fadePath.value,
                         10,
-                        20);
+                        20,
+                        -1,
+                        0.4f);
             } catch (Exception e) {
                 // Fall back to old rendering if movements access fails
                 drawPath(
@@ -157,7 +164,10 @@ public final class PathRenderer implements IRenderer {
                         settings.colorNextPath.value,
                         settings.fadePath.value,
                         10,
-                        20);
+                        20,
+                        0.5D,
+                        -1,
+                        0.4f);
             }
         }
 
@@ -178,7 +188,10 @@ public final class PathRenderer implements IRenderer {
                                                         settings.colorBestPathSoFar.value,
                                                         settings.fadePath.value,
                                                         10,
-                                                        20);
+                                                        20,
+                                                        0.5D,
+                                                        -1,
+                                                        0.4f);
                                             });
 
                             currentlyRunning
@@ -192,7 +205,10 @@ public final class PathRenderer implements IRenderer {
                                                         settings.colorMostRecentConsidered.value,
                                                         settings.fadePath.value,
                                                         10,
-                                                        20);
+                                                        20,
+                                                        0.5D,
+                                                        -1,
+                                                        0.4f);
                                                 drawManySelectionBoxes(
                                                         event.getModelViewStack(),
                                                         ctx.player(),
@@ -210,7 +226,8 @@ public final class PathRenderer implements IRenderer {
             boolean fadeOut,
             int fadeStart0,
             int fadeEnd0) {
-        drawPath(stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, 0.5D);
+        drawPath(
+                stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, 0.5D, -1, 0.4F);
     }
 
     public static void drawPath(
@@ -221,10 +238,13 @@ public final class PathRenderer implements IRenderer {
             boolean fadeOut,
             int fadeStart0,
             int fadeEnd0,
-            double offset) {
+            double offset,
+            int currentPosition,
+            float baseAlpha) {
         BufferBuilder bufferBuilder =
                 IRenderer.startLines(
                         color,
+                        baseAlpha,
                         settings.pathRenderLineWidthPixels.value,
                         settings.renderPathIgnoreDepth.value);
 
@@ -247,18 +267,34 @@ public final class PathRenderer implements IRenderer {
                 end = positions.get(++next);
             }
 
+            // Determine segment color (highlight current and next segments)
+            Color segmentColor = color;
+            if (currentPosition >= 0) {
+                if (i == currentPosition) {
+                    segmentColor = Color.WHITE; // Current segment
+                } else if (i == currentPosition + 1) {
+                    segmentColor = Color.YELLOW; // Next segment
+                }
+            }
+
             if (fadeOut) {
                 float alpha;
 
                 if (i <= fadeStart) {
-                    alpha = 0.4F;
+                    alpha = baseAlpha;
                 } else {
                     if (i > fadeEnd) {
                         break;
                     }
-                    alpha = 0.4F * (1.0F - (float) (i - fadeStart) / (float) (fadeEnd - fadeStart));
+                    alpha =
+                            baseAlpha
+                                    * (1.0F
+                                            - (float) (i - fadeStart)
+                                                    / (float) (fadeEnd - fadeStart));
                 }
-                IRenderer.glColor(color, alpha);
+                IRenderer.glColor(segmentColor, alpha);
+            } else {
+                IRenderer.glColor(segmentColor, baseAlpha);
             }
 
             emitPathLine(
@@ -276,7 +312,9 @@ public final class PathRenderer implements IRenderer {
             Color color,
             boolean fadeOut,
             int fadeStart0,
-            int fadeEnd0) {
+            int fadeEnd0,
+            int currentPosition,
+            float baseAlpha) {
         // Validate inputs
         if (positions == null || movements == null) {
             return;
@@ -287,7 +325,17 @@ public final class PathRenderer implements IRenderer {
         }
 
         if (movements.size() != positions.size() - 1) {
-            drawPath(stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0);
+            drawPath(
+                    stack,
+                    positions,
+                    startIndex,
+                    color,
+                    fadeOut,
+                    fadeStart0,
+                    fadeEnd0,
+                    0.5D,
+                    currentPosition,
+                    baseAlpha);
             return;
         }
 
@@ -301,6 +349,7 @@ public final class PathRenderer implements IRenderer {
         BufferBuilder bufferBuilder =
                 IRenderer.startLines(
                         color,
+                        baseAlpha,
                         settings.pathRenderLineWidthPixels.value,
                         settings.renderPathIgnoreDepth.value);
 
@@ -310,13 +359,35 @@ public final class PathRenderer implements IRenderer {
 
             maestro.api.pathing.movement.IMovement movement = movements.get(i);
             if (movement == null) {
-                // Use default color if movement is null
-                IRenderer.glColor(color, 0.4F);
+                // Determine segment color even when movement is null
+                Color segmentColor = color;
+                if (currentPosition >= 0) {
+                    if (i == currentPosition) {
+                        segmentColor = Color.WHITE;
+                    } else if (i == currentPosition + 1) {
+                        segmentColor = Color.YELLOW;
+                    }
+                }
+                IRenderer.glColor(segmentColor, baseAlpha);
                 emitPathLine(
                         bufferBuilder, stack, start.x, start.y, start.z, end.x, end.y, end.z, 0.5);
                 continue;
             }
-            Color lineColor = getMovementColor(movement, color);
+
+            // Determine line color: segment highlighting takes priority over swimming colors
+            Color lineColor;
+            if (currentPosition >= 0) {
+                if (i == currentPosition) {
+                    lineColor = Color.WHITE; // Current segment
+                } else if (i == currentPosition + 1) {
+                    lineColor = Color.YELLOW; // Next segment
+                } else {
+                    lineColor =
+                            getMovementColor(movement, color); // Swimming colors for other segments
+                }
+            } else {
+                lineColor = getMovementColor(movement, color);
+            }
 
             int dirX = end.x - start.x;
             int dirY = end.y - start.y;
@@ -336,16 +407,20 @@ public final class PathRenderer implements IRenderer {
                 float alpha;
 
                 if (i <= fadeStart) {
-                    alpha = 0.4F;
+                    alpha = baseAlpha;
                 } else {
                     if (i > fadeEnd) {
                         break;
                     }
-                    alpha = 0.4F * (1.0F - (float) (i - fadeStart) / (float) (fadeEnd - fadeStart));
+                    alpha =
+                            baseAlpha
+                                    * (1.0F
+                                            - (float) (i - fadeStart)
+                                                    / (float) (fadeEnd - fadeStart));
                 }
                 IRenderer.glColor(lineColor, alpha);
             } else {
-                IRenderer.glColor(lineColor, 0.4F);
+                IRenderer.glColor(lineColor, baseAlpha);
             }
 
             emitPathLine(bufferBuilder, stack, start.x, start.y, start.z, end.x, end.y, end.z, 0.5);
