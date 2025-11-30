@@ -10,6 +10,10 @@ unimined.minecraft {
         loader project.forge_version
         mixinConfig ["mixins.maestro.json"]
     }
+
+    runs {
+        off = false
+    }
 }
 
 //loom {

@@ -8,6 +8,27 @@ unimined.minecraft {
     fabric {
         loader project.fabric_version
     }
+
+    runs {
+        off = false
+    }
+}
+
+// Allow appending custom args without losing defaults
+afterEvaluate {
+    tasks.named('runClient').configure {
+        // Append custom args from project property
+        def extraArgs = project.findProperty('extraArgs')
+        if (extraArgs) {
+            // Parse arguments respecting quoted strings
+            def argList = []
+            def matcher = extraArgs =~ /[^\s"']+|"([^"]*)"|'([^']*)'/
+            while (matcher.find()) {
+                argList.add(matcher.group(1) ?: matcher.group(2) ?: matcher.group(0))
+            }
+            args argList
+        }
+    }
 }
 
 configurations {

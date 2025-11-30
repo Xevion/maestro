@@ -20,6 +20,10 @@ unimined.minecraft {
         ignoreConflicts(true)
     }
 
+    runs {
+        off = false
+    }
+
 }
 
 //loom {
