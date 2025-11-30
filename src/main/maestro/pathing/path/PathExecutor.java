@@ -27,11 +27,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-/**
- * Behavior to execute a precomputed path
- *
- * @author leijurv
- */
+/** Behavior to execute a precomputed path */
 public class PathExecutor implements IPathExecutor, Helper {
     private static final Logger log = MaestroLogger.get("path");
 

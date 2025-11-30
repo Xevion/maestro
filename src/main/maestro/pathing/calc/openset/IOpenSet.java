@@ -2,11 +2,7 @@ package maestro.pathing.calc.openset;
 
 import maestro.pathing.calc.PathNode;
 
-/**
- * An open set for A* or similar graph search algorithm
- *
- * @author leijurv
- */
+/** An open set for A* or similar graph search algorithm */
 public interface IOpenSet {
 
     /**

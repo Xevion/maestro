@@ -23,11 +23,7 @@ import maestro.utils.pathing.Favoring;
 import maestro.utils.pathing.MutableMoveResult;
 import org.slf4j.Logger;
 
-/**
- * The actual A* pathfinding
- *
- * @author leijurv
- */
+/** The actual A* pathfinding */
 public final class AStarPathFinder extends AbstractNodeCostSearch {
 
     private static final Logger log = MaestroLogger.get("path");

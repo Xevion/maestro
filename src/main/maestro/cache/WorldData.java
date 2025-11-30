@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 /**
  * Data about a world, from maestro's point of view. Includes cached chunks, waypoints, and map
  * data.
- *
- * @author leijurv
  */
 public class WorldData implements IWorldData {
 

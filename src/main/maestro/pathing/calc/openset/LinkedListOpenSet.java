@@ -6,8 +6,6 @@ import maestro.pathing.calc.PathNode;
  * A linked list implementation of an open set. This is the original implementation from MineBot. It
  * has incredibly fast insert performance, at the cost of O(n) removeLowest. It sucks.
  * BinaryHeapOpenSet results in more than 10x more nodes considered in 4 seconds.
- *
- * @author leijurv
  */
 class LinkedListOpenSet implements IOpenSet {
 

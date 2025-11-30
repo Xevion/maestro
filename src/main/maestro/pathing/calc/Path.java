@@ -16,11 +16,7 @@ import maestro.pathing.path.CutoffPath;
 import maestro.utils.pathing.PathBase;
 import org.slf4j.Logger;
 
-/**
- * A node based implementation of IPath
- *
- * @author leijurv
- */
+/** A node based implementation of IPath */
 class Path extends PathBase {
     private static final Logger log = MaestroLogger.get("path");
 

@@ -18,12 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.Validate;
 
-/**
- * Based on EmersonDove's work <a href="https://github.com/cabaletta/baritone/pull/2544">...</a>
- *
- * @author rycbar
- * @since 22.09.2022
- */
+/** Based on EmersonDove's work <a href="https://github.com/cabaletta/baritone/pull/2544">...</a> */
 public final class LitematicaSchematic extends CompositeSchematic implements IStaticSchematic {
 
     /**
@@ -196,8 +191,8 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
     }
 
     /**
-     * @author maruohon Class from the Litematica mod by maruohon Usage under LGPLv3 with the
-     *     permission of the author. <a href="https://github.com/maruohon/litematica">...</a>
+     * Class from the Litematica mod by maruohon Usage under LGPLv3 with the permission of the
+     * author. <a href="https://github.com/maruohon/litematica">...</a>
      */
     private static class LitematicaBitArray {
         /** The long array that is used to store the data for this BitArray. */

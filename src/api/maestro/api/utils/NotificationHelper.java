@@ -7,8 +7,6 @@ import org.apache.commons.lang3.SystemUtils;
 /**
  * This class is not called from the main game thread. Do not refer to any Minecraft classes, it
  * wouldn't be thread safe.
- *
- * @author aUniqueUser
  */
 public class NotificationHelper {
 

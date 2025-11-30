@@ -18,12 +18,7 @@ import maestro.command.argument.CommandArguments;
 import maestro.command.defaults.DefaultCommands;
 import net.minecraft.util.Tuple;
 
-/**
- * The default, internal implementation of {@link ICommandManager}
- *
- * @author Brady
- * @since 9/21/2019
- */
+/** The default, internal implementation of {@link ICommandManager} */
 public class CommandManager implements ICommandManager {
 
     private final Registry<ICommand> registry = new Registry<>();

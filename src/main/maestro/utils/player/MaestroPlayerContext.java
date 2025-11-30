@@ -9,12 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 
-/**
- * Implementation of {@link IPlayerContext} that provides information about the primary player.
- *
- * @author Brady
- * @since 11/12/2018
- */
+/** Implementation of {@link IPlayerContext} that provides information about the primary player. */
 public final class MaestroPlayerContext implements IPlayerContext {
 
     private final Agent maestro;

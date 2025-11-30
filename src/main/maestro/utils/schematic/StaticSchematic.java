@@ -5,12 +5,7 @@ import maestro.api.schematic.AbstractSchematic;
 import maestro.api.schematic.IStaticSchematic;
 import net.minecraft.world.level.block.state.BlockState;
 
-/**
- * Default implementation of {@link IStaticSchematic}
- *
- * @author Brady
- * @since 12/23/2019
- */
+/** Default implementation of {@link IStaticSchematic} */
 public class StaticSchematic extends AbstractSchematic implements IStaticSchematic {
 
     protected BlockState[][][] states;

@@ -12,11 +12,7 @@ import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
 import org.slf4j.Logger;
 
-/**
- * Waypoints for a world
- *
- * @author leijurv
- */
+/** Waypoints for a world */
 public class WaypointCollection implements IWaypointCollection {
 
     private static final Logger log = MaestroLogger.get("cache");

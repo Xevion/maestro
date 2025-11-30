@@ -1,17 +1,17 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.0.0"
+    id 'com.github.johnrengelman.shadow' version '8.0.0'
 }
 
-archivesBaseName = archivesBaseName + "-forge"
+archivesBaseName = archivesBaseName + '-forge'
 
 unimined.minecraft {
     minecraftForge {
         loader project.forge_version
-        mixinConfig["mixins.maestro.json"]
+        mixinConfig['mixins.maestro.json']
     }
 
     runs {
-        off = false
+        off = true
     }
 }
 
@@ -44,16 +44,16 @@ dependencies {
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.property 'version', project.version
 
-    filesMatching("META-INF/mods.toml") {
+    filesMatching('META-INF/mods.toml') {
         expand "version": project.version
     }
 }
 
 shadowJar {
     configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set "dev-shadow"
+    archiveClassifier.set 'dev-shadow'
 }
 
 remapJar {
@@ -63,12 +63,12 @@ remapJar {
 }
 
 jar {
-    archiveClassifier.set "dev"
+    archiveClassifier.set 'dev'
 
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.maestro.json',
-                "MixinConnector": "maestro.launch.MaestroMixinConnector",
+                "MixinConnector": 'maestro.launch.MaestroMixinConnector',
 
                 'Implementation-Title': 'Baritone',
                 'Implementation-Version': version,
@@ -85,7 +85,7 @@ components.java {
 publishing {
     publications {
         mavenFabric(MavenPublication) {
-            artifactId = rootProject.archives_base_name + "-" + project.name
+            artifactId = rootProject.archives_base_name + '-' + project.name
             from components.java
         }
     }

@@ -42,11 +42,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-/**
- * Static helpers for cost calculation
- *
- * @author leijurv
- */
+/** Static helpers for cost calculation */
 public interface MovementHelper extends ActionCosts, Helper {
     Logger log = MaestroLogger.get("move");
 

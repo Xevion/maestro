@@ -19,11 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * Follow an entity
- *
- * @author leijurv
- */
+/** Follow an entity */
 public final class FollowProcess extends MaestroProcessHelper implements IFollowProcess {
 
     private Predicate<Entity> filter;

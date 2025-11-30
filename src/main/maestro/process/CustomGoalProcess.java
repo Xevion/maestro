@@ -7,11 +7,6 @@ import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
 import maestro.utils.MaestroProcessHelper;
 
-/**
- * As set by ExampleMaestroControl or something idk
- *
- * @author leijurv
- */
 public final class CustomGoalProcess extends MaestroProcessHelper implements ICustomGoalProcess {
 
     /** The current goal */

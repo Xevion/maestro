@@ -5,11 +5,7 @@ import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.exception.CommandInvalidTypeException;
 import maestro.command.argparser.ArgParserManager;
 
-/**
- * The default implementation of {@link ICommandArgument}
- *
- * @author LoganDark
- */
+/** The default implementation of {@link ICommandArgument} */
 class CommandArgument implements ICommandArgument {
 
     private final int index;

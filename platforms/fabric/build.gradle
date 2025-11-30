@@ -1,8 +1,8 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.0.0"
+    id 'com.github.johnrengelman.shadow' version '8.0.0'
 }
 
-archivesBaseName = archivesBaseName + "-fabric"
+archivesBaseName = archivesBaseName + '-fabric'
 
 unimined.minecraft {
     fabric {
@@ -10,26 +10,27 @@ unimined.minecraft {
     }
 
     runs {
-        off = false
+        off = true
     }
 }
 
 // Allow appending custom args without losing defaults
-afterEvaluate {
-    tasks.named('runClient').configure {
-        // Append custom args from project property
-        def extraArgs = project.findProperty('extraArgs')
-        if (extraArgs) {
-            // Parse arguments respecting quoted strings
-            def argList = []
-            def matcher = extraArgs =~ /[^\s"']+|"([^"]*)"|'([^']*)'/
-            while (matcher.find()) {
-                argList.add(matcher.group(1) ?: matcher.group(2) ?: matcher.group(0))
-            }
-            args argList
-        }
-    }
-}
+// Disabled because runs { off = true } means runClient task doesn't exist
+// afterEvaluate {
+//     tasks.named('runClient').configure {
+//         // Append custom args from project property
+//         def extraArgs = project.findProperty('extraArgs')
+//         if (extraArgs) {
+//             // Parse arguments respecting quoted strings
+//             def argList = []
+//             def matcher = extraArgs =~ '[^\\s"\']+|"([^"]*)"|\'([^\']*)\''
+//             while (matcher.find()) {
+//                 argList.add(matcher.group(1) ?: matcher.group(2) ?: matcher.group(0))
+//             }
+//             args argList
+//         }
+//     }
+// }
 
 configurations {
     common
@@ -53,16 +54,16 @@ dependencies {
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.property 'version', project.version
 
-    filesMatching("fabric.mod.json") {
+    filesMatching('fabric.mod.json') {
         expand "version": project.version
     }
 }
 
 shadowJar {
     configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set "dev-shadow"
+    archiveClassifier.set 'dev-shadow'
 }
 
 remapJar {
@@ -72,7 +73,7 @@ remapJar {
 }
 
 jar {
-    archiveClassifier.set "dev"
+    archiveClassifier.set 'dev'
 }
 
 components.java {
@@ -84,7 +85,7 @@ components.java {
 publishing {
     publications {
         mavenFabric(MavenPublication) {
-            artifactId = rootProject.archives_base_name + "-" + project.name
+            artifactId = rootProject.archives_base_name + '-' + project.name
             from components.java
         }
     }

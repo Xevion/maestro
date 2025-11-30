@@ -3,11 +3,7 @@ package maestro.pathing.calc.openset;
 import java.util.Arrays;
 import maestro.pathing.calc.PathNode;
 
-/**
- * A binary heap implementation of an open set. This is the one used in the AStarPathFinder.
- *
- * @author leijurv
- */
+/** A binary heap implementation of an open set. This is the one used in the AStarPathFinder. */
 public final class BinaryHeapOpenSet implements IOpenSet {
 
     /** The initial capacity of the heap (2^10) */

@@ -17,8 +17,6 @@ import net.minecraft.world.level.block.state.BlockState
  *
  * Tracks mining speed with different tools and enchantments, applying potion effects
  * when enabled in settings.
- *
- * @author Avery, Brady, leijurv
  */
 class ToolSet(
     private val player: LocalPlayer,

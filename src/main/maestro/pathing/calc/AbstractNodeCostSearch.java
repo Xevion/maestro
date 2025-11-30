@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 
 /**
  * Any pathfinding algorithm that keeps track of nodes recursively by their cost (e.g. A*, dijkstra)
- *
- * @author leijurv
  */
 public abstract class AbstractNodeCostSearch implements IPathFinder {
 

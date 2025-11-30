@@ -13,9 +13,6 @@ import net.minecraft.client.player.KeyboardInput;
 /**
  * An interface with the game's control system allowing the ability to force down certain controls,
  * having the same effect as if we were actually physically forcing down the assigned key.
- *
- * @author Brady
- * @since 7/31/2018
  */
 public final class InputOverrideHandler extends Behavior implements IInputOverrideHandler {
 

@@ -15,12 +15,7 @@ import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import org.apache.commons.io.FilenameUtils;
 
-/**
- * Default implementations of {@link ISchematicFormat}
- *
- * @author Brady
- * @since 12/13/2019
- */
+/** Default implementations of {@link ISchematicFormat} */
 public enum DefaultSchematicFormats implements ISchematicFormat {
 
     /** The MCEdit schematic specification. Commonly denoted by the ".schematic" file extension. */

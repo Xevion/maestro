@@ -5,11 +5,7 @@ import maestro.pathing.movement.movements.*;
 import maestro.utils.pathing.MutableMoveResult;
 import net.minecraft.core.Direction;
 
-/**
- * An enum of all possible movements attached to all possible directions they could be taken in
- *
- * @author leijurv
- */
+/** An enum of all possible movements attached to all possible directions they could be taken in */
 public enum Moves {
     DOWNWARD(0, -1, 0) {
         @Override

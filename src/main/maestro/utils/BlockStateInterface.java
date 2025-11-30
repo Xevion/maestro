@@ -17,11 +17,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
-/**
- * Wraps get for chuck caching capability
- *
- * @author leijurv
- */
+/** Wraps get for chuck caching capability */
 public class BlockStateInterface {
 
     private final ClientChunkCache provider;

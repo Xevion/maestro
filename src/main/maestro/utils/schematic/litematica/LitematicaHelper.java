@@ -19,16 +19,11 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
-/**
- * Helper class that provides access or processes data related to Litmatica schematics.
- *
- * @author rycbar
- * @since 28.09.2022
- */
+/** Helper class that provides access or processes data related to Litematica schematics. */
 public final class LitematicaHelper {
 
     /**
-     * @return if Litmatica is installed.
+     * @return if Litematica is installed.
      */
     public static boolean isLitematicaPresent() {
         try {

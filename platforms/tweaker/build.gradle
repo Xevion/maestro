@@ -1,11 +1,11 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 unimined.minecraft {
     runs.client = {
-        mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "maestro.launch.tweaker.MaestroTweaker"])
+        mainClass = 'net.minecraft.launchwrapper.Launch'
+        args.addAll(['--tweakClass', 'maestro.launch.tweaker.MaestroTweaker'])
     }
 }
 
@@ -48,7 +48,7 @@ dependencies {
 
 shadowJar {
     configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set "dev-shadow"
+    archiveClassifier.set 'dev-shadow'
 }
 
 
@@ -59,7 +59,7 @@ remapJar {
 }
 
 jar {
-    archiveClassifier.set "dev"
+    archiveClassifier.set 'dev'
 
     preserveFileTimestamps = false
     reproducibleFileOrder = true
@@ -67,7 +67,7 @@ jar {
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.maestro.json',
-                "MixinConnector": "maestro.launch.MaestroMixinConnector",
+                "MixinConnector": 'maestro.launch.MaestroMixinConnector',
 
                 'Implementation-Title': 'Baritone',
                 'Implementation-Version': version,

@@ -9,8 +9,6 @@ import java.util.function.LongSupplier;
  *
  * <p>Extended to produce random double-precision floating point numbers, and allow copies to be
  * spawned via {@link #fork}, which share the same internal state as the source object.
- *
- * @author Brady
  */
 public final class ForkableRandom {
 

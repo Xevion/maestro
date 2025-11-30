@@ -6,11 +6,7 @@ import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.SettingsUtil;
 
-/**
- * A node in the path, containing the cost and steps to get to it.
- *
- * @author leijurv
- */
+/** A node in the path, containing the cost and steps to get to it. */
 public final class PathNode {
 
     /** The position of this node */

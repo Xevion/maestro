@@ -14,17 +14,14 @@ tasks.withType(AbstractArchiveTask).configureEach {
 // Spotless requires Java 21+ to parse modern Java syntax
 // See: https://github.com/diffplug/spotless/issues/724
 if (JavaVersion.current() < JavaVersion.VERSION_21) {
-    throw new GradleException(
-            "This project requires Java 21 or later to run Spotless (currently running ${JavaVersion.current()}).\n" +
-                    "Please set JAVA_HOME to a Java 21+ installation or run with: ./gradlew -Dorg.gradle.java.home=/path/to/jdk21"
-    )
+    throw new GradleException("This project requires Java 21 or later to run Spotless (currently running ${JavaVersion.current()}).\n" + 'Please set JAVA_HOME to a Java 21+ installation or run with: ./gradlew -Dorg.gradle.java.home=/path/to/jdk21')
 }
 
 allprojects {
     apply plugin: 'java'
     apply plugin: 'org.jetbrains.kotlin.jvm'
-    apply plugin: "xyz.wagyourtail.unimined"
-    apply plugin: "maven-publish"
+    apply plugin: 'xyz.wagyourtail.unimined'
+    apply plugin: 'maven-publish'
     apply plugin: 'com.diffplug.spotless'
     apply plugin: 'com.google.protobuf'
 
@@ -38,18 +35,18 @@ allprojects {
 
     archivesBaseName = rootProject.archives_base_name
 
-    def vers = ""
+    def vers = ''
     try {
         vers = 'git describe --always --tags --first-parent --dirty'.execute().text.trim()
     } catch (Exception e) {
-        logger.info "Version detection failed: " + e
+        logger.info 'Version detection failed: ' + e
     }
-    if (!vers.startsWith("v")) {
-        logger.info "using version number: " + rootProject.mod_version
+    if (!vers.startsWith('v')) {
+        logger.info 'using version number: ' + rootProject.mod_version
         version = rootProject.mod_version
     } else {
         version = vers.substring(1)
-        logger.info "Detected version " + version
+        logger.info 'Detected version ' + version
     }
     group = rootProject.maven_group
 
@@ -82,13 +79,13 @@ allprojects {
             url = 'https://impactdevelopment.github.io/maven/'
         }
         maven {
-            name = "ldtteam"
-            url = "https://maven.parchmentmc.net/"
+            name = 'ldtteam'
+            url = 'https://maven.parchmentmc.net/'
         }
         // for the newer version of launchwrapper
         maven {
-            name = "multimc-maven"
-            url = "https://files.multimc.org/maven/"
+            name = 'multimc-maven'
+            url = 'https://files.multimc.org/maven/'
             metadataSources {
                 artifact()
             }
@@ -108,7 +105,7 @@ allprojects {
 
         // SLF4J and Logback for structured logging
         implementation 'org.slf4j:slf4j-api:2.0.9'
-        implementation 'ch.qos.logback:logback-classic:1.4.14'
+        implementation 'ch.qos.logback:logback-classic:1.5.13'
 
         // Fuzzy search for command suggestions
         implementation 'me.xdrop:fuzzywuzzy:1.4.0'
@@ -120,11 +117,11 @@ allprojects {
         implementation 'org.jetbrains.kotlin:kotlin-stdlib'
 
         // gRPC and Protocol Buffers for multi-agent coordination
-        implementation 'io.grpc:grpc-netty-shaded:1.60.0'
+        implementation 'io.grpc:grpc-netty-shaded:1.75.0'
         implementation 'io.grpc:grpc-protobuf:1.60.0'
         implementation 'io.grpc:grpc-stub:1.60.0'
         implementation 'io.grpc:grpc-kotlin-stub:1.4.1'
-        implementation 'com.google.protobuf:protobuf-kotlin:3.25.1'
+        implementation 'com.google.protobuf:protobuf-kotlin:4.28.2'
         implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     }
 
@@ -134,9 +131,9 @@ allprojects {
         mappings {
             intermediary()
             mojmap()
-            parchment("1.20.6", "2024.05.01")
+            parchment('1.20.6', '2024.05.01')
 
-            devFallbackNamespace "official"
+            devFallbackNamespace 'official'
         }
     }
 
@@ -174,7 +171,7 @@ allprojects {
     }
 
     tasks.withType(JavaCompile).configureEach {
-        it.options.encoding = "UTF-8"
+        it.options.encoding = 'UTF-8'
 
         def targetVersion = project.java_version.toInteger()
         if (JavaVersion.current().isJava9Compatible()) {
@@ -188,7 +185,7 @@ unimined.minecraft {
     defaultRemapJar = false
 }
 
-archivesBaseName = archivesBaseName + "-common"
+archivesBaseName = archivesBaseName + '-common'
 
 sourceSets {
     api {
@@ -262,7 +259,7 @@ jar {
 javadoc {
     options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
     options.linkSource true
-    options.encoding "UTF-8" // allow emoji in comments :^)
+    options.encoding 'UTF-8' // allow emoji in comments :^)
     source = sourceSets.api.allJava
     classpath += sourceSets.api.compileClasspath
 }

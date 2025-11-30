@@ -17,9 +17,6 @@ import net.minecraft.world.phys.BlockHitResult;
 /**
  * Implementation of {@link IPlayerController} that chains to the primary player controller's
  * methods
- *
- * @author Brady
- * @since 12/14/2018
  */
 public final class MaestroPlayerController implements IPlayerController {
 
