@@ -244,7 +244,7 @@ class RangedCombatProcess(
 
     private fun isInShootingRange(target: Entity): Boolean {
         val distance = ctx.player().distanceTo(target)
-        return distance >= MIN_RANGE && distance <= MAX_RANGE
+        return distance in MIN_RANGE..MAX_RANGE
     }
 
     private fun updateAim(target: Entity) {

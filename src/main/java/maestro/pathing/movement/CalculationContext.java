@@ -160,7 +160,7 @@ public class CalculationContext {
         this.teleportMinDistance = Agent.settings().teleportMinDistance.value;
         this.teleportMaxDistance = Agent.settings().teleportMaxDistance.value;
         this.teleportCostMultiplier = Agent.settings().teleportCostMultiplier.value;
-        this.failureMemory = ((Agent) maestro).getPathingBehavior().getFailureMemory();
+        this.failureMemory = ((Agent) maestro).getPathingBehavior().failureMemory;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.

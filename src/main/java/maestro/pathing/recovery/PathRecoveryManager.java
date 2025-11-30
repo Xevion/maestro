@@ -73,7 +73,7 @@ public class PathRecoveryManager {
                 .log("Handling movement failure");
 
         // Record failure (already done by caller, but ensure consistency)
-        behavior.getFailureMemory().recordFailure(failedMovement, reason);
+        behavior.failureMemory.recordFailure(failedMovement, reason);
 
         // Check retry budget
         if (!retryBudget.canRetry(failedMovement.getSrc())) {

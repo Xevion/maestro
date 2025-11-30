@@ -53,7 +53,7 @@ public class MovementRetryEngine {
         var context = behavior.secretInternalGetCalculationContext();
 
         // Generate all possible movements from current position
-        return behavior.getMovementProvider()
+        return behavior.movementProvider
                 .generateMovements(context, currentPosition)
                 .map(m -> (Movement) m)
                 // Filter to movements that reach the same destination
@@ -63,8 +63,8 @@ public class MovementRetryEngine {
                 // Exclude movements with excessive failures
                 .filter(
                         m ->
-                                !behavior.getFailureMemory()
-                                        .shouldFilter(m.getSrc(), m.getDest(), m.getClass()))
+                                !behavior.failureMemory.shouldFilter(
+                                        m.getSrc(), m.getDest(), m.getClass()))
                 // Filter out impossible movements
                 .filter(m -> m.getCost() < ActionCosts.COST_INF)
                 // Apply failure memory penalties to costs
@@ -72,8 +72,8 @@ public class MovementRetryEngine {
                         m -> {
                             double baseCost = m.getCost();
                             double penalty =
-                                    behavior.getFailureMemory()
-                                            .getCostPenalty(m.getSrc(), m.getDest(), m.getClass());
+                                    behavior.failureMemory.getCostPenalty(
+                                            m.getSrc(), m.getDest(), m.getClass());
                             double penalizedCost = baseCost * penalty;
 
                             log.atDebug()

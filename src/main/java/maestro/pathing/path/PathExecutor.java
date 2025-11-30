@@ -271,7 +271,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                             .addKeyValue("dest", futureMove.getDest())
                             .addKeyValue("cost", futureCost)
                             .log("Future movement became impossible, cancelling path");
-                    behavior.getFailureMemory().recordFailure(futureMove, FailureReason.BLOCKED);
+                    behavior.failureMemory.recordFailure(futureMove, FailureReason.BLOCKED);
                     cancel();
                     return true;
                 }
@@ -287,7 +287,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     .addKeyValue("current_cost", currentCost)
                     .addKeyValue("original_cost", currentMovementOriginalCostEstimate)
                     .log("Current movement became impossible, cancelling path");
-            behavior.getFailureMemory().recordFailure(movement, FailureReason.WORLD_CHANGED);
+            behavior.failureMemory.recordFailure(movement, FailureReason.WORLD_CHANGED);
             cancel();
             return true;
         }
@@ -303,7 +303,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     .addKeyValue("current_cost", currentCost)
                     .addKeyValue("cost_increase", currentCost - currentMovementOriginalCostEstimate)
                     .log("Movement cost increased too much, cancelling");
-            behavior.getFailureMemory().recordFailure(movement, FailureReason.WORLD_CHANGED);
+            behavior.failureMemory.recordFailure(movement, FailureReason.WORLD_CHANGED);
             cancel();
             return true;
         }
@@ -319,7 +319,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     movementStatus == UNREACHABLE
                             ? FailureReason.UNREACHABLE
                             : FailureReason.BLOCKED;
-            behavior.getFailureMemory().recordFailure(movement, reason);
+            behavior.failureMemory.recordFailure(movement, reason);
 
             // Try recovery via alternative movements
             PathRecoveryManager.RecoveryAction action =
@@ -368,7 +368,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                         .addKeyValue("expected_ticks", currentMovementOriginalCostEstimate)
                         .addKeyValue("timeout", Agent.settings().movementTimeoutTicks.value)
                         .log("Movement timeout exceeded, cancelling");
-                behavior.getFailureMemory().recordFailure(movement, FailureReason.TIMEOUT);
+                behavior.failureMemory.recordFailure(movement, FailureReason.TIMEOUT);
                 cancel();
                 return true;
             }
