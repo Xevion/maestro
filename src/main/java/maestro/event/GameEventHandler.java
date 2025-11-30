@@ -26,12 +26,53 @@ public final class GameEventHandler implements IEventBus {
 
     private final List<IGameEventListener> listeners = new CopyOnWriteArrayList<>();
 
+    /**
+     * Tracks whether coordination auto-connect has been attempted.
+     *
+     * <p>This is a one-time startup flag. Once set to true, auto-connect will not retry even if the
+     * coordinationEnabled setting is toggled at runtime. This prevents repeated connection attempts
+     * on every tick.
+     *
+     * <p>To reconnect after toggling the setting, manually use the coordination client API or
+     * restart the game.
+     */
+    private boolean coordinationAutoConnected = false;
+
     public GameEventHandler(Agent maestro) {
         this.maestro = maestro;
     }
 
     @Override
     public void onTick(TickEvent event) {
+        // Auto-connect to coordinator if enabled (but not if this bot IS the coordinator)
+        boolean isCoordinator = "true".equalsIgnoreCase(System.getenv("AUTOSTART_COORDINATOR"));
+        if (!coordinationAutoConnected
+                && !isCoordinator
+                && Agent.settings().coordinationEnabled.value) {
+            maestro.coordination.CoordinationClient client = maestro.getCoordinationClient();
+
+            // Create client lazily if it doesn't exist
+            if (client == null && maestro.getPlayerContext().player() != null) {
+                String workerId = maestro.getPlayerContext().player().getStringUUID();
+                String workerName = maestro.getPlayerContext().player().getName().getString();
+                client = new maestro.coordination.CoordinationClient(workerId, workerName);
+                ((maestro.Agent) maestro).setCoordinationClient(client);
+            }
+
+            if (client != null) {
+                String host = Agent.settings().coordinationHost.value;
+                int port = Agent.settings().coordinationPort.value;
+                boolean connected = client.connect(host, port);
+                if (connected) {
+                    log.atInfo()
+                            .addKeyValue("host", host)
+                            .addKeyValue("port", port)
+                            .log("Auto-connected to coordinator");
+                }
+                coordinationAutoConnected = true;
+            }
+        }
+
         if (event.getType() == TickEvent.Type.IN) {
             try {
                 maestro.bsi = new BlockStateInterface(maestro.getPlayerContext(), true);
@@ -47,6 +88,9 @@ public final class GameEventHandler implements IEventBus {
 
     @Override
     public void onPostTick(TickEvent event) {
+        // DevMode: Execute queued commands
+        maestro.getDevModeManager().onPostTick(event);
+
         listeners.forEach(l -> l.onPostTick(event));
     }
 
@@ -131,6 +175,9 @@ public final class GameEventHandler implements IEventBus {
             cache.closeWorld();
             if (event.getWorld() != null) {
                 cache.initWorld(event.getWorld());
+
+                // DevMode: Open LAN and queue commands after world load
+                maestro.getDevModeManager().onWorldLoad();
             }
         }
 

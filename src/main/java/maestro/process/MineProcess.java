@@ -45,6 +45,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
+    private BlockPos lastClaimedArea = null;
 
     public MineProcess(Agent maestro) {
         super(maestro);
@@ -73,6 +74,20 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                 return null;
             }
         }
+
+        // Check coordination goal status
+        maestro.coordination.CoordinationClient client = maestro.getCoordinationClient();
+        if (client != null && client.isConnected()) {
+            var status = client.checkGoalStatus();
+            if (status.component1()) {
+                log.atInfo()
+                        .addKeyValue("global_total", status.component2())
+                        .log("Global mining goal complete");
+                cancel();
+                return null;
+            }
+        }
+
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Agent.settings().blacklistClosestOnFailure.value) {
                 log.atWarn()
@@ -185,6 +200,13 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
 
     @Override
     public void onLostControl() {
+        // Release area claim
+        maestro.coordination.CoordinationClient client = maestro.getCoordinationClient();
+        if (client != null && lastClaimedArea != null) {
+            client.releaseArea(lastClaimedArea);
+            lastClaimedArea = null;
+        }
+
         mine(0, (BlockOptionalMetaLookup) null);
     }
 
@@ -197,6 +219,43 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         BlockOptionalMetaLookup filter = filterFilter();
         if (filter == null) {
             return null;
+        }
+
+        // Area claiming for coordination
+        maestro.coordination.CoordinationClient client = maestro.getCoordinationClient();
+        if (client != null && client.isConnected()) {
+            BlockPos currentPos = ctx.playerFeet();
+            boolean needsClaim =
+                    lastClaimedArea == null || currentPos.distSqr(lastClaimedArea) > 16 * 16;
+
+            if (needsClaim) {
+                double radius = Agent.settings().coordinationClaimRadius.value;
+                boolean claimed = client.claimArea(currentPos, radius);
+
+                if (!claimed) {
+                    log.atWarn()
+                            .addKeyValue("pos_x", currentPos.getX())
+                            .addKeyValue("pos_y", currentPos.getY())
+                            .addKeyValue("pos_z", currentPos.getZ())
+                            .addKeyValue("radius", radius)
+                            .log("Area claim denied, pausing mining");
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                }
+
+                log.atInfo()
+                        .addKeyValue("pos_x", currentPos.getX())
+                        .addKeyValue("pos_y", currentPos.getY())
+                        .addKeyValue("pos_z", currentPos.getZ())
+                        .addKeyValue("radius", radius)
+                        .log("Area claimed");
+
+                lastClaimedArea = currentPos;
+            }
+        } else if (Agent.settings().coordinationEnabled.value) {
+            log.atDebug()
+                    .addKeyValue("client_null", client == null)
+                    .addKeyValue("connected", client != null && client.isConnected())
+                    .log("Coordination enabled but client unavailable");
         }
 
         boolean legit = Agent.settings().legitMine.value;

@@ -2,6 +2,7 @@ plugins {
     id 'com.diffplug.spotless' version '7.0.3' apply false
     id 'org.jetbrains.kotlin.jvm' version '2.2.21' apply false
     id 'xyz.wagyourtail.unimined' version '1.2.9' apply false
+    id 'com.google.protobuf' version '0.9.4' apply false
 }
 
 // Reproducible JAR builds - consistent byte-for-byte output
@@ -25,6 +26,13 @@ allprojects {
     apply plugin: "xyz.wagyourtail.unimined"
     apply plugin: "maven-publish"
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'com.google.protobuf'
+
+    configurations.all {
+        resolutionStrategy {
+            force 'com.google.guava:guava:33.0.0-jre'
+        }
+    }
 
     archivesBaseName = rootProject.archives_base_name
 
@@ -108,6 +116,14 @@ allprojects {
         implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
         implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+
+        // gRPC and Protocol Buffers for multi-agent coordination
+        implementation 'io.grpc:grpc-netty-shaded:1.60.0'
+        implementation 'io.grpc:grpc-protobuf:1.60.0'
+        implementation 'io.grpc:grpc-stub:1.60.0'
+        implementation 'io.grpc:grpc-kotlin-stub:1.4.1'
+        implementation 'com.google.protobuf:protobuf-kotlin:3.25.1'
+        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     }
 
     unimined.minecraft(sourceSets.main, true) {
@@ -137,6 +153,24 @@ allprojects {
         }
     }
 
+    protobuf {
+        protoc {
+            artifact = 'com.google.protobuf:protoc:3.25.1'
+        }
+        plugins {
+            grpc {
+                artifact = 'io.grpc:protoc-gen-grpc-java:1.60.0'
+            }
+        }
+        generateProtoTasks {
+            all().each { task ->
+                task.plugins {
+                    grpc {}
+                }
+            }
+        }
+    }
+
     tasks.withType(JavaCompile).configureEach {
         it.options.encoding = "UTF-8"
 
@@ -158,10 +192,16 @@ sourceSets {
     api {
         compileClasspath += main.compileClasspath
         runtimeClasspath += main.runtimeClasspath
+        proto {
+            srcDir 'src/api/proto'
+        }
     }
     main {
         compileClasspath += api.output
         runtimeClasspath += api.output
+        kotlin {
+            srcDir 'src/main/kotlin'
+        }
     }
     test {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output

@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package maestro.coordination;
+
+option java_multiple_files = true;
+option java_package = "maestro.coordination.proto";
+option java_outer_classname = "CoordinationProto";
+
+// Multi-agent coordination service for work distribution and progress tracking
+service Coordination {
+  // Worker connects to coordinator
+  rpc Connect(ConnectRequest) returns (ConnectResponse);
+
+  // Request to claim an area for exclusive work
+  rpc ClaimArea(ClaimAreaRequest) returns (ClaimAreaResponse);
+
+  // Release a previously claimed area
+  rpc ReleaseArea(ReleaseAreaRequest) returns (ReleaseAreaResponse);
+
+  // Report progress on resource collection
+  rpc ReportProgress(ProgressReport) returns (ProgressResponse);
+
+  // Check goal status without updating progress
+  rpc CheckGoalStatus(GoalStatusRequest) returns (GoalStatusResponse);
+
+  // Heartbeat to maintain connection
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// Block position in Minecraft world
+message Position {
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
+}
+
+// Area claim by a worker
+message Claim {
+  string worker_id = 1;
+  Position center = 2;
+  double radius = 3;
+  int64 timestamp = 4;
+}
+
+// Connect request from worker
+message ConnectRequest {
+  string worker_id = 1;
+  string worker_name = 2;
+}
+
+// Connect response from coordinator
+message ConnectResponse {
+  bool accepted = 1;
+  string message = 2;
+  int32 global_goal = 3;
+  int32 current_total = 4;
+}
+
+// Request to claim an area
+message ClaimAreaRequest {
+  string worker_id = 1;
+  Position center = 2;
+  double radius = 3;
+}
+
+// Response to claim area request
+message ClaimAreaResponse {
+  bool granted = 1;
+  string reason = 2;
+  repeated Claim conflicting_claims = 3;
+}
+
+// Request to release an area
+message ReleaseAreaRequest {
+  string worker_id = 1;
+  Position center = 2;
+}
+
+// Response to release area request
+message ReleaseAreaResponse {
+  bool success = 1;
+}
+
+// Progress report from worker
+message ProgressReport {
+  string worker_id = 1;
+  string resource_type = 2;
+  int32 quantity = 3;
+  int32 total_collected = 4;
+}
+
+// Response to progress report
+message ProgressResponse {
+  bool goal_complete = 1;
+  int32 global_total = 2;
+  int32 global_goal = 3;
+}
+
+// Request for goal status
+message GoalStatusRequest {
+  string worker_id = 1;
+}
+
+// Response with goal status
+message GoalStatusResponse {
+  bool goal_complete = 1;
+  int32 global_total = 2;
+  int32 global_goal = 3;
+}
+
+// Heartbeat request from worker
+message HeartbeatRequest {
+  string worker_id = 1;
+  int64 timestamp = 2;
+}
+
+// Heartbeat response from coordinator
+message HeartbeatResponse {
+  bool acknowledged = 1;
+  int64 server_time = 2;
+}

@@ -76,6 +76,13 @@ public class Agent implements IAgent {
 
     public BlockStateInterface bsi;
 
+    // Multi-agent coordination
+    private maestro.coordination.CoordinationServer coordinationServer;
+    private maestro.coordination.CoordinationClient coordinationClient;
+
+    // Development mode manager
+    private final maestro.utils.DevModeManager devModeManager;
+
     // Free-look camera state (independent from player rotation)
     private float freeLookYaw = 0.0f;
     private float freeLookPitch = 0.0f;
@@ -93,6 +100,7 @@ public class Agent implements IAgent {
     Agent(Minecraft mc) {
         this.mc = mc;
         this.gameEventHandler = new GameEventHandler(this);
+        this.devModeManager = new maestro.utils.DevModeManager(this);
 
         this.directory = mc.gameDirectory.toPath().resolve("maestro");
         if (!Files.exists(this.directory)) {
@@ -383,6 +391,26 @@ public class Agent implements IAgent {
 
     public InventoryPauserProcess getInventoryPauserProcess() {
         return this.inventoryPauserProcess;
+    }
+
+    public maestro.coordination.CoordinationServer getCoordinationServer() {
+        return this.coordinationServer;
+    }
+
+    public void setCoordinationServer(maestro.coordination.CoordinationServer server) {
+        this.coordinationServer = server;
+    }
+
+    public maestro.coordination.CoordinationClient getCoordinationClient() {
+        return this.coordinationClient;
+    }
+
+    public void setCoordinationClient(maestro.coordination.CoordinationClient client) {
+        this.coordinationClient = client;
+    }
+
+    public maestro.utils.DevModeManager getDevModeManager() {
+        return this.devModeManager;
     }
 
     @Override

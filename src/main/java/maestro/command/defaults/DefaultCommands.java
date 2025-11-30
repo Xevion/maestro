@@ -55,6 +55,7 @@ public final class DefaultCommands {
                                 new BlacklistCommand(maestro),
                                 new FindCommand(maestro),
                                 new MineCommand(maestro),
+                                new CoordinatorCommand(maestro),
                                 new ClickCommand(maestro),
                                 new FullbrightCommand(maestro),
                                 new SurfaceCommand(maestro),

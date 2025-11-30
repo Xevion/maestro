@@ -19,6 +19,7 @@
     "MixinFireworkRocketEntity",
     "MixinGameRenderer",
     "MixinGui",
+    "MixinIntegratedServer",
     "MixinItemStack",
     "MixinKeyboardInput",
     "MixinLivingEntity",

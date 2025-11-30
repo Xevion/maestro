@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
  *     .log("Recalculating path");
  * </pre>
  *
- * <p>Available categories: path, swim, combat, mine, farm, build, cache, move, rotation, event,
- * cmd, api, waypoint, inventory
+ * <p>Available categories: path, swim, combat, coord, mine, farm, build, cache, move, rotation,
+ * event, cmd, api, waypoint, inventory
  *
  * <p>Logger configuration (DEBUG level, CONSOLE + CHAT appenders) is performed programmatically via
  * {@link LoggerConfigurator} during class initialization.
@@ -32,9 +32,11 @@ public final class MaestroLogger {
 
     private static final Map<String, String> CATEGORIES =
             Map.ofEntries(
+                    Map.entry("dev", "dev"),
                     Map.entry("path", "path"),
                     Map.entry("swim", "swim"),
                     Map.entry("combat", "combat"),
+                    Map.entry("coord", "coord"),
                     Map.entry("mine", "mine"),
                     Map.entry("farm", "farm"),
                     Map.entry("build", "build"),

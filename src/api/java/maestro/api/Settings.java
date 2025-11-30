@@ -1619,6 +1619,18 @@ public final class Settings {
     /** Verbose chat logging in elytra mode */
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
+    /** Enable multi-agent coordination via gRPC */
+    public final Setting<Boolean> coordinationEnabled = new Setting<>(false);
+
+    /** Coordinator server host to connect to */
+    public final Setting<String> coordinationHost = new Setting<>("localhost");
+
+    /** Coordinator server port */
+    public final Setting<Integer> coordinationPort = new Setting<>(9090);
+
+    /** Radius for area claims (blocks) */
+    public final Setting<Double> coordinationClaimRadius = new Setting<>(16.0);
+
     /** A map of lowercase setting field names to their respective setting */
     public final Map<String, Setting<?>> byLowerName;
 
