@@ -5,5 +5,5 @@ repos:
         name: Spotless Format
         entry: ./scripts/pre-commit-spotless.sh
         language: script
-        types_or: [java, kotlin]
+        types_or: [ java, kotlin ]
         pass_filenames: false

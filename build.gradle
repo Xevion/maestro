@@ -15,8 +15,8 @@ tasks.withType(AbstractArchiveTask).configureEach {
 // See: https://github.com/diffplug/spotless/issues/724
 if (JavaVersion.current() < JavaVersion.VERSION_21) {
     throw new GradleException(
-        "This project requires Java 21 or later to run Spotless (currently running ${JavaVersion.current()}).\n" +
-        "Please set JAVA_HOME to a Java 21+ installation or run with: ./gradlew -Dorg.gradle.java.home=/path/to/jdk21"
+            "This project requires Java 21 or later to run Spotless (currently running ${JavaVersion.current()}).\n" +
+                    "Please set JAVA_HOME to a Java 21+ installation or run with: ./gradlew -Dorg.gradle.java.home=/path/to/jdk21"
     )
 }
 
@@ -32,6 +32,8 @@ allprojects {
         resolutionStrategy {
             force 'com.google.guava:guava:33.0.0-jre'
         }
+        // Exclude Log4j SLF4J provider - we use Logback
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
     }
 
     archivesBaseName = rootProject.archives_base_name
@@ -141,14 +143,14 @@ allprojects {
     spotless {
         enforceCheck = false
         java {
-            target 'src/*/java/**/*.java'
-            targetExclude 'src/launch/java/maestro/launch/mixins/MixinLootContextBuilder.java'
+            target 'src/**/*.java'
+            targetExclude 'src/launch/maestro/launch/mixins/MixinLootContextBuilder.java'
             googleJavaFormat('1.32.0').aosp().reflowLongStrings()
             removeUnusedImports()
             toggleOffOn()
         }
         kotlin {
-            target 'src/*/kotlin/**/*.kt'
+            target 'src/**/*.kt'
             ktlint('1.5.0')
         }
     }
@@ -190,6 +192,12 @@ archivesBaseName = archivesBaseName + "-common"
 
 sourceSets {
     api {
+        java {
+            srcDir 'src/api'
+        }
+        kotlin {
+            srcDir 'src/api'
+        }
         compileClasspath += main.compileClasspath
         runtimeClasspath += main.runtimeClasspath
         proto {
@@ -197,21 +205,42 @@ sourceSets {
         }
     }
     main {
+        java {
+            srcDir 'src/main'
+        }
+        kotlin {
+            srcDir 'src/main'
+        }
         compileClasspath += api.output
         runtimeClasspath += api.output
-        kotlin {
-            srcDir 'src/main/kotlin'
-        }
     }
     test {
+        java {
+            srcDir 'src/test'
+        }
+        kotlin {
+            srcDir 'src/test'
+        }
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
         runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
     launch {
+        java {
+            srcDir 'src/launch'
+        }
+        kotlin {
+            srcDir 'src/launch'
+        }
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
         runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
     schematica_api {
+        java {
+            srcDir 'src/schematica_api'
+        }
+        kotlin {
+            srcDir 'src/schematica_api'
+        }
         compileClasspath += main.compileClasspath
         runtimeClasspath += main.runtimeClasspath
     }

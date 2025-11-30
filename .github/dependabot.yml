@@ -70,14 +70,14 @@ updates:
     ignore:
       # Minecraft version changes should be manual
       - dependency-name: "minecraft"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]
       # Loader versions should be updated carefully
       - dependency-name: "fabric*"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "forge*"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "neoforge*"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]
       # Mixin updates can be breaking
       - dependency-name: "mixin"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]

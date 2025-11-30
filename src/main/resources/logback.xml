@@ -9,7 +9,7 @@
 
     <!-- JSON file appender for structured logging (Maestro logs only) -->
     <appender name="JSON_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>maestro-logs.json</file>
+        <file>maestro-logs.jsonl</file>
         <append>false</append>
         <!-- Use Logback's built-in JSON encoder with minimal config -->
         <encoder class="ch.qos.logback.classic.encoder.JsonEncoder">
@@ -18,7 +18,7 @@
     </appender>
 
     <!-- Chat appender for in-game messages -->
-    <appender name="CHAT" class="maestro.utils.chat.ChatAppender" />
+    <appender name="CHAT" class="maestro.utils.chat.ChatAppender"/>
 
     <!--
         Maestro category loggers are configured programmatically.
@@ -39,8 +39,8 @@
          This means JSON file will contain both Maestro logs (DEBUG+) and other logs (INFO+).
          Filter by logger name using jq: jq -r 'select(.logger | IN("path","swim","combat"))' -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="CHAT" />
-        <appender-ref ref="JSON_FILE" />
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CHAT"/>
+        <appender-ref ref="JSON_FILE"/>
     </root>
 </configuration>
