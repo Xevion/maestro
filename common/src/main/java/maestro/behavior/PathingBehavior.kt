@@ -141,7 +141,7 @@ class PathingBehavior(
     }
 
     override fun onPlayerSprintState(event: SprintStateEvent) {
-        if (isPathing) {
+        if (isPathing()) {
             event.state = current!!.isSprinting
         }
     }

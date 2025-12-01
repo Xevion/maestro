@@ -1,19 +1,21 @@
-package maestro.api.debug;
+package maestro.api.debug
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphics
 
 /**
  * Interface for HUD debug rendering.
  *
- * <p>Handles 2D screen-space debug overlays.
+ * Handles 2D screen-space debug overlays.
  */
-public interface IHudDebugRenderer {
-
+interface IHudDebugRenderer {
     /**
      * Render HUD debug overlays.
      *
      * @param graphics the GUI graphics context for rendering
      * @param tickDelta partial tick time for smooth animations
      */
-    void render(GuiGraphics graphics, float tickDelta);
+    fun render(
+        graphics: GuiGraphics,
+        tickDelta: Float,
+    )
 }
