@@ -15,6 +15,7 @@ import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.utils.PackedBlockPos;
 import maestro.cache.CachedChunk;
+import maestro.utils.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
@@ -58,12 +59,10 @@ public class FindCommand extends Command {
                         .toArray(Component[]::new);
         if (components.length > 0) {
             // Send formatted component list to chat
-            maestro.utils.chat.ChatMessageRenderer renderer =
-                    new maestro.utils.chat.ChatMessageRenderer();
             for (Component component : components) {
                 net.minecraft.network.chat.MutableComponent prefixed =
                         net.minecraft.network.chat.Component.literal("");
-                prefixed.append(renderer.createCategoryPrefix("cmd"));
+                prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
                 prefixed.append(" ");
                 prefixed.append(component);
 

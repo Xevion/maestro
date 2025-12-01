@@ -8,7 +8,7 @@ import maestro.api.pathing.goals.GoalBlock
 import maestro.api.utils.Helper
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
-import maestro.utils.chat.ChatMessageBuilder
+import maestro.utils.chat.ChatMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
@@ -96,7 +96,7 @@ class GuiClick :
 
                         agent.getSelectionManager().addSelection(from, to)
 
-                        ChatMessageBuilder
+                        ChatMessage
                             .info(log, "event")
                             .message("Selection made")
                             .key("from", from)

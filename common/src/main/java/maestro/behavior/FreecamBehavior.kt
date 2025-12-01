@@ -2,7 +2,7 @@ package maestro.behavior
 
 import maestro.Agent
 import maestro.api.event.events.TickEvent
-import maestro.utils.InputHelper
+import maestro.utils.InputOverrideHandler
 import net.minecraft.world.phys.Vec3
 import org.lwjgl.glfw.GLFW
 import kotlin.math.cos
@@ -35,7 +35,7 @@ class FreecamBehavior(
 
     private fun updateFreecamPosition() {
         // Don't process freecam movement when screens are open
-        if (!InputHelper.canUseBotKeys()) {
+        if (!InputOverrideHandler.canUseBotKeys()) {
             return
         }
 

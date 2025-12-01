@@ -6,7 +6,11 @@ import maestro.api.event.events.TickEvent
 import maestro.api.utils.IInputOverrideHandler
 import maestro.api.utils.input.Input
 import maestro.behavior.Behavior
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.DeathScreen
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.player.KeyboardInput
+import org.lwjgl.glfw.GLFW
 
 /**
  * An interface with the game's control system allowing the ability to force down certain controls,
@@ -92,4 +96,64 @@ class InputOverrideHandler(
     }
 
     fun getBlockBreakHelper(): BlockBreakHelper = blockBreakHelper
+
+    companion object {
+        /**
+         * Checks if bot/debug keys should be active based on current game state.
+         *
+         * Keys are blocked when any screen/GUI is open (except death screen). This prevents keys
+         * from activating while typing in chat, browsing inventory, or interacting with menus.
+         *
+         * @return true if bot keys should process input, false otherwise
+         */
+        @JvmStatic
+        fun canUseBotKeys(): Boolean {
+            val mc = Minecraft.getInstance()
+            val currentScreen: Screen? = mc.screen
+
+            return when (currentScreen) {
+                // No screen open - keys are active
+                null -> true
+                // Death screen - allow keys (useful for reviewing what killed you)
+                is DeathScreen -> true
+                // Any other screen - block keys
+                else -> false
+            }
+        }
+
+        /**
+         * Checks if a specific GLFW key is pressed AND bot keys are active.
+         *
+         * Combines direct GLFW polling with screen-awareness. Only returns true if the key is
+         * physically pressed and no blocking screen is open.
+         *
+         * @param glfwKey The GLFW key constant (e.g., GLFW.GLFW_KEY_W)
+         * @return true if key is physically pressed and bot keys are active
+         */
+        @JvmStatic
+        fun isKeyPressed(glfwKey: Int): Boolean {
+            if (!canUseBotKeys()) {
+                return false
+            }
+
+            val window = Minecraft.getInstance().window.window
+            return GLFW.glfwGetKey(window, glfwKey) == GLFW.GLFW_PRESS
+        }
+
+        /**
+         * Checks if CTRL modifier is pressed (either left or right) AND bot keys are active.
+         *
+         * @return true if any CTRL key is pressed and bot keys are active
+         */
+        @JvmStatic
+        fun isCtrlPressed(): Boolean {
+            if (!canUseBotKeys()) {
+                return false
+            }
+
+            val window = Minecraft.getInstance().window.window
+            return GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS ||
+                GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_CONTROL) == GLFW.GLFW_PRESS
+        }
+    }
 }

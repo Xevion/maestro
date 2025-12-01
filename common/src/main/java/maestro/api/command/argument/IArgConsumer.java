@@ -1,7 +1,7 @@
 package maestro.api.command.argument;
 
 import java.util.Deque;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Stream;
 import maestro.api.command.ICommand;
 import maestro.api.command.argparser.IArgParser;
@@ -35,7 +35,7 @@ import net.minecraft.core.Direction;
  */
 public interface IArgConsumer {
 
-    LinkedList<ICommandArgument> getArgs();
+    List<ICommandArgument> getArgs();
 
     Deque<ICommandArgument> getConsumed();
 

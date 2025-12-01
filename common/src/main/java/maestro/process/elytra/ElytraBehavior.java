@@ -1076,6 +1076,11 @@ public final class ElytraBehavior {
                     && this.ignoreLava == other.ignoreLava
                     && Objects.equals(this.boost, other.boost);
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(path, playerNear, start, motion, boundingBox, ignoreLava, boost);
+        }
     }
 
     private static final class FireworkBoost {
@@ -1137,6 +1142,11 @@ public final class ElytraBehavior {
             return Objects.equals(this.fireworkTicksExisted, other.fireworkTicksExisted)
                     && this.minimumBoostTicks == other.minimumBoostTicks
                     && this.maximumBoostTicks == other.maximumBoostTicks;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(fireworkTicksExisted, minimumBoostTicks, maximumBoostTicks);
         }
     }
 

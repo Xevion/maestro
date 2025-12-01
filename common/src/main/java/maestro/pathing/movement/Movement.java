@@ -64,6 +64,7 @@ public abstract class Movement implements IMovement, MovementHelper {
         this(maestro, src, dest, toBreak, null);
     }
 
+    @Override
     public double getCost() throws NullPointerException {
         return cost;
     }

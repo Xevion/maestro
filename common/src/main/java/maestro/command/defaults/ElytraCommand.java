@@ -15,6 +15,7 @@ import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.process.ICustomGoalProcess;
 import maestro.api.process.IElytraProcess;
+import maestro.utils.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.ClickEvent;
@@ -90,15 +91,13 @@ public class ElytraCommand extends Command {
             long seed = Agent.settings().elytraNetherSeed.value;
             if (seed != NEW_2B2T_SEED && seed != OLD_2B2T_SEED) {
                 // Send rich component to chat manually
-                maestro.utils.chat.ChatMessageRenderer renderer =
-                        new maestro.utils.chat.ChatMessageRenderer();
 
                 MutableComponent msg1 =
                         Component.literal(
                                 "It looks like you're on 2b2t, but elytraNetherSeed is"
                                         + " incorrect.");
                 MutableComponent prefixed1 = Component.literal("");
-                prefixed1.append(renderer.createCategoryPrefix("cmd"));
+                prefixed1.append(ChatMessage.createCategoryPrefix("cmd"));
                 prefixed1.append(" ");
                 prefixed1.append(msg1);
                 net.minecraft.client.Minecraft.getInstance()
@@ -106,7 +105,7 @@ public class ElytraCommand extends Command {
 
                 Component msg2 = suggest2b2tSeeds();
                 MutableComponent prefixed2 = Component.literal("");
-                prefixed2.append(renderer.createCategoryPrefix("cmd"));
+                prefixed2.append(ChatMessage.createCategoryPrefix("cmd"));
                 prefixed2.append(" ");
                 prefixed2.append(msg2);
                 net.minecraft.client.Minecraft.getInstance()
@@ -283,10 +282,8 @@ public class ElytraCommand extends Command {
             }
         }
         // Send rich component to chat manually
-        maestro.utils.chat.ChatMessageRenderer renderer =
-                new maestro.utils.chat.ChatMessageRenderer();
         MutableComponent prefixed = Component.literal("");
-        prefixed.append(renderer.createCategoryPrefix("cmd"));
+        prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
         prefixed.append(" ");
         prefixed.append(gatekeep);
         net.minecraft.client.Minecraft.getInstance()

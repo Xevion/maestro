@@ -20,7 +20,7 @@ import maestro.behavior.Behavior;
 import maestro.command.argument.ArgConsumer;
 import maestro.command.argument.CommandArguments;
 import maestro.command.manager.CommandManager;
-import maestro.utils.chat.ChatMessageRenderer;
+import maestro.utils.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.*;
@@ -74,9 +74,8 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                                             FORCE_COMMAND_PREFIX + msg)));
 
             // Send rich component to chat manually
-            ChatMessageRenderer renderer = new ChatMessageRenderer();
             MutableComponent prefixed = Component.literal("");
-            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
             prefixed.append(" ");
             prefixed.append(component);
             Minecraft.getInstance().execute(() -> settings.logger.value.accept(prefixed));

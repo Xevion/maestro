@@ -15,16 +15,13 @@ import net.minecraft.network.chat.Component;
  * <ul>
  *   <li>Filters by level: INFO, WARN, ERROR only (no DEBUG)
  *   <li>Filters by category: Only MaestroLogger categories
- *   <li>Routes to ChatMessageRenderer for formatting
- *   <li>Sends to chat via ChatMessageSender on Minecraft main thread
+ *   <li>Routes to ChatMessage for formatting
+ *   <li>Sends to chat via ChatMessage on Minecraft main thread
  * </ul>
  *
  * <p>Configured in logback.xml to attach to all MaestroLogger categories.
  */
 public class ChatAppender extends AppenderBase<ILoggingEvent> {
-
-    private final ChatMessageRenderer renderer = new ChatMessageRenderer();
-    private final ChatMessageSender sender = new ChatMessageSender();
 
     @Override
     protected void append(ILoggingEvent event) {
@@ -43,8 +40,8 @@ public class ChatAppender extends AppenderBase<ILoggingEvent> {
         Minecraft.getInstance()
                 .execute(
                         () -> {
-                            Component message = renderer.render(event);
-                            sender.send(message);
+                            Component message = ChatMessage.render(event);
+                            ChatMessage.sendToChat(message);
                         });
     }
 }

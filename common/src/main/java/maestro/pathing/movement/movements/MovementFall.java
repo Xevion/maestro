@@ -215,7 +215,7 @@ public class MovementFall extends Movement {
         // if we haven't started walking off the edge yet, or if we're in the process of breaking
         // blocks before doing the fall
         // then it's safe to cancel this
-        return ctx.playerFeet().equals(src.toBlockPos())
+        return ctx.playerFeet().toBlockPos().equals(src.toBlockPos())
                 || state.getStatus() != MovementStatus.RUNNING;
     }
 

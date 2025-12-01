@@ -127,14 +127,12 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public <E extends Enum<?>> E peekEnum(Class<E> enumClass, int index)
-            throws CommandException, CommandException {
+    public <E extends Enum<?>> E peekEnum(Class<E> enumClass, int index) throws CommandException {
         return peek(index).getEnum(enumClass);
     }
 
     @Override
-    public <E extends Enum<?>> E peekEnum(Class<E> enumClass)
-            throws CommandException, CommandException {
+    public <E extends Enum<?>> E peekEnum(Class<E> enumClass) throws CommandException {
         return peekEnum(enumClass, 0);
     }
 
@@ -154,12 +152,12 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public <T> T peekAs(Class<T> type, int index) throws CommandException, CommandException {
+    public <T> T peekAs(Class<T> type, int index) throws CommandException {
         return peek(index).getAs(type);
     }
 
     @Override
-    public <T> T peekAs(Class<T> type) throws CommandException, CommandException {
+    public <T> T peekAs(Class<T> type) throws CommandException {
         return peekAs(type, 0);
     }
 
@@ -188,19 +186,17 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public <T> T peekDatatype(IDatatypeFor<T> datatype) throws CommandException, CommandException {
+    public <T> T peekDatatype(IDatatypeFor<T> datatype) throws CommandException {
         return copy().getDatatypeFor(datatype);
     }
 
     @Override
-    public <T, O> T peekDatatype(IDatatypePost<T, O> datatype)
-            throws CommandException, CommandException {
+    public <T, O> T peekDatatype(IDatatypePost<T, O> datatype) throws CommandException {
         return this.peekDatatype(datatype, null);
     }
 
     @Override
-    public <T, O> T peekDatatype(IDatatypePost<T, O> datatype, O original)
-            throws CommandException, CommandException {
+    public <T, O> T peekDatatype(IDatatypePost<T, O> datatype, O original) throws CommandException {
         return copy().getDatatypePost(datatype, original);
     }
 
@@ -216,7 +212,7 @@ public class ArgConsumer implements IArgConsumer {
 
     @Override
     public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(D datatype, O original)
-            throws CommandException, CommandException {
+            throws CommandException {
         return copy().getDatatypePost(datatype, original);
     }
 
@@ -260,8 +256,7 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public <E extends Enum<?>> E getEnum(Class<E> enumClass)
-            throws CommandException, CommandException {
+    public <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandException {
         return get().getEnum(enumClass);
     }
 
@@ -282,7 +277,7 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public <T> T getAs(Class<T> type) throws CommandException, CommandException {
+    public <T> T getAs(Class<T> type) throws CommandException {
         return get().getAs(type);
     }
 
@@ -304,7 +299,7 @@ public class ArgConsumer implements IArgConsumer {
 
     @Override
     public <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(D datatype, O original)
-            throws CommandException, CommandException {
+            throws CommandException {
         try {
             return datatype.apply(this.context, original);
         } catch (Exception e) {
@@ -338,8 +333,7 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public <T, D extends IDatatypeFor<T>> T getDatatypeFor(D datatype)
-            throws CommandException, CommandException {
+    public <T, D extends IDatatypeFor<T>> T getDatatypeFor(D datatype) throws CommandException {
         try {
             return datatype.get(this.context);
         } catch (Exception e) {

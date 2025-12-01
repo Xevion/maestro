@@ -204,7 +204,7 @@ public class MovementPillar extends Movement {
                     || Math.abs(ctx.player().position().z - destCenter.z) > 0.2) {
                 state.setInput(Input.MOVE_FORWARD, true);
             }
-            if (ctx.playerFeet().equals(dest.toBlockPos())) {
+            if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
@@ -238,8 +238,8 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (ctx.playerFeet().equals(against.above())
-                    || ctx.playerFeet().equals(dest.toBlockPos())) {
+            if (ctx.playerFeet().toBlockPos().equals(against.above())
+                    || ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             if (MovementHelper.isBottomSlab(
@@ -319,7 +319,7 @@ public class MovementPillar extends Movement {
         }
 
         // If we are at our goal and the block below us is placed
-        if (ctx.playerFeet().equals(dest.toBlockPos()) && blockIsThere) {
+        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos()) && blockIsThere) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
@@ -328,8 +328,8 @@ public class MovementPillar extends Movement {
 
     @Override
     protected boolean prepared(MovementState state) {
-        if (ctx.playerFeet().equals(src.toBlockPos())
-                || ctx.playerFeet().equals(src.toBlockPos().below())) {
+        if (ctx.playerFeet().toBlockPos().equals(src.toBlockPos())
+                || ctx.playerFeet().toBlockPos().equals(src.toBlockPos().below())) {
             Block block = BlockStateInterface.getBlock(ctx, src.toBlockPos().below());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(Input.SNEAK, true);

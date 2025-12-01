@@ -466,7 +466,9 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                                 true);
                 if (result != null
                         && result.getType() == HitResult.Type.BLOCK
-                        && ((BlockHitResult) result).getBlockPos().equals(placeAgainstPos)
+                        && ((BlockHitResult) result)
+                                .getBlockPos()
+                                .equals(placeAgainstPos.toBlockPos())
                         && ((BlockHitResult) result).getDirection() == against.getOpposite()) {
                     OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, actualRot);
                     if (hotbar.isPresent()) {

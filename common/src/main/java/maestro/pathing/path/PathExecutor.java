@@ -114,7 +114,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                         path.movements().get(j).reset();
                     }
                     onChangeInPathPosition();
-                    onTick();
                     return false;
                 }
             }
@@ -133,7 +132,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                     // System.out.println("Double skip sundae");
                     pathPosition = i - 1;
                     onChangeInPathPosition();
-                    onTick();
                     return false;
                 }
             }
@@ -339,7 +337,6 @@ public class PathExecutor implements IPathExecutor, Helper {
             // System.out.println("Movement done, next path");
             pathPosition++;
             onChangeInPathPosition();
-            onTick();
             return true;
         } else {
             sprintNextTick = shouldSprintNextTick();
@@ -501,7 +498,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                     log.atDebug().log("Skipping traverse to straight ascend");
                     pathPosition++;
                     onChangeInPathPosition();
-                    onTick();
                     behavior.maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
                     return true;
                 } else {
@@ -577,9 +573,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                     // a descend then an ascend in the same direction
                     pathPosition++;
                     onChangeInPathPosition();
-                    onTick();
-                    // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't
-                    // possible to repeat, since it's asymmetric
                     log.atDebug().log("Skipping descend to straight ascend");
                     return true;
                 }
@@ -595,7 +588,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                     if (ctx.playerFeet().toBlockPos().equals(current.getDest().toBlockPos())) {
                         pathPosition++;
                         onChangeInPathPosition();
-                        onTick();
                     }
 
                     return true;
@@ -637,14 +629,12 @@ public class PathExecutor implements IPathExecutor, Helper {
                 if (!path.positions().contains(fallDest)) {
                     throw new IllegalStateException(
                             String.format(
-                                    "Fall override at %s %s %s returned illegal destination %s %s"
-                                            + " %s",
+                                    "Fall override at %s returned illegal destination %s",
                                     current.getSrc().toBlockPos(), fallDest));
                 }
                 if (ctx.playerFeet().toBlockPos().equals(fallDest.toBlockPos())) {
                     pathPosition = path.positions().indexOf(fallDest);
                     onChangeInPathPosition();
-                    onTick();
                     return true;
                 }
                 clearKeys();

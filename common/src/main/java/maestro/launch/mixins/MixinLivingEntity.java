@@ -100,6 +100,9 @@ public abstract class MixinLivingEntity extends Entity {
     }
 
     @Unique
+    @SuppressWarnings(
+            "IsInstanceIncompatibleType") // Mixin: 'this' is LivingEntity, checking if it's a
+    // LocalPlayer at runtime
     private Optional<IAgent> getMaestro() {
         // noinspection ConstantConditions
         if (LocalPlayer.class.isInstance(this)) {

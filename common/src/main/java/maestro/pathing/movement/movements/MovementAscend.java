@@ -189,8 +189,9 @@ public class MovementAscend extends Movement {
         }
 
         BlockPos dirVec = getDirection();
-        if (ctx.playerFeet().equals(dest.toBlockPos())
+        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())
                 || ctx.playerFeet()
+                        .toBlockPos()
                         .equals(dest.toBlockPos().offset(-dirVec.getX(), 0, -dirVec.getZ()))) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
@@ -221,7 +222,7 @@ public class MovementAscend extends Movement {
         }
 
         if (Agent.settings().assumeStep.value
-                || ctx.playerFeet().equals(src.above().toBlockPos())) {
+                || ctx.playerFeet().toBlockPos().equals(src.above().toBlockPos())) {
             // no need to hit space if we're already jumping
             return state;
         }

@@ -23,7 +23,7 @@ import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.PackedBlockPos;
-import maestro.utils.chat.ChatMessageRenderer;
+import maestro.utils.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
@@ -45,7 +45,6 @@ public class WaypointsCommand extends Command {
         if (action == null) {
             throw new CommandException.InvalidArgument.InvalidType(args.consumed(), "an action");
         }
-        ChatMessageRenderer renderer = new ChatMessageRenderer();
         BiFunction<IWaypoint, Action, Component> toComponent =
                 (waypoint, _action) -> {
                     MutableComponent component = Component.literal("");
@@ -142,7 +141,7 @@ public class WaypointsCommand extends Command {
             component.append(toComponent.apply(waypoint, Action.INFO));
 
             MutableComponent prefixed = Component.literal("");
-            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
             prefixed.append(" ");
             prefixed.append(component);
 
@@ -187,7 +186,7 @@ public class WaypointsCommand extends Command {
                                                             .collect(Collectors.joining(" "))))));
 
             MutableComponent prefixed = Component.literal("");
-            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
             prefixed.append(" ");
             prefixed.append(textComponent);
 
@@ -265,7 +264,7 @@ public class WaypointsCommand extends Command {
                 if (action == Action.INFO) {
                     MutableComponent waypointInfo = (MutableComponent) transform.apply(waypoint);
                     MutableComponent prefixed1 = Component.literal("");
-                    prefixed1.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed1.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed1.append(" ");
                     prefixed1.append(waypointInfo);
                     Minecraft.getInstance()
@@ -334,28 +333,28 @@ public class WaypointsCommand extends Command {
                                                             FORCE_COMMAND_PREFIX, label))));
 
                     MutableComponent prefixed2 = Component.literal("");
-                    prefixed2.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed2.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed2.append(" ");
                     prefixed2.append(deleteComponent);
                     Minecraft.getInstance()
                             .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed2));
 
                     MutableComponent prefixed3 = Component.literal("");
-                    prefixed3.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed3.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed3.append(" ");
                     prefixed3.append(goalComponent);
                     Minecraft.getInstance()
                             .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed3));
 
                     MutableComponent prefixed4 = Component.literal("");
-                    prefixed4.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed4.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed4.append(" ");
                     prefixed4.append(recreateComponent);
                     Minecraft.getInstance()
                             .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed4));
 
                     MutableComponent prefixed5 = Component.literal("");
-                    prefixed5.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed5.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed5.append(" ");
                     prefixed5.append(backComponent);
                     Minecraft.getInstance()
@@ -384,7 +383,7 @@ public class WaypointsCommand extends Command {
                                                             waypoint.getCreationTimestamp()))));
 
                     MutableComponent prefixed6 = Component.literal("");
-                    prefixed6.append(renderer.createCategoryPrefix("cmd"));
+                    prefixed6.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed6.append(" ");
                     prefixed6.append(textComponent);
                     Minecraft.getInstance()

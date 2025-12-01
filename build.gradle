@@ -5,6 +5,7 @@ plugins {
     id 'com.diffplug.spotless' version '7.0.3'
     id 'org.jetbrains.kotlin.jvm' version '2.2.21' apply false
     id 'com.google.protobuf' version '0.9.4' apply false
+    id 'net.ltgt.errorprone' version '4.1.0' apply false
 }
 
 architectury {
@@ -24,6 +25,7 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
+    apply plugin: 'net.ltgt.errorprone'
 
     version = rootProject.mod_version
     group = rootProject.maven_group
@@ -38,9 +40,31 @@ allprojects {
         maven { url = 'https://babbaj.github.io/maven/' }
     }
 
+    dependencies {
+        errorprone 'com.google.errorprone:error_prone_core:2.36.0'
+    }
+
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
         options.release = project.java_version.toInteger()
+
+        // ErrorProne configuration
+        options.errorprone {
+            // Critical: Catch .equals() calls with incompatible types (the bug we fixed)
+            check('EqualsIncompatibleType', net.ltgt.gradle.errorprone.CheckSeverity.ERROR)
+
+            // Critical: Catch instanceof checks that will always fail
+            check('IsInstanceIncompatibleType', net.ltgt.gradle.errorprone.CheckSeverity.ERROR)
+
+            // Important: Classes overriding equals should override hashCode
+            check('EqualsHashCode', net.ltgt.gradle.errorprone.CheckSeverity.ERROR)
+
+            // Disable checks that conflict with Minecraft modding patterns
+            disable('MissingSummary')  // Javadoc style used in Minecraft ecosystem
+            disable('EmptyBlockTag')   // Common in Minecraft mod code
+            disable('UnusedMethod')    // Mixin methods appear unused to ErrorProne
+            disable('UnusedVariable')  // Mixin injected params appear unused
+        }
     }
 
     java {

@@ -142,7 +142,7 @@ class SwimmingBehavior(
         val rotation = RotationUtils.calcRotationFromVec3d(playerPos, targetVec, ctx.playerRotations())
 
         // Request rotation via RotationManager (priority 50 = NORMAL)
-        val rotationMgr = (maestro as Agent).rotationManager
+        val rotationMgr = maestro.rotationManager
         rotationMgr.queue(
             rotation.yaw,
             rotation.pitch,
@@ -150,7 +150,7 @@ class SwimmingBehavior(
         ) {
             // Callback: apply velocity after rotation complete
             // Guard callback execution
-            if ((maestro as Agent).isSwimmingActive && isInWater()) {
+            if (maestro.isSwimmingActive && isInWater()) {
                 applyTargetVelocity(rotation.yaw, rotation.pitch)
             }
         }
@@ -159,8 +159,6 @@ class SwimmingBehavior(
     /**
      * Deactivate swimming mode and restore normal camera control.
      * Should be called when player exits water or swimming behavior stops controlling movement.
-     *
-     * CRITICAL: Clears rotation queue to prevent stale rotations from executing after deactivation.
      */
     fun deactivateSwimming() {
         val player = ctx.player()
@@ -168,10 +166,10 @@ class SwimmingBehavior(
         // Clear vanilla swimming state (restores normal physics)
         player.isSwimming = false
 
-        (maestro as Agent).setSwimmingActive(false)
+        maestro.setSwimmingActive(false)
 
-        // CRITICAL: Clear pending rotations to prevent camera jerk after deactivation
+        // Clear pending rotations to prevent camera jerk after deactivation
         // Without this, queued rotations from swimming continue executing after user regains control
-        (maestro as Agent).rotationManager.clear()
+        maestro.rotationManager.clear()
     }
 }

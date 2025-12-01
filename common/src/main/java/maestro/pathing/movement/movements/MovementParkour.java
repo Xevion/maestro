@@ -281,7 +281,7 @@ public class MovementParkour extends Movement {
             state.setInput(Input.SPRINT, true);
         }
         MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
-        if (ctx.playerFeet().equals(dest.toBlockPos())) {
+        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
             Block d = BlockStateInterface.getBlock(ctx, dest.toBlockPos());
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 // it physically hurt me to add support for parkour jumping onto a vine
@@ -291,8 +291,8 @@ public class MovementParkour extends Movement {
             if (ctx.player().position().y - ctx.playerFeet().getY() < 0.094) { // lilypads
                 state.setStatus(MovementStatus.SUCCESS);
             }
-        } else if (!ctx.playerFeet().equals(src.toBlockPos())) {
-            if (ctx.playerFeet().equals(src.relative(direction).toBlockPos())
+        } else if (!ctx.playerFeet().toBlockPos().equals(src.toBlockPos())) {
+            if (ctx.playerFeet().toBlockPos().equals(src.relative(direction).toBlockPos())
                     || ctx.player().position().y - src.getY() > 0.0001) {
                 if (Agent.settings().allowPlace.value // see PR #3775
                         && ((Agent) maestro).getInventoryBehavior().hasGenericThrowaway()
@@ -317,9 +317,13 @@ public class MovementParkour extends Movement {
                 }
 
                 state.setInput(Input.JUMP, true);
-            } else if (!ctx.playerFeet().equals(dest.relative(direction, -1).toBlockPos())) {
+            } else if (!ctx.playerFeet()
+                    .toBlockPos()
+                    .equals(dest.relative(direction, -1).toBlockPos())) {
                 state.setInput(Input.SPRINT, false);
-                if (ctx.playerFeet().equals(src.relative(direction, -1).toBlockPos())) {
+                if (ctx.playerFeet()
+                        .toBlockPos()
+                        .equals(src.relative(direction, -1).toBlockPos())) {
                     MovementHelper.moveTowards(ctx, state, src.toBlockPos());
                 } else {
                     MovementHelper.moveTowards(

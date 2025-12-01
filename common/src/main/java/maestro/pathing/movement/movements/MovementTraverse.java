@@ -325,12 +325,15 @@ public class MovementTraverse extends Movement {
         }
 
         if (isTheBridgeBlockThere) {
-            if (feet.equals(dest)) {
+            if (feet.equals(dest.toBlockPos())) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             if (Agent.settings().overshootTraverse.value
-                    && (feet.equals(dest.offset(getDirection()))
-                            || feet.equals(dest.offset(getDirection()).offset(getDirection())))) {
+                    && (feet.equals(dest.offset(getDirection()).toBlockPos())
+                            || feet.equals(
+                                    dest.offset(getDirection())
+                                            .offset(getDirection())
+                                            .toBlockPos()))) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             Block low = BlockStateInterface.get(ctx, src.toBlockPos()).getBlock();
@@ -439,7 +442,7 @@ public class MovementTraverse extends Movement {
                 default:
                     break;
             }
-            if (feet.equals(dest)) {
+            if (feet.equals(dest.toBlockPos())) {
                 // If we are in the block that we are trying to get to, we are sneaking over air,
                 // and
                 // we need to place a block beneath us against the one we just walked off of
@@ -508,8 +511,8 @@ public class MovementTraverse extends Movement {
 
     @Override
     protected boolean prepared(MovementState state) {
-        if (ctx.playerFeet().equals(src.toBlockPos())
-                || ctx.playerFeet().equals(src.below().toBlockPos())) {
+        if (ctx.playerFeet().toBlockPos().equals(src.toBlockPos())
+                || ctx.playerFeet().toBlockPos().equals(src.below().toBlockPos())) {
             Block block = BlockStateInterface.getBlock(ctx, src.below().toBlockPos());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(Input.SNEAK, true);

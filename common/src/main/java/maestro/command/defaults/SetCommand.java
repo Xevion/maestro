@@ -20,7 +20,7 @@ import maestro.api.command.helpers.FuzzySearchHelper;
 import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.utils.SettingsUtil;
-import maestro.utils.chat.ChatMessageRenderer;
+import maestro.utils.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
@@ -86,7 +86,6 @@ public class SetCommand extends Command {
                                     Settings.Setting::getName,
                                     60,
                                     Integer.MAX_VALUE);
-            ChatMessageRenderer renderer = new ChatMessageRenderer();
             Paginator.paginate(
                     args,
                     new Paginator<>(toPaginate),
@@ -135,7 +134,7 @@ public class SetCommand extends Command {
                                                         commandSuggestion)));
 
                         MutableComponent prefixed = Component.literal("");
-                        prefixed.append(renderer.createCategoryPrefix("cmd"));
+                        prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
                         prefixed.append(" ");
                         prefixed.append(component);
 
@@ -230,7 +229,6 @@ public class SetCommand extends Command {
                                 settingValueToString(setting)));
             }
 
-            ChatMessageRenderer renderer = new ChatMessageRenderer();
             MutableComponent oldValueComponent =
                     Component.literal(String.format("Old value: %s", oldValue));
             oldValueComponent.setStyle(
@@ -251,7 +249,7 @@ public class SetCommand extends Command {
                                                             setting.getName(), oldValue))));
 
             MutableComponent prefixed = Component.literal("");
-            prefixed.append(renderer.createCategoryPrefix("cmd"));
+            prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
             prefixed.append(" ");
             prefixed.append(oldValueComponent);
 

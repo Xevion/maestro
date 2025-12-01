@@ -16,11 +16,8 @@ import maestro.combat.TargetPredictor
 import maestro.combat.TrajectoryRenderer
 import maestro.utils.MaestroProcessHelper
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.LivingEntity
 import org.slf4j.Logger
-import java.util.Comparator
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 /**
  * Process for ranged combat using bows. Manages target selection, positioning,
@@ -70,7 +67,7 @@ class RangedCombatProcess(
             }
 
             CombatState.SCANNING -> {
-                targets = scanTargets()
+                targets = filter?.let { scanEntities(it) } ?: emptyList()
                 if (targets.isEmpty()) {
                     transitionState(CombatState.IDLE)
                     onLostControl()
@@ -217,25 +214,6 @@ class RangedCombatProcess(
         }
     }
 
-    private fun scanTargets(): List<Entity> {
-        val currentFilter = filter ?: return emptyList()
-
-        return ctx
-            .entitiesStream()
-            .filter { isValidTarget(it) }
-            .filter(currentFilter)
-            .sorted(Comparator.comparingDouble { e -> ctx.player().distanceToSqr(e) })
-            .collect(Collectors.toList())
-    }
-
-    private fun isValidTarget(entity: Entity?): Boolean {
-        if (entity == null) return false
-        if (entity == ctx.player()) return false
-        if (!entity.isAlive) return false
-        if (entity !is LivingEntity) return false
-        return true
-    }
-
     private fun selectBestTarget(targets: List<Entity>): Entity? {
         // For now, select closest target
         // Future enhancement: consider threat level, line of sight, etc.
@@ -323,7 +301,7 @@ class RangedCombatProcess(
         }
 
         // Check if we have targets
-        targets = scanTargets()
+        targets = filter?.let { scanEntities(it) } ?: emptyList()
         if (targets.isEmpty()) {
             return false
         }

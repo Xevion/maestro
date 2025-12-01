@@ -3,7 +3,7 @@ package maestro.debug
 import com.mojang.blaze3d.platform.InputConstants
 import maestro.Agent
 import maestro.api.MaestroAPI
-import maestro.utils.InputHelper
+import maestro.utils.InputOverrideHandler
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -94,10 +94,10 @@ object DebugKeybindings {
     }
 
     /** Check if grave accent key is pressed. */
-    private fun isGravePressed(): Boolean = InputHelper.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT)
+    private fun isGravePressed(): Boolean = InputOverrideHandler.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT)
 
     /** Check if G key is pressed. */
-    private fun isGPressed(): Boolean = InputHelper.isKeyPressed(GLFW.GLFW_KEY_G)
+    private fun isGPressed(): Boolean = InputOverrideHandler.isKeyPressed(GLFW.GLFW_KEY_G)
 
     /** Toggle freecam on/off. */
     private fun toggleFreecam() {

@@ -4,7 +4,7 @@ import maestro.Agent
 import maestro.api.cache.IWaypoint
 import maestro.api.cache.Waypoint
 import maestro.api.utils.MaestroLogger
-import maestro.utils.chat.ChatMessageBuilder.Companion.info
+import maestro.utils.chat.ChatMessage.Companion.info
 import org.slf4j.Logger
 
 /**

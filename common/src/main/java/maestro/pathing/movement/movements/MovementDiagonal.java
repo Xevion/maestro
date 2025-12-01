@@ -68,7 +68,7 @@ public class MovementDiagonal extends Movement {
         double y = player.position().y - 1;
         double z = player.position().z;
         // standard
-        if (ctx.playerFeet().equals(src)) {
+        if (ctx.playerFeet().toBlockPos().equals(src.toBlockPos())) {
             return true;
         }
         // both corners are walkable
@@ -78,9 +78,16 @@ public class MovementDiagonal extends Movement {
             return true;
         }
         // we are in a likely unwalkable corner, check for a supporting block
-        if (ctx.playerFeet().equals(new PackedBlockPos(src.getX(), src.getY(), dest.getZ()))
+        if (ctx.playerFeet()
+                        .toBlockPos()
+                        .equals(
+                                new PackedBlockPos(src.getX(), src.getY(), dest.getZ())
+                                        .toBlockPos())
                 || ctx.playerFeet()
-                        .equals(new PackedBlockPos(dest.getX(), src.getY(), src.getZ()))) {
+                        .toBlockPos()
+                        .equals(
+                                new PackedBlockPos(dest.getX(), src.getY(), src.getZ())
+                                        .toBlockPos())) {
             return (MovementHelper.canWalkOn(
                             ctx,
                             new PackedBlockPos((int) (x + offset), (int) y, (int) (z + offset)))
@@ -307,7 +314,7 @@ public class MovementDiagonal extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
             return state.setStatus(MovementStatus.SUCCESS);
         } else if (!playerInValidPosition()
                 && !(MovementHelper.isLiquid(ctx, src.toBlockPos())

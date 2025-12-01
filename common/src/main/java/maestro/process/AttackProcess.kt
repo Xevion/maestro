@@ -8,13 +8,9 @@ import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
 import maestro.api.utils.RotationUtils
 import maestro.utils.MaestroProcessHelper
-import net.minecraft.util.Mth
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.LivingEntity
-import java.util.Comparator
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 /**
  * Attack entities matching a predicate. Paths to targets and attacks them until no matching
@@ -36,7 +32,7 @@ class AttackProcess(
         calcFailed: Boolean,
         isSafeToCancel: Boolean,
     ): PathingCommand? {
-        targets = scanTargets()
+        targets = filter?.let { scanEntities(it) } ?: emptyList()
 
         if (targets.isEmpty()) {
             // No targets remaining - cancel attack
@@ -47,13 +43,9 @@ class AttackProcess(
         val primaryTarget = targets[0]
 
         // Check if in melee range (measure to nearest point on hitbox, not center)
-        val hitbox = primaryTarget.boundingBox
-        val closestX = Mth.clamp(ctx.player().x, hitbox.minX, hitbox.maxX)
-        val closestY = Mth.clamp(ctx.player().y, hitbox.minY, hitbox.maxY)
-        val closestZ = Mth.clamp(ctx.player().z, hitbox.minZ, hitbox.maxZ)
-        val distanceSq = ctx.player().distanceToSqr(closestX, closestY, closestZ)
+        val distance = distanceToHitbox(primaryTarget)
 
-        return if (distanceSq <= MELEE_RANGE * MELEE_RANGE) {
+        return if (distance <= MELEE_RANGE) {
             // In range - attack if cooldown ready
             if (canAttack()) {
                 attack(primaryTarget)
@@ -65,33 +57,6 @@ class AttackProcess(
             val goal: Goal = GoalNear(primaryTarget.blockPosition(), 3)
             PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH)
         }
-    }
-
-    private fun scanTargets(): List<Entity> {
-        val currentFilter = filter ?: return emptyList()
-
-        return ctx
-            .entitiesStream()
-            .filter { isValidTarget(it) }
-            .filter(currentFilter)
-            .sorted(Comparator.comparingDouble { e -> ctx.player().distanceToSqr(e) })
-            .collect(Collectors.toList())
-    }
-
-    private fun isValidTarget(entity: Entity?): Boolean {
-        if (entity == null) {
-            return false
-        }
-        if (entity == ctx.player()) {
-            return false
-        }
-        if (!entity.isAlive) {
-            return false
-        }
-        if (entity !is LivingEntity) {
-            return false
-        }
-        return true
     }
 
     private fun canAttack(): Boolean {
@@ -135,7 +100,7 @@ class AttackProcess(
         if (filter == null) {
             return false
         }
-        targets = scanTargets()
+        targets = filter?.let { scanEntities(it) } ?: emptyList()
         return targets.isNotEmpty()
     }
 

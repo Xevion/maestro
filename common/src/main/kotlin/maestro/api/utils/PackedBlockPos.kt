@@ -215,6 +215,32 @@ data class PackedBlockPos(
     ): PackedBlockPos = offset(direction.stepX * n, direction.stepY * n, direction.stepZ * n)
 
     /**
+     * Compares this position with another object for equality.
+     * Supports comparison with both PackedBlockPos and BlockPos.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+
+        // Compare with PackedBlockPos (data class comparison)
+        if (other is PackedBlockPos) {
+            return packed == other.packed
+        }
+
+        // Compare with BlockPos (coordinate comparison)
+        if (other is BlockPos) {
+            return x == other.x && y == other.y && z == other.z
+        }
+
+        return false
+    }
+
+    /**
+     * Hash code based on packed representation.
+     * Must be consistent with equals() override.
+     */
+    override fun hashCode(): Int = packed.hashCode()
+
+    /**
      * String representation showing coordinates.
      */
     override fun toString(): String = "PackedBlockPos($x, $y, $z)"

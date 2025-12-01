@@ -21,6 +21,9 @@ public class MixinEntity {
     @Unique private RotationMoveEvent motionUpdateRotationEvent;
 
     @Inject(method = "moveRelative", at = @At("HEAD"))
+    @SuppressWarnings(
+            "IsInstanceIncompatibleType") // Mixin: 'this' is Entity, checking if it's a LocalPlayer
+    // at runtime
     private void moveRelativeHead(CallbackInfo info) {
         // noinspection ConstantConditions
         if (!LocalPlayer.class.isInstance(this)

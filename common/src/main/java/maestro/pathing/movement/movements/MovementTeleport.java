@@ -138,11 +138,7 @@ public class MovementTeleport extends Movement {
             break;
         }
 
-        if (!foundGround) {
-            return false; // No ground found within 5 blocks
-        }
-
-        return true;
+        return foundGround; // No ground found within 5 blocks
     }
 
     @Override
@@ -167,7 +163,7 @@ public class MovementTeleport extends Movement {
         }
 
         // Check if already at destination
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
@@ -181,7 +177,7 @@ public class MovementTeleport extends Movement {
         }
 
         // After teleport attempt: check if player moved from source
-        if (ctx.playerFeet().equals(src.toBlockPos())) {
+        if (ctx.playerFeet().toBlockPos().equals(src.toBlockPos())) {
             // Still at source - teleport was rejected
             double distance = Math.sqrt(dest.distSqr(src));
             log.atWarn()
@@ -192,7 +188,7 @@ public class MovementTeleport extends Movement {
         }
 
         // Player has moved - check if at destination (landed successfully)
-        if (ctx.playerFeet().equals(dest.toBlockPos())) {
+        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
