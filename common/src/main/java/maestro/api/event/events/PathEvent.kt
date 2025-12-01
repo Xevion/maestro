@@ -1,6 +1,6 @@
-package maestro.api.event.events;
+package maestro.api.event.events
 
-public enum PathEvent {
+enum class PathEvent {
     CALC_STARTED,
     CALC_FINISHED_NOW_EXECUTING,
     CALC_FAILED,
@@ -12,5 +12,5 @@ public enum PathEvent {
     PATH_FINISHED_NEXT_STILL_CALCULATING,
     NEXT_CALC_FAILED,
     DISCARD_NEXT,
-    CANCELED
+    CANCELED,
 }

@@ -54,10 +54,10 @@ public final class PathRenderer implements IRenderer {
         }
         if (ctx.minecraft().screen instanceof GuiClick) {
             ((GuiClick) ctx.minecraft().screen)
-                    .onRender(event.getModelViewStack(), event.getProjectionMatrix());
+                    .onRender(event.modelViewStack, event.projectionMatrix);
         }
 
-        final float partialTicks = event.getPartialTicks();
+        final float partialTicks = event.partialTicks;
         final Goal goal = behavior.getGoal();
 
         final DimensionType thisPlayerDimension = ctx.world().dimensionType();
@@ -74,12 +74,7 @@ public final class PathRenderer implements IRenderer {
         }
 
         if (goal != null && settings.renderGoal.value) {
-            drawGoal(
-                    event.getModelViewStack(),
-                    ctx,
-                    goal,
-                    partialTicks,
-                    settings.colorGoalBox.value);
+            drawGoal(event.modelViewStack, ctx, goal, partialTicks, settings.colorGoalBox.value);
         }
 
         if (!settings.renderPath.value) {
@@ -92,17 +87,17 @@ public final class PathRenderer implements IRenderer {
         // then suddenly false because of another thread
         if (current != null && settings.renderSelectionBoxes.value) {
             drawManySelectionBoxes(
-                    event.getModelViewStack(),
+                    event.modelViewStack,
                     ctx.player(),
                     current.toBreak(),
                     settings.colorBlocksToBreak.value);
             drawManySelectionBoxes(
-                    event.getModelViewStack(),
+                    event.modelViewStack,
                     ctx.player(),
                     current.toPlace(),
                     settings.colorBlocksToPlace.value);
             drawManySelectionBoxes(
-                    event.getModelViewStack(),
+                    event.modelViewStack,
                     ctx.player(),
                     current.toWalkInto(),
                     settings.colorBlocksToWalkInto.value);
@@ -116,7 +111,7 @@ public final class PathRenderer implements IRenderer {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
             try {
                 drawPathWithMovements(
-                        event.getModelViewStack(),
+                        event.modelViewStack,
                         current.getPath().positions(),
                         current.getPath().movements(),
                         renderBegin,
@@ -129,7 +124,7 @@ public final class PathRenderer implements IRenderer {
             } catch (Exception e) {
                 // Fall back to old rendering if movements access fails
                 drawPath(
-                        event.getModelViewStack(),
+                        event.modelViewStack,
                         current.getPath().positions(),
                         renderBegin,
                         settings.colorCurrentPath.value,
@@ -145,7 +140,7 @@ public final class PathRenderer implements IRenderer {
         if (next != null && next.getPath() != null) {
             try {
                 drawPathWithMovements(
-                        event.getModelViewStack(),
+                        event.modelViewStack,
                         next.getPath().positions(),
                         next.getPath().movements(),
                         0,
@@ -158,7 +153,7 @@ public final class PathRenderer implements IRenderer {
             } catch (Exception e) {
                 // Fall back to old rendering if movements access fails
                 drawPath(
-                        event.getModelViewStack(),
+                        event.modelViewStack,
                         next.getPath().positions(),
                         0,
                         settings.colorNextPath.value,
@@ -182,7 +177,7 @@ public final class PathRenderer implements IRenderer {
                                                 // Best path so far is not verified, use old
                                                 // rendering
                                                 drawPath(
-                                                        event.getModelViewStack(),
+                                                        event.modelViewStack,
                                                         p.positions(),
                                                         0,
                                                         settings.colorBestPathSoFar.value,
@@ -199,7 +194,7 @@ public final class PathRenderer implements IRenderer {
                                     .ifPresent(
                                             mr -> {
                                                 drawPath(
-                                                        event.getModelViewStack(),
+                                                        event.modelViewStack,
                                                         mr.positions(),
                                                         0,
                                                         settings.colorMostRecentConsidered.value,
@@ -210,7 +205,7 @@ public final class PathRenderer implements IRenderer {
                                                         -1,
                                                         0.4f);
                                                 drawManySelectionBoxes(
-                                                        event.getModelViewStack(),
+                                                        event.modelViewStack,
                                                         ctx.player(),
                                                         Collections.singletonList(mr.getDest()),
                                                         settings.colorMostRecentConsidered.value);

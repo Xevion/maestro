@@ -93,8 +93,8 @@ public class MixinClientPlayerEntity {
         }
         SprintStateEvent event = new SprintStateEvent();
         maestro.getGameEventHandler().onPlayerSprintState(event);
-        if (event.getState() != null) {
-            return event.getState();
+        if (event.state != null) {
+            return event.state;
         }
         if (maestro != MaestroAPI.getProvider().getPrimaryAgent()) {
             // hitting control shouldn't make all bots sprint

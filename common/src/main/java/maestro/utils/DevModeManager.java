@@ -62,7 +62,7 @@ public final class DevModeManager {
      */
     public void onPostTick(TickEvent event) {
         // Only process on IN (post-tick) events
-        if (event.type() != TickEvent.Type.IN) {
+        if (event.type != TickEvent.Type.IN) {
             return;
         }
 

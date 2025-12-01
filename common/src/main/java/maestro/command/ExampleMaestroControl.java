@@ -39,7 +39,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
 
     @Override
     public void onSendChatMessage(ChatEvent event) {
-        String msg = event.getMessage();
+        String msg = event.message;
         String prefix = settings.prefix.value;
         boolean forceRun = msg.startsWith(FORCE_COMMAND_PREFIX);
         if ((settings.prefixControl.value && msg.startsWith(prefix)) || forceRun) {

@@ -72,7 +72,7 @@ class LookBehavior(
     override fun getAimProcessor(): IAimProcessor = processor
 
     override fun onTick(event: TickEvent) {
-        if (event.type() == TickEvent.Type.IN) {
+        if (event.type == TickEvent.Type.IN) {
             processor.tick()
         }
     }
@@ -80,7 +80,7 @@ class LookBehavior(
     override fun onPlayerUpdate(event: PlayerUpdateEvent) {
         val currentTarget = target ?: return
 
-        when (event.getState()) {
+        when (event.state) {
             EventState.PRE -> {
                 if (currentTarget.mode == Target.Mode.NONE) {
                     // Just return for PRE, we still want to set target to null on POST
@@ -147,7 +147,7 @@ class LookBehavior(
     }
 
     override fun onSendPacket(event: PacketEvent) {
-        val packet = event.getPacket() as? ServerboundMovePlayerPacket ?: return
+        val packet = event.packet as? ServerboundMovePlayerPacket ?: return
 
         if (packet is ServerboundMovePlayerPacket.Rot || packet is ServerboundMovePlayerPacket.PosRot) {
             serverRotation = Rotation(packet.getYRot(0.0f), packet.getXRot(0.0f))

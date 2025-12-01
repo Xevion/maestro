@@ -73,7 +73,7 @@ public final class GameEventHandler implements IEventBus {
             }
         }
 
-        if (event.type() == TickEvent.Type.IN) {
+        if (event.type == TickEvent.Type.IN) {
             try {
                 maestro.bsi = new BlockStateInterface(maestro.getPlayerContext(), true);
             } catch (Exception ex) {
@@ -111,8 +111,8 @@ public final class GameEventHandler implements IEventBus {
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
-        EventState state = event.getState();
-        ChunkEvent.Type type = event.getType();
+        EventState state = event.state;
+        ChunkEvent.Type type = event.type;
 
         Level world = maestro.getPlayerContext().world();
 
@@ -122,14 +122,13 @@ public final class GameEventHandler implements IEventBus {
         boolean isPreUnload =
                 state == EventState.PRE
                         && type == ChunkEvent.Type.UNLOAD
-                        && world.getChunkSource().getChunk(event.getX(), event.getZ(), null, false)
-                                != null;
+                        && world.getChunkSource().getChunk(event.x, event.z, null, false) != null;
 
         if (event.isPostPopulate() || isPreUnload) {
             maestro.getWorldProvider()
                     .ifWorldLoaded(
                             worldData -> {
-                                LevelChunk chunk = world.getChunk(event.getX(), event.getZ());
+                                LevelChunk chunk = world.getChunk(event.x, event.z);
                                 worldData.getCachedWorld().queueForPacking(chunk);
                             });
         }
@@ -141,7 +140,7 @@ public final class GameEventHandler implements IEventBus {
     public void onBlockChange(BlockChangeEvent event) {
         if (Agent.settings().repackOnAnyBlockChange.value) {
             final boolean keepingTrackOf =
-                    event.getBlocks().stream()
+                    event.blocks.stream()
                             .map(Pair::second)
                             .map(BlockState::getBlock)
                             .anyMatch(CachedChunk.BLOCKS_TO_KEEP_TRACK_OF::contains);
@@ -171,10 +170,10 @@ public final class GameEventHandler implements IEventBus {
     public void onWorldEvent(WorldEvent event) {
         WorldProvider cache = maestro.getWorldProvider();
 
-        if (event.getState() == EventState.POST) {
+        if (event.state == EventState.POST) {
             cache.closeWorld();
-            if (event.getWorld() != null) {
-                cache.initWorld(event.getWorld());
+            if (event.world != null) {
+                cache.initWorld(event.world);
 
                 // DevMode: Open LAN and queue commands after world load
                 maestro.getDevModeManager().onWorldLoad();

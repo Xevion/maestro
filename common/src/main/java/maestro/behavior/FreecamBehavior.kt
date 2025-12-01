@@ -18,7 +18,7 @@ class FreecamBehavior(
     maestro: Agent,
 ) : Behavior(maestro) {
     override fun onTick(event: TickEvent) {
-        if (!maestro.isFreecamActive() || event.type() != TickEvent.Type.IN) {
+        if (!maestro.isFreecamActive() || event.type != TickEvent.Type.IN) {
             return
         }
 

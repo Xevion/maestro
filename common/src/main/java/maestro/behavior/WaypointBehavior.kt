@@ -24,9 +24,9 @@ class WaypointBehavior(
 ) : Behavior(maestro) {
     override fun onBlockInteract(event: BlockInteractEvent) {
         if (!Agent.settings().doBedWaypoints.value) return
-        if (event.getType() != BlockInteractEvent.Type.USE) return
+        if (event.type != BlockInteractEvent.Type.USE) return
 
-        var pos = BetterBlockPos.from(event.getPos())
+        var pos = BetterBlockPos.from(event.pos)
         val state = BlockStateInterface.get(ctx, pos)
 
         if (state.getBlock() is BedBlock) {

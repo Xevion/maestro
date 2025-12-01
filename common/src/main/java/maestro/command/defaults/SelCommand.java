@@ -65,7 +65,7 @@ public class SelCommand extends Command {
                                         IRenderer.startLines(
                                                 color, opacity, lineWidth, ignoreDepth);
                                 IRenderer.emitAABB(
-                                        bufferBuilder, event.getModelViewStack(), new AABB(pos1));
+                                        bufferBuilder, event.modelViewStack, new AABB(pos1));
                                 IRenderer.endLines(bufferBuilder, ignoreDepth);
                             }
                         });

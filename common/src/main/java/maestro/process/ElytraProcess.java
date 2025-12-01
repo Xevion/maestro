@@ -445,7 +445,7 @@ public class ElytraProcess extends MaestroProcessHelper
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        if (event.getWorld() != null && event.getState() == EventState.POST) {
+        if (event.world != null && event.state == EventState.POST) {
             // Exiting the world, just destroy
             destroyBehaviorAsync();
         }

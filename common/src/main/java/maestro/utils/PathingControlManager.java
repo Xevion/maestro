@@ -31,7 +31,7 @@ public class PathingControlManager implements IPathingControlManager {
                         new AbstractGameEventListener() { // needs to be after all behavior ticks
                             @Override
                             public void onTick(TickEvent event) {
-                                if (event.type() == TickEvent.Type.IN) {
+                                if (event.type == TickEvent.Type.IN) {
                                     postTick();
                                 }
                             }

@@ -1440,7 +1440,7 @@ public final class Settings {
 
     /**
      * The function that is called when Maestro will show a toast. This function can be added to via
-     * {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting {@link
+     * {@link Consumer#andThen(Consumer)} or it can completely be overridden via setting {@link
      * Setting#value};
      */
     @JavaOnly

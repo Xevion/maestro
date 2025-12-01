@@ -522,7 +522,7 @@ public final class ElytraBehavior {
         final Settings settings = Agent.settings();
         if (this.visiblePath != null) {
             PathRenderer.drawPath(
-                    event.getModelViewStack(),
+                    event.modelViewStack,
                     this.visiblePath,
                     0,
                     Color.RED,
@@ -535,10 +535,10 @@ public final class ElytraBehavior {
         }
         if (this.aimPos != null) {
             PathRenderer.drawGoal(
-                    event.getModelViewStack(),
+                    event.modelViewStack,
                     ctx,
                     new GoalBlock(this.aimPos),
-                    event.getPartialTicks(),
+                    event.partialTicks,
                     Color.GREEN);
         }
         if (!this.clearLines.isEmpty() && settings.elytraRenderRaytraces.value) {
@@ -549,7 +549,7 @@ public final class ElytraBehavior {
                             settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.clearLines) {
                 IRenderer.emitLine(
-                        bufferBuilder, event.getModelViewStack(), line.first(), line.second());
+                        bufferBuilder, event.modelViewStack, line.first(), line.second());
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
@@ -561,7 +561,7 @@ public final class ElytraBehavior {
                             settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.blockedLines) {
                 IRenderer.emitLine(
-                        bufferBuilder, event.getModelViewStack(), line.first(), line.second());
+                        bufferBuilder, event.modelViewStack, line.first(), line.second());
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
@@ -571,11 +571,11 @@ public final class ElytraBehavior {
                             new Color(0x36CCDC),
                             settings.pathRenderLineWidthPixels.value,
                             settings.renderPathIgnoreDepth.value);
-            final Vec3 offset = ctx.player().getPosition(event.getPartialTicks());
+            final Vec3 offset = ctx.player().getPosition(event.partialTicks);
             for (int i = 0; i < this.simulationLine.size() - 1; i++) {
                 final Vec3 src = this.simulationLine.get(i).add(offset);
                 final Vec3 dst = this.simulationLine.get(i + 1).add(offset);
-                IRenderer.emitLine(bufferBuilder, event.getModelViewStack(), src, dst);
+                IRenderer.emitLine(bufferBuilder, event.modelViewStack, src, dst);
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
@@ -583,7 +583,7 @@ public final class ElytraBehavior {
 
     public void onChunkEvent(ChunkEvent event) {
         if (event.isPostPopulate() && this.context != null) {
-            final LevelChunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
+            final LevelChunk chunk = ctx.world().getChunk(event.x, event.z);
             this.context.queueForPacking(chunk);
         }
     }
@@ -593,7 +593,7 @@ public final class ElytraBehavior {
     }
 
     public void onReceivePacket(PacketEvent event) {
-        if (event.getPacket() instanceof ClientboundPlayerPositionPacket) {
+        if (event.packet instanceof ClientboundPlayerPositionPacket) {
             ctx.minecraft()
                     .execute(
                             () -> {
@@ -784,7 +784,7 @@ public final class ElytraBehavior {
     }
 
     public void onPostTick(TickEvent event) {
-        if (event.type() == TickEvent.Type.IN && this.solveNextTick) {
+        if (event.type == TickEvent.Type.IN && this.solveNextTick) {
             // We're at the end of the tick, the player's position likely updated and the closest
             // path node could've
             // changed. Updating it now will avoid unnecessary recalculation on the main thread.

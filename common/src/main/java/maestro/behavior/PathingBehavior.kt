@@ -121,7 +121,7 @@ class PathingBehavior(
 
     override fun onTick(event: TickEvent) {
         dispatchEvents()
-        if (event.type() == TickEvent.Type.OUT) {
+        if (event.type == TickEvent.Type.OUT) {
             secretInternalSegmentCancel()
             maestro.pathingControlManager.cancelEverything()
             return

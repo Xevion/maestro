@@ -48,6 +48,9 @@ dependencies {
     compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
     annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
 
+    // Fabric API annotations (compileOnly to suppress warnings from dependencies)
+    compileOnly 'net.fabricmc:fabric-loader:0.16.9'
+
     // SLF4J and Logback
     modApi 'org.slf4j:slf4j-api:2.0.9'
     modApi 'ch.qos.logback:logback-classic:1.5.13'

@@ -40,7 +40,7 @@ class InventoryBehavior(
         if (!Agent.settings().allowInventory.value) {
             return
         }
-        if (event.type() == TickEvent.Type.OUT) {
+        if (event.type == TickEvent.Type.OUT) {
             return
         }
         if (ctx.player().containerMenu !== ctx.player().inventoryMenu) {

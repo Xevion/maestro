@@ -56,6 +56,6 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        renderSelections(event.getModelViewStack(), manager.getSelections());
+        renderSelections(event.modelViewStack, manager.getSelections());
     }
 }

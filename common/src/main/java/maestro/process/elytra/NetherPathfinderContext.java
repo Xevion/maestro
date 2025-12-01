@@ -83,19 +83,14 @@ public final class NetherPathfinderContext {
                     long ptr =
                             NetherPathfinder.getChunkPointer(this.context, chunkPos.x, chunkPos.z);
                     if (ptr == 0) return; // this shouldn't ever happen
-                    event.getBlocks()
-                            .forEach(
-                                    pair -> {
-                                        BlockPos pos = pair.first();
-                                        if (pos.getY() >= 128) return;
-                                        boolean isSolid = pair.second() != AIR_BLOCK_STATE;
-                                        Octree.setBlock(
-                                                ptr,
-                                                pos.getX() & 15,
-                                                pos.getY(),
-                                                pos.getZ() & 15,
-                                                isSolid);
-                                    });
+                    event.blocks.forEach(
+                            pair -> {
+                                BlockPos pos = pair.first();
+                                if (pos.getY() >= 128) return;
+                                boolean isSolid = pair.second() != AIR_BLOCK_STATE;
+                                Octree.setBlock(
+                                        ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
+                            });
                 });
     }
 

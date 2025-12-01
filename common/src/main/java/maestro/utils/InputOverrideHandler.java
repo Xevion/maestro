@@ -59,7 +59,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
 
     @Override
     public void onTick(TickEvent event) {
-        if (event.type() == TickEvent.Type.OUT) {
+        if (event.type == TickEvent.Type.OUT) {
             return;
         }
         if (isInputForcedDown(Input.CLICK_LEFT)) {
