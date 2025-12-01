@@ -12,7 +12,6 @@ import maestro.api.command.Command;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandNotFoundException;
 import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.utils.chat.ChatMessageRenderer;
@@ -99,7 +98,7 @@ public class HelpCommand extends Command {
             String commandName = args.getString().toLowerCase();
             ICommand command = this.maestro.getCommandManager().getCommand(commandName);
             if (command == null) {
-                throw new CommandNotFoundException(commandName);
+                throw new CommandException.NotFound(commandName);
             }
             log.atInfo().log(
                     String.format(

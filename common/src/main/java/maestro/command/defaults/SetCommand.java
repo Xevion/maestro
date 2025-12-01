@@ -16,8 +16,6 @@ import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
-import maestro.api.command.exception.CommandInvalidTypeException;
 import maestro.api.command.helpers.FuzzySearchHelper;
 import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
@@ -185,13 +183,14 @@ public class SetCommand extends Command {
                         .findFirst()
                         .orElse(null);
         if (setting == null) {
-            throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
+            throw new CommandException.InvalidArgument.InvalidType(
+                    args.consumed(), "a valid setting");
         }
         if (setting.isJavaOnly()) {
             // ideally it would act as if the setting didn't exist
             // but users will see it in Settings.java or its javadoc
             // so at some point we have to tell them or they will see it as a bug
-            throw new CommandInvalidStateException(
+            throw new CommandException.InvalidState(
                     String.format("Setting %s can only be used via the api.", setting.getName()));
         }
         if (!doingSomething && !args.hasAny()) {
@@ -203,7 +202,7 @@ public class SetCommand extends Command {
                 setting.reset();
             } else if (toggling) {
                 if (setting.getValueClass() != Boolean.class) {
-                    throw new CommandInvalidTypeException(
+                    throw new CommandException.InvalidArgument.InvalidType(
                             args.consumed(), "a toggleable setting", "some other setting");
                 }
                 //noinspection unchecked
@@ -218,7 +217,8 @@ public class SetCommand extends Command {
                     SettingsUtil.parseAndApply(Agent.settings(), arg, newValue);
                 } catch (Throwable t) {
                     t.printStackTrace();
-                    throw new CommandInvalidTypeException(args.consumed(), "a valid value", t);
+                    throw new CommandException.InvalidArgument.InvalidType(
+                            args.consumed(), "a valid value", t);
                 }
             }
             if (!toggling) {

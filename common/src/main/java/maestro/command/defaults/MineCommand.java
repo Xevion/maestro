@@ -9,7 +9,6 @@ import maestro.api.MaestroAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForBlockSelector;
-import maestro.api.command.exception.CommandErrorMessageException;
 import maestro.api.command.exception.CommandException;
 import maestro.api.selector.block.BlockCategory;
 import maestro.api.selector.block.BlockSelector;
@@ -100,19 +99,19 @@ public class MineCommand extends Command {
                 "Also see the legitMine settings (see #set l legitMine).");
     }
 
-    public static class NoSelectorsException extends CommandErrorMessageException {
+    public static class NoSelectorsException extends CommandException.ErrorMessage {
         protected NoSelectorsException() {
             super("No valid block selectors specified");
         }
     }
 
-    public static class InvalidSelectorException extends CommandErrorMessageException {
+    public static class InvalidSelectorException extends CommandException.ErrorMessage {
         protected InvalidSelectorException(String message) {
             super("Invalid selector: " + message);
         }
     }
 
-    public static class NoMatchesException extends CommandErrorMessageException {
+    public static class NoMatchesException extends CommandException.ErrorMessage {
         protected NoMatchesException() {
             super("No blocks matched any selector");
         }

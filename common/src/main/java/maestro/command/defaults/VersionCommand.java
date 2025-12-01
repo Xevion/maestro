@@ -7,7 +7,6 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 
 public class VersionCommand extends Command {
 
@@ -20,7 +19,7 @@ public class VersionCommand extends Command {
         args.requireMax(0);
         String version = getClass().getPackage().getImplementationVersion();
         if (version == null) {
-            throw new CommandInvalidStateException(
+            throw new CommandException.InvalidState(
                     "Null version (this is normal in a dev environment)");
         } else {
             log.atInfo().addKeyValue("version", version).log("Maestro version");

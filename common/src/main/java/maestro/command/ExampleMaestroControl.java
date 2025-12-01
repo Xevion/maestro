@@ -9,8 +9,7 @@ import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.Settings;
 import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.exception.CommandNotEnoughArgumentsException;
-import maestro.api.command.exception.CommandNotFoundException;
+import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.command.manager.ICommandManager;
 import maestro.api.event.events.ChatEvent;
@@ -47,7 +46,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
             String commandStr =
                     msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
-                new CommandNotFoundException(CommandManager.expand(commandStr).getA())
+                new CommandException.NotFound(CommandManager.expand(commandStr).getA())
                         .handle(null, null);
             }
         } else if ((settings.chatControl.value || settings.chatControlAnyway.value)
@@ -113,7 +112,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                     try {
                         this.manager.execute(
                                 String.format("set %s %s", setting.getName(), argc.getString()));
-                    } catch (CommandNotEnoughArgumentsException ignored) {
+                    } catch (CommandException ignored) {
                     } // The operation is safe
                     return true;
                 }
@@ -176,9 +175,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                 }
             }
             return this.manager.tabComplete(msg);
-        } catch (
-                CommandNotEnoughArgumentsException
-                        ignored) { // Shouldn't happen, the operation is safe
+        } catch (CommandException ignored) { // Shouldn't happen, the operation is safe
             return Stream.empty();
         }
     }

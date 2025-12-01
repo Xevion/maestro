@@ -3,8 +3,7 @@ package maestro.command.argparser;
 import maestro.api.command.argparser.IArgParser;
 import maestro.api.command.argparser.IArgParserManager;
 import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.exception.CommandInvalidTypeException;
-import maestro.api.command.exception.CommandNoParserForTypeException;
+import maestro.api.command.exception.CommandException;
 import maestro.api.command.registry.Registry;
 
 public enum ArgParserManager implements IArgParserManager {
@@ -42,30 +41,29 @@ public enum ArgParserManager implements IArgParserManager {
     }
 
     @Override
-    public <T> T parseStateless(Class<T> type, ICommandArgument arg)
-            throws CommandInvalidTypeException {
+    public <T> T parseStateless(Class<T> type, ICommandArgument arg) throws CommandException {
         IArgParser.Stateless<T> parser = this.getParserStateless(type);
         if (parser == null) {
-            throw new CommandNoParserForTypeException(type);
+            throw new CommandException.NoParserForType(type);
         }
         try {
             return parser.parseArg(arg);
         } catch (Exception exc) {
-            throw new CommandInvalidTypeException(arg, type.getSimpleName());
+            throw new CommandException.InvalidArgument.InvalidType(arg, type.getSimpleName());
         }
     }
 
     @Override
     public <T, S> T parseStated(Class<T> type, Class<S> stateKlass, ICommandArgument arg, S state)
-            throws CommandInvalidTypeException {
+            throws CommandException {
         IArgParser.Stated<T, S> parser = this.getParserStated(type, stateKlass);
         if (parser == null) {
-            throw new CommandNoParserForTypeException(type);
+            throw new CommandException.NoParserForType(type);
         }
         try {
             return parser.parseArg(arg, state);
         } catch (Exception exc) {
-            throw new CommandInvalidTypeException(arg, type.getSimpleName());
+            throw new CommandException.InvalidArgument.InvalidType(arg, type.getSimpleName());
         }
     }
 

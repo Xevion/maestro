@@ -8,7 +8,6 @@ import maestro.api.behavior.IPathingBehavior;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.pathing.calc.IPathingControlManager;
 import maestro.api.process.IMaestroProcess;
 
@@ -24,7 +23,7 @@ public class ETACommand extends Command {
         IPathingControlManager pathingControlManager = maestro.getPathingControlManager();
         IMaestroProcess process = pathingControlManager.mostRecentInControl().orElse(null);
         if (process == null) {
-            throw new CommandInvalidStateException("No process in control");
+            throw new CommandException.InvalidState("No process in control");
         }
         IPathingBehavior pathingBehavior = maestro.getPathingBehavior();
 

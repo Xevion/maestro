@@ -7,7 +7,6 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.pathing.calc.IPathingControlManager;
 import maestro.api.process.IMaestroProcess;
 import maestro.api.process.PathingCommand;
@@ -24,7 +23,7 @@ public class ProcCommand extends Command {
         IPathingControlManager pathingControlManager = maestro.getPathingControlManager();
         IMaestroProcess process = pathingControlManager.mostRecentInControl().orElse(null);
         if (process == null) {
-            throw new CommandInvalidStateException("No process in control");
+            throw new CommandException.InvalidState("No process in control");
         }
         log.atInfo()
                 .addKeyValue("class", process.getClass().getTypeName())

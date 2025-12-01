@@ -8,7 +8,6 @@ import maestro.api.IAgent;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandUnhandledException;
 import maestro.api.command.exception.ICommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.command.manager.ICommandManager;
@@ -122,7 +121,7 @@ public class CommandManager implements ICommandManager {
                 ICommandException exception =
                         t instanceof ICommandException
                                 ? (ICommandException) t
-                                : new CommandUnhandledException(t);
+                                : new CommandException.Unhandled(t);
 
                 exception.handle(command, args.getArgs());
             }

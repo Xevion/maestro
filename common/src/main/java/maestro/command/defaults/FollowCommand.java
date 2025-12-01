@@ -9,7 +9,6 @@ import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.EntityClassById;
 import maestro.api.command.datatypes.IDatatypeFor;
 import maestro.api.command.datatypes.NearbyPlayer;
-import maestro.api.command.exception.CommandErrorMessageException;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -147,7 +146,7 @@ public class FollowCommand extends Command {
         }
     }
 
-    public static class NoEntitiesException extends CommandErrorMessageException {
+    public static class NoEntitiesException extends CommandException.ErrorMessage {
 
         protected NoEntitiesException() {
             super("No valid entities in range!");

@@ -12,7 +12,6 @@ import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeBlockPos;
 import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.utils.BetterBlockPos;
 import maestro.utils.schematic.SchematicSystem;
 import org.apache.commons.io.FilenameUtils;
@@ -41,19 +40,19 @@ public class BuildCommand extends Command {
         }
         if (!file.exists()) {
             if (file0.exists()) {
-                throw new CommandInvalidStateException(
+                throw new CommandException.InvalidState(
                         String.format(
                                 "Cannot load %s because I do not know which schematic format"
                                         + " that is. Please rename the file to include the correct"
                                         + " file extension.",
                                 file));
             }
-            throw new CommandInvalidStateException("Cannot find " + file);
+            throw new CommandException.InvalidState("Cannot find " + file);
         }
         if (SchematicSystem.INSTANCE.getByFile(file).isEmpty()) {
             StringJoiner formats = new StringJoiner(", ");
             SchematicSystem.INSTANCE.getFileExtensions().forEach(formats::add);
-            throw new CommandInvalidStateException(
+            throw new CommandException.InvalidState(
                     String.format(
                             "Unsupported schematic format. Recognized file extensions are: %s",
                             formats));
@@ -69,7 +68,7 @@ public class BuildCommand extends Command {
         }
         boolean success = maestro.getBuilderProcess().build(file.getName(), file, buildOrigin);
         if (!success) {
-            throw new CommandInvalidStateException(
+            throw new CommandException.InvalidState(
                     "Couldn't load the schematic. Either your schematic is corrupt or this is a"
                             + " bug.");
         }

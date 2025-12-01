@@ -7,7 +7,6 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalInverted;
 import maestro.api.process.ICustomGoalProcess;
@@ -24,7 +23,7 @@ public class InvertCommand extends Command {
         ICustomGoalProcess customGoalProcess = maestro.getCustomGoalProcess();
         Goal goal;
         if ((goal = customGoalProcess.getGoal()) == null) {
-            throw new CommandInvalidStateException("No goal");
+            throw new CommandException.InvalidState("No goal");
         }
         if (goal instanceof GoalInverted) {
             goal = ((GoalInverted) goal).origin;

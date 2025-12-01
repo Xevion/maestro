@@ -9,7 +9,6 @@ import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForWaypoints;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.utils.BetterBlockPos;
 
 public class FarmCommand extends Command {
@@ -32,10 +31,10 @@ public class FarmCommand extends Command {
             IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
             IWaypoint waypoint =
                     switch (waypoints.length) {
-                        case 0 -> throw new CommandInvalidStateException("No waypoints found");
+                        case 0 -> throw new CommandException.InvalidState("No waypoints found");
                         case 1 -> waypoints[0];
                         default ->
-                                throw new CommandInvalidStateException(
+                                throw new CommandException.InvalidState(
                                         "Multiple waypoints were found");
                     };
             origin = waypoint.getLocation();

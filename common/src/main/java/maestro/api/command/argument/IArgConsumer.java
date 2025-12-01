@@ -9,9 +9,6 @@ import maestro.api.command.datatypes.IDatatype;
 import maestro.api.command.datatypes.IDatatypeFor;
 import maestro.api.command.datatypes.IDatatypePost;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidTypeException;
-import maestro.api.command.exception.CommandNotEnoughArgumentsException;
-import maestro.api.command.exception.CommandTooManyArgumentsException;
 import net.minecraft.core.Direction;
 
 /**
@@ -99,67 +96,64 @@ public interface IArgConsumer {
      * @param index The index to peek
      * @return The argument at index {@code index} in this {@link IArgConsumer}}, with 0 being the
      *     next one. This does not mutate the {@link IArgConsumer}}
-     * @throws CommandNotEnoughArgumentsException If there is less than {@code index + 1} arguments
-     *     left
+     * @throws CommandException If there is less than {@code index + 1} arguments left
      * @see #peek()
      * @see #peekString(int)
      * @see #peekAs(Class, int)
      * @see #get()
      */
-    ICommandArgument peek(int index) throws CommandNotEnoughArgumentsException;
+    ICommandArgument peek(int index) throws CommandException;
 
     /**
      * @return The next argument in this {@link IArgConsumer}}. This does not mutate the {@link
      *     IArgConsumer}}
-     * @throws CommandNotEnoughArgumentsException If there is less than one argument left
+     * @throws CommandException If there is less than one argument left
      * @see #peek(int)
      * @see #peekString()
      * @see #peekAs(Class)
      * @see #get()
      */
-    ICommandArgument peek() throws CommandNotEnoughArgumentsException;
+    ICommandArgument peek() throws CommandException;
 
     /**
      * @param index The index to peek
      * @param type The type to check for
      * @return If an ArgParser.Stateless for the specified {@code type} would succeed in parsing the
      *     next argument
-     * @throws CommandNotEnoughArgumentsException If there is less than {@code index + 1} arguments
-     *     left
+     * @throws CommandException If there is less than {@code index + 1} arguments left
      * @see #peek()
      * @see #getAs(Class)
      */
-    boolean is(Class<?> type, int index) throws CommandNotEnoughArgumentsException;
+    boolean is(Class<?> type, int index) throws CommandException;
 
     /**
      * @param type The type to check for
      * @return If an ArgParser.Stateless for the specified {@code type} would succeed in parsing the
      *     next argument
-     * @throws CommandNotEnoughArgumentsException If there is less than one argument left
+     * @throws CommandException If there is less than one argument left
      * @see #peek()
      * @see #getAs(Class)
      */
-    boolean is(Class<?> type) throws CommandNotEnoughArgumentsException;
+    boolean is(Class<?> type) throws CommandException;
 
     /**
      * @param index The index to peek
      * @return The value of the argument at index {@code index} in this {@link IArgConsumer}}, with
      *     0 being the next one This does not mutate the {@link IArgConsumer}}
-     * @throws CommandNotEnoughArgumentsException If there is less than {@code index + 1} arguments
-     *     left
+     * @throws CommandException If there is less than {@code index + 1} arguments left
      * @see #peek()
      * @see #peekString()
      */
-    String peekString(int index) throws CommandNotEnoughArgumentsException;
+    String peekString(int index) throws CommandException;
 
     /**
      * @return The value of the next argument in this {@link IArgConsumer}}. This does not mutate
      *     the {@link IArgConsumer}}
-     * @throws CommandNotEnoughArgumentsException If there is less than one argument left
+     * @throws CommandException If there is less than one argument left
      * @see #peekString(int)
      * @see #getString()
      */
-    String peekString() throws CommandNotEnoughArgumentsException;
+    String peekString() throws CommandException;
 
     /**
      * @param index The index to peek
@@ -171,20 +165,18 @@ public interface IArgConsumer {
      * @see #getEnum(Class)
      * @see ICommandArgument#getEnum(Class)
      */
-    <E extends Enum<?>> E peekEnum(Class<E> enumClass, int index)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <E extends Enum<?>> E peekEnum(Class<E> enumClass, int index) throws CommandException;
 
     /**
      * @param enumClass The class to search
      * @return From the specified enum class, an enum constant of that class. The enum constant's
      *     name will match the next argument's value
-     * @throws CommandInvalidTypeException If the constant couldn't be found
+     * @throws CommandException If the constant couldn't be found
      * @see #peekEnumOrNull(Class)
      * @see #getEnum(Class)
      * @see ICommandArgument#getEnum(Class)
      */
-    <E extends Enum<?>> E peekEnum(Class<E> enumClass)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <E extends Enum<?>> E peekEnum(Class<E> enumClass) throws CommandException;
 
     /**
      * @param index The index to peek
@@ -195,8 +187,7 @@ public interface IArgConsumer {
      * @see #getEnumOrNull(Class)
      * @see ICommandArgument#getEnum(Class)
      */
-    <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass, int index)
-            throws CommandNotEnoughArgumentsException;
+    <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass, int index) throws CommandException;
 
     /**
      * @param enumClass The class to search
@@ -206,8 +197,7 @@ public interface IArgConsumer {
      * @see #getEnumOrNull(Class)
      * @see ICommandArgument#getEnum(Class)
      */
-    <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass)
-            throws CommandNotEnoughArgumentsException;
+    <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the argument at the specified
@@ -220,14 +210,13 @@ public interface IArgConsumer {
      * @param type The type to peek as
      * @param index The index to peek
      * @return An instance of the specified type
-     * @throws CommandInvalidTypeException If the parsing failed
+     * @throws CommandException If the parsing failed
      * @see IArgParser
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    <T> T peekAs(Class<T> type, int index)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <T> T peekAs(Class<T> type, int index) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the
@@ -239,14 +228,13 @@ public interface IArgConsumer {
      *
      * @param type The type to peek as
      * @return An instance of the specified type
-     * @throws CommandInvalidTypeException If the parsing failed
+     * @throws CommandException If the parsing failed
      * @see IArgParser
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object)
      * @see #peekAsOrNull(Class)
      */
-    <T> T peekAs(Class<T> type)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <T> T peekAs(Class<T> type) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the argument at the specified
@@ -265,8 +253,7 @@ public interface IArgConsumer {
      * @see #peekAs(Class, int)
      * @see #peekAsOrNull(Class, int)
      */
-    <T> T peekAsOrDefault(Class<T> type, T def, int index)
-            throws CommandNotEnoughArgumentsException;
+    <T> T peekAsOrDefault(Class<T> type, T def, int index) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the
@@ -284,7 +271,7 @@ public interface IArgConsumer {
      * @see #peekAs(Class)
      * @see #peekAsOrNull(Class)
      */
-    <T> T peekAsOrDefault(Class<T> type, T def) throws CommandNotEnoughArgumentsException;
+    <T> T peekAsOrDefault(Class<T> type, T def) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the argument at the specified
@@ -302,7 +289,7 @@ public interface IArgConsumer {
      * @see #peekAs(Class, int)
      * @see #peekAsOrDefault(Class, Object, int)
      */
-    <T> T peekAsOrNull(Class<T> type, int index) throws CommandNotEnoughArgumentsException;
+    <T> T peekAsOrNull(Class<T> type, int index) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the
@@ -319,23 +306,20 @@ public interface IArgConsumer {
      * @see #peekAs(Class)
      * @see #peekAsOrDefault(Class, Object)
      */
-    <T> T peekAsOrNull(Class<T> type) throws CommandNotEnoughArgumentsException;
+    <T> T peekAsOrNull(Class<T> type) throws CommandException;
 
-    <T> T peekDatatype(IDatatypeFor<T> datatype)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <T> T peekDatatype(IDatatypeFor<T> datatype) throws CommandException;
 
-    <T, O> T peekDatatype(IDatatypePost<T, O> datatype)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <T, O> T peekDatatype(IDatatypePost<T, O> datatype) throws CommandException;
 
-    <T, O> T peekDatatype(IDatatypePost<T, O> datatype, O original)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <T, O> T peekDatatype(IDatatypePost<T, O> datatype, O original) throws CommandException;
 
     <T> T peekDatatypeOrNull(IDatatypeFor<T> datatype);
 
     <T, O> T peekDatatypeOrNull(IDatatypePost<T, O> datatype);
 
     <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(D datatype, O original)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+            throws CommandException;
 
     <T, O, D extends IDatatypePost<T, O>> T peekDatatypePostOrDefault(
             D datatype, O original, T def);
@@ -399,18 +383,18 @@ public interface IArgConsumer {
      * calls will return later arguments
      *
      * @return The next argument
-     * @throws CommandNotEnoughArgumentsException If there's less than one argument left
+     * @throws CommandException If there's less than one argument left
      */
-    ICommandArgument get() throws CommandNotEnoughArgumentsException;
+    ICommandArgument get() throws CommandException;
 
     /**
      * Gets the value of the next argument and returns it. This consumes the first argument so that
      * subsequent calls will return later arguments
      *
      * @return The value of the next argument
-     * @throws CommandNotEnoughArgumentsException If there's less than one argument left
+     * @throws CommandException If there's less than one argument left
      */
-    String getString() throws CommandNotEnoughArgumentsException;
+    String getString() throws CommandException;
 
     /**
      * Gets an enum value from the enum class with the same name as the next argument's value
@@ -420,13 +404,12 @@ public interface IArgConsumer {
      *
      * @param enumClass The enum class to search
      * @return An enum constant of that class with the same name as the next argument's value
-     * @throws CommandInvalidTypeException If the constant couldn't be found
+     * @throws CommandException If the constant couldn't be found
      * @see #peekEnum(Class)
      * @see #getEnumOrNull(Class)
      * @see ICommandArgument#getEnum(Class)
      */
-    <E extends Enum<?>> E getEnum(Class<E> enumClass)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandException;
 
     /**
      * Gets an enum value from the enum class with the same name as the next argument's value
@@ -443,8 +426,7 @@ public interface IArgConsumer {
      * @see #peekEnumOrNull(Class)
      * @see ICommandArgument#getEnum(Class)
      */
-    <E extends Enum<?>> E getEnumOrDefault(Class<E> enumClass, E def)
-            throws CommandNotEnoughArgumentsException;
+    <E extends Enum<?>> E getEnumOrDefault(Class<E> enumClass, E def) throws CommandException;
 
     /**
      * Gets an enum value from the enum class with the same name as the next argument's value
@@ -460,8 +442,7 @@ public interface IArgConsumer {
      * @see #peekEnumOrNull(Class)
      * @see ICommandArgument#getEnum(Class)
      */
-    <E extends Enum<?>> E getEnumOrNull(Class<E> enumClass)
-            throws CommandNotEnoughArgumentsException;
+    <E extends Enum<?>> E getEnumOrNull(Class<E> enumClass) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the
@@ -473,7 +454,7 @@ public interface IArgConsumer {
      *
      * @param type The type to peek as
      * @return An instance of the specified type
-     * @throws CommandInvalidTypeException If the parsing failed
+     * @throws CommandException If the parsing failed
      * @see IArgParser
      * @see #get()
      * @see #getAsOrDefault(Class, Object)
@@ -482,8 +463,7 @@ public interface IArgConsumer {
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    <T> T getAs(Class<T> type)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <T> T getAs(Class<T> type) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the
@@ -504,7 +484,7 @@ public interface IArgConsumer {
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    <T> T getAsOrDefault(Class<T> type, T def) throws CommandNotEnoughArgumentsException;
+    <T> T getAsOrDefault(Class<T> type, T def) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse the next argument into the
@@ -524,18 +504,17 @@ public interface IArgConsumer {
      * @see #peekAsOrDefault(Class, Object, int)
      * @see #peekAsOrNull(Class, int)
      */
-    <T> T getAsOrNull(Class<T> type) throws CommandNotEnoughArgumentsException;
+    <T> T getAsOrNull(Class<T> type) throws CommandException;
 
     <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(D datatype, O original)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+            throws CommandException;
 
     <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrDefault(
             D datatype, O original, T _default);
 
     <T, O, D extends IDatatypePost<T, O>> T getDatatypePostOrNull(D datatype, O original);
 
-    <T, D extends IDatatypeFor<T>> T getDatatypeFor(D datatype)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException;
+    <T, D extends IDatatypeFor<T>> T getDatatypeFor(D datatype) throws CommandException;
 
     <T, D extends IDatatypeFor<T>> T getDatatypeForOrDefault(D datatype, T def);
 
@@ -562,25 +541,24 @@ public interface IArgConsumer {
 
     /**
      * @param min The minimum amount of arguments to require.
-     * @throws CommandNotEnoughArgumentsException If there are less than {@code min} arguments left.
+     * @throws CommandException If there are less than {@code min} arguments left.
      * @see #requireMax(int)
      * @see #requireExactly(int)
      */
-    void requireMin(int min) throws CommandNotEnoughArgumentsException;
+    void requireMin(int min) throws CommandException;
 
     /**
      * @param max The maximum amount of arguments allowed.
-     * @throws CommandTooManyArgumentsException If there are more than {@code max} arguments left.
+     * @throws CommandException If there are more than {@code max} arguments left.
      * @see #requireMin(int)
      * @see #requireExactly(int)
      */
-    void requireMax(int max) throws CommandTooManyArgumentsException;
+    void requireMax(int max) throws CommandException;
 
     /**
      * @param args The exact amount of arguments to require.
-     * @throws CommandNotEnoughArgumentsException If there are less than {@code args} arguments
-     *     left.
-     * @throws CommandTooManyArgumentsException If there are more than {@code args} arguments left.
+     * @throws CommandException If there are less than {@code args} arguments left.
+     * @throws CommandException If there are more than {@code args} arguments left.
      * @see #requireMin(int)
      * @see #requireMax(int)
      */

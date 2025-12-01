@@ -7,7 +7,6 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.process.IMaestroProcess;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
@@ -68,7 +67,7 @@ public class ExecutionControlCommands {
                     public void execute(String label, IArgConsumer args) throws CommandException {
                         args.requireMax(0);
                         if (paused[0]) {
-                            throw new CommandInvalidStateException("Already paused");
+                            throw new CommandException.InvalidState("Already paused");
                         }
                         paused[0] = true;
                         log.atInfo().log("Execution paused");
@@ -105,7 +104,7 @@ public class ExecutionControlCommands {
                         args.requireMax(0);
                         maestro.getBuilderProcess().resume();
                         if (!paused[0]) {
-                            throw new CommandInvalidStateException("Not paused");
+                            throw new CommandException.InvalidState("Not paused");
                         }
                         paused[0] = false;
                         log.atInfo().log("Execution resumed");

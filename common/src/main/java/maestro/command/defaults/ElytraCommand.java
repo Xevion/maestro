@@ -11,7 +11,6 @@ import maestro.api.MaestroAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.process.ICustomGoalProcess;
@@ -39,7 +38,7 @@ public class ElytraCommand extends Command {
             return;
         }
         if (!elytra.isLoaded()) {
-            throw new CommandInvalidStateException(unsupportedSystemMessage());
+            throw new CommandException.InvalidState(unsupportedSystemMessage());
         }
 
         if (!args.hasAny()) {
@@ -52,15 +51,15 @@ public class ElytraCommand extends Command {
             }
             Goal iGoal = customGoalProcess.mostRecentGoal();
             if (iGoal == null) {
-                throw new CommandInvalidStateException("No goal has been set");
+                throw new CommandException.InvalidState("No goal has been set");
             }
             if (ctx.world().dimension() != Level.NETHER) {
-                throw new CommandInvalidStateException("Only works in the nether");
+                throw new CommandException.InvalidState("Only works in the nether");
             }
             try {
                 elytra.pathTo(iGoal);
             } catch (IllegalArgumentException ex) {
-                throw new CommandInvalidStateException(ex.getMessage());
+                throw new CommandException.InvalidState(ex.getMessage());
             }
             return;
         }
@@ -81,7 +80,7 @@ public class ElytraCommand extends Command {
                 }
             default:
                 {
-                    throw new CommandInvalidStateException("Invalid action");
+                    throw new CommandException.InvalidState("Invalid action");
                 }
         }
     }

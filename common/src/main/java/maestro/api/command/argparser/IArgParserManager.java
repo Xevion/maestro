@@ -1,7 +1,7 @@
 package maestro.api.command.argparser;
 
 import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.exception.CommandInvalidTypeException;
+import maestro.api.command.exception.CommandException;
 import maestro.api.command.registry.Registry;
 
 /**
@@ -30,9 +30,9 @@ public interface IArgParserManager {
      * @param type The type to try and parse the argument into.
      * @param arg The argument to parse.
      * @return An instance of the specified class.
-     * @throws CommandInvalidTypeException If the parsing failed
+     * @throws CommandException If the parsing failed
      */
-    <T> T parseStateless(Class<T> type, ICommandArgument arg) throws CommandInvalidTypeException;
+    <T> T parseStateless(Class<T> type, ICommandArgument arg) throws CommandException;
 
     /**
      * Attempt to parse the specified argument with a stated {@link IArgParser} that outputs the
@@ -42,11 +42,11 @@ public interface IArgParserManager {
      * @param arg The argument to parse.
      * @param state The state to pass to the {@link IArgParser.Stated}.
      * @return An instance of the specified class.
-     * @throws CommandInvalidTypeException If the parsing failed
+     * @throws CommandException If the parsing failed
      * @see IArgParser.Stated
      */
     <T, S> T parseStated(Class<T> type, Class<S> stateKlass, ICommandArgument arg, S state)
-            throws CommandInvalidTypeException;
+            throws CommandException;
 
     Registry<IArgParser> getRegistry();
 }

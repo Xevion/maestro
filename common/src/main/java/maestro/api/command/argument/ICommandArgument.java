@@ -1,7 +1,7 @@
 package maestro.api.command.argument;
 
 import maestro.api.command.argparser.IArgParser;
-import maestro.api.command.exception.CommandInvalidTypeException;
+import maestro.api.command.exception.CommandException;
 import net.minecraft.core.Direction;
 
 /**
@@ -36,7 +36,7 @@ public interface ICommandArgument {
      *
      * @param enumClass The enum class to search
      * @return An enum constant of that class with the same name as this argument's value
-     * @throws CommandInvalidTypeException If the constant couldn't be found
+     * @throws CommandException If the constant couldn't be found
      * @see IArgConsumer#peekEnum(Class)
      * @see IArgConsumer#peekEnum(Class, int)
      * @see IArgConsumer#peekEnumOrNull(Class)
@@ -44,7 +44,7 @@ public interface ICommandArgument {
      * @see IArgConsumer#getEnum(Class)
      * @see IArgConsumer#getEnumOrNull(Class)
      */
-    <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandInvalidTypeException;
+    <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse this argument into the specified
@@ -52,9 +52,9 @@ public interface ICommandArgument {
      *
      * @param type The class to parse this argument into
      * @return An instance of the specified type
-     * @throws CommandInvalidTypeException If the parsing failed
+     * @throws CommandException If the parsing failed
      */
-    <T> T getAs(Class<T> type) throws CommandInvalidTypeException;
+    <T> T getAs(Class<T> type) throws CommandException;
 
     /**
      * Tries to use a <b>stateless</b> {@link IArgParser} to parse this argument into the specified
@@ -71,9 +71,9 @@ public interface ICommandArgument {
      *
      * @param type The class to parse this argument into
      * @return An instance of the specified type
-     * @throws CommandInvalidTypeException If the parsing failed
+     * @throws CommandException If the parsing failed
      */
-    <T, S> T getAs(Class<T> type, Class<S> stateType, S state) throws CommandInvalidTypeException;
+    <T, S> T getAs(Class<T> type, Class<S> stateType, S state) throws CommandException;
 
     /**
      * Tries to use a <b>stated</b> {@link IArgParser} to parse this argument into the specified

@@ -11,8 +11,6 @@ import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
-import maestro.api.command.exception.CommandInvalidTypeException;
 import maestro.api.utils.MaestroLogger;
 import org.slf4j.Logger;
 
@@ -36,16 +34,16 @@ public class ExploreFilterCommand extends Command {
             if (args.getString().equalsIgnoreCase("invert")) {
                 invert = true;
             } else {
-                throw new CommandInvalidTypeException(
+                throw new CommandException.InvalidArgument.InvalidType(
                         args.consumed(), "either \"invert\" or nothing");
             }
         }
         try {
             maestro.getExploreProcess().applyJsonFilter(file.toPath().toAbsolutePath(), invert);
         } catch (NoSuchFileException e) {
-            throw new CommandInvalidStateException("File not found");
+            throw new CommandException.InvalidState("File not found");
         } catch (JsonSyntaxException e) {
-            throw new CommandInvalidStateException("Invalid JSON syntax");
+            throw new CommandException.InvalidState("Invalid JSON syntax");
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

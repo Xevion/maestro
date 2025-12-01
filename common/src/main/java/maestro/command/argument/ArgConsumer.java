@@ -14,9 +14,6 @@ import maestro.api.command.datatypes.IDatatypeContext;
 import maestro.api.command.datatypes.IDatatypeFor;
 import maestro.api.command.datatypes.IDatatypePost;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidTypeException;
-import maestro.api.command.exception.CommandNotEnoughArgumentsException;
-import maestro.api.command.exception.CommandTooManyArgumentsException;
 import maestro.api.command.manager.ICommandManager;
 
 public class ArgConsumer implements IArgConsumer {
@@ -99,116 +96,111 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public ICommandArgument peek(int index) throws CommandNotEnoughArgumentsException {
+    public ICommandArgument peek(int index) throws CommandException {
         requireMin(index + 1);
         return args.get(index);
     }
 
     @Override
-    public ICommandArgument peek() throws CommandNotEnoughArgumentsException {
+    public ICommandArgument peek() throws CommandException {
         return peek(0);
     }
 
     @Override
-    public boolean is(Class<?> type, int index) throws CommandNotEnoughArgumentsException {
+    public boolean is(Class<?> type, int index) throws CommandException {
         return peek(index).is(type);
     }
 
     @Override
-    public boolean is(Class<?> type) throws CommandNotEnoughArgumentsException {
+    public boolean is(Class<?> type) throws CommandException {
         return is(type, 0);
     }
 
     @Override
-    public String peekString(int index) throws CommandNotEnoughArgumentsException {
+    public String peekString(int index) throws CommandException {
         return peek(index).getValue();
     }
 
     @Override
-    public String peekString() throws CommandNotEnoughArgumentsException {
+    public String peekString() throws CommandException {
         return peekString(0);
     }
 
     @Override
     public <E extends Enum<?>> E peekEnum(Class<E> enumClass, int index)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         return peek(index).getEnum(enumClass);
     }
 
     @Override
     public <E extends Enum<?>> E peekEnum(Class<E> enumClass)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         return peekEnum(enumClass, 0);
     }
 
     @Override
     public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass, int index)
-            throws CommandNotEnoughArgumentsException {
+            throws CommandException {
         try {
             return peekEnum(enumClass, index);
-        } catch (CommandInvalidTypeException e) {
+        } catch (CommandException.InvalidArgument.InvalidType e) {
             return null;
         }
     }
 
     @Override
-    public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass)
-            throws CommandNotEnoughArgumentsException {
+    public <E extends Enum<?>> E peekEnumOrNull(Class<E> enumClass) throws CommandException {
         return peekEnumOrNull(enumClass, 0);
     }
 
     @Override
-    public <T> T peekAs(Class<T> type, int index)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+    public <T> T peekAs(Class<T> type, int index) throws CommandException, CommandException {
         return peek(index).getAs(type);
     }
 
     @Override
-    public <T> T peekAs(Class<T> type)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+    public <T> T peekAs(Class<T> type) throws CommandException, CommandException {
         return peekAs(type, 0);
     }
 
     @Override
-    public <T> T peekAsOrDefault(Class<T> type, T def, int index)
-            throws CommandNotEnoughArgumentsException {
+    public <T> T peekAsOrDefault(Class<T> type, T def, int index) throws CommandException {
         try {
             return peekAs(type, index);
-        } catch (CommandInvalidTypeException e) {
+        } catch (CommandException.InvalidArgument.InvalidType e) {
             return def;
         }
     }
 
     @Override
-    public <T> T peekAsOrDefault(Class<T> type, T def) throws CommandNotEnoughArgumentsException {
+    public <T> T peekAsOrDefault(Class<T> type, T def) throws CommandException {
         return peekAsOrDefault(type, def, 0);
     }
 
     @Override
-    public <T> T peekAsOrNull(Class<T> type, int index) throws CommandNotEnoughArgumentsException {
+    public <T> T peekAsOrNull(Class<T> type, int index) throws CommandException {
         return peekAsOrDefault(type, null, index);
     }
 
     @Override
-    public <T> T peekAsOrNull(Class<T> type) throws CommandNotEnoughArgumentsException {
+    public <T> T peekAsOrNull(Class<T> type) throws CommandException {
         return peekAsOrNull(type, 0);
     }
 
     @Override
-    public <T> T peekDatatype(IDatatypeFor<T> datatype)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+    public <T> T peekDatatype(IDatatypeFor<T> datatype) throws CommandException, CommandException {
         return copy().getDatatypeFor(datatype);
     }
 
     @Override
     public <T, O> T peekDatatype(IDatatypePost<T, O> datatype)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         return this.peekDatatype(datatype, null);
     }
 
     @Override
     public <T, O> T peekDatatype(IDatatypePost<T, O> datatype, O original)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         return copy().getDatatypePost(datatype, original);
     }
 
@@ -224,7 +216,7 @@ public class ArgConsumer implements IArgConsumer {
 
     @Override
     public <T, O, D extends IDatatypePost<T, O>> T peekDatatypePost(D datatype, O original)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         return copy().getDatatypePost(datatype, original);
     }
 
@@ -255,7 +247,7 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public ICommandArgument get() throws CommandNotEnoughArgumentsException {
+    public ICommandArgument get() throws CommandException {
         requireMin(1);
         ICommandArgument arg = args.removeFirst();
         consumed.add(arg);
@@ -263,65 +255,63 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public String getString() throws CommandNotEnoughArgumentsException {
+    public String getString() throws CommandException {
         return get().getValue();
     }
 
     @Override
     public <E extends Enum<?>> E getEnum(Class<E> enumClass)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         return get().getEnum(enumClass);
     }
 
     @Override
     public <E extends Enum<?>> E getEnumOrDefault(Class<E> enumClass, E def)
-            throws CommandNotEnoughArgumentsException {
+            throws CommandException {
         try {
             peekEnum(enumClass);
             return getEnum(enumClass);
-        } catch (CommandInvalidTypeException e) {
+        } catch (CommandException.InvalidArgument.InvalidType e) {
             return def;
         }
     }
 
     @Override
-    public <E extends Enum<?>> E getEnumOrNull(Class<E> enumClass)
-            throws CommandNotEnoughArgumentsException {
+    public <E extends Enum<?>> E getEnumOrNull(Class<E> enumClass) throws CommandException {
         return getEnumOrDefault(enumClass, null);
     }
 
     @Override
-    public <T> T getAs(Class<T> type)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+    public <T> T getAs(Class<T> type) throws CommandException, CommandException {
         return get().getAs(type);
     }
 
     @Override
-    public <T> T getAsOrDefault(Class<T> type, T def) throws CommandNotEnoughArgumentsException {
+    public <T> T getAsOrDefault(Class<T> type, T def) throws CommandException {
         try {
             T val = peek().getAs(type);
             get();
             return val;
-        } catch (CommandInvalidTypeException e) {
+        } catch (CommandException.InvalidArgument.InvalidType e) {
             return def;
         }
     }
 
     @Override
-    public <T> T getAsOrNull(Class<T> type) throws CommandNotEnoughArgumentsException {
+    public <T> T getAsOrNull(Class<T> type) throws CommandException {
         return getAsOrDefault(type, null);
     }
 
     @Override
     public <T, O, D extends IDatatypePost<T, O>> T getDatatypePost(D datatype, O original)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         try {
             return datatype.apply(this.context, original);
         } catch (Exception e) {
             if (Agent.settings().verboseCommandExceptions.value) {
                 e.printStackTrace();
             }
-            throw new CommandInvalidTypeException(
+            throw new CommandException.InvalidArgument.InvalidType(
                     hasAny() ? peek() : consumed(), datatype.getClass().getSimpleName(), e);
         }
     }
@@ -349,14 +339,14 @@ public class ArgConsumer implements IArgConsumer {
 
     @Override
     public <T, D extends IDatatypeFor<T>> T getDatatypeFor(D datatype)
-            throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+            throws CommandException, CommandException {
         try {
             return datatype.get(this.context);
         } catch (Exception e) {
             if (Agent.settings().verboseCommandExceptions.value) {
                 e.printStackTrace();
             }
-            throw new CommandInvalidTypeException(
+            throw new CommandException.InvalidArgument.InvalidType(
                     hasAny() ? peek() : consumed(), datatype.getClass().getSimpleName(), e);
         }
     }
@@ -399,16 +389,16 @@ public class ArgConsumer implements IArgConsumer {
     }
 
     @Override
-    public void requireMin(int min) throws CommandNotEnoughArgumentsException {
+    public void requireMin(int min) throws CommandException {
         if (args.size() < min) {
-            throw new CommandNotEnoughArgumentsException(min + consumed.size());
+            throw new CommandException.NotEnoughArguments(min + consumed.size());
         }
     }
 
     @Override
-    public void requireMax(int max) throws CommandTooManyArgumentsException {
+    public void requireMax(int max) throws CommandException {
         if (args.size() > max) {
-            throw new CommandTooManyArgumentsException(max + consumed.size());
+            throw new CommandException.TooManyArguments(max + consumed.size());
         }
     }
 

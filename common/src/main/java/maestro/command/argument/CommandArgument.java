@@ -2,7 +2,7 @@ package maestro.command.argument;
 
 import java.util.stream.Stream;
 import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.exception.CommandInvalidTypeException;
+import maestro.api.command.exception.CommandException;
 import maestro.command.argparser.ArgParserManager;
 
 /** The default implementation of {@link ICommandArgument} */
@@ -34,16 +34,18 @@ class CommandArgument implements ICommandArgument {
     }
 
     @Override
-    public <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandInvalidTypeException {
+    public <E extends Enum<?>> E getEnum(Class<E> enumClass) throws CommandException {
         return Stream.of(enumClass.getEnumConstants())
                 .filter(e -> e.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(
-                        () -> new CommandInvalidTypeException(this, enumClass.getSimpleName()));
+                        () ->
+                                new CommandException.InvalidArgument.InvalidType(
+                                        this, enumClass.getSimpleName()));
     }
 
     @Override
-    public <T> T getAs(Class<T> type) throws CommandInvalidTypeException {
+    public <T> T getAs(Class<T> type) throws CommandException {
         return ArgParserManager.INSTANCE.parseStateless(type, this);
     }
 
@@ -59,8 +61,7 @@ class CommandArgument implements ICommandArgument {
 
     @SuppressWarnings("UnusedReturnValue")
     @Override
-    public <T, S> T getAs(Class<T> type, Class<S> stateType, S state)
-            throws CommandInvalidTypeException {
+    public <T, S> T getAs(Class<T> type, Class<S> stateType, S state) throws CommandException {
         return ArgParserManager.INSTANCE.parseStated(type, stateType, this, state);
     }
 

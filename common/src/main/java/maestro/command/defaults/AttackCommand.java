@@ -8,7 +8,6 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForEntitySelector;
-import maestro.api.command.exception.CommandErrorMessageException;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.selector.entity.EntityCategory;
@@ -113,19 +112,19 @@ public class AttackCommand extends Command {
                 "Categories: " + String.join(", ", EntityCategory.names()));
     }
 
-    public static class NoSelectorsException extends CommandErrorMessageException {
+    public static class NoSelectorsException extends CommandException.ErrorMessage {
         protected NoSelectorsException() {
             super("No valid entity selectors specified");
         }
     }
 
-    public static class InvalidSelectorException extends CommandErrorMessageException {
+    public static class InvalidSelectorException extends CommandException.ErrorMessage {
         protected InvalidSelectorException(String message) {
             super("Invalid selector: " + message);
         }
     }
 
-    public static class NoMatchesException extends CommandErrorMessageException {
+    public static class NoMatchesException extends CommandException.ErrorMessage {
         protected NoMatchesException() {
             super("No entities matched any selector");
         }

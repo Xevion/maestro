@@ -16,8 +16,6 @@ import maestro.api.command.datatypes.ForBlockOptionalMeta;
 import maestro.api.command.datatypes.ForDirection;
 import maestro.api.command.datatypes.RelativeBlockPos;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
-import maestro.api.command.exception.CommandInvalidTypeException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.event.listener.AbstractGameEventListener;
@@ -75,11 +73,11 @@ public class SelCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         Action action = Action.getByName(args.getString());
         if (action == null) {
-            throw new CommandInvalidTypeException(args.consumed(), "an action");
+            throw new CommandException.InvalidArgument.InvalidType(args.consumed(), "an action");
         }
         if (action == Action.POS1 || action == Action.POS2) {
             if (action == Action.POS2 && pos1 == null) {
-                throw new CommandInvalidStateException("Set pos1 first before using pos2");
+                throw new CommandException.InvalidState("Set pos1 first before using pos2");
             }
             BetterBlockPos playerPos = ctx.viewerPos();
             BetterBlockPos pos =
@@ -108,7 +106,7 @@ public class SelCommand extends Command {
             } else {
                 ISelection[] selections = manager.getSelections();
                 if (selections.length < 1) {
-                    throw new CommandInvalidStateException("Nothing to undo!");
+                    throw new CommandException.InvalidState("Nothing to undo!");
                 } else {
                     pos1 = manager.removeSelection(selections[selections.length - 1]).pos1();
                     log.atInfo().log("Undid pos2");
@@ -145,7 +143,7 @@ public class SelCommand extends Command {
             }
             ISelection[] selections = manager.getSelections();
             if (selections.length == 0) {
-                throw new CommandInvalidStateException("No selections");
+                throw new CommandException.InvalidState("No selections");
             }
             BetterBlockPos origin = selections[0].min();
             CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
@@ -210,7 +208,7 @@ public class SelCommand extends Command {
             args.requireMax(0);
             ISelection[] selections = manager.getSelections();
             if (selections.length < 1) {
-                throw new CommandInvalidStateException("No selections");
+                throw new CommandException.InvalidState("No selections");
             }
             BlockStateInterface bsi = new BlockStateInterface(ctx);
             BetterBlockPos origin = selections[0].min();
@@ -249,7 +247,7 @@ public class SelCommand extends Command {
                             : playerPos;
             args.requireMax(0);
             if (clipboard == null) {
-                throw new CommandInvalidStateException("You need to copy a selection first");
+                throw new CommandException.InvalidState("You need to copy a selection first");
             }
             maestro.getBuilderProcess().build("Fill", clipboard, pos.offset(clipboardOffset));
             log.atInfo().log("Building now");
@@ -257,13 +255,13 @@ public class SelCommand extends Command {
             args.requireExactly(3);
             TransformTarget transformTarget = TransformTarget.getByName(args.getString());
             if (transformTarget == null) {
-                throw new CommandInvalidStateException("Invalid transform type");
+                throw new CommandException.InvalidState("Invalid transform type");
             }
             Direction direction = args.getDatatypeFor(ForDirection.INSTANCE);
             int blocks = args.getAs(Integer.class);
             ISelection[] selections = manager.getSelections();
             if (selections.length < 1) {
-                throw new CommandInvalidStateException("No selections found");
+                throw new CommandException.InvalidState("No selections found");
             }
             selections = transformTarget.transform(selections);
             for (ISelection selection : selections) {

@@ -7,7 +7,6 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
 import maestro.api.process.IGetToBlockProcess;
 
 public class BlacklistCommand extends Command {
@@ -21,12 +20,12 @@ public class BlacklistCommand extends Command {
         args.requireMax(0);
         IGetToBlockProcess proc = maestro.getGetToBlockProcess();
         if (!proc.isActive()) {
-            throw new CommandInvalidStateException("GetToBlockProcess is not currently active");
+            throw new CommandException.InvalidState("GetToBlockProcess is not currently active");
         }
         if (proc.blacklistClosest()) {
             log.atInfo().log("Blacklisted closest block instances");
         } else {
-            throw new CommandInvalidStateException("No known locations, unable to blacklist");
+            throw new CommandException.InvalidState("No known locations, unable to blacklist");
         }
     }
 

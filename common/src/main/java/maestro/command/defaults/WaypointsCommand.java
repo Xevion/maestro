@@ -18,8 +18,6 @@ import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForWaypoints;
 import maestro.api.command.datatypes.RelativeBlockPos;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidStateException;
-import maestro.api.command.exception.CommandInvalidTypeException;
 import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
@@ -45,7 +43,7 @@ public class WaypointsCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         Action action = args.hasAny() ? Action.getByName(args.getString()) : Action.LIST;
         if (action == null) {
-            throw new CommandInvalidTypeException(args.consumed(), "an action");
+            throw new CommandException.InvalidArgument.InvalidType(args.consumed(), "an action");
         }
         ChatMessageRenderer renderer = new ChatMessageRenderer();
         BiFunction<IWaypoint, Action, Component> toComponent =
@@ -121,7 +119,7 @@ public class WaypointsCommand extends Command {
                                 tag != null ? " " + tag.getName() : ""));
             } else {
                 args.requireMax(0);
-                throw new CommandInvalidStateException(
+                throw new CommandException.InvalidState(
                         tag != null ? "No waypoints found by that tag" : "No waypoints found");
             }
         } else if (action == Action.SAVE) {
@@ -155,7 +153,7 @@ public class WaypointsCommand extends Command {
             String name = args.getString();
             IWaypoint.Tag tag = IWaypoint.Tag.getByName(name);
             if (tag == null) {
-                throw new CommandInvalidStateException("Invalid tag, \"" + name + "\"");
+                throw new CommandException.InvalidState("Invalid tag, \"" + name + "\"");
             }
             IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(this.maestro, tag);
             for (IWaypoint waypoint : waypoints) {
@@ -236,13 +234,13 @@ public class WaypointsCommand extends Command {
                     }
                 }
                 if (waypoint == null) {
-                    throw new CommandInvalidStateException(
+                    throw new CommandException.InvalidState(
                             "Timestamp was specified but no waypoint was found");
                 }
             } else {
                 switch (waypoints.length) {
                     case 0:
-                        throw new CommandInvalidStateException("No waypoints found");
+                        throw new CommandException.InvalidState("No waypoints found");
                     case 1:
                         waypoint = waypoints[0];
                         break;

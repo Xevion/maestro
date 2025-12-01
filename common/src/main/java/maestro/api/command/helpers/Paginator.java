@@ -6,7 +6,6 @@ import java.util.function.Function;
 import maestro.api.MaestroAPI;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.CommandInvalidTypeException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
@@ -132,7 +131,7 @@ public class Paginator<E> {
         if (consumer.hasAny()) {
             page = consumer.getAs(Integer.class);
             if (!pagi.validPage(page)) {
-                throw new CommandInvalidTypeException(
+                throw new CommandException.InvalidArgument.InvalidType(
                         consumer.consumed(),
                         String.format("a valid page (1-%d)", pagi.getMaxPage()),
                         consumer.consumed().getValue());
