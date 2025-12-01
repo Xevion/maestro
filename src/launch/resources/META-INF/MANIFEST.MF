@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-MixinConfigs: mixins.maestro.json
-MixinConnector: maestro.launch.MaestroMixinConnector
-Implementation-Title: Maestro
-Implementation-Version: version

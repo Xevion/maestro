@@ -1,0 +1,40 @@
+{
+  "required": true,
+  "package": "maestro.launch.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "verbose": false,
+  "injectors": {
+    "maxShiftBy": 2,
+    "defaultRequire": 1
+  },
+  "client": [
+    "MixinCamera",
+    "MixinChunkArray",
+    "MixinClientChunkProvider",
+    "MixinClientPlayerEntity",
+    "MixinClientPlayNetHandler",
+    "MixinCommandSuggestionHelper",
+    "MixinEntity",
+    "MixinEntityRenderManager",
+    "MixinFireworkRocketEntity",
+    "MixinGameRenderer",
+    "MixinGui",
+    "MixinIntegratedServer",
+    "MixinItemStack",
+    "MixinKeyboardInput",
+    "MixinLivingEntity",
+    "MixinLightmapTextureManager",
+    "MixinLootContextBuilder",
+    "MixinLootTable",
+    "MixinMinecraft",
+    "MixinMouseHandler",
+    "MixinNetworkManager",
+    "MixinPalettedContainer",
+    "MixinPalettedContainer$Data",
+    "MixinPlayerController",
+    "MixinScreen",
+    "MixinWorldRenderer"
+  ],
+  "mixins": [
+  ]
+}

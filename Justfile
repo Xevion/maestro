@@ -23,7 +23,7 @@ build:
 
 # Development server (run Minecraft client)
 dev-basic:
-    ./gradlew :fabric:runClient -PextraArgs="--username Dev"
+    ./gradlew :fabric:runClient
 
 # Run coordinator bot (loads world, opens LAN, runs #coordinator)
 # If world="auto" (default), finds most recent world in saves folder
@@ -32,7 +32,7 @@ dev world="auto" goal="100":
     set -euo pipefail
     WORLD="{{world}}"
     if [ "$WORLD" = "auto" ]; then
-        SAVES_DIR="platforms/fabric/run/client/saves"
+        SAVES_DIR="fabric/run/saves"
         if [ ! -d "$SAVES_DIR" ]; then
             echo "Error: Saves directory not found at $SAVES_DIR"
             exit 1
@@ -46,12 +46,11 @@ dev world="auto" goal="100":
         echo "Auto-detected world: $WORLD"
     fi
     AUTOSTART_COORDINATOR=true COORDINATOR_GOAL={{goal}} \
-    ./gradlew :fabric:runClient -PextraArgs="--username Dev --quickPlaySingleplayer \"$WORLD\""
+    ./gradlew :fabric:runClient --args="--username Dev --quickPlaySingleplayer \"$WORLD\""
 
 # Run worker bot (auto-connects to coordinator)
 dev-worker i:
-    #!/usr/bin/env bash
-    ./gradlew :fabric:runClient -PextraArgs="--username Worker{{ i }} --quickPlayMultiplayer localhost:25565"
+    ./gradlew :fabric:runClient --args="--username Worker{{ i }} --quickPlayMultiplayer localhost:25565"
 
 # Clean build
 clean:

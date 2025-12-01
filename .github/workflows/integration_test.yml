@@ -35,7 +35,7 @@ jobs:
       - name: Stage mod for testing
         run: |
           mkdir -p run/mods
-          find platforms/fabric/build/libs -name "maestro-fabric-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
+          find fabric/build/libs -name "maestro-fabric-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
 
       - name: Run Minecraft client test
         uses: headlesshq/mc-runtime-test@4.1.0
@@ -71,7 +71,7 @@ jobs:
       - name: Stage mod for testing
         run: |
           mkdir -p run/mods
-          find platforms/neoforge/build/libs -name "maestro-neoforge-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
+          find neoforge/build/libs -name "maestro-neoforge-*.jar" ! -name "*-dev*" ! -name "*-shadow*" ! -name "*-unoptimized*" -exec cp {} run/mods/ \;
 
       - name: Run Minecraft client test
         uses: headlesshq/mc-runtime-test@4.1.0

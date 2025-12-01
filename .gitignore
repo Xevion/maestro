@@ -1,7 +1,7 @@
 .DS_Store
 **/*.swp
 
-*-logs.json
+**/*-logs.json
 
 docs/
 run/
@@ -15,6 +15,23 @@ build/
 .kotlin/
 classes/
 *.class
+
+# Architectury build outputs
+common/build/
+fabric/build/
+neoforge/build/
+
+# Loom caches
+common/.gradle/
+fabric/.gradle/
+neoforge/.gradle/
+
+# Run directories
+fabric/run/
+neoforge/run/
+
+# Generated sources
+common/build/generated/
 
 /out
 

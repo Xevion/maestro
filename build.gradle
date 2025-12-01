@@ -1,139 +1,81 @@
 plugins {
-    id 'com.diffplug.spotless' version '7.0.3' apply false
+    id 'java'
+    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
+    id 'com.diffplug.spotless' version '7.0.3'
     id 'org.jetbrains.kotlin.jvm' version '2.2.21' apply false
-    id 'xyz.wagyourtail.unimined' version '1.2.9' apply false
     id 'com.google.protobuf' version '0.9.4' apply false
 }
 
-// Reproducible JAR builds - consistent byte-for-byte output
+architectury {
+    minecraft = minecraft_version
+}
+
 tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
 
-// Spotless requires Java 21+ to parse modern Java syntax
-// See: https://github.com/diffplug/spotless/issues/724
 if (JavaVersion.current() < JavaVersion.VERSION_21) {
-    throw new GradleException("This project requires Java 21 or later to run Spotless (currently running ${JavaVersion.current()}).\n" + 'Please set JAVA_HOME to a Java 21+ installation or run with: ./gradlew -Dorg.gradle.java.home=/path/to/jdk21')
+    throw new GradleException("This project requires Java 21+")
 }
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'org.jetbrains.kotlin.jvm'
-    apply plugin: 'xyz.wagyourtail.unimined'
+    apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
-    apply plugin: 'com.diffplug.spotless'
-    apply plugin: 'com.google.protobuf'
 
-    configurations.all {
-        resolutionStrategy {
-            force 'com.google.guava:guava:33.0.0-jre'
-        }
-        // Exclude Log4j SLF4J provider - we use Logback
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
-    }
-
-    archivesBaseName = rootProject.archives_base_name
-
-    def vers = ''
-    try {
-        vers = 'git describe --always --tags --first-parent --dirty'.execute().text.trim()
-    } catch (Exception e) {
-        logger.info 'Version detection failed: ' + e
-    }
-    if (!vers.startsWith('v')) {
-        logger.info 'using version number: ' + rootProject.mod_version
-        version = rootProject.mod_version
-    } else {
-        version = vers.substring(1)
-        logger.info 'Detected version ' + version
-    }
+    version = rootProject.mod_version
     group = rootProject.maven_group
 
-    sourceCompatibility = targetCompatibility = JavaVersion.toVersion(project.java_version)
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://maven.architectury.dev/' }
+        maven { url = 'https://maven.neoforged.net/releases/' }
+        maven { url = 'https://maven.parchmentmc.net/' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        maven { url = 'https://babbaj.github.io/maven/' }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = project.java_version.toInteger()
+    }
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(sourceCompatibility.majorVersion.toInteger()))
+            languageVersion = JavaLanguageVersion.of(project.java_version.toInteger())
         }
+        withSourcesJar()
     }
 
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            jvmTarget = project.java_version
-            freeCompilerArgs += ['-Xjvm-default=all']
+    tasks.withType(Jar).configureEach {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
+subprojects {
+    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'com.diffplug.spotless'
+
+    configurations.configureEach {
+        resolutionStrategy {
+            force 'com.google.guava:guava:33.0.0-jre'
         }
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
     }
 
-    repositories {
-        maven {
-            name = 'spongepowered-repo'
-            url = 'https://repo.spongepowered.org/repository/maven-public/'
-        }
-        maven {
-            name = 'fabric-maven'
-            url = 'https://maven.fabricmc.net/'
-        }
-        maven {
-            name = 'impactdevelopment-repo'
-            url = 'https://impactdevelopment.github.io/maven/'
-        }
-        maven {
-            name = 'ldtteam'
-            url = 'https://maven.parchmentmc.net/'
-        }
-        // for the newer version of launchwrapper
-        maven {
-            name = 'multimc-maven'
-            url = 'https://files.multimc.org/maven/'
-            metadataSources {
-                artifact()
-            }
-        }
-        mavenCentral()
-        maven {
-            name = 'babbaj-repo'
-            url = 'https://babbaj.github.io/maven/'
-        }
+    loom {
+        silentMojangMappingsLicense()
     }
 
     dependencies {
-        compileOnly "org.spongepowered:mixin:${project.mixin_version}"
-        compileOnly "org.ow2.asm:asm:${project.asm_version}"
-        compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
-        annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
 
-        // SLF4J and Logback for structured logging
-        implementation 'org.slf4j:slf4j-api:2.0.9'
-        implementation 'ch.qos.logback:logback-classic:1.5.13'
-
-        // Fuzzy search for command suggestions
-        implementation 'me.xdrop:fuzzywuzzy:1.4.0'
-
-        implementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
-
-        implementation 'com.google.code.findbugs:jsr305:3.0.2'
-
-        implementation 'org.jetbrains.kotlin:kotlin-stdlib'
-
-        // gRPC and Protocol Buffers for multi-agent coordination
-        implementation 'io.grpc:grpc-netty-shaded:1.75.0'
-        implementation 'io.grpc:grpc-protobuf:1.60.0'
-        implementation 'io.grpc:grpc-stub:1.60.0'
-        implementation 'io.grpc:grpc-kotlin-stub:1.4.1'
-        implementation 'com.google.protobuf:protobuf-kotlin:4.28.2'
-        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    }
-
-    unimined.minecraft(sourceSets.main, true) {
-        version rootProject.minecraft_version
-
-        mappings {
-            intermediary()
-            mojmap()
-            parchment('1.20.6', '2024.05.01')
-
-            devFallbackNamespace 'official'
+        mappings loom.layered() {
+            officialMojangMappings()
+            parchment("org.parchmentmc.data:parchment-1.20.6:2024.05.01@zip")
         }
     }
 
@@ -141,7 +83,6 @@ allprojects {
         enforceCheck = false
         java {
             target 'src/**/*.java'
-            targetExclude 'src/launch/maestro/launch/mixins/MixinLootContextBuilder.java'
             googleJavaFormat('1.32.0').aosp().reflowLongStrings()
             removeUnusedImports()
             toggleOffOn()
@@ -151,115 +92,4 @@ allprojects {
             ktlint('1.5.0')
         }
     }
-
-    protobuf {
-        protoc {
-            artifact = 'com.google.protobuf:protoc:3.25.1'
-        }
-        plugins {
-            grpc {
-                artifact = 'io.grpc:protoc-gen-grpc-java:1.60.0'
-            }
-        }
-        generateProtoTasks {
-            all().each { task ->
-                task.plugins {
-                    grpc {}
-                }
-            }
-        }
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        it.options.encoding = 'UTF-8'
-
-        def targetVersion = project.java_version.toInteger()
-        if (JavaVersion.current().isJava9Compatible()) {
-            it.options.release = targetVersion
-        }
-    }
-}
-
-unimined.minecraft {
-    runs.off = true
-    defaultRemapJar = false
-}
-
-archivesBaseName = archivesBaseName + '-common'
-
-sourceSets {
-    api {
-        java {
-            srcDir 'src/api'
-        }
-        kotlin {
-            srcDir 'src/api'
-        }
-        compileClasspath += main.compileClasspath
-        runtimeClasspath += main.runtimeClasspath
-        proto {
-            srcDir 'src/api/proto'
-        }
-    }
-    main {
-        java {
-            srcDir 'src/main'
-        }
-        kotlin {
-            srcDir 'src/main'
-        }
-        compileClasspath += api.output
-        runtimeClasspath += api.output
-    }
-    test {
-        java {
-            srcDir 'src/test'
-        }
-        kotlin {
-            srcDir 'src/test'
-        }
-        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-    }
-    launch {
-        java {
-            srcDir 'src/launch'
-        }
-        kotlin {
-            srcDir 'src/launch'
-        }
-        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-    }
-    schematica_api {
-        java {
-            srcDir 'src/schematica_api'
-        }
-        kotlin {
-            srcDir 'src/schematica_api'
-        }
-        compileClasspath += main.compileClasspath
-        runtimeClasspath += main.runtimeClasspath
-    }
-    main {
-        compileClasspath += schematica_api.output
-        runtimeClasspath += schematica_api.output
-    }
-}
-
-dependencies {
-    testImplementation 'junit:junit:4.13.2'
-}
-
-jar {
-    from sourceSets.main.output, sourceSets.launch.output, sourceSets.api.output
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-javadoc {
-    options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
-    options.linkSource true
-    options.encoding 'UTF-8' // allow emoji in comments :^)
-    source = sourceSets.api.allJava
-    classpath += sourceSets.api.compileClasspath
 }

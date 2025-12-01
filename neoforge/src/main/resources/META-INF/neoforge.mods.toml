@@ -1,0 +1,29 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "LGPL-3.0"
+
+[[mods]]
+modId = "maestro"
+version = "${version}"
+displayName = "Maestro"
+
+[[dependencies.maestro]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.4,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.maestro]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.4]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.maestro]]
+modId = "architectury"
+type = "required"
+versionRange = "[18.0,)"
+ordering = "AFTER"
+side = "BOTH"

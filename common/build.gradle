@@ -1,0 +1,90 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'com.google.protobuf'
+}
+
+architectury {
+    common('fabric', 'neoforge')
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/maestro.accesswidener")
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.25.1'
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.60.0'
+        }
+    }
+    generateProtoTasks {
+        all().each { final task ->
+            task.plugins { grpc {} }
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs(
+                'src/main/java',
+                'build/generated/source/proto/main/java',
+                'build/generated/source/proto/main/grpc'
+            )
+        }
+    }
+}
+
+dependencies {
+    // Mixin - provided by Loom
+    compileOnly "org.spongepowered:mixin:${project.mixin_version}"
+    compileOnly "org.ow2.asm:asm:${project.asm_version}"
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
+
+    // SLF4J and Logback
+    modApi 'org.slf4j:slf4j-api:2.0.9'
+    modApi 'ch.qos.logback:logback-classic:1.5.13'
+
+    // Utilities
+    modImplementation 'me.xdrop:fuzzywuzzy:1.4.0'
+    modImplementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
+    modImplementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    // Kotlin
+    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib'
+
+    // gRPC and Protocol Buffers
+    modImplementation 'io.grpc:grpc-netty-shaded:1.75.0'
+    modImplementation 'io.grpc:grpc-protobuf:1.60.0'
+    modImplementation 'io.grpc:grpc-stub:1.60.0'
+    modImplementation 'io.grpc:grpc-kotlin-stub:1.4.1'
+    modImplementation 'com.google.protobuf:protobuf-kotlin:4.28.2'
+    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.withType(KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = project.java_version
+        freeCompilerArgs += ['-Xjvm-default=all']
+    }
+}
+
+publishing {
+    publications {
+        mavenCommon(MavenPublication) {
+            artifactId = rootProject.archives_base_name
+            from components.java
+        }
+    }
+    repositories {}
+}

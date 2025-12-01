@@ -1,0 +1,113 @@
+plugins {
+    id 'com.gradleup.shadow' version '9.2.2'
+}
+
+repositories {
+    maven { url = 'https://maven.neoforged.net/releases/' }
+}
+
+loom {
+    // NeoForge platform configuration
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+configurations {
+    common
+    shadowCommon
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+}
+
+dependencies {
+    common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
+    shadowCommon(project(path: ':common', configuration: 'transformProductionNeoForge')) { transitive = false }
+
+    modImplementation "net.neoforged:neoforge:${rootProject.neoforge_version}"
+    modImplementation("dev.architectury:architectury-neoforge:18.0.6")
+
+    // Kotlin - required at runtime
+    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib'
+
+    // Logback - required for LoggerConfigurator in API package
+    modImplementation 'org.slf4j:slf4j-api:2.0.9'
+    modImplementation 'ch.qos.logback:logback-classic:1.5.13'
+
+    // gRPC and Protocol Buffers - required for coordination system
+    modImplementation 'io.grpc:grpc-netty-shaded:1.75.0'
+    modImplementation 'io.grpc:grpc-protobuf:1.60.0'
+    modImplementation 'io.grpc:grpc-stub:1.60.0'
+    modImplementation 'io.grpc:grpc-kotlin-stub:1.4.1'
+    modImplementation 'com.google.protobuf:protobuf-kotlin:4.28.2'
+    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+
+    // Other runtime dependencies
+    modImplementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
+    modImplementation 'me.xdrop:fuzzywuzzy:1.4.0'
+
+    // Shaded dependencies (bundled via shadowCommon)
+    shadowCommon("dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}") { transitive = false }
+    shadowCommon('me.xdrop:fuzzywuzzy:1.4.0') { transitive = false }
+    shadowCommon('org.jetbrains.kotlin:kotlin-stdlib') { transitive = false }
+    shadowCommon('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3') { transitive = false }
+    shadowCommon('ch.qos.logback:logback-classic:1.5.13') { transitive = false }
+    shadowCommon('ch.qos.logback:logback-core:1.5.19') { transitive = false }
+    shadowCommon('io.grpc:grpc-netty-shaded:1.75.0') { transitive = false }
+    shadowCommon('io.grpc:grpc-protobuf:1.60.0') { transitive = false }
+    shadowCommon('io.grpc:grpc-stub:1.60.0') { transitive = false }
+    shadowCommon('io.grpc:grpc-kotlin-stub:1.4.1') { transitive = false }
+    shadowCommon('com.google.protobuf:protobuf-kotlin:4.28.2') { transitive = false }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand 'version': project.version
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowCommon]
+    exclude 'architectury.common.json'
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+    dependsOn shadowJar
+    archiveClassifier = null
+}
+
+jar {
+    archiveClassifier = 'dev'
+    manifest {
+        attributes([
+            'MixinConfigs': 'mixins.maestro.json',
+            'MixinConnector': 'maestro.launch.MaestroMixinConnector',
+            'Implementation-Title': 'Maestro',
+            'Implementation-Version': project.version
+        ])
+    }
+}
+
+afterEvaluate {
+    components.java {
+        withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+            skip()
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenNeoForge(MavenPublication) {
+            artifactId = rootProject.archives_base_name + '-neoforge'
+            from components.java
+        }
+    }
+    repositories {}
+}

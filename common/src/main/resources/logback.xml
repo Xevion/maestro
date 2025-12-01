@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender for development/debugging -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%-5level] [%logger{0}] %msg%kvp%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- JSON file appender for structured logging (Maestro logs only) -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>maestro-logs.jsonl</file>
+        <append>false</append>
+        <!-- Use Logback's built-in JSON encoder with minimal config -->
+        <encoder class="ch.qos.logback.classic.encoder.JsonEncoder">
+            <!-- Exclude verbose fields we don't need -->
+        </encoder>
+    </appender>
+
+    <!-- Chat appender for in-game messages -->
+    <appender name="CHAT" class="maestro.utils.chat.ChatAppender"/>
+
+    <!--
+        Maestro category loggers are configured programmatically.
+        See: maestro.api.utils.LoggerConfigurator
+
+        All category loggers (path, swim, combat, mine, farm, build, cache,
+        move, rotation, event, cmd, api, waypoint, inventory) receive:
+        - Level: DEBUG
+        - Appenders: CONSOLE + CHAT
+        - Additivity: false (no propagation to root logger)
+
+        Adding a new category only requires updating MaestroLogger.CATEGORIES.
+    -->
+
+    <!-- Suppress noisy Minecraft loggers -->
+    <logger name="net.minecraft.network" level="INFO"/>
+    <logger name="net.minecraft.server.network" level="INFO"/>
+    <logger name="io.netty" level="INFO"/>
+    <logger name="net.fabricmc" level="INFO"/>
+    <logger name="oshi" level="WARN"/>
+    <logger name="com.mojang.blaze3d" level="INFO"/>
+
+    <!-- Root logger for all other logs
+         Note: JSON_FILE must be attached to root so LoggerConfigurator can retrieve it.
+         Maestro loggers get it attached explicitly and have additivity=false.
+         This means JSON file will contain both Maestro logs (DEBUG+) and other logs (INFO+).
+         Filter by logger name using jq: jq -r 'select(.logger | IN("path","swim","combat"))' -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CHAT"/>
+        <appender-ref ref="JSON_FILE"/>
+    </root>
+</configuration>

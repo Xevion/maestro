@@ -49,8 +49,6 @@ jobs:
         with:
           name: maestro-jars-${{ github.sha }}
           path: |
-            platforms/fabric/build/libs/*[0-9].jar
-            platforms/forge/build/libs/*[0-9].jar
-            platforms/neoforge/build/libs/*[0-9].jar
-            platforms/tweaker/build/libs/*[0-9].jar
+            fabric/build/libs/*[0-9].jar
+            neoforge/build/libs/*[0-9].jar
           if-no-files-found: error
