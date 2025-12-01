@@ -35,7 +35,7 @@ dependencies {
 
     // Logback - required for LoggerConfigurator in API package
     modImplementation 'org.slf4j:slf4j-api:2.0.9'
-    modImplementation 'ch.qos.logback:logback-classic:1.5.13'
+    modImplementation 'ch.qos.logback:logback-classic:1.5.21'
 
     // gRPC and Protocol Buffers - required for coordination system
     modImplementation 'io.grpc:grpc-netty-shaded:1.75.0'
@@ -54,7 +54,7 @@ dependencies {
     shadowCommon('me.xdrop:fuzzywuzzy:1.4.0') { transitive = false }
     shadowCommon('org.jetbrains.kotlin:kotlin-stdlib:2.2.21') { transitive = false }
     shadowCommon('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0') { transitive = false }
-    shadowCommon('ch.qos.logback:logback-classic:1.5.13') { transitive = false }
+    shadowCommon('ch.qos.logback:logback-classic:1.5.21') { transitive = false }
     shadowCommon('ch.qos.logback:logback-core:1.5.19') { transitive = false }
     shadowCommon('io.grpc:grpc-netty-shaded:1.75.0') { transitive = false }
     shadowCommon('io.grpc:grpc-protobuf:1.60.0') { transitive = false }
