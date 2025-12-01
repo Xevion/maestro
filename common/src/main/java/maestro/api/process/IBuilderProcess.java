@@ -41,8 +41,6 @@ public interface IBuilderProcess extends IMaestroProcess {
         return build(schematicFile, file, origin);
     }
 
-    void buildOpenSchematic();
-
     void buildOpenLitematic(int i);
 
     void pause();

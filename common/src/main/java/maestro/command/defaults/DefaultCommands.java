@@ -34,7 +34,6 @@ public final class DefaultCommands {
                                 new VersionCommand(maestro),
                                 new RepackCommand(maestro),
                                 new BuildCommand(maestro),
-                                // new SchematicaCommand(maestro),
                                 new LitematicaCommand(maestro),
                                 new ComeCommand(maestro),
                                 new AxisCommand(maestro),

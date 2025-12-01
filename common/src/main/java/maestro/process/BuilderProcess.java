@@ -37,7 +37,6 @@ import maestro.utils.schematic.MapArtSchematic;
 import maestro.utils.schematic.SchematicSystem;
 import maestro.utils.schematic.SelectionSchematic;
 import maestro.utils.schematic.litematica.LitematicaHelper;
-import maestro.utils.schematic.schematica.SchematicaHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -256,24 +255,6 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                             schematic, origin, maestro.getSelectionManager().getSelections());
         }
         return schematic;
-    }
-
-    @Override
-    public void buildOpenSchematic() {
-        if (SchematicaHelper.isSchematicaPresent()) {
-            Optional<Tuple<IStaticSchematic, BlockPos>> schematic =
-                    SchematicaHelper.getOpenSchematic();
-            if (schematic.isPresent()) {
-                IStaticSchematic raw = schematic.get().getA();
-                BlockPos origin = schematic.get().getB();
-                ISchematic schem = applyMapArtAndSelection(origin, raw);
-                this.build(raw.toString(), schem, origin);
-            } else {
-                log.atWarn().log("No schematic currently open");
-            }
-        } else {
-            log.atWarn().log("Schematica is not present");
-        }
     }
 
     @Override
