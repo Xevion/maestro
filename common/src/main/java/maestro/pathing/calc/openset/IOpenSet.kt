@@ -1,28 +1,27 @@
-package maestro.pathing.calc.openset;
+package maestro.pathing.calc.openset
 
-import maestro.pathing.calc.PathNode;
+import maestro.pathing.calc.PathNode
 
 /** An open set for A* or similar graph search algorithm */
-public interface IOpenSet {
-
+interface IOpenSet {
     /**
      * Inserts the specified node into the heap
      *
      * @param node The node
      */
-    void insert(PathNode node);
+    fun insert(node: PathNode)
 
     /**
-     * @return {@code true} if the heap has no elements; {@code false} otherwise.
+     * @return `true` if the heap has no elements; `false` otherwise.
      */
-    boolean isEmpty();
+    fun isEmpty(): Boolean
 
     /**
      * Removes and returns the minimum element in the heap.
      *
      * @return The minimum element in the heap
      */
-    PathNode removeLowest();
+    fun removeLowest(): PathNode
 
     /**
      * A faster path has been found to this node, decreasing its cost. Perform a decrease-key
@@ -30,5 +29,5 @@ public interface IOpenSet {
      *
      * @param node The node
      */
-    void update(PathNode node);
+    fun update(node: PathNode)
 }

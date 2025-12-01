@@ -171,7 +171,7 @@ class PathingBehavior(
                     // we are calculating
                     // are we calculating the right thing though? 🤔
                     val calcFrom: BetterBlockPos = inProgress!!.getStart()
-                    val currentBest: Optional<IPath?> = inProgress!!.bestPathSoFar()
+                    val currentBest: Optional<IPath> = inProgress!!.bestPathSoFar()
                     if ((
                             current == null ||
                                 (
@@ -715,11 +715,11 @@ class PathingBehavior(
 
     private fun createPathfinder(
         start: BlockPos,
-        goal: Goal?,
+        goal: Goal,
         previous: IPath?,
         context: CalculationContext,
     ): AbstractNodeCostSearch {
-        var transformed = goal
+        var transformed: Goal = goal
         if (Agent.settings().simplifyUnloadedYCoord.value && goal is IGoalRenderPos) {
             val pos = (goal as IGoalRenderPos).getGoalPos()
             if (!context.bsi.worldContainsLoadedChunk(pos.x, pos.z)) {
