@@ -38,6 +38,12 @@ sourceSets {
                 'build/generated/source/proto/main/grpc'
             )
         }
+        kotlin {
+            srcDirs(
+                'src/main/kotlin',
+                'src/main/java'
+            )
+        }
     }
 }
 
@@ -61,7 +67,7 @@ dependencies {
     modImplementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     // Kotlin
-    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib'
+    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
 
     // gRPC and Protocol Buffers
     modImplementation 'io.grpc:grpc-netty-shaded:1.75.0'
@@ -69,7 +75,7 @@ dependencies {
     modImplementation 'io.grpc:grpc-stub:1.60.0'
     modImplementation 'io.grpc:grpc-kotlin-stub:1.4.1'
     modImplementation 'com.google.protobuf:protobuf-kotlin:4.28.2'
-    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
@@ -80,6 +86,11 @@ tasks.withType(KotlinCompile).configureEach {
         jvmTarget = project.java_version
         freeCompilerArgs += ['-Xjvm-default=all']
     }
+}
+
+// Ensure Java compilation depends on Kotlin compilation
+tasks.named('compileJava') {
+    dependsOn tasks.named('compileKotlin')
 }
 
 publishing {

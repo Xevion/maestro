@@ -30,8 +30,8 @@ interface ICommandException {
      * @param args The arguments the command was called with.
      */
     fun handle(
-        command: ICommand,
-        args: List<ICommandArgument>,
+        command: ICommand?,
+        args: List<ICommandArgument>?,
     ) {
         // Log error
         log.atError().log(this.message)

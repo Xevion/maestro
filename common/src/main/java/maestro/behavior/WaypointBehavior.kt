@@ -35,21 +35,13 @@ class WaypointBehavior(
                 pos = pos.relative(state.getValue(BedBlock.FACING))
             }
 
-            val waypoints =
-                maestro
-                    .getWorldProvider()
-                    .getCurrentWorld()
-                    .getWaypoints()
-                    .getByTag(IWaypoint.Tag.BED)
+            val world = maestro.getWorldProvider().getCurrentWorld() ?: return
+            val waypoints = world.getWaypoints().getByTag(IWaypoint.Tag.BED)
 
             val exists = waypoints.any { it.getLocation() == pos }
 
             if (!exists) {
-                maestro
-                    .getWorldProvider()
-                    .getCurrentWorld()
-                    .getWaypoints()
-                    .addWaypoint(Waypoint("bed", IWaypoint.Tag.BED, pos))
+                world.getWaypoints().addWaypoint(Waypoint("bed", IWaypoint.Tag.BED, pos))
             }
         }
     }
@@ -57,12 +49,9 @@ class WaypointBehavior(
     override fun onPlayerDeath() {
         if (!Agent.settings().doDeathWaypoints.value) return
 
+        val world = maestro.getWorldProvider().getCurrentWorld() ?: return
         val deathWaypoint = Waypoint("death", IWaypoint.Tag.DEATH, ctx.playerFeet())
-        maestro
-            .getWorldProvider()
-            .getCurrentWorld()
-            .getWaypoints()
-            .addWaypoint(deathWaypoint)
+        world.getWaypoints().addWaypoint(deathWaypoint)
 
         val pos = ctx.playerFeet()
         info(log, "waypoint")

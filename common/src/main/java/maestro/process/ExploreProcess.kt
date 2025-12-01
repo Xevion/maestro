@@ -196,7 +196,7 @@ class ExploreProcess(
 
     // Inner classes
     private inner class MaestroChunkCache : IChunkFilter {
-        private val cache: ICachedWorld = maestro.getWorldProvider().currentWorld.cachedWorld
+        private val cache: ICachedWorld? = maestro.getWorldProvider().currentWorld?.cachedWorld
 
         override fun isAlreadyExplored(
             chunkX: Int,
@@ -205,13 +205,14 @@ class ExploreProcess(
             val centerX = chunkX shl 4
             val centerZ = chunkZ shl 4
 
-            if (cache.isCached(centerX, centerZ)) {
+            if (cache?.isCached(centerX, centerZ) == true) {
                 return Status.EXPLORED
             }
 
-            if (!(cache as CachedWorld).regionLoaded(centerX, centerZ)) {
+            val cachedWorld = cache as? CachedWorld ?: return Status.UNKNOWN
+            if (!cachedWorld.regionLoaded(centerX, centerZ)) {
                 Agent.getExecutor().execute {
-                    cache.tryLoadFromDisk(centerX shr 9, centerZ shr 9)
+                    cachedWorld.tryLoadFromDisk(centerX shr 9, centerZ shr 9)
                 }
                 return Status.UNKNOWN // We still need to load regions from disk in order to decide properly
             }

@@ -26,8 +26,8 @@ sealed class CommandException(
             "Command not found: $command",
         ) {
         override fun handle(
-            command: ICommand,
-            args: List<ICommandArgument>,
+            command: ICommand?,
+            args: List<ICommandArgument>?,
         ) {
             // Log as warning
             log.atWarn().addKeyValue("command", this.command).log("Command not found")
@@ -127,8 +127,8 @@ sealed class CommandException(
         constructor(cause: Throwable?) : super(cause)
 
         override fun handle(
-            command: ICommand,
-            args: List<ICommandArgument>,
+            command: ICommand?,
+            args: List<ICommandArgument>?,
         ) {
             // Log error with exception
             log.atError().setCause(this).log("Unhandled exception occurred")

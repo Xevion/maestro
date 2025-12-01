@@ -31,7 +31,7 @@ dependencies {
     modImplementation("dev.architectury:architectury-neoforge:18.0.6")
 
     // Kotlin - required at runtime
-    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib'
+    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
 
     // Logback - required for LoggerConfigurator in API package
     modImplementation 'org.slf4j:slf4j-api:2.0.9'
@@ -43,7 +43,7 @@ dependencies {
     modImplementation 'io.grpc:grpc-stub:1.60.0'
     modImplementation 'io.grpc:grpc-kotlin-stub:1.4.1'
     modImplementation 'com.google.protobuf:protobuf-kotlin:4.28.2'
-    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
 
     // Other runtime dependencies
     modImplementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
@@ -52,8 +52,8 @@ dependencies {
     // Shaded dependencies (bundled via shadowCommon)
     shadowCommon("dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}") { transitive = false }
     shadowCommon('me.xdrop:fuzzywuzzy:1.4.0') { transitive = false }
-    shadowCommon('org.jetbrains.kotlin:kotlin-stdlib') { transitive = false }
-    shadowCommon('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3') { transitive = false }
+    shadowCommon('org.jetbrains.kotlin:kotlin-stdlib:2.2.21') { transitive = false }
+    shadowCommon('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0') { transitive = false }
     shadowCommon('ch.qos.logback:logback-classic:1.5.13') { transitive = false }
     shadowCommon('ch.qos.logback:logback-core:1.5.19') { transitive = false }
     shadowCommon('io.grpc:grpc-netty-shaded:1.75.0') { transitive = false }

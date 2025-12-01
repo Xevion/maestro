@@ -23,7 +23,7 @@ dependencies {
     modImplementation("dev.architectury:architectury-fabric:15.0.1")
 
     // Kotlin - required at runtime
-    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib'
+    modImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
 
     // Logback - required for LoggerConfigurator in API package
     modImplementation 'org.slf4j:slf4j-api:2.0.9'
@@ -35,7 +35,7 @@ dependencies {
     modImplementation 'io.grpc:grpc-stub:1.60.0'
     modImplementation 'io.grpc:grpc-kotlin-stub:1.4.1'
     modImplementation 'com.google.protobuf:protobuf-kotlin:4.28.2'
-    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    modImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
 
     // Other runtime dependencies
     modImplementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
@@ -45,8 +45,8 @@ dependencies {
     include "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
     include 'me.xdrop:fuzzywuzzy:1.4.0'
     include 'io.github.llamalad7:mixinextras-fabric:0.4.1'
-    include 'org.jetbrains.kotlin:kotlin-stdlib'
-    include 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    include 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
+    include 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
     include 'ch.qos.logback:logback-classic:1.5.13'
     include 'ch.qos.logback:logback-core:1.5.19'
     include 'io.grpc:grpc-netty-shaded:1.75.0'
