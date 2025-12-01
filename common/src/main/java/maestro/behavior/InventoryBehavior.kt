@@ -116,7 +116,7 @@ class InventoryBehavior(
         }
 
         if (Agent.settings().inventoryMoveOnlyIfStationary.value &&
-            !maestro.getInventoryPauserProcess().stationaryForInventoryMove()
+            !maestro.inventoryPauserProcess.stationaryForInventoryMove()
         ) {
             log.atDebug().log("Inventory move deferred until stationary")
             return false
@@ -139,7 +139,7 @@ class InventoryBehavior(
         val inventory = ctx.player().getInventory().items
         val acceptableItems = Agent.settings().acceptableThrowawayItems.value
 
-        return inventory.indexOfFirst { it.getItem() in acceptableItems }.takeIf { it >= 0 } ?: -1
+        return inventory.indexOfFirst { it.item in acceptableItems }.takeIf { it >= 0 } ?: -1
     }
 
     private fun bestToolAgainst(
@@ -156,13 +156,13 @@ class InventoryBehavior(
 
             // Check item saver
             if (Agent.settings().itemSaver.value &&
-                (stack.getDamageValue() + Agent.settings().itemSaverThreshold.value) >= stack.getMaxDamage() &&
-                stack.getMaxDamage() > 1
+                (stack.damageValue + Agent.settings().itemSaverThreshold.value) >= stack.maxDamage &&
+                stack.maxDamage > 1
             ) {
                 continue
             }
 
-            if (toolClass.isInstance(stack.getItem())) {
+            if (toolClass.isInstance(stack.item)) {
                 val speed = calculateSpeedVsBlock(stack, against.defaultBlockState())
                 if (speed > bestSpeed) {
                     bestSpeed = speed
@@ -176,7 +176,7 @@ class InventoryBehavior(
 
     fun hasGenericThrowaway(): Boolean =
         Agent.settings().acceptableThrowawayItems.value.any { item ->
-            throwaway(false, { stack -> item == stack.getItem() })
+            throwaway(false, { stack -> item == stack.item })
         }
 
     fun selectThrowawayForLocation(
@@ -185,13 +185,13 @@ class InventoryBehavior(
         y: Int,
         z: Int,
     ): Boolean {
-        val maybe = maestro.getBuilderProcess().placeAt(x, y, z, maestro.bsi.get0(x, y, z)) ?: return false
+        val maybe = maestro.builderProcess.placeAt(x, y, z, maestro.bsi.get0(x, y, z)) ?: return false
 
         // Try exact state match first
         if (throwaway(select, { stack ->
-                stack.getItem() is BlockItem &&
+                stack.item is BlockItem &&
                     maybe ==
-                    (stack.getItem() as BlockItem).getBlock().getStateForPlacement(
+                    (stack.item as BlockItem).block.getStateForPlacement(
                         BlockPlaceContext(
                             object : UseOnContext(
                                 ctx.world(),
@@ -205,7 +205,7 @@ class InventoryBehavior(
                                         ctx.player().position().z,
                                     ),
                                     Direction.UP,
-                                    ctx.playerFeet(),
+                                    ctx.playerFeet().toBlockPos(),
                                     false,
                                 ),
                             ) {},
@@ -218,8 +218,8 @@ class InventoryBehavior(
 
         // Try block type match
         if (throwaway(select, { stack ->
-                stack.getItem() is BlockItem &&
-                    (stack.getItem() as BlockItem).getBlock() == maybe.getBlock()
+                stack.item is BlockItem &&
+                    (stack.item as BlockItem).block == maybe.block
             })
         ) {
             return true
@@ -227,7 +227,7 @@ class InventoryBehavior(
 
         // Fall back to generic throwaway
         return Agent.settings().acceptableThrowawayItems.value.any { item ->
-            throwaway(select, { stack -> item == stack.getItem() })
+            throwaway(select, { stack -> item == stack.item })
         }
     }
 
@@ -255,7 +255,7 @@ class InventoryBehavior(
             // Need to select something inert in main hand
             for (i in 0..8) {
                 val item = inventory[i]
-                if (item.isEmpty || item.getItem() is PickaxeItem) {
+                if (item.isEmpty || item.item is PickaxeItem) {
                     if (select) {
                         player.getInventory().selected = i
                     }

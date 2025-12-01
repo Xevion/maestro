@@ -4,8 +4,8 @@ import java.util.Comparator;
 import java.util.Optional;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.behavior.PathingBehavior;
 import maestro.pathing.movement.Movement;
 import org.slf4j.Logger;
@@ -39,8 +39,8 @@ public class MovementRetryEngine {
      * @return alternative movement if found, empty otherwise
      */
     public Optional<IMovement> findAlternative(
-            Movement failedMovement, BetterBlockPos currentPosition) {
-        BetterBlockPos destination = failedMovement.getDest();
+            Movement failedMovement, PackedBlockPos currentPosition) {
+        PackedBlockPos destination = failedMovement.getDest();
         Class<? extends Movement> failedType = failedMovement.getClass();
 
         log.atDebug()

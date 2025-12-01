@@ -23,7 +23,7 @@ class PathingControlManager(
     private var command: PathingCommand? = null
 
     init {
-        maestro.getGameEventHandler().registerEventListener(
+        maestro.gameEventHandler.registerEventListener(
             object : AbstractGameEventListener { // needs to be after all behavior ticks
                 override fun onTick(event: TickEvent) {
                     if (event.type == TickEvent.Type.IN) {
@@ -122,10 +122,7 @@ class PathingControlManager(
         // we use the time between ticks as calculation time
         // therefore, we only cancel and recalculate after the tick for the current path has executed
         // "it would suck" means it would actually execute a path every other tick
-        val cmd = command
-        if (cmd == null) {
-            return
-        }
+        val cmd = command ?: return
 
         val p: PathingBehavior = maestro.getPathingBehavior()
         when (cmd.commandType) {
@@ -156,7 +153,7 @@ class PathingControlManager(
     fun forceRevalidate(newGoal: Goal): Boolean {
         val current: PathExecutor? = maestro.getPathingBehavior().getCurrent()
         if (current != null) {
-            if (newGoal.isInGoal(current.path.dest)) {
+            if (newGoal.isInGoal(current.path.dest.toBlockPos())) {
                 return false
             }
             return newGoal != current.path.goal
@@ -168,7 +165,7 @@ class PathingControlManager(
         val current: PathExecutor? = maestro.getPathingBehavior().getCurrent()
         if (current != null) {
             val intended: Goal = current.path.goal
-            val end: BlockPos = current.path.dest
+            val end: BlockPos = current.path.dest.toBlockPos()
             // this path used to end in the goal
             // but the goal has changed, so there's no reason to continue...
             return intended.isInGoal(end) && !newGoal.isInGoal(end)

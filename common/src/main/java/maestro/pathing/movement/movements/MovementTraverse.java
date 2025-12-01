@@ -6,8 +6,8 @@ import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
@@ -37,8 +37,8 @@ public class MovementTraverse extends Movement {
     /** Did we have to place a bridge block or was it always there */
     private boolean wasTheBridgeBlockAlwaysThere = true;
 
-    public MovementTraverse(IAgent maestro, BetterBlockPos from, BetterBlockPos to) {
-        super(maestro, from, to, new BetterBlockPos[] {to.above(), to}, to.below());
+    public MovementTraverse(IAgent maestro, PackedBlockPos from, PackedBlockPos to) {
+        super(maestro, from, to, new PackedBlockPos[] {to.above(), to}, to.below());
     }
 
     @Override
@@ -49,11 +49,11 @@ public class MovementTraverse extends Movement {
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        return cost(context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ());
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
+    protected Set<PackedBlockPos> calculateValidPositions() {
         return ImmutableSet.of(
                 src, dest); // src.above means that we don't get caught in an infinite loop in water
     }
@@ -196,8 +196,8 @@ public class MovementTraverse extends Movement {
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
-        BlockState pb0 = BlockStateInterface.get(ctx, positionsToBreak[0]);
-        BlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1]);
+        BlockState pb0 = BlockStateInterface.get(ctx, positionsToBreak[0].toBlockPos());
+        BlockState pb1 = BlockStateInterface.get(ctx, positionsToBreak[1].toBlockPos());
         if (state.getStatus() != MovementStatus.RUNNING) {
             // if the setting is enabled
             if (!Agent.settings().walkWhileBreaking.value) {
@@ -236,7 +236,7 @@ public class MovementTraverse extends Movement {
             float yawToDest =
                     RotationUtils.calcRotationFromVec3d(
                                     ctx.playerHead(),
-                                    VecUtils.calculateBlockCenter(ctx.world(), dest),
+                                    VecUtils.calculateBlockCenter(ctx.world(), dest.toBlockPos()),
                                     ctx.playerRotations())
                             .getYaw();
             float pitchToBreak = state.getTarget().getRotation().get().getPitch();
@@ -259,15 +259,17 @@ public class MovementTraverse extends Movement {
         // sneak may have been set to true in the PREPPING state while mining an adjacent block
         state.setInput(Input.SNEAK, false);
 
-        Block fd = BlockStateInterface.get(ctx, src.below()).getBlock();
+        Block fd = BlockStateInterface.get(ctx, src.below().toBlockPos()).getBlock();
         boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
 
         if (pb0.getBlock() instanceof DoorBlock || pb1.getBlock() instanceof DoorBlock) {
             boolean notPassable =
                     pb0.getBlock() instanceof DoorBlock
-                                    && !MovementHelper.isDoorPassable(ctx, src, dest)
+                                    && !MovementHelper.isDoorPassable(
+                                            ctx, src.toBlockPos(), dest.toBlockPos())
                             || pb1.getBlock() instanceof DoorBlock
-                                    && !MovementHelper.isDoorPassable(ctx, dest, src);
+                                    && !MovementHelper.isDoorPassable(
+                                            ctx, dest.toBlockPos(), src.toBlockPos());
             boolean canOpen =
                     !(Blocks.IRON_DOOR.equals(pb0.getBlock())
                             || Blocks.IRON_DOOR.equals(pb1.getBlock()));
@@ -278,7 +280,8 @@ public class MovementTraverse extends Movement {
                                         RotationUtils.calcRotationFromVec3d(
                                                 ctx.playerHead(),
                                                 VecUtils.calculateBlockCenter(
-                                                        ctx.world(), positionsToBreak[0]),
+                                                        ctx.world(),
+                                                        positionsToBreak[0].toBlockPos()),
                                                 ctx.playerRotations()),
                                         true))
                         .setInput(Input.CLICK_RIGHT, true);
@@ -287,10 +290,12 @@ public class MovementTraverse extends Movement {
 
         if (pb0.getBlock() instanceof FenceGateBlock || pb1.getBlock() instanceof FenceGateBlock) {
             BlockPos blocked =
-                    !MovementHelper.isGatePassable(ctx, positionsToBreak[0], src.above())
-                            ? positionsToBreak[0]
-                            : !MovementHelper.isGatePassable(ctx, positionsToBreak[1], src)
-                                    ? positionsToBreak[1]
+                    !MovementHelper.isGatePassable(
+                                    ctx, positionsToBreak[0].toBlockPos(), src.above().toBlockPos())
+                            ? positionsToBreak[0].toBlockPos()
+                            : !MovementHelper.isGatePassable(
+                                            ctx, positionsToBreak[1].toBlockPos(), src.toBlockPos())
+                                    ? positionsToBreak[1].toBlockPos()
                                     : null;
             if (blocked != null) {
                 Optional<Rotation> rotation = RotationUtils.reachable(ctx, blocked);
@@ -302,10 +307,10 @@ public class MovementTraverse extends Movement {
         }
 
         boolean isTheBridgeBlockThere =
-                MovementHelper.canWalkOn(ctx, positionToPlace)
+                MovementHelper.canWalkOn(ctx, positionToPlace.toBlockPos())
                         || ladder
-                        || MovementHelper.canUseFrostWalker(ctx, positionToPlace);
-        BlockPos feet = ctx.playerFeet();
+                        || MovementHelper.canUseFrostWalker(ctx, positionToPlace.toBlockPos());
+        BlockPos feet = ctx.playerFeetBlockPos();
         if (feet.getY() != dest.getY() && !ladder) {
             log.atDebug()
                     .addKeyValue("expected_y", dest.getY())
@@ -328,9 +333,9 @@ public class MovementTraverse extends Movement {
                             || feet.equals(dest.offset(getDirection()).offset(getDirection())))) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            Block low = BlockStateInterface.get(ctx, src).getBlock();
-            Block high = BlockStateInterface.get(ctx, src.above()).getBlock();
-            if (ctx.player().position().y > src.y + 0.1D
+            Block low = BlockStateInterface.get(ctx, src.toBlockPos()).getBlock();
+            Block high = BlockStateInterface.get(ctx, src.above().toBlockPos()).getBlock();
+            if (ctx.player().position().y > src.getY() + 0.1D
                     && !ctx.player().onGround()
                     && (low == Blocks.VINE
                             || low == Blocks.LADDER
@@ -340,7 +345,7 @@ public class MovementTraverse extends Movement {
                 // wait until we're on the ground
                 return state;
             }
-            BlockPos into = dest.subtract(src).offset(dest);
+            BlockPos into = dest.toBlockPos().subtract(src.toBlockPos()).offset(dest.toBlockPos());
             BlockState intoBelow = BlockStateInterface.get(ctx, into);
             BlockState intoAbove = BlockStateInterface.get(ctx, into.above());
             if (wasTheBridgeBlockAlwaysThere
@@ -351,8 +356,8 @@ public class MovementTraverse extends Movement {
                 state.setInput(Input.SPRINT, true);
             }
 
-            BlockState destDown = BlockStateInterface.get(ctx, dest.below());
-            BlockPos against = positionsToBreak[0];
+            BlockState destDown = BlockStateInterface.get(ctx, dest.below().toBlockPos());
+            BlockPos against = positionsToBreak[0].toBlockPos();
             if (feet.getY() != dest.getY()
                     && ladder
                     && (destDown.getBlock() == Blocks.VINE
@@ -361,8 +366,10 @@ public class MovementTraverse extends Movement {
                         destDown.getBlock() == Blocks.VINE
                                 ? MovementPillar.getAgainst(
                                         new CalculationContext(maestro), dest.below())
-                                : dest.relative(
-                                        destDown.getValue(LadderBlock.FACING).getOpposite());
+                                : dest.toBlockPos()
+                                        .relative(
+                                                destDown.getValue(LadderBlock.FACING)
+                                                        .getOpposite());
                 if (against == null) {
                     log.atError()
                             .addKeyValue("vine_position_x", dest.below().getX())
@@ -381,10 +388,10 @@ public class MovementTraverse extends Movement {
                     || standingOn instanceof SlabBlock) { // see issue #118
                 double dist =
                         Math.max(
-                                Math.abs(dest.getX() + 0.5 - ctx.player().position().x),
-                                Math.abs(dest.getZ() + 0.5 - ctx.player().position().z));
+                                Math.abs(dest.getX() + 0.5D - ctx.player().position().x),
+                                Math.abs(dest.getZ() + 0.5D - ctx.player().position().z));
                 if (dist < 0.85) { // 0.5 + 0.3 + epsilon
-                    MovementHelper.moveTowards(ctx, state, dest);
+                    MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
                     return state.setInput(Input.MOVE_FORWARD, false)
                             .setInput(Input.MOVE_BACK, true);
                 }
@@ -394,7 +401,8 @@ public class MovementTraverse extends Movement {
                             Math.abs(ctx.player().position().x - (dest.getX() + 0.5D)),
                             Math.abs(ctx.player().position().z - (dest.getZ() + 0.5D)));
             PlaceResult p =
-                    MovementHelper.attemptToPlaceABlock(state, maestro, dest.below(), false, true);
+                    MovementHelper.attemptToPlaceABlock(
+                            state, maestro, dest.below().toBlockPos(), false, true);
             if ((p == PlaceResult.READY_TO_PLACE || dist1 < 0.6)
                     && !Agent.settings().assumeSafeWalk.value) {
                 state.setInput(Input.SNEAK, true);
@@ -414,7 +422,7 @@ public class MovementTraverse extends Movement {
                             float yaw =
                                     RotationUtils.calcRotationFromVec3d(
                                                     ctx.playerHead(),
-                                                    VecUtils.getBlockPosCenter(dest),
+                                                    VecUtils.getBlockPosCenter(dest.toBlockPos()),
                                                     ctx.playerRotations())
                                             .getYaw();
                             if (Math.abs(state.getTarget().rotation.getYaw() - yaw) < 0.1) {
@@ -442,7 +450,8 @@ public class MovementTraverse extends Movement {
                 double faceZ = (dest.getZ() + src.getZ() + 1.0D) * 0.5D;
                 // faceX, faceY, faceZ is the middle of the face between from and to
                 BlockPos goalLook =
-                        src.below(); // this is the block we were just standing on, and the one
+                        src.below().toBlockPos(); // this is the block we were just standing on, and
+                // the one
                 // we want to place against
 
                 Rotation backToFace =
@@ -458,7 +467,7 @@ public class MovementTraverse extends Movement {
                 if (dist2 < 0.29) { // see issue #208
                     float yaw =
                             RotationUtils.calcRotationFromVec3d(
-                                            VecUtils.getBlockPosCenter(dest),
+                                            VecUtils.getBlockPosCenter(dest.toBlockPos()),
                                             ctx.playerHead(),
                                             ctx.playerRotations())
                                     .getYaw();
@@ -480,7 +489,7 @@ public class MovementTraverse extends Movement {
                 }
                 return state;
             }
-            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+            MovementHelper.moveTowards(ctx, state, positionsToBreak[0].toBlockPos());
             return state;
             // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we
             // are bridging for a couple blocks in a row, it is faster if we dont spin around and
@@ -494,13 +503,14 @@ public class MovementTraverse extends Movement {
         // or if this isn't a sneak place (the block is already there)
         // then it's safe to cancel this
         return state.getStatus() != MovementStatus.RUNNING
-                || MovementHelper.canWalkOn(ctx, dest.below());
+                || MovementHelper.canWalkOn(ctx, dest.below().toBlockPos());
     }
 
     @Override
     protected boolean prepared(MovementState state) {
-        if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.below())) {
-            Block block = BlockStateInterface.getBlock(ctx, src.below());
+        if (ctx.playerFeet().equals(src.toBlockPos())
+                || ctx.playerFeet().equals(src.below().toBlockPos())) {
+            Block block = BlockStateInterface.getBlock(ctx, src.below().toBlockPos());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(Input.SNEAK, true);
             }

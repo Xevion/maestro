@@ -5,26 +5,26 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.calc.IPathFinder
 import maestro.api.pathing.goals.Goal
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
 import maestro.pathing.movement.CalculationContext
 import org.slf4j.Logger
 import java.util.Optional
+import kotlin.math.sqrt
 
 /**
  * Any pathfinding algorithm that keeps track of nodes recursively by their cost (e.g. A*, dijkstra)
  */
 abstract class AbstractNodeCostSearch(
-    realStart: BetterBlockPos,
+    realStart: PackedBlockPos,
     startX: Int,
     startY: Int,
     startZ: Int,
     goal: Goal,
     context: CalculationContext,
 ) : IPathFinder {
-    @JvmField
-    protected val realStart: BetterBlockPos = realStart
+    protected val realStart: PackedBlockPos = realStart
 
     @JvmField
     protected val startX: Int = startX
@@ -109,7 +109,7 @@ abstract class AbstractNodeCostSearch(
                     .log("Static cutoff applied")
             }
 
-            if (goal.isInGoal(path.dest)) {
+            if (goal.isInGoal(path.dest.toBlockPos())) {
                 PathCalculationResult(PathCalculationResult.Type.SUCCESS_TO_GOAL, path)
             } else {
                 PathCalculationResult(PathCalculationResult.Type.SUCCESS_SEGMENT, path)
@@ -209,7 +209,7 @@ abstract class AbstractNodeCostSearch(
             log
                 .atDebug()
                 .addKeyValue("max_coefficient", COEFFICIENTS[COEFFICIENTS.size - 1])
-                .addKeyValue("max_distance_blocks", Math.sqrt(bestDist))
+                .addKeyValue("max_distance_blocks", sqrt(bestDist))
                 .log("Could not find path with any coefficient")
             log.atInfo().log("No path found")
         }
@@ -220,7 +220,7 @@ abstract class AbstractNodeCostSearch(
 
     override fun getGoal(): Goal = goal
 
-    fun getStart(): BetterBlockPos = BetterBlockPos(startX, startY, startZ)
+    fun getStart(): PackedBlockPos = PackedBlockPos(startX, startY, startZ)
 
     protected fun mapSize(): Int = map.size
 
@@ -240,8 +240,7 @@ abstract class AbstractNodeCostSearch(
          * If a path goes less than 5 blocks and doesn't make it to its goal, it's not worth
          * considering.
          */
-        @JvmField
-        protected val MIN_DIST_PATH = 5.0
+        protected const val MIN_DIST_PATH = 5.0
 
         /**
          * there are floating point errors caused by random combinations of traverse and diagonal over a
@@ -250,7 +249,6 @@ abstract class AbstractNodeCostSearch(
          *
          * who cares about a hundredth of a tick? that's half a millisecond for crying out loud!
          */
-        @JvmField
-        protected val MIN_IMPROVEMENT = 0.01
+        protected const val MIN_IMPROVEMENT = 0.01
     }
 }

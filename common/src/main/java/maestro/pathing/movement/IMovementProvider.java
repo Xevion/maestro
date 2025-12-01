@@ -2,7 +2,7 @@ package maestro.pathing.movement;
 
 import java.util.stream.Stream;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 /**
  * Generates possible movements from a given position during pathfinding. Allows dynamic movement
@@ -40,5 +40,5 @@ public interface IMovementProvider {
      * @param from Source position for movement generation
      * @return Stream of possible movements (empty if no valid movements)
      */
-    Stream<IMovement> generateMovements(CalculationContext context, BetterBlockPos from);
+    Stream<IMovement> generateMovements(CalculationContext context, PackedBlockPos from);
 }

@@ -14,8 +14,8 @@ import maestro.api.pathing.goals.GoalGetToBlock;
 import maestro.api.process.IFarmProcess;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.RayTraceUtils;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
@@ -97,7 +97,7 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
     @Override
     public void farm(int range, BlockPos pos) {
         if (pos == null) {
-            center = maestro.getPlayerContext().playerFeet();
+            center = maestro.getPlayerContext().playerFeet().toBlockPos();
         } else {
             center = pos;
         }
@@ -266,10 +266,11 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
         }
 
         maestro.getInputOverrideHandler().clearAllKeys();
-        BetterBlockPos playerPos = ctx.playerFeet();
+        PackedBlockPos playerPos = ctx.playerFeet();
         double blockReachDistance = ctx.playerController().getBlockReachDistance();
         for (BlockPos pos : toBreak) {
-            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+            if (playerPos.distSqr(new PackedBlockPos(pos))
+                    > blockReachDistance * blockReachDistance) {
                 continue;
             }
             Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
@@ -285,7 +286,8 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
         ArrayList<BlockPos> both = new ArrayList<>(openFarmland);
         both.addAll(openSoulsand);
         for (BlockPos pos : both) {
-            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+            if (playerPos.distSqr(new PackedBlockPos(pos))
+                    > blockReachDistance * blockReachDistance) {
                 continue;
             }
             boolean soulsand = openSoulsand.contains(pos);
@@ -314,7 +316,8 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
             }
         }
         for (BlockPos pos : openLog) {
-            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+            if (playerPos.distSqr(new PackedBlockPos(pos))
+                    > blockReachDistance * blockReachDistance) {
                 continue;
             }
             for (Direction dir : Direction.Plane.HORIZONTAL) {
@@ -347,7 +350,8 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
             }
         }
         for (BlockPos pos : bonemealable) {
-            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+            if (playerPos.distSqr(new PackedBlockPos(pos))
+                    > blockReachDistance * blockReachDistance) {
                 continue;
             }
             Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
@@ -406,10 +410,11 @@ public final class FarmProcess extends MaestroProcessHelper implements IFarmProc
                     // +0.1 because of farmland's 0.9375 dummy height lol
                     goals.add(
                             new GoalBlock(
-                                    new BetterBlockPos(
-                                            entity.position().x,
-                                            entity.position().y + 0.1,
-                                            entity.position().z)));
+                                    new PackedBlockPos(
+                                                    (int) entity.position().x,
+                                                    (int) (entity.position().y + 0.1),
+                                                    (int) entity.position().z)
+                                            .toBlockPos()));
                 }
             }
         }

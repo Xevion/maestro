@@ -13,7 +13,7 @@ import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.BlockById;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.cache.CachedChunk;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -36,7 +36,7 @@ public class FindCommand extends Command {
         while (args.hasAny()) {
             toFind.add(args.getDatatypeFor(BlockById.INSTANCE));
         }
-        BetterBlockPos origin = ctx.playerFeet();
+        PackedBlockPos origin = ctx.playerFeet();
         Component[] components =
                 toFind.stream()
                         .flatMap(
@@ -49,11 +49,11 @@ public class FindCommand extends Command {
                                                                 .getKey(block)
                                                                 .getPath(),
                                                         Integer.MAX_VALUE,
-                                                        origin.x,
-                                                        origin.y,
+                                                        origin.getX(),
+                                                        origin.getY(),
                                                         4)
                                                 .stream())
-                        .map(BetterBlockPos::new)
+                        .map(pos -> new PackedBlockPos(pos))
                         .map(this::positionToComponent)
                         .toArray(Component[]::new);
         if (components.length > 0) {
@@ -75,8 +75,8 @@ public class FindCommand extends Command {
         }
     }
 
-    private Component positionToComponent(BetterBlockPos pos) {
-        String positionText = String.format("%s %s %s", pos.x, pos.y, pos.z);
+    private Component positionToComponent(PackedBlockPos pos) {
+        String positionText = String.format("%s %s %s", pos.getX(), pos.getY(), pos.getZ());
         String command = String.format("%sgoal %s", FORCE_COMMAND_PREFIX, positionText);
         MutableComponent baseComponent = Component.literal(pos.toString());
         MutableComponent hoverComponent = Component.literal("Click to set goal to this position");

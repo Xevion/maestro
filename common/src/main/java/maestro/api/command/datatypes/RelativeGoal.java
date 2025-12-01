@@ -6,15 +6,15 @@ import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.pathing.goals.GoalXZ;
 import maestro.api.pathing.goals.GoalYLevel;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
-public enum RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
+public enum RelativeGoal implements IDatatypePost<Goal, PackedBlockPos> {
     INSTANCE;
 
     @Override
-    public Goal apply(IDatatypeContext ctx, BetterBlockPos origin) {
+    public Goal apply(IDatatypeContext ctx, PackedBlockPos origin) {
         if (origin == null) {
-            origin = BetterBlockPos.ORIGIN;
+            origin = PackedBlockPos.Companion.getORIGIN();
         }
 
         final IArgConsumer consumer = ctx.getConsumer();
@@ -36,7 +36,7 @@ public enum RelativeGoal implements IDatatypePost<Goal, BetterBlockPos> {
         }
 
         // when the user doesn't input anything, default to the origin
-        return new GoalBlock(origin);
+        return new GoalBlock(origin.toBlockPos());
     }
 
     @Override

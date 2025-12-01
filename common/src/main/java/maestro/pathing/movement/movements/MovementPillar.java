@@ -5,8 +5,8 @@ import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
@@ -26,17 +26,17 @@ import org.slf4j.Logger;
 public class MovementPillar extends Movement {
     private static final Logger log = MaestroLogger.get("move");
 
-    public MovementPillar(IAgent maestro, BetterBlockPos start, BetterBlockPos end) {
-        super(maestro, start, end, new BetterBlockPos[] {start.above(2)}, start);
+    public MovementPillar(IAgent maestro, PackedBlockPos start, PackedBlockPos end) {
+        super(maestro, start, end, new PackedBlockPos[] {start.above(2)}, start);
     }
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z);
+        return cost(context, src.getX(), src.getY(), src.getZ());
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
+    protected Set<PackedBlockPos> calculateValidPositions() {
         return ImmutableSet.of(src, dest);
     }
 
@@ -158,18 +158,22 @@ public class MovementPillar extends Movement {
                 || MovementHelper.isBlockNormalCube(context.get(x, y, z - 1));
     }
 
-    public static BlockPos getAgainst(CalculationContext context, BetterBlockPos vine) {
-        if (MovementHelper.isBlockNormalCube(context.get(vine.north()))) {
-            return vine.north();
+    public static BlockPos getAgainst(CalculationContext context, PackedBlockPos vine) {
+        PackedBlockPos north = vine.north();
+        if (MovementHelper.isBlockNormalCube(context.get(north.toBlockPos()))) {
+            return north.toBlockPos();
         }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.south()))) {
-            return vine.south();
+        PackedBlockPos south = vine.south();
+        if (MovementHelper.isBlockNormalCube(context.get(south.toBlockPos()))) {
+            return south.toBlockPos();
         }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.east()))) {
-            return vine.east();
+        PackedBlockPos east = vine.east();
+        if (MovementHelper.isBlockNormalCube(context.get(east.toBlockPos()))) {
+            return east.toBlockPos();
         }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.west()))) {
-            return vine.west();
+        PackedBlockPos west = vine.west();
+        if (MovementHelper.isBlockNormalCube(context.get(west.toBlockPos()))) {
+            return west.toBlockPos();
         }
         return null;
     }
@@ -181,26 +185,26 @@ public class MovementPillar extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().y < src.y) {
+        if (ctx.playerFeet().getY() < src.getY()) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
-        BlockState fromDown = BlockStateInterface.get(ctx, src);
-        if (MovementHelper.isWater(fromDown) && MovementHelper.isWater(ctx, dest)) {
+        BlockState fromDown = BlockStateInterface.get(ctx, src.toBlockPos());
+        if (MovementHelper.isWater(fromDown) && MovementHelper.isWater(ctx, dest.toBlockPos())) {
             // stay centered while swimming up a water column
             state.setTarget(
                     new MovementState.MovementTarget(
                             RotationUtils.calcRotationFromVec3d(
                                     ctx.playerHead(),
-                                    VecUtils.getBlockPosCenter(dest),
+                                    VecUtils.getBlockPosCenter(dest.toBlockPos()),
                                     ctx.playerRotations()),
                             false));
-            Vec3 destCenter = VecUtils.getBlockPosCenter(dest);
+            Vec3 destCenter = VecUtils.getBlockPosCenter(dest.toBlockPos());
             if (Math.abs(ctx.player().position().x - destCenter.x) > 0.2
                     || Math.abs(ctx.player().position().z - destCenter.z) > 0.2) {
                 state.setInput(Input.MOVE_FORWARD, true);
             }
-            if (ctx.playerFeet().equals(dest)) {
+            if (ctx.playerFeet().equals(dest.toBlockPos())) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
@@ -210,7 +214,7 @@ public class MovementPillar extends Movement {
         Rotation rotation =
                 RotationUtils.calcRotationFromVec3d(
                         ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(positionToPlace),
+                        VecUtils.getBlockPosCenter(src.toBlockPos()),
                         ctx.playerRotations());
         if (!ladder) {
             state.setTarget(
@@ -223,7 +227,8 @@ public class MovementPillar extends Movement {
             BlockPos against =
                     vine
                             ? getAgainst(new CalculationContext(maestro), src)
-                            : src.relative(fromDown.getValue(LadderBlock.FACING).getOpposite());
+                            : src.toBlockPos()
+                                    .relative(fromDown.getValue(LadderBlock.FACING).getOpposite());
             if (against == null) {
                 log.atError()
                         .addKeyValue("vine_position_x", src.getX())
@@ -233,10 +238,12 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (ctx.playerFeet().equals(against.above()) || ctx.playerFeet().equals(dest)) {
+            if (ctx.playerFeet().equals(against.above())
+                    || ctx.playerFeet().equals(dest.toBlockPos())) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
+            if (MovementHelper.isBottomSlab(
+                    BlockStateInterface.get(ctx, src.toBlockPos().below()))) {
                 state.setInput(Input.JUMP, true);
             }
             /*
@@ -251,7 +258,7 @@ public class MovementPillar extends Movement {
             // Get ready to place a throwaway block
             if (!((Agent) maestro)
                     .getInventoryBehavior()
-                    .selectThrowawayForLocation(true, src.x, src.y, src.z)) {
+                    .selectThrowawayForLocation(true, src.getX(), src.getY(), src.getZ())) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
@@ -288,12 +295,14 @@ public class MovementPillar extends Movement {
             }
 
             if (!blockIsThere) {
-                BlockState frState = BlockStateInterface.get(ctx, src);
+                BlockState frState = BlockStateInterface.get(ctx, src.toBlockPos());
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
                 if (!(fr instanceof AirBlock || frState.canBeReplaced())) {
                     RotationUtils.reachable(
-                                    ctx, src, ctx.playerController().getBlockReachDistance())
+                                    ctx,
+                                    src.toBlockPos(),
+                                    ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);
                     state.setInput(
@@ -301,7 +310,8 @@ public class MovementPillar extends Movement {
                     state.setInput(Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (ctx.player().isCrouching()
-                        && (ctx.isLookingAt(src.below()) || ctx.isLookingAt(src))
+                        && (ctx.isLookingAt(src.toBlockPos().below())
+                                || ctx.isLookingAt(src.toBlockPos()))
                         && ctx.player().position().y > dest.getY() + 0.1) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
@@ -309,7 +319,7 @@ public class MovementPillar extends Movement {
         }
 
         // If we are at our goal and the block below us is placed
-        if (ctx.playerFeet().equals(dest) && blockIsThere) {
+        if (ctx.playerFeet().equals(dest.toBlockPos()) && blockIsThere) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
@@ -318,13 +328,14 @@ public class MovementPillar extends Movement {
 
     @Override
     protected boolean prepared(MovementState state) {
-        if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.below())) {
-            Block block = BlockStateInterface.getBlock(ctx, src.below());
+        if (ctx.playerFeet().equals(src.toBlockPos())
+                || ctx.playerFeet().equals(src.toBlockPos().below())) {
+            Block block = BlockStateInterface.getBlock(ctx, src.toBlockPos().below());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(Input.SNEAK, true);
             }
         }
-        if (MovementHelper.isWater(ctx, dest.above())) {
+        if (MovementHelper.isWater(ctx, dest.toBlockPos().above())) {
             return true;
         }
         return super.prepared(state);

@@ -2,8 +2,8 @@ package maestro.pathing.movement;
 
 import java.util.ArrayList;
 import java.util.List;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -46,10 +46,10 @@ public class TeleportDestinationFinder {
      * player ends up after falling (used as pathfinding dest).
      */
     public static class TeleportDestination {
-        public final BetterBlockPos arrival; // Position where teleport packets are sent
-        public final BetterBlockPos landing; // Position where player lands (= pathfinding dest)
+        public final PackedBlockPos arrival; // Position where teleport packets are sent
+        public final PackedBlockPos landing; // Position where player lands (= pathfinding dest)
 
-        public TeleportDestination(BetterBlockPos arrival, BetterBlockPos landing) {
+        public TeleportDestination(PackedBlockPos arrival, PackedBlockPos landing) {
             this.arrival = arrival;
             this.landing = landing;
         }
@@ -63,7 +63,7 @@ public class TeleportDestinationFinder {
      * @return List of valid teleport destinations (arrival and landing positions)
      */
     public static List<TeleportDestination> findDestinations(
-            CalculationContext context, BetterBlockPos src) {
+            CalculationContext context, PackedBlockPos src) {
         List<TeleportDestination> destinations = new ArrayList<>();
 
         int minDist = context.teleportMinDistance;
@@ -84,14 +84,16 @@ public class TeleportDestinationFinder {
                 int dy = (int) Math.round(radius * Math.cos(phi));
                 int dz = (int) Math.round(radius * Math.sin(phi) * Math.sin(theta));
 
-                BetterBlockPos candidate = new BetterBlockPos(src.x + dx, src.y + dy, src.z + dz);
+                PackedBlockPos candidate =
+                        new PackedBlockPos(src.getX() + dx, src.getY() + dy, src.getZ() + dz);
                 totalCandidates++;
 
                 ValidationResult result = isValidDestination(context, candidate);
                 if (result.valid) {
                     // Arrival is the sampled position, landing is one block above ground
-                    BetterBlockPos landingPos =
-                            new BetterBlockPos(candidate.x, result.groundBlockY + 1, candidate.z);
+                    PackedBlockPos landingPos =
+                            new PackedBlockPos(
+                                    candidate.getX(), result.groundBlockY + 1, candidate.getZ());
                     destinations.add(new TeleportDestination(candidate, landingPos));
                     validCandidates++;
                 }
@@ -113,27 +115,27 @@ public class TeleportDestinationFinder {
      * @return ValidationResult containing validity and ground block Y coordinate
      */
     private static ValidationResult isValidDestination(
-            CalculationContext context, BetterBlockPos pos) {
+            CalculationContext context, PackedBlockPos pos) {
         // Early exit: Chunk loaded (can't validate unloaded chunks)
-        if (!context.bsi.worldContainsLoadedChunk(pos.x, pos.z)) {
+        if (!context.bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ())) {
             return new ValidationResult(false, -1);
         }
 
         // Early exit: World bounds
-        if (!context.worldBorder.canPlaceAt(pos.x, pos.z)) {
+        if (!context.worldBorder.canPlaceAt(pos.getX(), pos.getZ())) {
             return new ValidationResult(false, -1);
         }
 
         // Early exit: Y bounds
-        if (pos.y < context.world.getMinY() || pos.y > context.world.getMaxY() - 2) {
+        if (pos.getY() < context.world.getMinY() || pos.getY() > context.world.getMaxY() - 2) {
             return new ValidationResult(false, -1);
         }
 
         // Early exit: 2x1 open space (feet and head)
-        if (!MovementHelper.fullyPassable(context, pos.x, pos.y, pos.z)) {
+        if (!MovementHelper.fullyPassable(context, pos.getX(), pos.getY(), pos.getZ())) {
             return new ValidationResult(false, -1);
         }
-        if (!MovementHelper.fullyPassable(context, pos.x, pos.y + 1, pos.z)) {
+        if (!MovementHelper.fullyPassable(context, pos.getX(), pos.getY() + 1, pos.getZ())) {
             return new ValidationResult(false, -1);
         }
 
@@ -141,16 +143,16 @@ public class TeleportDestinationFinder {
         int minY = context.world.getMinY();
         int groundBlockY = -1;
         for (int depth = 1; depth <= 5; depth++) {
-            int checkY = pos.y - depth;
+            int checkY = pos.getY() - depth;
 
             // Stop at world minimum to prevent checking below void
             if (checkY < minY) {
                 break;
             }
 
-            var state = context.get(pos.x, checkY, pos.z);
+            var state = context.get(pos.getX(), checkY, pos.getZ());
 
-            if (MovementHelper.canWalkThrough(context, pos.x, checkY, pos.z, state)) {
+            if (MovementHelper.canWalkThrough(context, pos.getX(), checkY, pos.getZ(), state)) {
                 // Passable block - check if it's dangerous (fire, lava, etc.)
                 if (MovementHelper.avoidWalkingInto(state)) {
                     return new ValidationResult(false, -1); // Dangerous passable block in air gap
@@ -159,7 +161,7 @@ public class TeleportDestinationFinder {
             }
 
             // Hit non-passable block - verify it's walkable
-            if (!MovementHelper.canWalkOn(context, pos.x, checkY, pos.z, state)) {
+            if (!MovementHelper.canWalkOn(context, pos.getX(), checkY, pos.getZ(), state)) {
                 return new ValidationResult(false, -1); // Non-walkable solid block
             }
 
@@ -201,13 +203,13 @@ public class TeleportDestinationFinder {
      * @param dest Destination position
      * @return true if player can teleport without collision
      */
-    private static boolean hasLineOfSight(CalculationContext context, BetterBlockPos dest) {
+    private static boolean hasLineOfSight(CalculationContext context, PackedBlockPos dest) {
         Vec3 srcPos = context.maestro.getPlayerContext().player().position();
-        Vec3 destPos = new Vec3(dest.x + 0.5, dest.y, dest.z + 0.5);
+        Vec3 destPos = new Vec3(dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5);
 
         // Phase 1: Quick center-point raycast as fast pre-filter
         Vec3 srcFeet = new Vec3(srcPos.x, srcPos.y, srcPos.z);
-        Vec3 destFeet = new Vec3(dest.x + 0.5, dest.y, dest.z + 0.5);
+        Vec3 destFeet = new Vec3(dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5);
 
         HitResult feetResult =
                 context.world.clip(
@@ -226,7 +228,7 @@ public class TeleportDestinationFinder {
         // Phase 1.5: Eyes-to-eyes raycast for proper line-of-sight validation
         // Player standing eye height is 1.62 blocks above feet
         Vec3 srcEyes = new Vec3(srcPos.x, srcPos.y + 1.62, srcPos.z);
-        Vec3 destEyes = new Vec3(dest.x + 0.5, dest.y + 1.62, dest.z + 0.5);
+        Vec3 destEyes = new Vec3(dest.getX() + 0.5, dest.getY() + 1.62, dest.getZ() + 0.5);
 
         HitResult eyesResult =
                 context.world.clip(
@@ -272,12 +274,12 @@ public class TeleportDestinationFinder {
      * @param dest Destination position
      * @return true if no collision detected
      */
-    private static boolean isCollisionFree(CalculationContext context, BetterBlockPos dest) {
+    private static boolean isCollisionFree(CalculationContext context, PackedBlockPos dest) {
         // Create player bounding box at destination
         // Player dimensions: 0.6 width × 1.8 height (standing)
-        double x = dest.x + 0.5;
-        double y = dest.y;
-        double z = dest.z + 0.5;
+        double x = dest.getX() + 0.5;
+        double y = dest.getY();
+        double z = dest.getZ() + 0.5;
 
         AABB playerBox = new AABB(x - 0.3, y, z - 0.3, x + 0.3, y + 1.8, z + 0.3);
 

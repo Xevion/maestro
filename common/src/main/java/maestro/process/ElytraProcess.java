@@ -19,8 +19,8 @@ import maestro.api.process.IElytraProcess;
 import maestro.api.process.IMaestroProcess;
 import maestro.api.process.PathingCommand;
 import maestro.api.process.PathingCommandType;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.input.Input;
@@ -50,7 +50,7 @@ public class ElytraProcess extends MaestroProcessHelper
 
     public State state;
     private boolean goingToLandingSpot;
-    private BetterBlockPos landingSpot;
+    private PackedBlockPos landingSpot;
     private boolean reachedGoal; // this basically just prevents potential notification spam
     private Goal goal;
     private ElytraBehavior behavior;
@@ -141,23 +141,25 @@ public class ElytraProcess extends MaestroProcessHelper
         if (ctx.player().isFallFlying()
                 && this.state != State.LANDING
                 && (this.behavior.pathManager.isComplete() || safetyLanding)) {
-            final BetterBlockPos last = this.behavior.pathManager.path.getLast();
+            final PackedBlockPos last = this.behavior.pathManager.path.getLast();
             if (last != null
-                    && (ctx.player().position().distanceToSqr(last.getCenter()) < (48 * 48)
+                    && (ctx.player().position().distanceToSqr(last.toBlockPos().getCenter())
+                                    < (48 * 48)
                             || safetyLanding)
                     && (!goingToLandingSpot || (safetyLanding && this.landingSpot == null))) {
                 log.atInfo().log("Path complete, picking landing spot");
-                BetterBlockPos landingSpot = findSafeLandingSpot(ctx.playerFeet());
+                PackedBlockPos landingSpot = findSafeLandingSpot(ctx.playerFeet());
                 // if this fails we will just keep orbiting the last node until we run out of
                 // rockets or the user intervenes
                 if (landingSpot != null) {
-                    this.pathTo0(landingSpot, true);
+                    this.pathTo0(landingSpot.toBlockPos(), true);
                     this.landingSpot = landingSpot;
                 }
                 this.goingToLandingSpot = true;
             }
 
-            if (last != null && ctx.player().position().distanceToSqr(last.getCenter()) < 1) {
+            if (last != null
+                    && ctx.player().position().distanceToSqr(last.toBlockPos().getCenter()) < 1) {
                 if (Agent.settings().notificationOnPathComplete.value && !reachedGoal) {
                     logNotification("Pathing complete", false);
                 }
@@ -180,13 +182,17 @@ public class ElytraProcess extends MaestroProcessHelper
         }
 
         if (this.state == State.LANDING) {
-            final BetterBlockPos endPos =
+            final PackedBlockPos endPos =
                     this.landingSpot != null
                             ? this.landingSpot
                             : behavior.pathManager.path.getLast();
             if (ctx.player().isFallFlying() && endPos != null) {
                 Vec3 from = ctx.player().position();
-                Vec3 to = new Vec3(((double) endPos.x) + 0.5, from.y, ((double) endPos.z) + 0.5);
+                Vec3 to =
+                        new Vec3(
+                                ((double) endPos.getX()) + 0.5,
+                                from.y,
+                                ((double) endPos.getZ()) + 0.5);
                 Rotation rotation =
                         RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations());
                 maestro.getLookBehavior()
@@ -194,7 +200,7 @@ public class ElytraProcess extends MaestroProcessHelper
                                 new Rotation(rotation.getYaw(), 0),
                                 false); // this will be overwritten, probably, by behavior tick
 
-                if (ctx.player().position().y < endPos.y - LANDING_COLUMN_HEIGHT) {
+                if (ctx.player().position().y < endPos.getY() - LANDING_COLUMN_HEIGHT) {
                     log.atWarn()
                             .addKeyValue("landing_spot", endPos)
                             .log("Landing spot too low, selecting new spot");
@@ -248,13 +254,13 @@ public class ElytraProcess extends MaestroProcessHelper
                                 .orElse(null);
 
                 if (fall != null) {
-                    final BetterBlockPos from =
-                            new BetterBlockPos(
-                                    (fall.getSrc().x + fall.getDest().x) / 2,
-                                    (fall.getSrc().y + fall.getDest().y) / 2,
-                                    (fall.getSrc().z + fall.getDest().z) / 2);
+                    final PackedBlockPos from =
+                            new PackedBlockPos(
+                                    (fall.getSrc().getX() + fall.getDest().getX()) / 2,
+                                    (fall.getSrc().getY() + fall.getDest().getY()) / 2,
+                                    (fall.getSrc().getZ() + fall.getDest().getZ()) / 2);
                     behavior.pathManager
-                            .pathToDestination(from)
+                            .pathToDestination(from.toBlockPos())
                             .whenComplete(
                                     (result, ex) -> {
                                         if (ex == null) {
@@ -314,7 +320,7 @@ public class ElytraProcess extends MaestroProcessHelper
         return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
     }
 
-    public void landingSpotIsBad(BetterBlockPos endPos) {
+    public void landingSpotIsBad(PackedBlockPos endPos) {
         badLandingSpots.add(endPos);
         goingToLandingSpot = false;
         this.landingSpot = null;
@@ -348,7 +354,7 @@ public class ElytraProcess extends MaestroProcessHelper
 
     @Override
     public BlockPos currentDestination() {
-        return this.behavior != null ? this.behavior.destination : null;
+        return this.behavior != null ? this.behavior.destination.toBlockPos() : null;
     }
 
     @Override
@@ -559,7 +565,7 @@ public class ElytraProcess extends MaestroProcessHelper
         return true;
     }
 
-    private BetterBlockPos checkLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
+    private PackedBlockPos checkLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
         BlockPos.MutableBlockPos mut =
                 new BlockPos.MutableBlockPos(pos.getX(), pos.getY(), pos.getZ());
         while (mut.getY() >= 0) {
@@ -571,7 +577,7 @@ public class ElytraProcess extends MaestroProcessHelper
 
             if (isSafeBlock(block)) {
                 if (!isAtEdge(mut)) {
-                    return new BetterBlockPos(mut);
+                    return new PackedBlockPos(mut);
                 }
                 return null;
             } else if (block != Blocks.AIR) {
@@ -583,29 +589,32 @@ public class ElytraProcess extends MaestroProcessHelper
     }
 
     private static final int LANDING_COLUMN_HEIGHT = 15;
-    private Set<BetterBlockPos> badLandingSpots = new HashSet<>();
+    private Set<PackedBlockPos> badLandingSpots = new HashSet<>();
 
-    private BetterBlockPos findSafeLandingSpot(BetterBlockPos start) {
-        Queue<BetterBlockPos> queue =
+    private PackedBlockPos findSafeLandingSpot(PackedBlockPos start) {
+        Queue<PackedBlockPos> queue =
                 new PriorityQueue<>(
-                        Comparator.<BetterBlockPos>comparingInt(
+                        Comparator.<PackedBlockPos>comparingInt(
                                         pos ->
-                                                (pos.x - start.x) * (pos.x - start.x)
-                                                        + (pos.z - start.z) * (pos.z - start.z))
-                                .thenComparingInt(pos -> -pos.y));
-        Set<BetterBlockPos> visited = new HashSet<>();
+                                                (pos.getX() - start.getX())
+                                                                * (pos.getX() - start.getX())
+                                                        + (pos.getZ() - start.getZ())
+                                                                * (pos.getZ() - start.getZ()))
+                                .thenComparingInt(pos -> -pos.getY()));
+        Set<PackedBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
         queue.add(start);
 
         while (!queue.isEmpty()) {
-            BetterBlockPos pos = queue.poll();
-            if (ctx.world().isLoaded(pos)
-                    && isInBounds(pos)
-                    && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
-                BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
+            PackedBlockPos pos = queue.poll();
+            if (ctx.world().isLoaded(pos.toBlockPos())
+                    && isInBounds(pos.toBlockPos())
+                    && ctx.world().getBlockState(pos.toBlockPos()).getBlock() == Blocks.AIR) {
+                PackedBlockPos actualLandingSpot =
+                        checkLandingSpot(pos.toBlockPos(), checkedPositions);
                 if (actualLandingSpot != null
-                        && isColumnAir(actualLandingSpot, LANDING_COLUMN_HEIGHT)
-                        && hasAirBubble(actualLandingSpot.above(LANDING_COLUMN_HEIGHT))
+                        && isColumnAir(actualLandingSpot.toBlockPos(), LANDING_COLUMN_HEIGHT)
+                        && hasAirBubble(actualLandingSpot.above(LANDING_COLUMN_HEIGHT).toBlockPos())
                         && !badLandingSpots.contains(
                                 actualLandingSpot.above(LANDING_COLUMN_HEIGHT))) {
                     return actualLandingSpot.above(LANDING_COLUMN_HEIGHT);

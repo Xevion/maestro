@@ -5,13 +5,14 @@ import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.MovementState;
 import maestro.utils.BlockStateInterface;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
@@ -21,12 +22,12 @@ public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
 
-    public MovementAscend(IAgent maestro, BetterBlockPos src, BetterBlockPos dest) {
+    public MovementAscend(IAgent maestro, PackedBlockPos src, PackedBlockPos dest) {
         super(
                 maestro,
                 src,
                 dest,
-                new BetterBlockPos[] {dest, src.above(2), dest.above()},
+                new PackedBlockPos[] {dest, src.above(2), dest.above()},
                 dest.below());
     }
 
@@ -38,15 +39,19 @@ public class MovementAscend extends Movement {
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        return cost(context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ());
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
-        BetterBlockPos prior =
-                new BetterBlockPos(
-                        src.subtract(getDirection())
-                                .above()); // sometimes we back up to place the block, also sprint
+    protected Set<PackedBlockPos> calculateValidPositions() {
+        BlockPos dirVec = getDirection();
+        PackedBlockPos prior =
+                new PackedBlockPos(
+                        src.getX() - dirVec.getX(),
+                        src.getY() + 1,
+                        src.getZ()
+                                - dirVec.getZ()); // sometimes we back up to place the block, also
+        // sprint
         // ascends, also skip descend to straight ascend
         return ImmutableSet.of(src, src.above(), dest, prior, prior.above());
     }
@@ -170,7 +175,7 @@ public class MovementAscend extends Movement {
 
     @Override
     public MovementState updateState(MovementState state) {
-        if (ctx.playerFeet().y < src.y) {
+        if (ctx.playerFeet().getY() < src.getY()) {
             // this check should run even when in preparing state (breaking blocks)
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
@@ -183,15 +188,18 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().equals(dest)
-                || ctx.playerFeet().equals(dest.offset(getDirection().below()))) {
+        BlockPos dirVec = getDirection();
+        if (ctx.playerFeet().equals(dest.toBlockPos())
+                || ctx.playerFeet()
+                        .equals(dest.toBlockPos().offset(-dirVec.getX(), 0, -dirVec.getZ()))) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
-        BlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
+        BlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace.toBlockPos());
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
             ticksWithoutPlacement++;
-            if (MovementHelper.attemptToPlaceABlock(state, maestro, dest.below(), false, true)
+            if (MovementHelper.attemptToPlaceABlock(
+                            state, maestro, dest.below().toBlockPos(), false, true)
                     == PlaceResult.READY_TO_PLACE) {
                 state.setInput(Input.SNEAK, true);
                 if (ctx.player().isCrouching()) {
@@ -205,13 +213,15 @@ public class MovementAscend extends Movement {
 
             return state;
         }
-        MovementHelper.moveTowards(ctx, state, dest);
+        MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
         if (MovementHelper.isBottomSlab(jumpingOnto)
-                && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
+                && !MovementHelper.isBottomSlab(
+                        BlockStateInterface.get(ctx, src.below().toBlockPos()))) {
             return state; // don't jump while walking from a non-double slab into a bottom slab
         }
 
-        if (Agent.settings().assumeStep.value || ctx.playerFeet().equals(src.above())) {
+        if (Agent.settings().assumeStep.value
+                || ctx.playerFeet().equals(src.above().toBlockPos())) {
             // no need to hit space if we're already jumping
             return state;
         }
@@ -249,9 +259,10 @@ public class MovementAscend extends Movement {
     }
 
     public boolean headBonkClear() {
-        BetterBlockPos startUp = src.above(2);
+        PackedBlockPos startUp = src.above(2);
         for (int i = 0; i < 4; i++) {
-            BetterBlockPos check = startUp.relative(Direction.from2DDataValue(i));
+            PackedBlockPos check =
+                    new PackedBlockPos(startUp.toBlockPos().relative(Direction.from2DDataValue(i)));
             if (!MovementHelper.canWalkThrough(ctx, check)) {
                 // We might bonk our head
                 return false;

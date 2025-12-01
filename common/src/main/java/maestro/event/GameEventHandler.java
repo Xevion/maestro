@@ -204,11 +204,6 @@ public final class GameEventHandler implements IEventBus {
     }
 
     @Override
-    public void onBlockInteract(BlockInteractEvent event) {
-        listeners.forEach(l -> l.onBlockInteract(event));
-    }
-
-    @Override
     public void onPlayerDeath() {
         listeners.forEach(IGameEventListener::onPlayerDeath);
     }

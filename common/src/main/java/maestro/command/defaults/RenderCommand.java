@@ -7,7 +7,7 @@ import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 public class RenderCommand extends Command {
 
@@ -18,17 +18,17 @@ public class RenderCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        BetterBlockPos origin = ctx.playerFeet();
+        PackedBlockPos origin = ctx.playerFeet();
         int renderDistance = (ctx.minecraft().options.renderDistance().get() + 1) * 16;
         ctx.minecraft()
                 .levelRenderer
                 .setBlocksDirty(
-                        origin.x - renderDistance,
+                        origin.getX() - renderDistance,
                         ctx.world().getMinY(),
-                        origin.z - renderDistance,
-                        origin.x + renderDistance,
+                        origin.getZ() - renderDistance,
+                        origin.getX() + renderDistance,
                         ctx.world().getMaxY(),
-                        origin.z + renderDistance);
+                        origin.getZ() + renderDistance);
         log.atInfo().log("Done");
     }
 

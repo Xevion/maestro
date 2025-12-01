@@ -2,8 +2,8 @@ package maestro.utils.pathing
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import maestro.Agent
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.IPlayerContext
+import maestro.api.utils.pack
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Mob
 import net.minecraft.world.entity.monster.EnderMan
@@ -86,7 +86,7 @@ class Avoidance {
             for (y in -radius..radius) {
                 for (z in -radius..radius) {
                     if (x * x + y * y + z * z <= radius * radius) {
-                        val hash = BetterBlockPos.longHash(centerX + x, centerY + y, centerZ + z)
+                        val hash = pack(centerX + x, centerY + y, centerZ + z).packed
                         map.put(hash, map.get(hash) * coefficient)
                     }
                 }

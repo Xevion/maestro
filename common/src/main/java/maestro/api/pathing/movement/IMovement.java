@@ -1,6 +1,6 @@
 package maestro.api.pathing.movement;
 
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.core.BlockPos;
 
 public interface IMovement {
@@ -22,9 +22,9 @@ public interface IMovement {
 
     boolean calculatedWhileLoaded();
 
-    BetterBlockPos getSrc();
+    PackedBlockPos getSrc();
 
-    BetterBlockPos getDest();
+    PackedBlockPos getDest();
 
     BlockPos getDirection();
 }

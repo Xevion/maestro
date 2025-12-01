@@ -8,7 +8,7 @@ import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.world.level.block.AirBlock;
 
 public class SurfaceCommand extends Command {
@@ -19,7 +19,7 @@ public class SurfaceCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) {
-        final BetterBlockPos playerPos = ctx.playerFeet();
+        final PackedBlockPos playerPos = ctx.playerFeet();
         final int surfaceLevel = ctx.world().getSeaLevel();
         final int worldHeight = ctx.world().getHeight();
 
@@ -27,7 +27,8 @@ public class SurfaceCommand extends Command {
         // you is air
         // As this would imply that you are already on the open surface
         if (playerPos.getY() > surfaceLevel
-                && ctx.world().getBlockState(playerPos.above()).getBlock() instanceof AirBlock) {
+                && ctx.world().getBlockState(playerPos.toBlockPos().above()).getBlock()
+                        instanceof AirBlock) {
             log.atInfo().log("Already at surface");
             return;
         }
@@ -37,12 +38,12 @@ public class SurfaceCommand extends Command {
         for (int currentIteratedY = startingYPos;
                 currentIteratedY < worldHeight;
                 currentIteratedY++) {
-            final BetterBlockPos newPos =
-                    new BetterBlockPos(playerPos.getX(), currentIteratedY, playerPos.getZ());
+            final PackedBlockPos newPos =
+                    new PackedBlockPos(playerPos.getX(), currentIteratedY, playerPos.getZ());
 
-            if (!(ctx.world().getBlockState(newPos).getBlock() instanceof AirBlock)
+            if (!(ctx.world().getBlockState(newPos.toBlockPos()).getBlock() instanceof AirBlock)
                     && newPos.getY() > playerPos.getY()) {
-                Goal goal = new GoalBlock(newPos.above());
+                Goal goal = new GoalBlock(newPos.toBlockPos().above());
                 log.atInfo().addKeyValue("goal", goal.toString()).log("Going to goal");
                 maestro.getCustomGoalProcess().setGoalAndPath(goal);
                 return;

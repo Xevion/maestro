@@ -102,7 +102,9 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                             true);
                 }
                 knownOreLocations.stream()
-                        .min(Comparator.comparingDouble(ctx.playerFeet()::distSqr))
+                        .min(
+                                Comparator.comparingDouble(
+                                        pos -> ctx.playerFeet().distSqr(new PackedBlockPos(pos))))
                         .ifPresent(blacklist::add);
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
@@ -145,7 +147,9 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                                                 AirBlock)) // after breaking a block, it takes
                         // mineGoalUpdateInterval ticks for it to
                         // actually update this list =(
-                        .min(Comparator.comparingDouble(ctx.playerFeet().above()::distSqr));
+                        .min(
+                                Comparator.comparingDouble(
+                                        pos -> ctx.playerFeet().toBlockPos().above().distSqr(pos)));
         maestro.getInputOverrideHandler().clearAllKeys();
         if (shaft.isPresent() && ctx.player().onGround()) {
             BlockPos pos = shaft.get();
@@ -224,7 +228,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         // Area claiming for coordination
         maestro.coordination.CoordinationClient client = maestro.getCoordinationClient();
         if (client != null && client.isConnected()) {
-            BlockPos currentPos = ctx.playerFeet();
+            BlockPos currentPos = ctx.playerFeet().toBlockPos();
             boolean needsClaim =
                     lastClaimedArea == null || currentPos.distSqr(lastClaimedArea) > 16 * 16;
 
@@ -298,7 +302,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
             } else {
                 return new GoalYLevel(y);
             }*/
-            branchPoint = ctx.playerFeet();
+            branchPoint = ctx.playerFeet().toBlockPos();
         }
         // TODO shaft mode, mine 1x1 shafts to either side
         // TODO also, see if the GoalRunAway with maintain Y at 11 works even from the surface
@@ -479,7 +483,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
         for (BlockOptionalMeta bom : filter.blocks()) {
             Block block = bom.getBlock();
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
-                BetterBlockPos pf = ctx.maestro.getPlayerContext().playerFeet();
+                PackedBlockPos pf = ctx.maestro.getPlayerContext().playerFeet();
 
                 // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing
                 // further than that
@@ -489,8 +493,8 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
                                 .getLocationsOf(
                                         BlockUtils.blockToString(block),
                                         Agent.settings().maxCachedWorldScanCount.value,
-                                        pf.x,
-                                        pf.z,
+                                        pf.getX(),
+                                        pf.getZ(),
                                         2));
             } else {
                 untracked.add(block);
@@ -520,7 +524,7 @@ public final class MineProcess extends MaestroProcessHelper implements IMineProc
     private boolean addNearby() {
         List<BlockPos> dropped = droppedItemsScan();
         knownOreLocations.addAll(dropped);
-        BlockPos playerFeet = ctx.playerFeet();
+        BlockPos playerFeet = ctx.playerFeet().toBlockPos();
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
         BlockOptionalMetaLookup filter = filterFilter();

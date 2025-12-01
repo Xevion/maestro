@@ -114,14 +114,6 @@ public interface IGameEventListener {
     void onPlayerSprintState(SprintStateEvent event);
 
     /**
-     * Called when the local player interacts with a block, whether it is breaking or
-     * opening/placing.
-     *
-     * @param event The event
-     */
-    void onBlockInteract(BlockInteractEvent event);
-
-    /**
      * Called when the local player dies, as indicated by the creation of the {@link DeathScreen}
      * screen.
      *

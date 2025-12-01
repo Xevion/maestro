@@ -11,8 +11,8 @@ import java.util.List;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.pathing.goals.*;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.IPlayerContext;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.interfaces.IGoalRenderPos;
 import maestro.behavior.PathingBehavior;
 import maestro.pathing.path.PathExecutor;
@@ -207,7 +207,8 @@ public final class PathRenderer implements IRenderer {
                                                 drawManySelectionBoxes(
                                                         event.modelViewStack,
                                                         ctx.player(),
-                                                        Collections.singletonList(mr.getDest()),
+                                                        Collections.singletonList(
+                                                                mr.getDest().toBlockPos()),
                                                         settings.colorMostRecentConsidered.value);
                                             });
                         });
@@ -215,7 +216,7 @@ public final class PathRenderer implements IRenderer {
 
     public static void drawPath(
             PoseStack stack,
-            List<BetterBlockPos> positions,
+            List<PackedBlockPos> positions,
             int startIndex,
             Color color,
             boolean fadeOut,
@@ -227,7 +228,7 @@ public final class PathRenderer implements IRenderer {
 
     public static void drawPath(
             PoseStack stack,
-            List<BetterBlockPos> positions,
+            List<PackedBlockPos> positions,
             int startIndex,
             Color color,
             boolean fadeOut,
@@ -247,18 +248,18 @@ public final class PathRenderer implements IRenderer {
         int fadeEnd = fadeEnd0 + startIndex;
 
         for (int i = startIndex, next; i < positions.size() - 1; i = next) {
-            BetterBlockPos start = positions.get(i);
-            BetterBlockPos end = positions.get(next = i + 1);
+            PackedBlockPos start = positions.get(i);
+            PackedBlockPos end = positions.get(next = i + 1);
 
-            int dirX = end.x - start.x;
-            int dirY = end.y - start.y;
-            int dirZ = end.z - start.z;
+            int dirX = end.getX() - start.getX();
+            int dirY = end.getY() - start.getY();
+            int dirZ = end.getZ() - start.getZ();
 
             while (next + 1 < positions.size()
                     && (!fadeOut || next + 1 < fadeStart)
-                    && (dirX == positions.get(next + 1).x - end.x
-                            && dirY == positions.get(next + 1).y - end.y
-                            && dirZ == positions.get(next + 1).z - end.z)) {
+                    && (dirX == positions.get(next + 1).getX() - end.getX()
+                            && dirY == positions.get(next + 1).getY() - end.getY()
+                            && dirZ == positions.get(next + 1).getZ() - end.getZ())) {
                 end = positions.get(++next);
             }
 
@@ -293,7 +294,15 @@ public final class PathRenderer implements IRenderer {
             }
 
             emitPathLine(
-                    bufferBuilder, stack, start.x, start.y, start.z, end.x, end.y, end.z, offset);
+                    bufferBuilder,
+                    stack,
+                    start.getX(),
+                    start.getY(),
+                    start.getZ(),
+                    end.getX(),
+                    end.getY(),
+                    end.getZ(),
+                    offset);
         }
 
         IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
@@ -301,7 +310,7 @@ public final class PathRenderer implements IRenderer {
 
     public static void drawPathWithMovements(
             PoseStack stack,
-            List<BetterBlockPos> positions,
+            List<PackedBlockPos> positions,
             List<maestro.api.pathing.movement.IMovement> movements,
             int startIndex,
             Color color,
@@ -349,8 +358,8 @@ public final class PathRenderer implements IRenderer {
                         settings.renderPathIgnoreDepth.value);
 
         for (int i = startIndex, next; i < positions.size() - 1; i = next) {
-            BetterBlockPos start = positions.get(i);
-            BetterBlockPos end = positions.get(next = i + 1);
+            PackedBlockPos start = positions.get(i);
+            PackedBlockPos end = positions.get(next = i + 1);
 
             maestro.api.pathing.movement.IMovement movement = movements.get(i);
             if (movement == null) {
@@ -365,7 +374,15 @@ public final class PathRenderer implements IRenderer {
                 }
                 IRenderer.glColor(segmentColor, baseAlpha);
                 emitPathLine(
-                        bufferBuilder, stack, start.x, start.y, start.z, end.x, end.y, end.z, 0.5);
+                        bufferBuilder,
+                        stack,
+                        start.getX(),
+                        start.getY(),
+                        start.getZ(),
+                        end.getX(),
+                        end.getY(),
+                        end.getZ(),
+                        0.5);
                 continue;
             }
 
@@ -384,17 +401,17 @@ public final class PathRenderer implements IRenderer {
                 lineColor = getMovementColor(movement, color);
             }
 
-            int dirX = end.x - start.x;
-            int dirY = end.y - start.y;
-            int dirZ = end.z - start.z;
+            int dirX = end.getX() - start.getX();
+            int dirY = end.getY() - start.getY();
+            int dirZ = end.getZ() - start.getZ();
 
             while (next + 1 < positions.size()
                     && (!fadeOut || next + 1 < fadeStart)
                     && next < movements.size()
                     && !isSwimmingMovement(movements.get(next))
-                    && (dirX == positions.get(next + 1).x - end.x
-                            && dirY == positions.get(next + 1).y - end.y
-                            && dirZ == positions.get(next + 1).z - end.z)) {
+                    && (dirX == positions.get(next + 1).getX() - end.getX()
+                            && dirY == positions.get(next + 1).getY() - end.getY()
+                            && dirZ == positions.get(next + 1).getZ() - end.getZ())) {
                 end = positions.get(++next);
             }
 
@@ -418,7 +435,16 @@ public final class PathRenderer implements IRenderer {
                 IRenderer.glColor(lineColor, baseAlpha);
             }
 
-            emitPathLine(bufferBuilder, stack, start.x, start.y, start.z, end.x, end.y, end.z, 0.5);
+            emitPathLine(
+                    bufferBuilder,
+                    stack,
+                    start.getX(),
+                    start.getY(),
+                    start.getZ(),
+                    end.getX(),
+                    end.getY(),
+                    end.getZ(),
+                    0.5);
         }
 
         IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
@@ -441,14 +467,14 @@ public final class PathRenderer implements IRenderer {
             if (movement == null) {
                 continue;
             }
-            BetterBlockPos pos = movement.getSrc();
+            PackedBlockPos pos = movement.getSrc();
 
             // Calculate direction vector
             net.minecraft.world.phys.Vec3 direction =
                     new net.minecraft.world.phys.Vec3(
-                                    movement.getDest().x - pos.x,
-                                    movement.getDest().y - pos.y,
-                                    movement.getDest().z - pos.z)
+                                    movement.getDest().getX() - pos.getX(),
+                                    movement.getDest().getY() - pos.getY(),
+                                    movement.getDest().getZ() - pos.getZ())
                             .normalize();
 
             // Set arrow color
@@ -457,7 +483,13 @@ public final class PathRenderer implements IRenderer {
 
             // Emit arrow at movement source position
             emitChevronArrow(
-                    arrowBuffer, stack, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, direction, 0.4);
+                    arrowBuffer,
+                    stack,
+                    pos.getX() + 0.5,
+                    pos.getY() + 0.5,
+                    pos.getZ() + 0.5,
+                    direction,
+                    0.4);
 
             lastArrowIndex = i;
         }
@@ -806,7 +838,7 @@ public final class PathRenderer implements IRenderer {
             return false;
         }
         if (movement instanceof maestro.pathing.movement.movements.MovementSwimVertical) {
-            return movement.getDest().y > movement.getSrc().y;
+            return movement.getDest().getY() > movement.getSrc().getY();
         }
         return false;
     }
@@ -887,10 +919,10 @@ public final class PathRenderer implements IRenderer {
             maestro.api.pathing.movement.IMovement previous,
             maestro.api.pathing.movement.IMovement current) {
         // Calculate horizontal direction vectors (ignore Y)
-        double prevDx = previous.getDest().x - previous.getSrc().x;
-        double prevDz = previous.getDest().z - previous.getSrc().z;
-        double currDx = current.getDest().x - current.getSrc().x;
-        double currDz = current.getDest().z - current.getSrc().z;
+        double prevDx = previous.getDest().getX() - previous.getSrc().getX();
+        double prevDz = previous.getDest().getZ() - previous.getSrc().getZ();
+        double currDx = current.getDest().getX() - current.getSrc().getX();
+        double currDz = current.getDest().getZ() - current.getSrc().getZ();
 
         // Normalize
         double prevLen = Math.sqrt(prevDx * prevDx + prevDz * prevDz);

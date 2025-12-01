@@ -7,8 +7,8 @@ import java.util.List;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.Moves;
@@ -21,16 +21,16 @@ class Path extends PathBase {
     private static final Logger log = MaestroLogger.get("path");
 
     /** The start position of this path */
-    private final BetterBlockPos start;
+    private final PackedBlockPos start;
 
     /** The end position of this path */
-    private final BetterBlockPos end;
+    private final PackedBlockPos end;
 
     /**
      * The blocks on the path. Guaranteed that path.get(0) equals start and path.get(path.size()-1)
      * equals end
      */
-    private final List<BetterBlockPos> path;
+    private final List<PackedBlockPos> path;
 
     private final List<Movement> movements;
 
@@ -45,24 +45,24 @@ class Path extends PathBase {
     private volatile boolean verified;
 
     Path(
-            BetterBlockPos realStart,
+            PackedBlockPos realStart,
             PathNode start,
             PathNode end,
             int numNodes,
             Goal goal,
             CalculationContext context) {
-        this.end = new BetterBlockPos(end.x, end.y, end.z);
+        this.end = new PackedBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
         this.movements = new ArrayList<>();
         this.goal = goal;
         this.context = context;
 
         PathNode current = end;
-        List<BetterBlockPos> tempPath = new ArrayList<>();
+        List<PackedBlockPos> tempPath = new ArrayList<>();
         List<PathNode> tempNodes = new ArrayList<>();
         while (current != null) {
             tempNodes.add(current);
-            tempPath.add(new BetterBlockPos(current.x, current.y, current.z));
+            tempPath.add(new PackedBlockPos(current.x, current.y, current.z));
             current = current.previous;
         }
 
@@ -71,10 +71,11 @@ class Path extends PathBase {
         // created
         // that gets us to the single position in the path.
         // See PathingBehavior#createPathfinder and https://github.com/cabaletta/baritone/pull/4519
-        var startNodePos = new BetterBlockPos(start.x, start.y, start.z);
+        var startNodePos = new PackedBlockPos(start.x, start.y, start.z);
         if (!realStart.equals(startNodePos) && start.equals(end)) {
             this.start = realStart;
-            PathNode fakeNode = new PathNode(realStart.x, realStart.y, realStart.z, goal);
+            PathNode fakeNode =
+                    new PathNode(realStart.getX(), realStart.getY(), realStart.getZ(), goal);
             fakeNode.cost = 0;
             tempNodes.add(fakeNode);
             tempPath.add(realStart);
@@ -128,7 +129,7 @@ class Path extends PathBase {
     }
 
     private Movement runBackwards(
-            BetterBlockPos src, BetterBlockPos dest, PathNode destNode, double cost) {
+            PackedBlockPos src, PackedBlockPos dest, PathNode destNode, double cost) {
         // Try recorded movement first (O(1) lookup)
         Moves recordedMove = destNode.getMovement();
         if (recordedMove != null) {
@@ -163,7 +164,7 @@ class Path extends PathBase {
         log.atDebug()
                 .addKeyValue("source", src)
                 .addKeyValue("dest", dest)
-                .addKeyValue("delta", dest.subtract(src))
+                .addKeyValue("delta", dest.subtract(src.toBlockPos()))
                 .log("Movement became impossible during calculation");
         return null;
     }
@@ -199,7 +200,7 @@ class Path extends PathBase {
     }
 
     @Override
-    public List<BetterBlockPos> positions() {
+    public List<PackedBlockPos> positions() {
         return Collections.unmodifiableList(path);
     }
 
@@ -209,12 +210,12 @@ class Path extends PathBase {
     }
 
     @Override
-    public BetterBlockPos getSrc() {
+    public PackedBlockPos getSrc() {
         return start;
     }
 
     @Override
-    public BetterBlockPos getDest() {
+    public PackedBlockPos getDest() {
         return end;
     }
 

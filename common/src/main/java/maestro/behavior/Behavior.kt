@@ -13,5 +13,5 @@ abstract class Behavior protected constructor(
     @JvmField val maestro: Agent,
 ) : IBehavior {
     @JvmField
-    val ctx: IPlayerContext = maestro.getPlayerContext()
+    val ctx: IPlayerContext = maestro.playerContext
 }

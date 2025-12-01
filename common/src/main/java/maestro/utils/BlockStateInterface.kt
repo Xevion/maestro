@@ -27,7 +27,7 @@ class BlockStateInterface
         private val worldData: WorldData?
 
         @JvmField
-        val world: Level
+        val world: Level = ctx.world()
 
         @JvmField
         val isPassableBlockPos: BlockPos.MutableBlockPos
@@ -44,7 +44,6 @@ class BlockStateInterface
         private val useTheRealWorld: Boolean
 
         init {
-            this.world = ctx.world()
             this.worldBorder = BetterWorldBorder(world.worldBorder)
             this.worldData = ctx.worldData() as WorldData?
 

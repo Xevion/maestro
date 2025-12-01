@@ -9,7 +9,7 @@ import maestro.api.pathing.goals.GoalXZ
 import maestro.api.process.IFollowProcess
 import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
-import maestro.api.utils.BetterBlockPos
+import maestro.api.utils.PackedBlockPos
 import maestro.utils.MaestroProcessHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Entity
@@ -47,7 +47,7 @@ class FollowProcess(
                         Agent.settings().followOffsetDirection.value,
                         Agent.settings().followOffsetDistance.value,
                     )
-                BetterBlockPos(g.x, following.position().y.toInt(), g.z)
+                PackedBlockPos(g.x, following.position().y.toInt(), g.z).toBlockPos()
             }
 
         return if (into) {

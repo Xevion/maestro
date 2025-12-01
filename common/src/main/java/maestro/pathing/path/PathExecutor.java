@@ -101,7 +101,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
 
         Movement movement = (Movement) path.movements().get(pathPosition);
-        BetterBlockPos whereAmI = ctx.playerFeet();
+        PackedBlockPos whereAmI = ctx.playerFeet();
         if (!movement.getValidPositions().contains(whereAmI)) {
             for (int i = 0;
                     i < pathPosition && i < path.length();
@@ -237,10 +237,10 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (pathPosition < path.movements().size() - 1) {
             IMovement next = path.movements().get(pathPosition + 1);
             if (!behavior.maestro.bsi.worldContainsLoadedChunk(
-                    next.getDest().x, next.getDest().z)) {
+                    next.getDest().getX(), next.getDest().getZ())) {
                 log.atDebug()
-                        .addKeyValue("dest_x", next.getDest().x)
-                        .addKeyValue("dest_z", next.getDest().z)
+                        .addKeyValue("dest_x", next.getDest().getX())
+                        .addKeyValue("dest_z", next.getDest().getZ())
                         .log("Pausing - destination at edge of loaded chunks");
                 stopMovement();
                 return true;
@@ -377,11 +377,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         double best = -1;
         BlockPos bestPos = null;
         for (IMovement movement : path.movements()) {
-            for (BlockPos pos : ((Movement) movement).getValidPositions()) {
-                double dist = VecUtils.entityDistanceToCenter(ctx.player(), pos);
+            for (PackedBlockPos pos : ((Movement) movement).getValidPositions()) {
+                double dist = VecUtils.entityDistanceToCenter(ctx.player(), pos.toBlockPos());
                 if (dist < best || best == -1) {
                     best = dist;
-                    bestPos = pos;
+                    bestPos = pos.toBlockPos();
                 }
             }
         }
@@ -412,7 +412,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (currentBest.isEmpty()) {
             return false;
         }
-        List<BetterBlockPos> positions = currentBest.get().positions();
+        List<PackedBlockPos> positions = currentBest.get().positions();
         if (positions.size() < 3) {
             return false; // not long enough yet to justify pausing, it's far from certain we'll
             // actually take this route
@@ -430,13 +430,13 @@ public class PathExecutor implements IPathExecutor, Helper {
             // when we're midair in the middle of a fall, we're very far from both the beginning and
             // the end, but we aren't actually off path
             if (path.movements().get(pathPosition) instanceof MovementFall) {
-                BlockPos fallDest =
+                PackedBlockPos fallDest =
                         path.positions()
                                 .get(
                                         pathPosition
                                                 + 1); // .get(pathPosition) is the block we fell off
                 // of
-                return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest)
+                return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest.toBlockPos())
                         >= leniency; // ignore Y by using flat distance
             } else {
                 return true;
@@ -452,7 +452,8 @@ public class PathExecutor implements IPathExecutor, Helper {
      * @return Whether it was possible to snap to the current player feet
      */
     public boolean snipsnapifpossible() {
-        if (!ctx.player().onGround() && ctx.world().getFluidState(ctx.playerFeet()).isEmpty()) {
+        if (!ctx.player().onGround()
+                && ctx.world().getFluidState(ctx.playerFeet().toBlockPos()).isEmpty()) {
             // if we're falling in the air, and not in water, don't splice
             return false;
         } else {
@@ -522,7 +523,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 // keep this out of onTick, even if that means a tick of delay before it has an
                 // effect
                 IMovement next = path.movements().get(pathPosition + 1);
-                if (MovementHelper.canUseFrostWalker(ctx, next.getDest().below())) {
+                if (MovementHelper.canUseFrostWalker(ctx, next.getDest().below().toBlockPos())) {
                     // frostwalker only works if you cross the edge of the block on ground so in
                     // some cases we may not overshoot
                     // Since MovementDescend can't know the next movement we have to tell it
@@ -591,7 +592,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                             return false;
                         }
                     }
-                    if (ctx.playerFeet().equals(current.getDest())) {
+                    if (ctx.playerFeet().toBlockPos().equals(current.getDest().toBlockPos())) {
                         pathPosition++;
                         onChangeInPathPosition();
                         onTick();
@@ -608,7 +609,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             IMovement prev = path.movements().get(pathPosition - 1);
             if (prev instanceof MovementDescend
                     && prev.getDirection().above().equals(current.getDirection().below())) {
-                BlockPos center = current.getSrc().above();
+                BlockPos center = current.getSrc().toBlockPos().above();
                 // playerFeet adds 0.1251 to account for soul sand
                 // farmland is 0.9375
                 // 0.07 is to account for farmland
@@ -632,15 +633,15 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (current instanceof MovementFall) {
             Tuple<Vec3, BlockPos> data = overrideFall((MovementFall) current);
             if (data != null) {
-                BetterBlockPos fallDest = new BetterBlockPos(data.getB());
+                PackedBlockPos fallDest = PackedBlockPos.from(data.getB());
                 if (!path.positions().contains(fallDest)) {
                     throw new IllegalStateException(
                             String.format(
                                     "Fall override at %s %s %s returned illegal destination %s %s"
                                             + " %s",
-                                    current.getSrc(), fallDest));
+                                    current.getSrc().toBlockPos(), fallDest));
                 }
-                if (ctx.playerFeet().equals(fallDest)) {
+                if (ctx.playerFeet().toBlockPos().equals(fallDest.toBlockPos())) {
                     pathPosition = path.positions().indexOf(fallDest);
                     onChangeInPathPosition();
                     onTick();
@@ -681,13 +682,13 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (!flatDir.equals(next.getDirection())) {
                 break;
             }
-            for (int y = next.getDest().y; y <= movement.getSrc().y + 1; y++) {
-                BlockPos chk = new BlockPos(next.getDest().x, y, next.getDest().z);
+            for (int y = next.getDest().getY(); y <= movement.getSrc().getY() + 1; y++) {
+                BlockPos chk = new BlockPos(next.getDest().getX(), y, next.getDest().getZ());
                 if (!MovementHelper.fullyPassable(ctx, chk)) {
                     break outer;
                 }
             }
-            if (!MovementHelper.canWalkOn(ctx, next.getDest().below())) {
+            if (!MovementHelper.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
                 break;
             }
         }
@@ -698,10 +699,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         double len = i - pathPosition - 0.4;
         return new Tuple<>(
                 new Vec3(
-                        flatDir.getX() * len + movement.getDest().x + 0.5,
-                        movement.getDest().y,
-                        flatDir.getZ() * len + movement.getDest().z + 0.5),
+                        flatDir.getX() * len + movement.getDest().getX() + 0.5,
+                        movement.getDest().getY(),
+                        flatDir.getZ() * len + movement.getDest().getZ() + 0.5),
                 movement.getDest()
+                        .toBlockPos()
                         .offset(
                                 flatDir.getX() * (i - pathPosition),
                                 0,
@@ -712,15 +714,19 @@ public class PathExecutor implements IPathExecutor, Helper {
         double offTarget =
                 Math.abs(
                                 current.getDirection().getX()
-                                        * (current.getSrc().z + 0.5D - ctx.player().position().z))
+                                        * (current.getSrc().getZ()
+                                                + 0.5D
+                                                - ctx.player().position().z))
                         + Math.abs(
                                 current.getDirection().getZ()
-                                        * (current.getSrc().x + 0.5D - ctx.player().position().x));
+                                        * (current.getSrc().getX()
+                                                + 0.5D
+                                                - ctx.player().position().x));
         if (offTarget > 0.1) {
             return false;
         }
         // we are centered
-        BlockPos headBonk = current.getSrc().subtract(current.getDirection()).above(2);
+        BlockPos headBonk = current.getSrc().toBlockPos().subtract(current.getDirection()).above(2);
         if (MovementHelper.fullyPassable(ctx, headBonk)) {
             return true;
         }
@@ -747,10 +753,10 @@ public class PathExecutor implements IPathExecutor, Helper {
                 || nextnext.getDirection().getZ() != next.getDirection().getZ()) {
             return false;
         }
-        if (!MovementHelper.canWalkOn(ctx, current.getDest().below())) {
+        if (!MovementHelper.canWalkOn(ctx, current.getDest().below().toBlockPos())) {
             return false;
         }
-        if (!MovementHelper.canWalkOn(ctx, next.getDest().below())) {
+        if (!MovementHelper.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
             return false;
         }
         if (!next.toBreakCached.isEmpty()) {
@@ -758,7 +764,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         for (int x = 0; x < 2; x++) {
             for (int y = 0; y < 3; y++) {
-                BlockPos chk = current.getSrc().above(y);
+                BlockPos chk = current.getSrc().toBlockPos().above(y);
                 if (x == 1) {
                     chk = chk.offset(current.getDirection());
                 }
@@ -767,11 +773,13 @@ public class PathExecutor implements IPathExecutor, Helper {
                 }
             }
         }
-        if (MovementHelper.avoidWalkingInto(ctx.world().getBlockState(current.getSrc().above(3)))) {
+        if (MovementHelper.avoidWalkingInto(
+                ctx.world().getBlockState(current.getSrc().toBlockPos().above(3)))) {
             return false;
         }
         return !MovementHelper.avoidWalkingInto(
-                ctx.world().getBlockState(next.getDest().above(2))); // codacy smh my head
+                ctx.world()
+                        .getBlockState(next.getDest().toBlockPos().above(2))); // codacy smh my head
     }
 
     private static boolean canSprintFromDescendInto(
@@ -779,7 +787,8 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
             return true;
         }
-        if (!MovementHelper.canWalkOn(ctx, current.getDest().offset(current.getDirection()))) {
+        if (!MovementHelper.canWalkOn(
+                ctx, current.getDest().toBlockPos().offset(current.getDirection()))) {
             return false;
         }
         if (next instanceof MovementTraverse

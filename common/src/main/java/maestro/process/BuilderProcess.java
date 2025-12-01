@@ -26,6 +26,7 @@ import maestro.api.schematic.SubstituteSchematic;
 import maestro.api.schematic.format.ISchematicFormat;
 import maestro.api.utils.*;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -82,7 +83,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                     TrapDoorBlock.OPEN,
                     TrapDoorBlock.HALF);
 
-    private HashSet<BetterBlockPos> incorrectPositions;
+    private HashSet<PackedBlockPos> incorrectPositions;
     private LongOpenHashSet
             observedCompleted; // positions that are completed even if they're out of render
     // distance and we can't make sure right now
@@ -164,11 +165,11 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             } else if (Agent.settings().buildInLayers.value) {
                 OptionalInt minim =
                         Stream.of(maestro.getSelectionManager().getSelections())
-                                .mapToInt(sel -> sel.min().y)
+                                .mapToInt(sel -> sel.min().getY())
                                 .min();
                 OptionalInt maxim =
                         Stream.of(maestro.getSelectionManager().getSelections())
-                                .mapToInt(sel -> sel.max().y)
+                                .mapToInt(sel -> sel.max().getY())
                                 .max();
                 if (minim.isPresent() && maxim.isPresent()) {
                     int startAtHeight =
@@ -320,17 +321,17 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
         return state;
     }
 
-    private Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(
+    private Optional<Tuple<PackedBlockPos, Rotation>> toBreakNearPlayer(
             BuilderCalculationContext bcc) {
-        BetterBlockPos center = ctx.playerFeet();
-        BetterBlockPos pathStart = maestro.getPathingBehavior().pathStart();
+        PackedBlockPos center = ctx.playerFeet();
+        PackedBlockPos pathStart = maestro.getPathingBehavior().pathStart();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = Agent.settings().breakFromAbove.value ? -1 : 0; dy <= 5; dy++) {
                 for (int dz = -5; dz <= 5; dz++) {
-                    int x = center.x + dx;
-                    int y = center.y + dy;
-                    int z = center.z + dz;
-                    if (dy == -1 && x == pathStart.x && z == pathStart.z) {
+                    int x = center.getX() + dx;
+                    int y = center.getY() + dy;
+                    int z = center.getZ() + dz;
+                    if (dy == -1 && x == pathStart.getX() && z == pathStart.getZ()) {
                         continue; // don't mine what we're supported by, but not directly standing
                         // on
                     }
@@ -342,10 +343,12 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                     if (!(curr.getBlock() instanceof AirBlock)
                             && !(curr.getBlock() == Blocks.WATER || curr.getBlock() == Blocks.LAVA)
                             && !valid(curr, desired, false)) {
-                        BetterBlockPos pos = new BetterBlockPos(x, y, z);
+                        PackedBlockPos pos = new PackedBlockPos(x, y, z);
                         Optional<Rotation> rot =
                                 RotationUtils.reachable(
-                                        ctx, pos, ctx.playerController().getBlockReachDistance());
+                                        ctx,
+                                        pos.toBlockPos(),
+                                        ctx.playerController().getBlockReachDistance());
                         if (rot.isPresent()) {
                             return Optional.of(new Tuple<>(pos, rot.get()));
                         }
@@ -373,13 +376,13 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
 
     private Optional<Placement> searchForPlaceables(
             BuilderCalculationContext bcc, List<BlockState> desirableOnHotbar) {
-        BetterBlockPos center = ctx.playerFeet();
+        PackedBlockPos center = ctx.playerFeet();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = -5; dy <= 1; dy++) {
                 for (int dz = -5; dz <= 5; dz++) {
-                    int x = center.x + dx;
-                    int y = center.y + dy;
-                    int z = center.z + dz;
+                    int x = center.getX() + dx;
+                    int y = center.getY() + dy;
+                    int z = center.getZ() + dz;
                     BlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
                     if (desired == null) {
                         continue; // irrelevant
@@ -412,38 +415,41 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
     private Optional<Placement> possibleToPlace(
             BlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
         for (Direction against : Direction.values()) {
-            BetterBlockPos placeAgainstPos = new BetterBlockPos(x, y, z).relative(against);
-            BlockState placeAgainstState = bsi.get0(placeAgainstPos);
+            PackedBlockPos placeAgainstPos = new PackedBlockPos(x, y, z).relative(against);
+            BlockState placeAgainstState =
+                    bsi.get0(
+                            placeAgainstPos.getX(), placeAgainstPos.getY(), placeAgainstPos.getZ());
             if (MovementHelper.isReplaceable(
-                    placeAgainstPos.x,
-                    placeAgainstPos.y,
-                    placeAgainstPos.z,
+                    placeAgainstPos.getX(),
+                    placeAgainstPos.getY(),
+                    placeAgainstPos.getZ(),
                     placeAgainstState,
                     bsi)) {
                 continue;
             }
-            if (!toPlace.canSurvive(ctx.world(), new BetterBlockPos(x, y, z))) {
+            if (!toPlace.canSurvive(ctx.world(), new PackedBlockPos(x, y, z).toBlockPos())) {
                 continue;
             }
-            if (!placementPlausible(new BetterBlockPos(x, y, z), toPlace)) {
+            if (!placementPlausible(new PackedBlockPos(x, y, z).toBlockPos(), toPlace)) {
                 continue;
             }
-            VoxelShape shape = placeAgainstState.getShape(ctx.world(), placeAgainstPos);
+            VoxelShape shape =
+                    placeAgainstState.getShape(ctx.world(), placeAgainstPos.toBlockPos());
             if (shape.isEmpty()) {
                 continue;
             }
             AABB aabb = shape.bounds();
             for (Vec3 placementMultiplier : aabbSideMultipliers(against)) {
                 double placeX =
-                        placeAgainstPos.x
+                        placeAgainstPos.getX()
                                 + aabb.minX * placementMultiplier.x
                                 + aabb.maxX * (1 - placementMultiplier.x);
                 double placeY =
-                        placeAgainstPos.y
+                        placeAgainstPos.getY()
                                 + aabb.minY * placementMultiplier.y
                                 + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ =
-                        placeAgainstPos.z
+                        placeAgainstPos.getZ()
                                 + aabb.minZ * placementMultiplier.z
                                 + aabb.maxZ * (1 - placementMultiplier.z);
                 Rotation rot =
@@ -467,7 +473,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                         return Optional.of(
                                 new Placement(
                                         hotbar.getAsInt(),
-                                        placeAgainstPos,
+                                        placeAgainstPos.toBlockPos(),
                                         against.getOpposite(),
                                         rot));
                     }
@@ -661,15 +667,15 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             trim();
         }
 
-        Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
+        Optional<Tuple<PackedBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround()) {
             // we'd like to pause to break this block
             // only change look direction if it's safe (don't want to fuck up an in progress parkour
             // for example
             Rotation rot = toBreak.get().getB();
-            BetterBlockPos pos = toBreak.get().getA();
+            PackedBlockPos pos = toBreak.get().getA();
             maestro.getLookBehavior().updateTarget(rot, true);
-            MovementHelper.switchToBestToolFor(ctx, bcc.get(pos));
+            MovementHelper.switchToBestToolFor(ctx, bcc.get(pos.toBlockPos()));
             if (ctx.player().isCrouching()) {
                 // really horrible bug where a block is visible for breaking while sneaking but not
                 // otherwise
@@ -678,7 +684,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 // and is unable since it's unsneaked in the intermediary tick
                 maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
-            if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            if (ctx.isLookingAt(pos.toBlockPos()) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -772,32 +778,32 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
     }
 
     private void trim() {
-        HashSet<BetterBlockPos> copy = new HashSet<>(incorrectPositions);
-        copy.removeIf(pos -> pos.distSqr(ctx.player().blockPosition()) > 200);
+        HashSet<PackedBlockPos> copy = new HashSet<>(incorrectPositions);
+        copy.removeIf(pos -> pos.distSqr(new PackedBlockPos(ctx.player().blockPosition())) > 200);
         if (!copy.isEmpty()) {
             incorrectPositions = copy;
         }
     }
 
     private void recalcNearby(BuilderCalculationContext bcc) {
-        BetterBlockPos center = ctx.playerFeet();
+        PackedBlockPos center = ctx.playerFeet();
         int radius = Agent.settings().builderTickScanRadius.value;
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dz = -radius; dz <= radius; dz++) {
-                    int x = center.x + dx;
-                    int y = center.y + dy;
-                    int z = center.z + dz;
+                    int x = center.getX() + dx;
+                    int y = center.getY() + dy;
+                    int z = center.getZ() + dz;
                     BlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
                     if (desired != null) {
                         // we care about this position
-                        BetterBlockPos pos = new BetterBlockPos(x, y, z);
+                        PackedBlockPos pos = new PackedBlockPos(x, y, z);
                         if (valid(bcc.bsi.get0(x, y, z), desired, false)) {
                             incorrectPositions.remove(pos);
-                            observedCompleted.add(BetterBlockPos.longHash(pos));
+                            observedCompleted.add(pos.getPacked());
                         } else {
                             incorrectPositions.add(pos);
-                            observedCompleted.remove(BetterBlockPos.longHash(pos));
+                            observedCompleted.remove(pos.getPacked());
                         }
                     }
                 }
@@ -825,11 +831,12 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                                 bcc.bsi.get0(blockX, blockY, blockZ),
                                 schematic.desiredState(x, y, z, current, this.approxPlaceable),
                                 false)) {
-                            observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
+                            observedCompleted.add(
+                                    new PackedBlockPos(blockX, blockY, blockZ).getPacked());
                         } else {
-                            incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
+                            incorrectPositions.add(new PackedBlockPos(blockX, blockY, blockZ));
                             observedCompleted.remove(
-                                    BetterBlockPos.longHash(blockX, blockY, blockZ));
+                                    new PackedBlockPos(blockX, blockY, blockZ).getPacked());
                             if (incorrectPositions.size() > Agent.settings().incorrectSize.value) {
                                 return;
                             }
@@ -838,10 +845,10 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                     }
                     // this is not in render distance
                     if (!observedCompleted.contains(
-                            BetterBlockPos.longHash(blockX, blockY, blockZ))) {
+                            new PackedBlockPos(blockX, blockY, blockZ).getPacked())) {
                         // and we've never seen this position be correct
                         // therefore mark as incorrect
-                        incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
+                        incorrectPositions.add(new PackedBlockPos(blockX, blockY, blockZ));
                         if (incorrectPositions.size() > Agent.settings().incorrectSize.value) {
                             return;
                         }
@@ -857,17 +864,18 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
 
     private Goal assemble(
             BuilderCalculationContext bcc, List<BlockState> approxPlaceable, boolean logMissing) {
-        List<BetterBlockPos> placeable = new ArrayList<>();
-        List<BetterBlockPos> breakable = new ArrayList<>();
-        List<BetterBlockPos> sourceLiquids = new ArrayList<>();
-        List<BetterBlockPos> flowingLiquids = new ArrayList<>();
+        List<PackedBlockPos> placeable = new ArrayList<>();
+        List<PackedBlockPos> breakable = new ArrayList<>();
+        List<PackedBlockPos> sourceLiquids = new ArrayList<>();
+        List<PackedBlockPos> flowingLiquids = new ArrayList<>();
         Map<BlockState, Integer> missing = new HashMap<>();
-        List<BetterBlockPos> outOfBounds = new ArrayList<>();
+        List<PackedBlockPos> outOfBounds = new ArrayList<>();
         incorrectPositions.forEach(
                 pos -> {
-                    BlockState state = bcc.bsi.get0(pos);
+                    BlockState state = bcc.bsi.get0(pos.getX(), pos.getY(), pos.getZ());
                     if (state.getBlock() instanceof AirBlock) {
-                        BlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, state);
+                        BlockState desired =
+                                bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), state);
                         if (desired == null) {
                             outOfBounds.add(pos);
                         } else if (containsBlockState(approxPlaceable, desired)) {
@@ -895,15 +903,15 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 });
         outOfBounds.forEach(incorrectPositions::remove);
         List<Goal> toBreak = new ArrayList<>();
-        breakable.forEach(pos -> toBreak.add(breakGoal(pos, bcc)));
+        breakable.forEach(pos -> toBreak.add(breakGoal(pos.toBlockPos(), bcc)));
         List<Goal> toPlace = new ArrayList<>();
         placeable.forEach(
                 pos -> {
                     if (!placeable.contains(pos.below()) && !placeable.contains(pos.below(2))) {
-                        toPlace.add(placementGoal(pos, bcc));
+                        toPlace.add(placementGoal(pos.toBlockPos(), bcc));
                     }
                 });
-        sourceLiquids.forEach(pos -> toPlace.add(new GoalBlock(pos.above())));
+        sourceLiquids.forEach(pos -> toPlace.add(new GoalBlock(pos.above().toBlockPos())));
 
         if (!toPlace.isEmpty()) {
             return new JankyGoalComposite(
@@ -929,9 +937,9 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                 flowingLiquids.forEach(
                         p ->
                                 log.atDebug()
-                                        .addKeyValue("position_x", p.x)
-                                        .addKeyValue("position_y", p.y)
-                                        .addKeyValue("position_z", p.z)
+                                        .addKeyValue("position_x", p.getX())
+                                        .addKeyValue("position_y", p.getY())
+                                        .addKeyValue("position_z", p.getZ())
                                         .log("Unreplaceable liquid location"));
             }
             return null;
@@ -1108,7 +1116,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
             hash = hash * 1412661222 + super.hashCode();
             hash =
                     hash * 1730799370
-                            + (int) BetterBlockPos.longHash(no.getX(), no.getY(), no.getZ());
+                            + (int) new PackedBlockPos(no.getX(), no.getY(), no.getZ()).getPacked();
             hash = hash * 260592149 + (allowSameLevel ? -1314802005 : 1565710265);
             return hash;
         }
@@ -1208,7 +1216,7 @@ public final class BuilderProcess extends MaestroProcessHelper implements IBuild
                                                                     ctx.player().position().y,
                                                                     ctx.player().position().z),
                                                             Direction.UP,
-                                                            ctx.playerFeet(),
+                                                            ctx.playerFeet().toBlockPos(),
                                                             false)) {}));
             if (itemState != null) {
                 result.add(itemState);

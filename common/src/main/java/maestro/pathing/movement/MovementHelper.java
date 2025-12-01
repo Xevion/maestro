@@ -104,8 +104,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         return !state.getFluidState().isEmpty();
     }
 
-    static boolean canWalkThrough(IPlayerContext ctx, BetterBlockPos pos) {
-        return canWalkThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
+    static boolean canWalkThrough(IPlayerContext ctx, PackedBlockPos pos) {
+        return canWalkThrough(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ());
     }
 
     static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z) {
@@ -519,16 +519,16 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkOn(context, x, y, z, context.get(x, y, z));
     }
 
-    static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos, BlockState state) {
-        return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z, state);
+    static boolean canWalkOn(IPlayerContext ctx, PackedBlockPos pos, BlockState state) {
+        return canWalkOn(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ(), state);
     }
 
     static boolean canWalkOn(IPlayerContext ctx, BlockPos pos) {
         return canWalkOn(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ());
     }
 
-    static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos) {
-        return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
+    static boolean canWalkOn(IPlayerContext ctx, PackedBlockPos pos) {
+        return canWalkOn(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ());
     }
 
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {
@@ -820,8 +820,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || isWaterPlant(state);
     }
 
-    static boolean canSwimThrough(IPlayerContext ctx, BetterBlockPos pos) {
-        return canSwimThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
+    static boolean canSwimThrough(IPlayerContext ctx, PackedBlockPos pos) {
+        return canSwimThrough(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ());
     }
 
     static boolean canSwimThrough(BlockStateInterface bsi, int x, int y, int z) {

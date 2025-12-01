@@ -1,7 +1,7 @@
 package maestro.api.pathing.goals
 
 import maestro.api.MaestroAPI
-import maestro.api.utils.BetterBlockPos
+import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
 import net.minecraft.util.Mth
 import net.minecraft.world.phys.Vec3
@@ -13,7 +13,7 @@ open class GoalXZ(
     @JvmField val x: Int,
     @JvmField val z: Int,
 ) : Goal {
-    constructor(pos: BetterBlockPos) : this(pos.x, pos.z)
+    constructor(pos: PackedBlockPos) : this(pos.x, pos.z)
 
     override fun isInGoal(
         x: Int,

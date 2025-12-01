@@ -7,7 +7,7 @@ import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -27,7 +27,7 @@ public class MovementDiagonal extends Movement {
     private static final double SQRT_2 = Math.sqrt(2);
 
     public MovementDiagonal(
-            IAgent maestro, BetterBlockPos start, Direction dir1, Direction dir2, int dy) {
+            IAgent maestro, PackedBlockPos start, Direction dir1, Direction dir2, int dy) {
         this(maestro, start, start.relative(dir1), start.relative(dir2), dir2, dy);
         // super(start, start.offset(dir1).offset(dir2), new BlockPos[]{start.offset(dir1),
         // start.offset(dir1).up(), start.offset(dir2), start.offset(dir2).up(),
@@ -37,9 +37,9 @@ public class MovementDiagonal extends Movement {
 
     private MovementDiagonal(
             IAgent maestro,
-            BetterBlockPos start,
-            BetterBlockPos dir1,
-            BetterBlockPos dir2,
+            PackedBlockPos start,
+            PackedBlockPos dir1,
+            PackedBlockPos dir2,
             Direction drr2,
             int dy) {
         this(maestro, start, dir1.relative(drr2).above(dy), dir1, dir2);
@@ -47,15 +47,15 @@ public class MovementDiagonal extends Movement {
 
     private MovementDiagonal(
             IAgent maestro,
-            BetterBlockPos start,
-            BetterBlockPos end,
-            BetterBlockPos dir1,
-            BetterBlockPos dir2) {
+            PackedBlockPos start,
+            PackedBlockPos end,
+            PackedBlockPos dir1,
+            PackedBlockPos dir2) {
         super(
                 maestro,
                 start,
                 end,
-                new BetterBlockPos[] {dir1, dir1.above(), dir2, dir2.above(), end, end.above()});
+                new PackedBlockPos[] {dir1, dir1.above(), dir2, dir2.above(), end, end.above()});
     }
 
     @Override
@@ -72,18 +72,27 @@ public class MovementDiagonal extends Movement {
             return true;
         }
         // both corners are walkable
-        if (MovementHelper.canWalkOn(ctx, new BlockPos(src.x, src.y - 1, dest.z))
-                && MovementHelper.canWalkOn(ctx, new BlockPos(dest.x, src.y - 1, src.z))) {
+        if (MovementHelper.canWalkOn(ctx, new BlockPos(src.getX(), src.getY() - 1, dest.getZ()))
+                && MovementHelper.canWalkOn(
+                        ctx, new BlockPos(dest.getX(), src.getY() - 1, src.getZ()))) {
             return true;
         }
         // we are in a likely unwalkable corner, check for a supporting block
-        if (ctx.playerFeet().equals(new BetterBlockPos(src.x, src.y, dest.z))
-                || ctx.playerFeet().equals(new BetterBlockPos(dest.x, src.y, src.z))) {
-            return (MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
-                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z - offset))
-                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z + offset))
+        if (ctx.playerFeet().equals(new PackedBlockPos(src.getX(), src.getY(), dest.getZ()))
+                || ctx.playerFeet()
+                        .equals(new PackedBlockPos(dest.getX(), src.getY(), src.getZ()))) {
+            return (MovementHelper.canWalkOn(
+                            ctx,
+                            new PackedBlockPos((int) (x + offset), (int) y, (int) (z + offset)))
                     || MovementHelper.canWalkOn(
-                            ctx, new BetterBlockPos(x - offset, y, z - offset)));
+                            ctx,
+                            new PackedBlockPos((int) (x + offset), (int) y, (int) (z - offset)))
+                    || MovementHelper.canWalkOn(
+                            ctx,
+                            new PackedBlockPos((int) (x - offset), (int) y, (int) (z + offset)))
+                    || MovementHelper.canWalkOn(
+                            ctx,
+                            new PackedBlockPos((int) (x - offset), (int) y, (int) (z - offset))));
         }
         return true;
     }
@@ -91,22 +100,22 @@ public class MovementDiagonal extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
-        cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
-        if (result.y != dest.y) {
+        cost(context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ(), result);
+        if (result.y != dest.getY()) {
             return COST_INF; // doesn't apply to us, this position is incorrect
         }
         return result.cost;
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
-        BetterBlockPos diagA = new BetterBlockPos(src.x, src.y, dest.z);
-        BetterBlockPos diagB = new BetterBlockPos(dest.x, src.y, src.z);
-        if (dest.y < src.y) {
+    protected Set<PackedBlockPos> calculateValidPositions() {
+        PackedBlockPos diagA = new PackedBlockPos(src.getX(), src.getY(), dest.getZ());
+        PackedBlockPos diagB = new PackedBlockPos(dest.getX(), src.getY(), src.getZ());
+        if (dest.getY() < src.getY()) {
             return ImmutableSet.of(
                     src, dest.above(), diagA, diagB, dest, diagA.below(), diagB.below());
         }
-        if (dest.y > src.y) {
+        if (dest.getY() > src.getY()) {
             return ImmutableSet.of(
                     src, src.above(), diagA, diagB, dest, diagA.above(), diagB.above());
         }
@@ -301,24 +310,24 @@ public class MovementDiagonal extends Movement {
         if (ctx.playerFeet().equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);
         } else if (!playerInValidPosition()
-                && !(MovementHelper.isLiquid(ctx, src)
+                && !(MovementHelper.isLiquid(ctx, src.toBlockPos())
                         && getValidPositions().contains(ctx.playerFeet().above()))) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
-        if (dest.y > src.y
-                && ctx.player().position().y < src.y + 0.1
+        if (dest.getY() > src.getY()
+                && ctx.player().position().y < src.getY() + 0.1
                 && ctx.player().horizontalCollision) {
             state.setInput(Input.JUMP, true);
         }
         if (sprint()) {
             state.setInput(Input.SPRINT, true);
         }
-        MovementHelper.moveTowards(ctx, state, dest);
+        MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
         return state;
     }
 
     private boolean sprint() {
-        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet().toBlockPos())
                 && !Agent.settings().sprintInWater.value) {
             return false;
         }
@@ -343,8 +352,11 @@ public class MovementDiagonal extends Movement {
         List<BlockPos> result = new ArrayList<>();
         for (int i = 4; i < 6; i++) {
             if (!MovementHelper.canWalkThrough(
-                    bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
-                result.add(positionsToBreak[i]);
+                    bsi,
+                    positionsToBreak[i].getX(),
+                    positionsToBreak[i].getY(),
+                    positionsToBreak[i].getZ())) {
+                result.add(positionsToBreak[i].toBlockPos());
             }
         }
         toBreakCached = result;
@@ -359,8 +371,11 @@ public class MovementDiagonal extends Movement {
         List<BlockPos> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             if (!MovementHelper.canWalkThrough(
-                    bsi, positionsToBreak[i].x, positionsToBreak[i].y, positionsToBreak[i].z)) {
-                result.add(positionsToBreak[i]);
+                    bsi,
+                    positionsToBreak[i].getX(),
+                    positionsToBreak[i].getY(),
+                    positionsToBreak[i].getZ())) {
+                result.add(positionsToBreak[i].toBlockPos());
             }
         }
         toWalkIntoCached = result;

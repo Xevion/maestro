@@ -6,12 +6,12 @@ import java.util.List;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.utils.pathing.PathBase;
 
 public class CutoffPath extends PathBase {
 
-    private final List<BetterBlockPos> path;
+    private final List<PackedBlockPos> path;
 
     private final List<IMovement> movements;
 
@@ -44,7 +44,7 @@ public class CutoffPath extends PathBase {
     }
 
     @Override
-    public List<BetterBlockPos> positions() {
+    public List<PackedBlockPos> positions() {
         return Collections.unmodifiableList(path);
     }
 

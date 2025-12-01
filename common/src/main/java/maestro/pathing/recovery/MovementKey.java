@@ -1,7 +1,7 @@
 package maestro.pathing.recovery;
 
 import java.util.Objects;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 /**
  * Composite key representing a specific movement from source to destination.
@@ -11,10 +11,10 @@ import maestro.api.utils.BetterBlockPos;
  */
 public class MovementKey {
 
-    public final BetterBlockPos source;
-    public final BetterBlockPos destination;
+    public final PackedBlockPos source;
+    public final PackedBlockPos destination;
 
-    public MovementKey(BetterBlockPos source, BetterBlockPos destination) {
+    public MovementKey(PackedBlockPos source, PackedBlockPos destination) {
         this.source = source;
         this.destination = destination;
     }

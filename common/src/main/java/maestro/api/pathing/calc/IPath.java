@@ -5,7 +5,7 @@ import java.util.List;
 import maestro.api.Settings;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 public interface IPath {
 
@@ -24,7 +24,7 @@ public interface IPath {
      *
      * @return All the positions along this path
      */
-    List<BetterBlockPos> positions();
+    List<PackedBlockPos> positions();
 
     /**
      * This path is actually going to be executed in the world. Do whatever additional processing is
@@ -64,7 +64,7 @@ public interface IPath {
      *
      * @return The start position of this path
      */
-    default BetterBlockPos getSrc() {
+    default PackedBlockPos getSrc() {
         return positions().getFirst();
     }
 
@@ -74,8 +74,8 @@ public interface IPath {
      *
      * @return The end position of this path.
      */
-    default BetterBlockPos getDest() {
-        List<BetterBlockPos> pos = positions();
+    default PackedBlockPos getDest() {
+        List<PackedBlockPos> pos = positions();
         return pos.getLast();
     }
 
@@ -136,7 +136,7 @@ public interface IPath {
 
     /** Performs a series of checks to ensure that the assembly of the path went as expected. */
     default void sanityCheck() {
-        List<BetterBlockPos> path = positions();
+        List<PackedBlockPos> path = positions();
         List<IMovement> movements = movements();
         if (!getSrc().equals(path.getFirst())) {
             throw new IllegalStateException("Start node does not equal first path element");
@@ -147,10 +147,10 @@ public interface IPath {
         if (path.size() != movements.size() + 1) {
             throw new IllegalStateException("Size of path array is unexpected");
         }
-        HashSet<BetterBlockPos> seenSoFar = new HashSet<>();
+        HashSet<PackedBlockPos> seenSoFar = new HashSet<>();
         for (int i = 0; i < path.size() - 1; i++) {
-            BetterBlockPos src = path.get(i);
-            BetterBlockPos dest = path.get(i + 1);
+            PackedBlockPos src = path.get(i);
+            PackedBlockPos dest = path.get(i + 1);
             IMovement movement = movements.get(i);
             if (!src.equals(movement.getSrc())) {
                 throw new IllegalStateException("Path source is not equal to the movement source");

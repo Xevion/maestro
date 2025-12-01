@@ -9,7 +9,7 @@ import maestro.api.pathing.calc.IPathFinder;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.path.IPathExecutor;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 
@@ -195,7 +195,7 @@ public class HudDebugRenderer implements IHudDebugRenderer {
         }
 
         Goal goal = current.getPath().getGoal();
-        BetterBlockPos playerPos = agent.getPlayerContext().playerFeet();
+        PackedBlockPos playerPos = agent.getPlayerContext().playerFeet();
         String relativeGoal = formatRelativeGoal(goal, playerPos);
 
         return String.format("⚑ %s", relativeGoal);
@@ -243,13 +243,13 @@ public class HudDebugRenderer implements IHudDebugRenderer {
         return MOVEMENT_NAMES.getOrDefault(className, "Unknown");
     }
 
-    private String formatRelativeGoal(Goal goal, BetterBlockPos player) {
+    private String formatRelativeGoal(Goal goal, PackedBlockPos player) {
         // Find the closest goal position using heuristic
         BlockPos goalPos = findClosestGoalPosition(goal, player);
 
-        int dx = goalPos.getX() - player.x;
-        int dy = goalPos.getY() - player.y;
-        int dz = goalPos.getZ() - player.z;
+        int dx = goalPos.getX() - player.getX();
+        int dy = goalPos.getY() - player.getY();
+        int dz = goalPos.getZ() - player.getZ();
 
         // Build natural language description
         String horizontal = formatHorizontal(dx, dz);
@@ -266,20 +266,20 @@ public class HudDebugRenderer implements IHudDebugRenderer {
         }
     }
 
-    private BlockPos findClosestGoalPosition(Goal goal, BetterBlockPos player) {
+    private BlockPos findClosestGoalPosition(Goal goal, PackedBlockPos player) {
         // Use heuristic to find approximate goal position
         // Try positions in a small search space around player
-        BlockPos best = new BlockPos(player.x, player.y, player.z);
-        double bestHeuristic = goal.heuristic(player.x, player.y, player.z);
+        BlockPos best = new BlockPos(player.getX(), player.getY(), player.getZ());
+        double bestHeuristic = goal.heuristic(player.getX(), player.getY(), player.getZ());
 
         // Quick search in 8 cardinal directions
         int[] offsets = {-10, 0, 10};
         for (int dx : offsets) {
             for (int dy : offsets) {
                 for (int dz : offsets) {
-                    int x = player.x + dx;
-                    int y = player.y + dy;
-                    int z = player.z + dz;
+                    int x = player.getX() + dx;
+                    int y = player.getY() + dy;
+                    int z = player.getZ() + dz;
 
                     if (goal.isInGoal(x, y, z)) {
                         return new BlockPos(x, y, z);

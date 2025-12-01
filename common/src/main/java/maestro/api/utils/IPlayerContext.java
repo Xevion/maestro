@@ -37,13 +37,17 @@ public interface IPlayerContext {
 
     HitResult objectMouseOver();
 
-    default BetterBlockPos playerFeet() {
+    default PackedBlockPos playerFeet() {
+        return new PackedBlockPos(playerFeetBlockPos());
+    }
+
+    default BlockPos playerFeetBlockPos() {
         // TODO find a better way to deal with soul sand!!!!!
-        BetterBlockPos feet =
-                new BetterBlockPos(
-                        player().position().x,
-                        player().position().y + 0.1251,
-                        player().position().z);
+        BlockPos feetPos =
+                new BlockPos(
+                        (int) Math.floor(player().position().x),
+                        (int) Math.floor(player().position().y + 0.1251),
+                        (int) Math.floor(player().position().z));
 
         // sometimes when calling this from another thread or while world is null, it'll throw a
         // NullPointerException
@@ -56,13 +60,13 @@ public interface IPlayerContext {
         // if there is an exception, the only overhead is Java generating the exception object... so
         // we can ignore it
         try {
-            if (world().getBlockState(feet).getBlock() instanceof SlabBlock) {
-                return feet.above();
+            if (world().getBlockState(feetPos).getBlock() instanceof SlabBlock) {
+                return feetPos.above();
             }
         } catch (NullPointerException ignored) {
         }
 
-        return feet;
+        return feetPos;
     }
 
     default Vec3 playerFeetAsVec() {
@@ -80,7 +84,11 @@ public interface IPlayerContext {
         return player().getDeltaMovement();
     }
 
-    BetterBlockPos viewerPos();
+    PackedBlockPos viewerPos();
+
+    default BlockPos viewerBlockPos() {
+        return viewerPos().toBlockPos();
+    }
 
     default Rotation playerRotations() {
         return new Rotation(player().getYRot(), player().getXRot());

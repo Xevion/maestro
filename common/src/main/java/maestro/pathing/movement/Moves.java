@@ -1,6 +1,6 @@
 package maestro.pathing.movement;
 
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.movements.*;
 import maestro.utils.pathing.MutableMoveResult;
 import net.minecraft.core.Direction;
@@ -9,7 +9,7 @@ import net.minecraft.core.Direction;
 public enum Moves {
     DOWNWARD(0, -1, 0) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementDownward(context.getMaestro(), src, src.below());
         }
 
@@ -21,7 +21,7 @@ public enum Moves {
 
     PILLAR(0, +1, 0) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementPillar(context.getMaestro(), src, src.above());
         }
 
@@ -33,7 +33,7 @@ public enum Moves {
 
     TRAVERSE_NORTH(0, 0, -1) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementTraverse(context.getMaestro(), src, src.north());
         }
 
@@ -45,7 +45,7 @@ public enum Moves {
 
     TRAVERSE_SOUTH(0, 0, +1) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementTraverse(context.getMaestro(), src, src.south());
         }
 
@@ -57,7 +57,7 @@ public enum Moves {
 
     TRAVERSE_EAST(+1, 0, 0) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementTraverse(context.getMaestro(), src, src.east());
         }
 
@@ -69,7 +69,7 @@ public enum Moves {
 
     TRAVERSE_WEST(-1, 0, 0) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementTraverse(context.getMaestro(), src, src.west());
         }
 
@@ -81,9 +81,11 @@ public enum Moves {
 
     ASCEND_NORTH(0, +1, -1) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementAscend(
-                    context.getMaestro(), src, new BetterBlockPos(src.x, src.y + 1, src.z - 1));
+                    context.getMaestro(),
+                    src,
+                    new PackedBlockPos(src.getX(), src.getY() + 1, src.getZ() - 1));
         }
 
         @Override
@@ -94,9 +96,11 @@ public enum Moves {
 
     ASCEND_SOUTH(0, +1, +1) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementAscend(
-                    context.getMaestro(), src, new BetterBlockPos(src.x, src.y + 1, src.z + 1));
+                    context.getMaestro(),
+                    src,
+                    new PackedBlockPos(src.getX(), src.getY() + 1, src.getZ() + 1));
         }
 
         @Override
@@ -107,9 +111,11 @@ public enum Moves {
 
     ASCEND_EAST(+1, +1, 0) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementAscend(
-                    context.getMaestro(), src, new BetterBlockPos(src.x + 1, src.y + 1, src.z));
+                    context.getMaestro(),
+                    src,
+                    new PackedBlockPos(src.getX() + 1, src.getY() + 1, src.getZ()));
         }
 
         @Override
@@ -120,9 +126,11 @@ public enum Moves {
 
     ASCEND_WEST(-1, +1, 0) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return new MovementAscend(
-                    context.getMaestro(), src, new BetterBlockPos(src.x - 1, src.y + 1, src.z));
+                    context.getMaestro(),
+                    src,
+                    new PackedBlockPos(src.getX() - 1, src.getY() + 1, src.getZ()));
         }
 
         @Override
@@ -133,15 +141,15 @@ public enum Moves {
 
     DESCEND_EAST(+1, -1, 0, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            if (res.y == src.y - 1) {
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
+            if (res.y == src.getY() - 1) {
                 return new MovementDescend(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             } else {
                 return new MovementFall(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -154,15 +162,15 @@ public enum Moves {
 
     DESCEND_WEST(-1, -1, 0, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            if (res.y == src.y - 1) {
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
+            if (res.y == src.getY() - 1) {
                 return new MovementDescend(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             } else {
                 return new MovementFall(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -175,15 +183,15 @@ public enum Moves {
 
     DESCEND_NORTH(0, -1, -1, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            if (res.y == src.y - 1) {
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
+            if (res.y == src.getY() - 1) {
                 return new MovementDescend(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             } else {
                 return new MovementFall(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -196,15 +204,15 @@ public enum Moves {
 
     DESCEND_SOUTH(0, -1, +1, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
-            if (res.y == src.y - 1) {
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
+            if (res.y == src.getY() - 1) {
                 return new MovementDescend(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             } else {
                 return new MovementFall(
-                        context.getMaestro(), src, new BetterBlockPos(res.x, res.y, res.z));
+                        context.getMaestro(), src, new PackedBlockPos(res.x, res.y, res.z));
             }
         }
 
@@ -217,11 +225,11 @@ public enum Moves {
 
     DIAGONAL_NORTHEAST(+1, 0, -1, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
             return new MovementDiagonal(
-                    context.getMaestro(), src, Direction.NORTH, Direction.EAST, res.y - src.y);
+                    context.getMaestro(), src, Direction.NORTH, Direction.EAST, res.y - src.getY());
         }
 
         @Override
@@ -233,11 +241,11 @@ public enum Moves {
 
     DIAGONAL_NORTHWEST(-1, 0, -1, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
             return new MovementDiagonal(
-                    context.getMaestro(), src, Direction.NORTH, Direction.WEST, res.y - src.y);
+                    context.getMaestro(), src, Direction.NORTH, Direction.WEST, res.y - src.getY());
         }
 
         @Override
@@ -249,11 +257,11 @@ public enum Moves {
 
     DIAGONAL_SOUTHEAST(+1, 0, +1, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
             return new MovementDiagonal(
-                    context.getMaestro(), src, Direction.SOUTH, Direction.EAST, res.y - src.y);
+                    context.getMaestro(), src, Direction.SOUTH, Direction.EAST, res.y - src.getY());
         }
 
         @Override
@@ -265,11 +273,11 @@ public enum Moves {
 
     DIAGONAL_SOUTHWEST(-1, 0, +1, false, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             MutableMoveResult res = new MutableMoveResult();
-            apply(context, src.x, src.y, src.z, res);
+            apply(context, src.getX(), src.getY(), src.getZ(), res);
             return new MovementDiagonal(
-                    context.getMaestro(), src, Direction.SOUTH, Direction.WEST, res.y - src.y);
+                    context.getMaestro(), src, Direction.SOUTH, Direction.WEST, res.y - src.getY());
         }
 
         @Override
@@ -281,7 +289,7 @@ public enum Moves {
 
     PARKOUR_NORTH(0, 0, -4, true, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return MovementParkour.cost(context, src, Direction.NORTH);
         }
 
@@ -294,7 +302,7 @@ public enum Moves {
 
     PARKOUR_SOUTH(0, 0, +4, true, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return MovementParkour.cost(context, src, Direction.SOUTH);
         }
 
@@ -307,7 +315,7 @@ public enum Moves {
 
     PARKOUR_EAST(+4, 0, 0, true, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return MovementParkour.cost(context, src, Direction.EAST);
         }
 
@@ -320,7 +328,7 @@ public enum Moves {
 
     PARKOUR_WEST(-4, 0, 0, true, true) {
         @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+        public Movement apply0(CalculationContext context, PackedBlockPos src) {
             return MovementParkour.cost(context, src, Direction.WEST);
         }
 
@@ -350,7 +358,7 @@ public enum Moves {
         this(x, y, z, false, false);
     }
 
-    public abstract Movement apply0(CalculationContext context, BetterBlockPos src);
+    public abstract Movement apply0(CalculationContext context, PackedBlockPos src);
 
     public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
         if (dynamicXZ || dynamicY) {

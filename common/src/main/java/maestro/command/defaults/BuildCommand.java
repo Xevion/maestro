@@ -12,7 +12,7 @@ import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeBlockPos;
 import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.utils.schematic.SchematicSystem;
 import org.apache.commons.io.FilenameUtils;
 
@@ -57,8 +57,8 @@ public class BuildCommand extends Command {
                             "Unsupported schematic format. Recognized file extensions are: %s",
                             formats));
         }
-        BetterBlockPos origin = ctx.playerFeet();
-        BetterBlockPos buildOrigin;
+        PackedBlockPos origin = ctx.playerFeet();
+        PackedBlockPos buildOrigin;
         if (args.hasAny()) {
             args.requireMax(3);
             buildOrigin = args.getDatatypePost(RelativeBlockPos.INSTANCE, origin);
@@ -66,7 +66,8 @@ public class BuildCommand extends Command {
             args.requireMax(0);
             buildOrigin = origin;
         }
-        boolean success = maestro.getBuilderProcess().build(file.getName(), file, buildOrigin);
+        boolean success =
+                maestro.getBuilderProcess().build(file.getName(), file, buildOrigin.toBlockPos());
         if (!success) {
             throw new CommandException.InvalidState(
                     "Couldn't load the schematic. Either your schematic is corrupt or this is a"

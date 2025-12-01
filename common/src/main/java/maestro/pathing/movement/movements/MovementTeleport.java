@@ -4,8 +4,8 @@ import java.util.Set;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 public class MovementTeleport extends Movement {
     private static final Logger log = MaestroLogger.get("move");
 
-    private static final BetterBlockPos[] EMPTY = new BetterBlockPos[] {};
+    private static final PackedBlockPos[] EMPTY = new PackedBlockPos[] {};
 
     // Cost constants
     private static final double BASE_COST = 5.0; // Very cheap to make teleports attractive
@@ -33,10 +33,10 @@ public class MovementTeleport extends Movement {
     private boolean attempted = false;
 
     // Teleport arrival position (where packets are sent, may be in air)
-    private final BetterBlockPos teleportArrival;
+    private final PackedBlockPos teleportArrival;
 
     public MovementTeleport(
-            IAgent maestro, BetterBlockPos src, BetterBlockPos arrival, BetterBlockPos landing) {
+            IAgent maestro, PackedBlockPos src, PackedBlockPos arrival, PackedBlockPos landing) {
         super(maestro, src, landing, EMPTY); // dest is the landing position for pathfinding
         this.teleportArrival = arrival;
     }
@@ -65,7 +65,7 @@ public class MovementTeleport extends Movement {
         }
 
         // Calculate fall height (difference between arrival and landing positions)
-        int fallHeight = teleportArrival.y - dest.y;
+        int fallHeight = teleportArrival.getY() - dest.getY();
 
         // Add fall time cost (using Minecraft physics for accurate time calculation)
         double fallCost = fallHeight > 0 ? ActionCosts.FALL_N_BLOCKS_COST[fallHeight] : 0;
@@ -85,20 +85,20 @@ public class MovementTeleport extends Movement {
 
     private boolean isValidDestination(CalculationContext context) {
         // Check chunk loaded
-        if (!context.bsi.worldContainsLoadedChunk(dest.x, dest.z)) {
+        if (!context.bsi.worldContainsLoadedChunk(dest.getX(), dest.getZ())) {
             return false;
         }
 
         // Check world bounds
-        if (!context.worldBorder.canPlaceAt(dest.x, dest.z)) {
+        if (!context.worldBorder.canPlaceAt(dest.getX(), dest.getZ())) {
             return false;
         }
 
         // Check 2x1 open space
-        if (!MovementHelper.fullyPassable(context, dest.x, dest.y, dest.z)) {
+        if (!MovementHelper.fullyPassable(context, dest.getX(), dest.getY(), dest.getZ())) {
             return false;
         }
-        if (!MovementHelper.fullyPassable(context, dest.x, dest.y + 1, dest.z)) {
+        if (!MovementHelper.fullyPassable(context, dest.getX(), dest.getY() + 1, dest.getZ())) {
             return false;
         }
 
@@ -106,16 +106,16 @@ public class MovementTeleport extends Movement {
         int minY = context.world.getMinY();
         boolean foundGround = false;
         for (int depth = 1; depth <= 5; depth++) {
-            int checkY = dest.y - depth;
+            int checkY = dest.getY() - depth;
 
             // Stop at world minimum to prevent checking below void
             if (checkY < minY) {
                 break;
             }
 
-            var state = context.get(dest.x, checkY, dest.z);
+            var state = context.get(dest.getX(), checkY, dest.getZ());
 
-            if (MovementHelper.canWalkThrough(context, dest.x, checkY, dest.z, state)) {
+            if (MovementHelper.canWalkThrough(context, dest.getX(), checkY, dest.getZ(), state)) {
                 // Passable block - check if it's dangerous (fire, lava, etc.)
                 if (MovementHelper.avoidWalkingInto(state)) {
                     return false; // Dangerous passable block in air gap
@@ -124,7 +124,7 @@ public class MovementTeleport extends Movement {
             }
 
             // Hit non-passable block - verify it's walkable
-            if (!MovementHelper.canWalkOn(context, dest.x, checkY, dest.z, state)) {
+            if (!MovementHelper.canWalkOn(context, dest.getX(), checkY, dest.getZ(), state)) {
                 return false; // Non-walkable solid block
             }
 
@@ -146,14 +146,14 @@ public class MovementTeleport extends Movement {
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
-        Set<BetterBlockPos> positions = new java.util.HashSet<>();
+    protected Set<PackedBlockPos> calculateValidPositions() {
+        Set<PackedBlockPos> positions = new java.util.HashSet<>();
         positions.add(src);
 
         // Include all intermediate positions during fall from arrival to landing
         // If arrival and landing are at same Y, this just adds the landing position
-        for (int y = teleportArrival.y; y >= dest.y; y--) {
-            positions.add(new BetterBlockPos(dest.x, y, dest.z));
+        for (int y = teleportArrival.getY(); y >= dest.getY(); y--) {
+            positions.add(new PackedBlockPos(dest.getX(), y, dest.getZ()));
         }
 
         return positions;
@@ -181,26 +181,26 @@ public class MovementTeleport extends Movement {
         }
 
         // After teleport attempt: check if player moved from source
-        if (ctx.playerFeet().equals(src)) {
+        if (ctx.playerFeet().equals(src.toBlockPos())) {
             // Still at source - teleport was rejected
             double distance = Math.sqrt(dest.distSqr(src));
             log.atWarn()
                     .addKeyValue("distance", String.format("%.1f", distance))
-                    .addKeyValue("fall_height", teleportArrival.y - dest.y)
+                    .addKeyValue("fall_height", teleportArrival.getY() - dest.getY())
                     .log("Teleport rejected by server");
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
         // Player has moved - check if at destination (landed successfully)
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerFeet().equals(dest.toBlockPos())) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
         // Player is falling - verify they're in a valid intermediate position
         if (!getValidPositions().contains(ctx.playerFeet())) {
-            int offsetX = ctx.playerFeet().x - dest.x;
-            int offsetY = ctx.playerFeet().y - dest.y;
-            int offsetZ = ctx.playerFeet().z - dest.z;
+            int offsetX = ctx.playerFeet().getX() - dest.getX();
+            int offsetY = ctx.playerFeet().getY() - dest.getY();
+            int offsetZ = ctx.playerFeet().getZ() - dest.getZ();
             log.atWarn()
                     .addKeyValue("offset_x", offsetX)
                     .addKeyValue("offset_y", offsetY)
@@ -226,9 +226,9 @@ public class MovementTeleport extends Movement {
         }
 
         // Send final position update to arrival position (maybe in air)
-        double arrivalX = teleportArrival.x + 0.5; // Center of block
-        double arrivalY = teleportArrival.y;
-        double arrivalZ = teleportArrival.z + 0.5; // Center of block
+        double arrivalX = teleportArrival.getX() + 0.5; // Center of block
+        double arrivalY = teleportArrival.getY();
+        double arrivalZ = teleportArrival.getZ() + 0.5; // Center of block
 
         // IMPORTANT: onGround=true, horizontalCollision=true (hardcoded for exploit)
         ctx.player()

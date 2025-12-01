@@ -4,24 +4,29 @@ import java.util.stream.Stream;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 import maestro.api.pathing.goals.GoalBlock;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.util.Mth;
 
-public enum RelativeGoalBlock implements IDatatypePost<GoalBlock, BetterBlockPos> {
+public enum RelativeGoalBlock implements IDatatypePost<GoalBlock, PackedBlockPos> {
     INSTANCE;
 
     @Override
-    public GoalBlock apply(IDatatypeContext ctx, BetterBlockPos origin) throws CommandException {
+    public GoalBlock apply(IDatatypeContext ctx, PackedBlockPos origin) throws CommandException {
         if (origin == null) {
-            origin = BetterBlockPos.ORIGIN;
+            origin = PackedBlockPos.Companion.getORIGIN();
         }
 
         final IArgConsumer consumer = ctx.getConsumer();
         return new GoalBlock(
-                Mth.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x)),
-                Mth.floor(consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y)),
                 Mth.floor(
-                        consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.z)));
+                        consumer.getDatatypePost(
+                                RelativeCoordinate.INSTANCE, (double) origin.getX())),
+                Mth.floor(
+                        consumer.getDatatypePost(
+                                RelativeCoordinate.INSTANCE, (double) origin.getY())),
+                Mth.floor(
+                        consumer.getDatatypePost(
+                                RelativeCoordinate.INSTANCE, (double) origin.getZ())));
     }
 
     @Override

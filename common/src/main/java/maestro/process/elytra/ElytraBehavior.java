@@ -62,7 +62,7 @@ public final class ElytraBehavior {
     private final List<Pair<Vec3, Vec3>> blockedLines;
     private List<Vec3> simulationLine;
     private BlockPos aimPos;
-    private List<BetterBlockPos> visiblePath;
+    private List<PackedBlockPos> visiblePath;
 
     // :sunglasses:
     public final NetherPathfinderContext context;
@@ -92,7 +92,7 @@ public final class ElytraBehavior {
 
     private BlockStateInterface bsi;
     private final BlockStateOctreeInterface boi;
-    public final BetterBlockPos destination;
+    public final PackedBlockPos destination;
     private final boolean appendDestination;
 
     private final ExecutorService solverExecutor;
@@ -114,7 +114,7 @@ public final class ElytraBehavior {
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.pathManager = this.new PathManager();
         this.process = process;
-        this.destination = new BetterBlockPos(destination);
+        this.destination = new PackedBlockPos(destination);
         this.appendDestination = appendDestination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
@@ -155,12 +155,15 @@ public final class ElytraBehavior {
         }
 
         public CompletableFuture<Void> pathToDestination() {
-            return this.pathToDestination(ctx.playerFeet());
+            return this.pathToDestination(ctx.playerFeet().toBlockPos());
         }
 
         public CompletableFuture<Void> pathToDestination(final BlockPos from) {
             final long start = System.nanoTime();
-            return this.path0(from, ElytraBehavior.this.destination, UnaryOperator.identity())
+            return this.path0(
+                            from,
+                            ElytraBehavior.this.destination.toBlockPos(),
+                            UnaryOperator.identity())
                     .thenRun(
                             () -> {
                                 final double distance =
@@ -207,17 +210,18 @@ public final class ElytraBehavior {
             }
 
             this.recalculating = true;
-            final List<BetterBlockPos> after =
+            final List<PackedBlockPos> after =
                     upToIncl.isPresent()
                             ? this.path.subList(upToIncl.getAsInt() + 1, this.path.size())
                             : Collections.emptyList();
             final boolean complete = this.completePath;
 
             return this.path0(
-                            ctx.playerFeet(),
-                            upToIncl.isPresent()
-                                    ? this.path.get(upToIncl.getAsInt())
-                                    : ElytraBehavior.this.destination,
+                            ctx.playerFeet().toBlockPos(),
+                            (upToIncl.isPresent()
+                                            ? this.path.get(upToIncl.getAsInt())
+                                            : ElytraBehavior.this.destination)
+                                    .toBlockPos(),
                             segment ->
                                     segment.append(
                                             after.stream(),
@@ -248,13 +252,13 @@ public final class ElytraBehavior {
             }
 
             this.recalculating = true;
-            final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
+            final List<PackedBlockPos> before = this.path.subList(0, afterIncl + 1);
             final long start = System.nanoTime();
-            final BetterBlockPos pathStart = this.path.get(afterIncl);
+            final PackedBlockPos pathStart = this.path.get(afterIncl);
 
             this.path0(
-                            pathStart,
-                            ElytraBehavior.this.destination,
+                            pathStart.toBlockPos(),
+                            ElytraBehavior.this.destination.toBlockPos(),
                             segment -> segment.prepend(before.stream()))
                     .thenRun(
                             () -> {
@@ -289,7 +293,9 @@ public final class ElytraBehavior {
                                     final Throwable cause = ex.getCause();
                                     if (cause instanceof PathCalculationException) {
                                         log.atInfo().log("Failed to compute next segment");
-                                        if (ctx.player().distanceToSqr(pathStart.getCenter())
+                                        if (ctx.player()
+                                                        .distanceToSqr(
+                                                                pathStart.toBlockPos().getCenter())
                                                 < 16 * 16) {
                                             if (Agent.settings().elytraChatSpam.value) {
                                                 log.atDebug().log(
@@ -319,19 +325,20 @@ public final class ElytraBehavior {
         }
 
         private void setPath(final UnpackedSegment segment) {
-            List<BetterBlockPos> path = segment.collect();
+            List<PackedBlockPos> path = segment.collect();
             if (ElytraBehavior.this.appendDestination) {
-                BlockPos dest = ElytraBehavior.this.destination;
-                BlockPos last = !path.isEmpty() ? path.getLast() : null;
+                BlockPos dest = ElytraBehavior.this.destination.toBlockPos();
+                BlockPos last = !path.isEmpty() ? path.getLast().toBlockPos() : null;
                 if (last != null
                         && ElytraBehavior.this.clearView(
                                 Vec3.atLowerCornerOf(dest), Vec3.atLowerCornerOf(last), false)) {
-                    path.add(new BetterBlockPos(dest));
+                    path.add(new PackedBlockPos(dest));
                 } else {
                     log.atInfo()
                             .addKeyValue("destination", ElytraBehavior.this.destination)
                             .log("Unable to land at destination");
-                    process.landingSpotIsBad(new BetterBlockPos(ElytraBehavior.this.destination));
+                    process.landingSpotIsBad(
+                            new PackedBlockPos(ElytraBehavior.this.destination.toBlockPos()));
                 }
             }
             this.path = new NetherPath(path);
@@ -368,7 +375,7 @@ public final class ElytraBehavior {
             int rangeStartIncl = playerNear;
             int rangeEndExcl = playerNear;
             while (rangeEndExcl < path.size()
-                    && context.hasChunk(new ChunkPos(path.get(rangeEndExcl)))) {
+                    && context.hasChunk(new ChunkPos(path.get(rangeEndExcl).toBlockPos()))) {
                 rangeEndExcl++;
             }
             // rangeEndExcl now represents an index either not in the path, or just outside render
@@ -377,8 +384,9 @@ public final class ElytraBehavior {
                 // not loaded yet?
                 return;
             }
-            final BetterBlockPos rangeStart = path.get(rangeStartIncl);
-            if (!ElytraBehavior.this.passable(rangeStart.x, rangeStart.y, rangeStart.z, false)) {
+            final PackedBlockPos rangeStart = path.get(rangeStartIncl);
+            if (!ElytraBehavior.this.passable(
+                    rangeStart.getX(), rangeStart.getY(), rangeStart.getZ(), false)) {
                 // we're in a wall
                 return; // previous iterations of this function SHOULD have fixed this by now
                 // :rage_cat:
@@ -423,7 +431,7 @@ public final class ElytraBehavior {
                         // distance, rejoin later on
                     }
 
-                    final BetterBlockPos blockage = this.path.get(i);
+                    final PackedBlockPos blockage = this.path.get(i);
                     final double distance =
                             ctx.playerFeet()
                                     .distanceTo(
@@ -438,13 +446,16 @@ public final class ElytraBehavior {
                                             log.atDebug()
                                                     .addKeyValue(
                                                             "blockage_x",
-                                                            SettingsUtil.maybeCensor(blockage.x))
+                                                            SettingsUtil.maybeCensor(
+                                                                    blockage.getX()))
                                                     .addKeyValue(
                                                             "blockage_y",
-                                                            SettingsUtil.maybeCensor(blockage.y))
+                                                            SettingsUtil.maybeCensor(
+                                                                    blockage.getY()))
                                                     .addKeyValue(
                                                             "blockage_z",
-                                                            SettingsUtil.maybeCensor(blockage.z))
+                                                            SettingsUtil.maybeCensor(
+                                                                    blockage.getZ()))
                                                     .addKeyValue("distance_blocks", distance)
                                                     .addKeyValue(
                                                             "duration_sec",
@@ -477,7 +488,7 @@ public final class ElytraBehavior {
             }
 
             final int last = this.path.size() - 1;
-            if (!this.completePath && ctx.world().isLoaded(this.path.get(last))) {
+            if (!this.completePath && ctx.world().isLoaded(this.path.get(last).toBlockPos())) {
                 this.pathNextSegment(last);
             }
         }
@@ -488,7 +499,7 @@ public final class ElytraBehavior {
             }
 
             int index = this.playerNear;
-            final BetterBlockPos pos = ctx.playerFeet();
+            final PackedBlockPos pos = ctx.playerFeet();
             for (int i = index; i >= Math.max(index - 1000, 0); i -= 10) {
                 if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
                     index = i; // intentional: this changes the bound of the loop
@@ -625,7 +636,7 @@ public final class ElytraBehavior {
     public void repackChunks() {
         ChunkSource chunkProvider = ctx.world().getChunkSource();
 
-        BetterBlockPos playerPos = ctx.playerFeet();
+        PackedBlockPos playerPos = ctx.playerFeet();
 
         int playerChunkX = playerPos.getX() >> 4;
         int playerChunkZ = playerPos.getZ() >> 4;
@@ -696,7 +707,7 @@ public final class ElytraBehavior {
         this.simulationLine = null;
         this.aimPos = null;
 
-        final List<BetterBlockPos> path = this.pathManager.getPath();
+        final List<PackedBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty()) {
             return;
         } else if (this.destination == null) {
@@ -773,7 +784,11 @@ public final class ElytraBehavior {
             return;
         } else {
             this.aimPos =
-                    new BetterBlockPos(solution.goingTo.x, solution.goingTo.y, solution.goingTo.z);
+                    new PackedBlockPos(
+                                    (int) solution.goingTo.x,
+                                    (int) solution.goingTo.y,
+                                    (int) solution.goingTo.z)
+                            .toBlockPos();
         }
 
         this.tickUseFireworks(

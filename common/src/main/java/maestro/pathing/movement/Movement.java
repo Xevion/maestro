@@ -25,15 +25,15 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
 
-    protected final BetterBlockPos src;
+    protected final PackedBlockPos src;
 
-    protected final BetterBlockPos dest;
+    protected final PackedBlockPos dest;
 
     /** The positions that need to be broken before this movement can ensue */
-    protected final BetterBlockPos[] positionsToBreak;
+    protected final PackedBlockPos[] positionsToBreak;
 
     /** The position where we need to place a block before this movement can ensue */
-    protected final BetterBlockPos positionToPlace;
+    protected final PackedBlockPos positionToPlace;
 
     private Double cost;
 
@@ -41,16 +41,16 @@ public abstract class Movement implements IMovement, MovementHelper {
     public List<BlockPos> toPlaceCached = null;
     public List<BlockPos> toWalkIntoCached = null;
 
-    private Set<BetterBlockPos> validPositionsCached = null;
+    private Set<PackedBlockPos> validPositionsCached = null;
 
     private Boolean calculatedWhileLoaded;
 
     protected Movement(
             IAgent maestro,
-            BetterBlockPos src,
-            BetterBlockPos dest,
-            BetterBlockPos[] toBreak,
-            BetterBlockPos toPlace) {
+            PackedBlockPos src,
+            PackedBlockPos dest,
+            PackedBlockPos[] toBreak,
+            PackedBlockPos toPlace) {
         this.maestro = maestro;
         this.ctx = maestro.getPlayerContext();
         this.src = src;
@@ -60,7 +60,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     protected Movement(
-            IAgent maestro, BetterBlockPos src, BetterBlockPos dest, BetterBlockPos[] toBreak) {
+            IAgent maestro, PackedBlockPos src, PackedBlockPos dest, PackedBlockPos[] toBreak) {
         this(maestro, src, dest, toBreak, null);
     }
 
@@ -99,9 +99,9 @@ public abstract class Movement implements IMovement, MovementHelper {
         return -1;
     }
 
-    protected abstract Set<BetterBlockPos> calculateValidPositions();
+    protected abstract Set<PackedBlockPos> calculateValidPositions();
 
-    public Set<BetterBlockPos> getValidPositions() {
+    public Set<PackedBlockPos> getValidPositions() {
         if (validPositionsCached == null) {
             validPositionsCached = calculateValidPositions();
             Objects.requireNonNull(validPositionsCached);
@@ -127,10 +127,10 @@ public abstract class Movement implements IMovement, MovementHelper {
 
         // Swimming velocity is applied via RotationManager callback in updateState()
         // Only handle non-swimming water cases here
-        if (MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+        if (MovementHelper.isLiquid(ctx, ctx.playerFeet().toBlockPos())) {
             if (!((Agent) maestro).getSwimmingBehavior().shouldActivateSwimming()) {
                 // Fallback: vanilla treading water when enhanced swimming disabled
-                if (ctx.player().position().y < dest.y + 0.6) {
+                if (ctx.player().position().y < dest.getY() + 0.6) {
                     currentState.setInput(Input.JUMP, true);
                 }
             }
@@ -187,25 +187,28 @@ public abstract class Movement implements IMovement, MovementHelper {
             return true;
         }
         boolean somethingInTheWay = false;
-        for (BetterBlockPos blockPos : positionsToBreak) {
+        for (PackedBlockPos blockPos : positionsToBreak) {
             if (!ctx.world()
                             .getEntitiesOfClass(
                                     FallingBlockEntity.class,
-                                    new AABB(0, 0, 0, 1, 1.1, 1).move(blockPos))
+                                    new AABB(0, 0, 0, 1, 1.1, 1).move(blockPos.toBlockPos()))
                             .isEmpty()
                     && Agent.settings().pauseMiningForFallingBlocks.value) {
                 return false;
             }
             if (!MovementHelper.canWalkThrough(ctx, blockPos)) { // can't break air, so don't try
                 somethingInTheWay = true;
-                MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
+                MovementHelper.switchToBestToolFor(
+                        ctx, BlockStateInterface.get(ctx, blockPos.toBlockPos()));
                 Optional<Rotation> reachable =
                         RotationUtils.reachable(
-                                ctx, blockPos, ctx.playerController().getBlockReachDistance());
+                                ctx,
+                                blockPos.toBlockPos(),
+                                ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (ctx.isLookingAt(blockPos)
+                    if (ctx.isLookingAt(blockPos.toBlockPos())
                             || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
@@ -215,7 +218,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                         new MovementState.MovementTarget(
                                 RotationUtils.calcRotationFromVec3d(
                                         ctx.playerHead(),
-                                        VecUtils.getBlockPosCenter(blockPos),
+                                        VecUtils.getBlockPosCenter(blockPos.toBlockPos()),
                                         ctx.playerRotations()),
                                 true));
                 // don't check selectedblock on this one, this is a fallback when we can't see any
@@ -244,12 +247,12 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     @Override
-    public BetterBlockPos getSrc() {
+    public PackedBlockPos getSrc() {
         return src;
     }
 
     @Override
-    public BetterBlockPos getDest() {
+    public PackedBlockPos getDest() {
         return dest;
     }
 
@@ -280,11 +283,11 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     @Override
     public BlockPos getDirection() {
-        return getDest().subtract(getSrc());
+        return getDest().toBlockPos().subtract(getSrc().toBlockPos());
     }
 
     public void checkLoadedChunk(CalculationContext context) {
-        calculatedWhileLoaded = context.bsi.worldContainsLoadedChunk(dest.x, dest.z);
+        calculatedWhileLoaded = context.bsi.worldContainsLoadedChunk(dest.getX(), dest.getZ());
     }
 
     @Override
@@ -304,10 +307,10 @@ public abstract class Movement implements IMovement, MovementHelper {
             return toBreakCached;
         }
         List<BlockPos> result = new ArrayList<>();
-        for (BetterBlockPos positionToBreak : positionsToBreak) {
+        for (PackedBlockPos positionToBreak : positionsToBreak) {
             if (!MovementHelper.canWalkThrough(
-                    bsi, positionToBreak.x, positionToBreak.y, positionToBreak.z)) {
-                result.add(positionToBreak);
+                    bsi, positionToBreak.getX(), positionToBreak.getY(), positionToBreak.getZ())) {
+                result.add(positionToBreak.toBlockPos());
             }
         }
         toBreakCached = result;
@@ -321,8 +324,11 @@ public abstract class Movement implements IMovement, MovementHelper {
         List<BlockPos> result = new ArrayList<>();
         if (positionToPlace != null
                 && !MovementHelper.canWalkOn(
-                        bsi, positionToPlace.x, positionToPlace.y, positionToPlace.z)) {
-            result.add(positionToPlace);
+                        bsi,
+                        positionToPlace.getX(),
+                        positionToPlace.getY(),
+                        positionToPlace.getZ())) {
+            result.add(positionToPlace.toBlockPos());
         }
         toPlaceCached = result;
         return result;
@@ -336,6 +342,8 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     public BlockPos[] toBreakAll() {
-        return positionsToBreak;
+        return java.util.Arrays.stream(positionsToBreak)
+                .map(PackedBlockPos::toBlockPos)
+                .toArray(BlockPos[]::new);
     }
 }

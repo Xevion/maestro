@@ -4,9 +4,9 @@ import maestro.Agent;
 import maestro.api.MaestroAPI;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.path.CutoffPath;
 import maestro.utils.BlockStateInterface;
-import net.minecraft.core.BlockPos;
 
 public abstract class PathBase implements IPath {
 
@@ -17,7 +17,7 @@ public abstract class PathBase implements IPath {
         }
         BlockStateInterface bsi = (BlockStateInterface) bsi0;
         for (int i = 0; i < positions().size(); i++) {
-            BlockPos pos = positions().get(i);
+            PackedBlockPos pos = positions().get(i);
             if (!bsi.worldContainsLoadedChunk(pos.getX(), pos.getZ())) {
                 return new CutoffPath(this, i);
             }
@@ -31,7 +31,7 @@ public abstract class PathBase implements IPath {
         if (length() < min) {
             return this;
         }
-        if (destination == null || destination.isInGoal(getDest())) {
+        if (destination == null || destination.isInGoal(getDest().toBlockPos())) {
             return this;
         }
         double factor = MaestroAPI.getSettings().pathCutoffFactor.value;

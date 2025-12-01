@@ -1,7 +1,7 @@
 package maestro.api.cache;
 
 import java.util.*;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 /** A marker for a position in the world. */
 public interface IWaypoint {
@@ -33,7 +33,7 @@ public interface IWaypoint {
      *
      * @return The block position of this waypoint
      */
-    BetterBlockPos getLocation();
+    PackedBlockPos getLocation();
 
     enum Tag {
 

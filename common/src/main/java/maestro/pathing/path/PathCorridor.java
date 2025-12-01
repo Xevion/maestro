@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import maestro.api.pathing.calc.IPath;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.Movement;
 
 /**
@@ -22,10 +22,10 @@ public class PathCorridor {
     private int currentSegment;
     private int corridorStart;
     private int corridorEnd;
-    private Set<BetterBlockPos> corridorPositions;
+    private Set<PackedBlockPos> corridorPositions;
 
     // Cache for nearest position lookup
-    private BetterBlockPos cachedClosest;
+    private PackedBlockPos cachedClosest;
     private double cachedClosestDist;
     private int cachedClosestSegment;
 
@@ -78,7 +78,7 @@ public class PathCorridor {
      * @param pos Position to check
      * @return True if within corridor, false otherwise
      */
-    public boolean isWithinCorridor(BetterBlockPos pos) {
+    public boolean isWithinCorridor(PackedBlockPos pos) {
         return corridorPositions.contains(pos);
     }
 
@@ -88,7 +88,7 @@ public class PathCorridor {
      * @param from Position to find nearest valid position from
      * @return Optional containing nearest position, or empty if none found
      */
-    public Optional<BetterBlockPos> findNearestValidPosition(BetterBlockPos from) {
+    public Optional<PackedBlockPos> findNearestValidPosition(PackedBlockPos from) {
         // Use cached result if still valid
         if (cachedClosest != null && cachedClosestSegment == currentSegment) {
             double cachedDist = from.distanceSq(cachedClosest);
@@ -98,12 +98,12 @@ public class PathCorridor {
         }
 
         // Scan corridor window for nearest valid position
-        BetterBlockPos nearest = null;
+        PackedBlockPos nearest = null;
         double nearestDistSq = Double.MAX_VALUE;
 
         for (int i = corridorStart; i <= corridorEnd && i < path.movements().size(); i++) {
             Movement movement = (Movement) path.movements().get(i);
-            for (BetterBlockPos validPos : movement.getValidPositions()) {
+            for (PackedBlockPos validPos : movement.getValidPositions()) {
                 double distSq = from.distanceSq(validPos);
                 if (distSq < nearestDistSq) {
                     nearestDistSq = distSq;
@@ -127,7 +127,7 @@ public class PathCorridor {
      * @param from Position to calculate distance from
      * @return Distance to path, or Double.MAX_VALUE if no valid positions
      */
-    public double distanceToPath(BetterBlockPos from) {
+    public double distanceToPath(PackedBlockPos from) {
         return findNearestValidPosition(from)
                 .map(pos -> Math.sqrt(from.distanceSq(pos)))
                 .orElse(Double.MAX_VALUE);
@@ -139,11 +139,11 @@ public class PathCorridor {
 
         for (int i = corridorStart; i <= corridorEnd && i < path.movements().size(); i++) {
             Movement movement = (Movement) path.movements().get(i);
-            Set<BetterBlockPos> validPos = movement.getValidPositions();
+            Set<PackedBlockPos> validPos = movement.getValidPositions();
 
             corridorPositions.addAll(validPos);
 
-            for (BetterBlockPos pos : validPos) {
+            for (PackedBlockPos pos : validPos) {
                 addBuffer(pos);
             }
         }
@@ -156,7 +156,7 @@ public class PathCorridor {
      *
      * @param center Center position to add buffer around
      */
-    private void addBuffer(BetterBlockPos center) {
+    private void addBuffer(PackedBlockPos center) {
         // Add 26 surrounding blocks (3x3x3 cube minus center)
         for (int dx = -CORRIDOR_BUFFER; dx <= CORRIDOR_BUFFER; dx++) {
             for (int dy = -CORRIDOR_BUFFER; dy <= CORRIDOR_BUFFER; dy++) {
@@ -165,7 +165,8 @@ public class PathCorridor {
                         continue;
                     }
                     corridorPositions.add(
-                            new BetterBlockPos(center.x + dx, center.y + dy, center.z + dz));
+                            new PackedBlockPos(
+                                    center.getX() + dx, center.getY() + dy, center.getZ() + dz));
                 }
             }
         }

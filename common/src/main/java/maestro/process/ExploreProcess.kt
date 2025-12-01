@@ -196,7 +196,7 @@ class ExploreProcess(
 
     // Inner classes
     private inner class MaestroChunkCache : IChunkFilter {
-        private val cache: ICachedWorld? = maestro.getWorldProvider().currentWorld?.cachedWorld
+        private val cache: ICachedWorld? = maestro.worldProvider.currentWorld?.cachedWorld
 
         override fun isAlreadyExplored(
             chunkX: Int,

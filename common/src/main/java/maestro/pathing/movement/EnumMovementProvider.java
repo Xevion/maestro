@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.utils.pathing.MutableMoveResult;
 
 /**
@@ -23,7 +23,7 @@ import maestro.utils.pathing.MutableMoveResult;
 public class EnumMovementProvider implements IMovementProvider {
 
     @Override
-    public Stream<IMovement> generateMovements(CalculationContext context, BetterBlockPos from) {
+    public Stream<IMovement> generateMovements(CalculationContext context, PackedBlockPos from) {
         // Pre-allocate result object (reused for cost checking to avoid allocations)
         MutableMoveResult res = new MutableMoveResult();
 
@@ -32,7 +32,7 @@ public class EnumMovementProvider implements IMovementProvider {
                         move -> {
                             // Quick cost check using MutableMoveResult
                             res.reset();
-                            move.apply(context, from.x, from.y, from.z, res);
+                            move.apply(context, from.getX(), from.getY(), from.getZ(), res);
                             // Filter out impossible movements
                             return res.cost < ActionCosts.COST_INF;
                         })
@@ -40,7 +40,7 @@ public class EnumMovementProvider implements IMovementProvider {
                         move -> {
                             // Create actual Movement instance with calculated destination
                             res.reset();
-                            move.apply(context, from.x, from.y, from.z, res);
+                            move.apply(context, from.getX(), from.getY(), from.getZ(), res);
                             Movement movement = move.apply0(context, from);
                             // Store pre-calculated cost to avoid recalculation later
                             movement.override(res.cost);

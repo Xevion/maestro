@@ -70,8 +70,8 @@ class RotationManager(
 
         currentRotation?.let { rotation ->
             // Apply rotation to player
-            ctx.player().setYRot(rotation.yaw)
-            ctx.player().setXRot(rotation.pitch)
+            ctx.player().yRot = rotation.yaw
+            ctx.player().xRot = rotation.pitch
 
             // Execute callback if provided
             rotation.callback?.let { callback ->

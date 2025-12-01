@@ -1,9 +1,9 @@
 package maestro.api.pathing.goals
 
 import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.interfaces.IGoalRenderPos
+import maestro.api.utils.pack
 import net.minecraft.core.BlockPos
 import kotlin.math.ceil
 import kotlin.math.sqrt
@@ -71,7 +71,7 @@ data class GoalNear(
 
     override fun getGoalPos(): BlockPos = BlockPos(x, y, z)
 
-    override fun hashCode(): Int = BetterBlockPos.longHash(x, y, z).toInt() + rangeSq
+    override fun hashCode(): Int = pack(x, y, z).packed.toInt() + rangeSq
 
     override fun toString(): String =
         "GoalNear{x=${SettingsUtil.maybeCensor(x)}, y=${SettingsUtil.maybeCensor(y)}, z=${SettingsUtil.maybeCensor(z)}, rangeSq=$rangeSq}"

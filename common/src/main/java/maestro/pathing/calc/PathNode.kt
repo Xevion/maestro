@@ -3,8 +3,8 @@ package maestro.pathing.calc
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.IMovement
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.SettingsUtil
+import maestro.api.utils.pack
 import maestro.pathing.movement.Moves
 
 /** A node in the path, containing the cost and steps to get to it. */
@@ -84,7 +84,7 @@ class PathNode(
      *
      * @return The hash code value for this [PathNode]
      */
-    override fun hashCode(): Int = BetterBlockPos.longHash(x, y, z).toInt()
+    override fun hashCode(): Int = pack(x, y, z).packed.toInt()
 
     override fun equals(other: Any?): Boolean {
         // GOTTA GO FAST

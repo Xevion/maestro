@@ -9,7 +9,7 @@ import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForWaypoints;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 public class FarmCommand extends Command {
 
@@ -21,7 +21,7 @@ public class FarmCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(2);
         int range = 0;
-        BetterBlockPos origin = null;
+        PackedBlockPos origin = null;
         // range
         if (args.has(1)) {
             range = args.getAs(Integer.class);
@@ -40,7 +40,7 @@ public class FarmCommand extends Command {
             origin = waypoint.getLocation();
         }
 
-        maestro.getFarmProcess().farm(range, origin);
+        maestro.getFarmProcess().farm(range, origin != null ? origin.toBlockPos() : null);
         log.atInfo().log("Farming started");
     }
 

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.stream.Stream;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.movements.MovementTeleport;
 import org.slf4j.Logger;
 
@@ -19,7 +19,7 @@ public class TeleportMovementProvider implements IMovementProvider {
     private static final Logger log = MaestroLogger.get("path");
 
     @Override
-    public Stream<IMovement> generateMovements(CalculationContext context, BetterBlockPos from) {
+    public Stream<IMovement> generateMovements(CalculationContext context, PackedBlockPos from) {
         // Early exit: setting disabled
         if (!context.allowTeleport) {
             return Stream.empty();

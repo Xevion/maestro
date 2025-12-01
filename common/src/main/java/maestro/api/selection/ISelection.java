@@ -1,6 +1,6 @@
 package maestro.api.selection;
 
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
@@ -15,23 +15,23 @@ public interface ISelection {
      * @return The first corner of this selection. This is meant to preserve the user's original
      *     first corner.
      */
-    BetterBlockPos pos1();
+    PackedBlockPos pos1();
 
     /**
      * @return The second corner of this selection. This is meant to preserve the user's original
      *     second corner.
      */
-    BetterBlockPos pos2();
+    PackedBlockPos pos2();
 
     /**
-     * @return The {@link BetterBlockPos} with the lowest x, y, and z position in the selection.
+     * @return The {@link PackedBlockPos} with the lowest x, y, and z position in the selection.
      */
-    BetterBlockPos min();
+    PackedBlockPos min();
 
     /**
      * @return The opposite corner from the {@link #min()}.
      */
-    BetterBlockPos max();
+    PackedBlockPos max();
 
     /**
      * @return The size of this ISelection.

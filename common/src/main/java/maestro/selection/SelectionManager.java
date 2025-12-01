@@ -5,7 +5,7 @@ import java.util.ListIterator;
 import maestro.Agent;
 import maestro.api.selection.ISelection;
 import maestro.api.selection.ISelectionManager;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.core.Direction;
 
 public class SelectionManager implements ISelectionManager {
@@ -29,7 +29,7 @@ public class SelectionManager implements ISelectionManager {
     }
 
     @Override
-    public ISelection addSelection(BetterBlockPos pos1, BetterBlockPos pos2) {
+    public ISelection addSelection(PackedBlockPos pos1, PackedBlockPos pos2) {
         return addSelection(new Selection(pos1, pos2));
     }
 

@@ -1,7 +1,7 @@
 package maestro.api.cache
 
 import maestro.api.cache.IWaypoint.Tag
-import maestro.api.utils.BetterBlockPos
+import maestro.api.utils.PackedBlockPos
 import java.util.Date
 
 /** Basic implementation of [IWaypoint] */
@@ -10,7 +10,7 @@ data class Waypoint
     constructor(
         private val name: String,
         private val tag: Tag,
-        private val location: BetterBlockPos,
+        private val location: PackedBlockPos,
         private val creationTimestamp: Long = System.currentTimeMillis(),
     ) : IWaypoint {
         override fun getName(): String = name
@@ -19,13 +19,13 @@ data class Waypoint
 
         override fun getCreationTimestamp(): Long = creationTimestamp
 
-        override fun getLocation(): BetterBlockPos = location
+        override fun getLocation(): PackedBlockPos = location
 
         override fun toString(): String =
             String.format(
                 "%s %s %s",
                 name,
-                BetterBlockPos.from(location).toString(),
+                PackedBlockPos.from(location.toBlockPos()).toString(),
                 Date(creationTimestamp),
             )
 

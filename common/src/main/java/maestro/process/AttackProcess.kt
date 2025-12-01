@@ -106,11 +106,7 @@ class AttackProcess(
 
         // Track last attack to prevent redundant packets when cooldown isn't ready
         val currentTick = ctx.minecraft().player!!.tickCount
-        if (lastAttackTick == currentTick) {
-            return false
-        }
-
-        return true
+        return lastAttackTick != currentTick
     }
 
     private fun attack(target: Entity) {

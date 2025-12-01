@@ -24,9 +24,9 @@ import maestro.api.schematic.mask.shape.CylinderMask;
 import maestro.api.schematic.mask.shape.SphereMask;
 import maestro.api.selection.ISelection;
 import maestro.api.selection.ISelectionManager;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.BlockOptionalMeta;
 import maestro.api.utils.BlockOptionalMetaLookup;
+import maestro.api.utils.PackedBlockPos;
 import maestro.utils.BlockStateInterface;
 import maestro.utils.IRenderer;
 import maestro.utils.schematic.StaticSchematic;
@@ -39,7 +39,7 @@ import net.minecraft.world.phys.AABB;
 public class SelCommand extends Command {
 
     private ISelectionManager manager = maestro.getSelectionManager();
-    private BetterBlockPos pos1 = null;
+    private PackedBlockPos pos1 = null;
     private ISchematic clipboard = null;
     private Vec3i clipboardOffset = null;
 
@@ -63,7 +63,9 @@ public class SelCommand extends Command {
                                         IRenderer.startLines(
                                                 color, opacity, lineWidth, ignoreDepth);
                                 IRenderer.emitAABB(
-                                        bufferBuilder, event.modelViewStack, new AABB(pos1));
+                                        bufferBuilder,
+                                        event.modelViewStack,
+                                        new AABB(pos1.toBlockPos()));
                                 IRenderer.endLines(bufferBuilder, ignoreDepth);
                             }
                         });
@@ -79,8 +81,8 @@ public class SelCommand extends Command {
             if (action == Action.POS2 && pos1 == null) {
                 throw new CommandException.InvalidState("Set pos1 first before using pos2");
             }
-            BetterBlockPos playerPos = ctx.viewerPos();
-            BetterBlockPos pos =
+            PackedBlockPos playerPos = ctx.viewerPos();
+            PackedBlockPos pos =
                     args.hasAny()
                             ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos)
                             : playerPos;
@@ -145,19 +147,19 @@ public class SelCommand extends Command {
             if (selections.length == 0) {
                 throw new CommandException.InvalidState("No selections");
             }
-            BetterBlockPos origin = selections[0].min();
+            PackedBlockPos origin = selections[0].min();
             CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
             for (ISelection selection : selections) {
-                BetterBlockPos min = selection.min();
+                PackedBlockPos min = selection.min();
                 origin =
-                        new BetterBlockPos(
-                                Math.min(origin.x, min.x),
-                                Math.min(origin.y, min.y),
-                                Math.min(origin.z, min.z));
+                        new PackedBlockPos(
+                                Math.min(origin.getX(), min.getX()),
+                                Math.min(origin.getY(), min.getY()),
+                                Math.min(origin.getZ(), min.getZ()));
             }
             for (ISelection selection : selections) {
                 Vec3i size = selection.size();
-                BetterBlockPos min = selection.min();
+                PackedBlockPos min = selection.min();
 
                 // Java 8 so no switch expressions 😿
                 UnaryOperator<ISchematic> create =
@@ -195,13 +197,17 @@ public class SelCommand extends Command {
                 ISchematic schematic =
                         create.apply(
                                 new FillSchematic(size.getX(), size.getY(), size.getZ(), type));
-                composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
+                composite.put(
+                        schematic,
+                        min.getX() - origin.getX(),
+                        min.getY() - origin.getY(),
+                        min.getZ() - origin.getZ());
             }
-            maestro.getBuilderProcess().build("Fill", composite, origin);
+            maestro.getBuilderProcess().build("Fill", composite, origin.toBlockPos());
             log.atInfo().log("Filling now");
         } else if (action == Action.COPY) {
-            BetterBlockPos playerPos = ctx.viewerPos();
-            BetterBlockPos pos =
+            PackedBlockPos playerPos = ctx.viewerPos();
+            PackedBlockPos pos =
                     args.hasAny()
                             ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos)
                             : playerPos;
@@ -211,37 +217,42 @@ public class SelCommand extends Command {
                 throw new CommandException.InvalidState("No selections");
             }
             BlockStateInterface bsi = new BlockStateInterface(ctx);
-            BetterBlockPos origin = selections[0].min();
+            PackedBlockPos origin = selections[0].min();
             CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
             for (ISelection selection : selections) {
-                BetterBlockPos min = selection.min();
+                PackedBlockPos min = selection.min();
                 origin =
-                        new BetterBlockPos(
-                                Math.min(origin.x, min.x),
-                                Math.min(origin.y, min.y),
-                                Math.min(origin.z, min.z));
+                        new PackedBlockPos(
+                                Math.min(origin.getX(), min.getX()),
+                                Math.min(origin.getY(), min.getY()),
+                                Math.min(origin.getZ(), min.getZ()));
             }
             for (ISelection selection : selections) {
                 Vec3i size = selection.size();
-                BetterBlockPos min = selection.min();
+                PackedBlockPos min = selection.min();
                 BlockState[][][] blockstates =
                         new BlockState[size.getX()][size.getZ()][size.getY()];
                 for (int x = 0; x < size.getX(); x++) {
                     for (int y = 0; y < size.getY(); y++) {
                         for (int z = 0; z < size.getZ(); z++) {
-                            blockstates[x][z][y] = bsi.get0(min.x + x, min.y + y, min.z + z);
+                            blockstates[x][z][y] =
+                                    bsi.get0(min.getX() + x, min.getY() + y, min.getZ() + z);
                         }
                     }
                 }
                 ISchematic schematic = new StaticSchematic(blockstates);
-                composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
+                composite.put(
+                        schematic,
+                        min.getX() - origin.getX(),
+                        min.getY() - origin.getY(),
+                        min.getZ() - origin.getZ());
             }
             clipboard = composite;
-            clipboardOffset = origin.subtract(pos);
+            clipboardOffset = origin.toBlockPos().subtract(pos.toBlockPos());
             log.atInfo().log("Selection copied");
         } else if (action == Action.PASTE) {
-            BetterBlockPos playerPos = ctx.viewerPos();
-            BetterBlockPos pos =
+            PackedBlockPos playerPos = ctx.viewerPos();
+            PackedBlockPos pos =
                     args.hasAny()
                             ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos)
                             : playerPos;
@@ -249,7 +260,8 @@ public class SelCommand extends Command {
             if (clipboard == null) {
                 throw new CommandException.InvalidState("You need to copy a selection first");
             }
-            maestro.getBuilderProcess().build("Fill", clipboard, pos.offset(clipboardOffset));
+            maestro.getBuilderProcess()
+                    .build("Fill", clipboard, pos.offset(clipboardOffset).toBlockPos());
             log.atInfo().log("Building now");
         } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
             args.requireExactly(3);

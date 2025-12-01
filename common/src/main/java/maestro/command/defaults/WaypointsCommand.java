@@ -22,7 +22,7 @@ import maestro.api.command.helpers.Paginator;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.utils.chat.ChatMessageRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -130,7 +130,7 @@ public class WaypointsCommand extends Command {
                 args.get();
             }
             String name = (args.hasExactlyOne() || args.hasExactly(4)) ? args.getString() : "";
-            BetterBlockPos pos =
+            PackedBlockPos pos =
                     args.hasAny()
                             ? args.getDatatypePost(RelativeBlockPos.INSTANCE, ctx.playerFeet())
                             : ctx.playerFeet();
@@ -318,9 +318,9 @@ public class WaypointsCommand extends Command {
                                                             label,
                                                             waypoint.getTag().getName(),
                                                             waypoint.getName(),
-                                                            waypoint.getLocation().x,
-                                                            waypoint.getLocation().y,
-                                                            waypoint.getLocation().z))));
+                                                            waypoint.getLocation().getX(),
+                                                            waypoint.getLocation().getY(),
+                                                            waypoint.getLocation().getZ()))));
                     MutableComponent backComponent =
                             Component.literal("Click to return to the waypoints list");
                     backComponent.setStyle(
@@ -390,11 +390,11 @@ public class WaypointsCommand extends Command {
                     Minecraft.getInstance()
                             .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed6));
                 } else if (action == Action.GOAL) {
-                    Goal goal = new GoalBlock(waypoint.getLocation());
+                    Goal goal = new GoalBlock(waypoint.getLocation().toBlockPos());
                     maestro.getCustomGoalProcess().setGoal(goal);
                     log.atInfo().log(String.format("Goal: %s", goal));
                 } else if (action == Action.GOTO) {
-                    Goal goal = new GoalBlock(waypoint.getLocation());
+                    Goal goal = new GoalBlock(waypoint.getLocation().toBlockPos());
                     maestro.getCustomGoalProcess().setGoalAndPath(goal);
                     log.atInfo().log(String.format("Going to: %s", goal));
                 }

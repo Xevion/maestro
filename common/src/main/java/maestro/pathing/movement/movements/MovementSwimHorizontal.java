@@ -8,8 +8,8 @@ import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
@@ -20,6 +20,7 @@ import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.MovementState;
 import maestro.utils.BlockStateInterface;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -44,17 +45,18 @@ import org.slf4j.Logger;
 public class MovementSwimHorizontal extends Movement {
     private static final Logger log = MaestroLogger.get("swim");
 
-    public MovementSwimHorizontal(IAgent maestro, BetterBlockPos from, BetterBlockPos to) {
-        super(maestro, from, to, new BetterBlockPos[] {to});
+    public MovementSwimHorizontal(IAgent maestro, PackedBlockPos from, PackedBlockPos to) {
+        super(maestro, from, to, new PackedBlockPos[] {to});
     }
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z, dest.x, dest.y, dest.z);
+        return cost(
+                context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getY(), dest.getZ());
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
+    protected Set<PackedBlockPos> calculateValidPositions() {
         return ImmutableSet.of(src, dest);
     }
 
@@ -171,7 +173,7 @@ public class MovementSwimHorizontal extends Movement {
 
         // Calculate current position and target for continuous error correction
         Vec3 currentPos = ctx.player().position();
-        Vec3 targetPos = Vec3.atCenterOf(dest);
+        Vec3 targetPos = Vec3.atCenterOf(dest.toBlockPos());
 
         // Check if we've reached the destination (with tolerance for continuous movement)
         if (isCloseEnough(currentPos, targetPos)) {
@@ -200,7 +202,7 @@ public class MovementSwimHorizontal extends Movement {
                         RotationManager.Priority.NORMAL,
                         () -> {
                             // Callback: apply swimming behavior after rotation queued
-                            agent.getSwimmingBehavior().applySwimmingInputs(state, dest.y);
+                            agent.getSwimmingBehavior().applySwimmingInputs(state, dest.getY());
                         });
 
         return state;
@@ -261,12 +263,13 @@ public class MovementSwimHorizontal extends Movement {
         }
 
         boolean somethingInTheWay = false;
-        for (BetterBlockPos blockPos : positionsToBreak) {
+        for (PackedBlockPos blockPos : positionsToBreak) {
             // Check for falling blocks (same as base implementation)
+            BlockPos blockPosConverted = blockPos.toBlockPos();
             if (!ctx.world()
                             .getEntitiesOfClass(
                                     FallingBlockEntity.class,
-                                    new AABB(0, 0, 0, 1, 1.1, 1).move(blockPos))
+                                    new AABB(0, 0, 0, 1, 1.1, 1).move(blockPosConverted))
                             .isEmpty()
                     && Agent.settings().pauseMiningForFallingBlocks.value) {
                 return false;
@@ -276,14 +279,17 @@ public class MovementSwimHorizontal extends Movement {
             // This prevents breaking water, water plants, bubble columns
             if (!MovementHelper.canSwimThrough(ctx, blockPos)) {
                 somethingInTheWay = true;
-                MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
+                MovementHelper.switchToBestToolFor(
+                        ctx, BlockStateInterface.get(ctx, blockPosConverted));
                 Optional<Rotation> reachable =
                         RotationUtils.reachable(
-                                ctx, blockPos, ctx.playerController().getBlockReachDistance());
+                                ctx,
+                                blockPosConverted,
+                                ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (ctx.isLookingAt(blockPos)
+                    if (ctx.isLookingAt(blockPosConverted)
                             || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
@@ -294,7 +300,7 @@ public class MovementSwimHorizontal extends Movement {
                         new MovementState.MovementTarget(
                                 RotationUtils.calcRotationFromVec3d(
                                         ctx.playerHead(),
-                                        VecUtils.getBlockPosCenter(blockPos),
+                                        VecUtils.getBlockPosCenter(blockPosConverted),
                                         ctx.playerRotations()),
                                 true));
                 state.setInput(Input.CLICK_LEFT, true);

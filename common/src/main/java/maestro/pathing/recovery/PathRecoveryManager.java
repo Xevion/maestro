@@ -6,8 +6,8 @@ import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.behavior.PathingBehavior;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -58,7 +58,7 @@ public class PathRecoveryManager {
      */
     public RecoveryAction handleMovementFailure(
             Movement failedMovement,
-            BetterBlockPos currentPosition,
+            PackedBlockPos currentPosition,
             IPath currentPath,
             int pathPosition,
             MovementStatus status,
@@ -127,7 +127,7 @@ public class PathRecoveryManager {
      * @return Recovery action to take
      */
     public RecoveryAction handleCorridorDeviation(
-            BetterBlockPos currentPosition,
+            PackedBlockPos currentPosition,
             IPath currentPath,
             int corridorPosition,
             CalculationContext context) {
@@ -174,8 +174,13 @@ public class PathRecoveryManager {
 
         // Compare cost: reconnection vs full recalc.
         // Full recalc needs to get back to path first, then continue
-        BetterBlockPos corridorPos = currentPath.positions().get(corridorPosition);
-        double returnToCorridorCost = new GoalBlock(corridorPos).heuristic(currentPosition);
+        PackedBlockPos corridorPos = currentPath.positions().get(corridorPosition);
+        double returnToCorridorCost =
+                new GoalBlock(corridorPos.toBlockPos())
+                        .heuristic(
+                                currentPosition.getX(),
+                                currentPosition.getY(),
+                                currentPosition.getZ());
         double fullRecalcCost =
                 returnToCorridorCost + currentPath.ticksRemainingFrom(corridorPosition);
 

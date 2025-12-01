@@ -70,7 +70,7 @@ class BowController(
         if (!ctx.player().isUsingItem) return 0.0f
 
         // Calculate progress manually using bow charge ticks
-        val useTicks = ctx.player().getTicksUsingItem()
+        val useTicks = ctx.player().ticksUsingItem
         val progress = useTicks.toFloat() / ProjectilePhysics.TICKS_FOR_FULL_CHARGE.toFloat()
         return progress.coerceIn(0.0f, 1.0f)
     }

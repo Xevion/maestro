@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 /**
  * Combines multiple movement providers. Allows mixing different movement generation strategies
@@ -18,7 +18,7 @@ public class CompositeMovementProvider implements IMovementProvider {
     }
 
     @Override
-    public Stream<IMovement> generateMovements(CalculationContext context, BetterBlockPos from) {
+    public Stream<IMovement> generateMovements(CalculationContext context, PackedBlockPos from) {
         return providers.stream().flatMap(provider -> provider.generateMovements(context, from));
     }
 }

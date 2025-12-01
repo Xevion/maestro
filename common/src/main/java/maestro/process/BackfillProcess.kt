@@ -4,6 +4,7 @@ import maestro.Agent
 import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.input.Input
 import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementHelper
@@ -49,7 +50,7 @@ class BackfillProcess(
         }
 
         amIBreakingABlockHMMMMMMM()
-        maestro.getInputOverrideHandler().clearAllKeys()
+        maestro.inputOverrideHandler.clearAllKeys()
 
         return toFillIn().isNotEmpty()
     }
@@ -62,7 +63,7 @@ class BackfillProcess(
             return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
         }
 
-        maestro.getInputOverrideHandler().clearAllKeys()
+        maestro.inputOverrideHandler.clearAllKeys()
 
         for (toPlace in toFillIn()) {
             val fake = MovementState()
@@ -70,14 +71,14 @@ class BackfillProcess(
                 MovementHelper.PlaceResult.NO_OPTION -> continue
 
                 MovementHelper.PlaceResult.READY_TO_PLACE -> {
-                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true)
+                    maestro.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                 }
 
                 MovementHelper.PlaceResult.ATTEMPTING -> {
                     // Patience
                     fake.target.getRotation().ifPresent { rotation ->
-                        maestro.getLookBehavior().updateTarget(rotation, true)
+                        maestro.lookBehavior.updateTarget(rotation, true)
                     }
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                 }
@@ -89,7 +90,7 @@ class BackfillProcess(
 
     private fun amIBreakingABlockHMMMMMMM() {
         val selectedBlock = ctx.getSelectedBlock()
-        if (selectedBlock.isEmpty || !maestro.getPathingBehavior().isPathing()) {
+        if (selectedBlock.isEmpty || !maestro.pathingBehavior.isPathing()) {
             return
         }
 
@@ -103,13 +104,13 @@ class BackfillProcess(
         return blocksToReplace.keys
             .filter { pos -> ctx.world().getBlockState(pos).block == Blocks.AIR }
             .filter { pos ->
-                maestro.getBuilderProcess().placementPlausible(pos, Blocks.DIRT.defaultBlockState())
+                maestro.builderProcess.placementPlausible(pos, Blocks.DIRT.defaultBlockState())
             }.filter { pos -> !partOfCurrentMovement(pos) }
-            .sortedByDescending { pos -> playerFeet.distSqr(pos) }
+            .sortedByDescending { pos -> playerFeet.distSqr(PackedBlockPos(pos)) }
     }
 
     private fun partOfCurrentMovement(pos: BlockPos): Boolean {
-        val exec = maestro.getPathingBehavior().getCurrent() ?: return false
+        val exec = maestro.pathingBehavior.getCurrent() ?: return false
 
         if (exec.finished() || exec.failed()) {
             return false

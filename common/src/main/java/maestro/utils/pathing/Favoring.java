@@ -2,7 +2,6 @@ package maestro.utils.pathing;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import maestro.api.pathing.calc.IPath;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.IPlayerContext;
 import maestro.api.utils.MaestroLogger;
 import maestro.pathing.movement.CalculationContext;
@@ -28,8 +27,7 @@ public final class Favoring {
         favorings.defaultReturnValue(1.0D);
         double coefficient = context.backtrackCostFavoringCoefficient;
         if (coefficient != 1D && previous != null) {
-            previous.positions()
-                    .forEach(pos -> favorings.put(BetterBlockPos.longHash(pos), coefficient));
+            previous.positions().forEach(pos -> favorings.put(pos.getPacked(), coefficient));
         }
     }
 

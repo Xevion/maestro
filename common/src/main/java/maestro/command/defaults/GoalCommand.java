@@ -12,7 +12,7 @@ import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.process.ICustomGoalProcess;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 public class GoalCommand extends Command {
 
@@ -33,7 +33,7 @@ public class GoalCommand extends Command {
             }
         } else {
             args.requireMax(3);
-            BetterBlockPos origin = ctx.playerFeet();
+            PackedBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             goalProcess.setGoal(goal);
             log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");

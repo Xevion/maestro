@@ -19,6 +19,7 @@ import java.util.ArrayDeque
 import java.util.Deque
 import java.util.Optional
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Manages bot look direction and rotation handling.
@@ -49,14 +50,10 @@ class LookBehavior(
      */
     private var prevRotation: Rotation? = null
 
-    private val processor: AimProcessor
+    private val processor: AimProcessor = AimProcessor(maestro.playerContext)
 
     private val smoothYawBuffer: Deque<Float> = ArrayDeque()
     private val smoothPitchBuffer: Deque<Float> = ArrayDeque()
-
-    init {
-        this.processor = AimProcessor(maestro.getPlayerContext())
-    }
 
     override fun updateTarget(
         rotation: Rotation,
@@ -87,10 +84,10 @@ class LookBehavior(
                     return
                 }
 
-                prevRotation = Rotation(ctx.player().getYRot(), ctx.player().getXRot())
+                prevRotation = Rotation(ctx.player().yRot, ctx.player().xRot)
                 val actual = processor.peekRotation(currentTarget.rotation)
-                ctx.player().setYRot(actual.yaw)
-                ctx.player().setXRot(actual.pitch)
+                ctx.player().yRot = actual.yaw
+                ctx.player().xRot = actual.pitch
             }
 
             EventState.POST -> {
@@ -108,26 +105,22 @@ class LookBehavior(
 
                     when (currentTarget.mode) {
                         Target.Mode.SERVER -> {
-                            ctx.player().setYRot(prev.yaw)
-                            ctx.player().setXRot(prev.pitch)
+                            ctx.player().yRot = prev.yaw
+                            ctx.player().xRot = prev.pitch
                         }
 
                         Target.Mode.CLIENT -> {
                             val smoothLookEnabled =
-                                if (ctx.player().isFallFlying()) {
+                                if (ctx.player().isFallFlying) {
                                     Agent.settings().elytraSmoothLook.value
                                 } else {
                                     Agent.settings().smoothLook.value
                                 }
 
                             if (smoothLookEnabled) {
-                                ctx.player().setYRot(
-                                    smoothYawBuffer.mapNotNull { it as? Float }.average().toFloat(),
-                                )
-                                if (ctx.player().isFallFlying()) {
-                                    ctx.player().setXRot(
-                                        smoothPitchBuffer.mapNotNull { it as? Float }.average().toFloat(),
-                                    )
+                                ctx.player().yRot = smoothYawBuffer.mapNotNull { it }.average().toFloat()
+                                if (ctx.player().isFallFlying) {
+                                    ctx.player().xRot = smoothPitchBuffer.mapNotNull { it }.average().toFloat()
                                 }
                             }
                         }
@@ -141,8 +134,6 @@ class LookBehavior(
                 // The target is done being used for this game tick, so it can be invalidated
                 target = null
             }
-
-            else -> {}
         }
     }
 
@@ -162,7 +153,7 @@ class LookBehavior(
     fun pig() {
         target?.let { currentTarget ->
             val actual = processor.peekRotation(currentTarget.rotation)
-            ctx.player().setYRot(actual.yaw)
+            ctx.player().yRot = actual.yaw
         }
     }
 
@@ -285,7 +276,7 @@ class LookBehavior(
 
         private fun angleToMouse(angleDelta: Float): Double {
             val minAngleChange = mouseToAngle(1.0)
-            return Math.round(angleDelta / minAngleChange).toDouble()
+            return (angleDelta / minAngleChange).roundToInt().toDouble()
         }
 
         private fun mouseToAngle(mouseDelta: Double): Float {
@@ -326,7 +317,7 @@ class LookBehavior(
                     val blockFreeLook = settings.blockFreeLook.value
 
                     return when {
-                        ctx.player().isFallFlying() ->
+                        ctx.player().isFallFlying ->
                             // always need to set angles while flying
                             if (settings.elytraFreeLook.value) SERVER else CLIENT
 

@@ -50,9 +50,6 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onPlayerSprintState(SprintStateEvent event) {}
 
     @Override
-    default void onBlockInteract(BlockInteractEvent event) {}
-
-    @Override
     default void onPlayerDeath() {}
 
     @Override

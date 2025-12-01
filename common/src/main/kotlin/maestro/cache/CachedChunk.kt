@@ -221,14 +221,14 @@ class CachedChunk internal constructor(
          * @return The bit index
          */
         @JvmStatic
-        inline fun getPositionIndex(
+        fun getPositionIndex(
             x: Int,
             y: Int,
             z: Int,
         ): Int = (x shl 1) or (z shl 5) or (y shl 9)
 
         @JvmStatic
-        fun size(dimension_height: Int): Int = 2 * 16 * 16 * dimension_height
+        fun size(dimensionHeight: Int): Int = 2 * 16 * 16 * dimensionHeight
 
         @JvmStatic
         fun sizeInBytes(size: Int): Int = size / 8

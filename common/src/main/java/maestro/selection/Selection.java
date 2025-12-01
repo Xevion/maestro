@@ -1,58 +1,69 @@
 package maestro.selection;
 
 import maestro.api.selection.ISelection;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 
 public class Selection implements ISelection {
 
-    private final BetterBlockPos pos1;
-    private final BetterBlockPos pos2;
-    private final BetterBlockPos min;
-    private final BetterBlockPos max;
+    private final PackedBlockPos pos1;
+    private final PackedBlockPos pos2;
+    private final PackedBlockPos min;
+    private final PackedBlockPos max;
     private final Vec3i size;
     private final AABB aabb;
 
-    public Selection(BetterBlockPos pos1, BetterBlockPos pos2) {
+    public Selection(PackedBlockPos pos1, PackedBlockPos pos2) {
         this.pos1 = pos1;
         this.pos2 = pos2;
 
         this.min =
-                new BetterBlockPos(
-                        Math.min(pos1.x, pos2.x),
-                        Math.min(pos1.y, pos2.y),
-                        Math.min(pos1.z, pos2.z));
+                new PackedBlockPos(
+                        Math.min(pos1.getX(), pos2.getX()),
+                        Math.min(pos1.getY(), pos2.getY()),
+                        Math.min(pos1.getZ(), pos2.getZ()));
 
         this.max =
-                new BetterBlockPos(
-                        Math.max(pos1.x, pos2.x),
-                        Math.max(pos1.y, pos2.y),
-                        Math.max(pos1.z, pos2.z));
+                new PackedBlockPos(
+                        Math.max(pos1.getX(), pos2.getX()),
+                        Math.max(pos1.getY(), pos2.getY()),
+                        Math.max(pos1.getZ(), pos2.getZ()));
 
-        this.size = new Vec3i(max.x - min.x + 1, max.y - min.y + 1, max.z - min.z + 1);
+        this.size =
+                new Vec3i(
+                        max.getX() - min.getX() + 1,
+                        max.getY() - min.getY() + 1,
+                        max.getZ() - min.getZ() + 1);
 
-        this.aabb = new AABB(min.x, min.y, min.z, max.x + 1, max.y + 1, max.z + 1);
+        this.aabb =
+                new AABB(
+                        min.getX(),
+                        min.getY(),
+                        min.getZ(),
+                        max.getX() + 1,
+                        max.getY() + 1,
+                        max.getZ() + 1);
     }
 
     @Override
-    public BetterBlockPos pos1() {
+    public PackedBlockPos pos1() {
         return pos1;
     }
 
     @Override
-    public BetterBlockPos pos2() {
+    public PackedBlockPos pos2() {
         return pos2;
     }
 
     @Override
-    public BetterBlockPos min() {
+    public PackedBlockPos min() {
         return min;
     }
 
     @Override
-    public BetterBlockPos max() {
+    public PackedBlockPos max() {
         return max;
     }
 
@@ -91,9 +102,9 @@ public class Selection implements ISelection {
         boolean negative = facing.getAxisDirection().getStep() < 0;
 
         return switch (facing.getAxis()) {
-            case X -> (pos2.x > pos1.x) ^ negative;
-            case Y -> (pos2.y > pos1.y) ^ negative;
-            case Z -> (pos2.z > pos1.z) ^ negative;
+            case X -> (pos2.getX() > pos1.getX()) ^ negative;
+            case Y -> (pos2.getY() > pos1.getY()) ^ negative;
+            case Z -> (pos2.getZ() > pos1.getZ()) ^ negative;
         };
     }
 

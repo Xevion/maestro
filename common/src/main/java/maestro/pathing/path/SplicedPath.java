@@ -4,12 +4,12 @@ import java.util.*;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.utils.pathing.PathBase;
 
 public class SplicedPath extends PathBase {
 
-    private final List<BetterBlockPos> path;
+    private final List<PackedBlockPos> path;
 
     private final List<IMovement> movements;
 
@@ -18,7 +18,7 @@ public class SplicedPath extends PathBase {
     private final Goal goal;
 
     private SplicedPath(
-            List<BetterBlockPos> path,
+            List<PackedBlockPos> path,
             List<IMovement> movements,
             int numNodesConsidered,
             Goal goal) {
@@ -40,7 +40,7 @@ public class SplicedPath extends PathBase {
     }
 
     @Override
-    public List<BetterBlockPos> positions() {
+    public List<PackedBlockPos> positions() {
         return Collections.unmodifiableList(path);
     }
 
@@ -74,7 +74,7 @@ public class SplicedPath extends PathBase {
         if (!first.getDest().equals(second.getSrc())) {
             return Optional.empty();
         }
-        HashSet<BetterBlockPos> secondPos = new HashSet<>(second.positions());
+        HashSet<PackedBlockPos> secondPos = new HashSet<>(second.positions());
         int firstPositionInSecond = -1;
         for (int i = 0;
                 i < first.length() - 1;
@@ -97,7 +97,7 @@ public class SplicedPath extends PathBase {
         if (!allowOverlapCutoff && positionInSecond != 0) {
             throw new IllegalStateException("Paths to be spliced are overlapping incorrectly");
         }
-        List<BetterBlockPos> positions =
+        List<PackedBlockPos> positions =
                 new ArrayList<>(first.positions().subList(0, firstPositionInSecond + 1));
         List<IMovement> movements =
                 new ArrayList<>(first.movements().subList(0, firstPositionInSecond));

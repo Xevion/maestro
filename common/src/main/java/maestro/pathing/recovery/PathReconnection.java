@@ -7,8 +7,8 @@ import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.pathing.movement.ActionCosts;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.calc.AStarPathFinder;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -47,7 +47,7 @@ public class PathReconnection {
     public Optional<ReconnectionCandidate> findReconnectionPoint(
             IPath currentPath,
             int corridorPosition,
-            BetterBlockPos currentPosition,
+            PackedBlockPos currentPosition,
             CalculationContext context) {
         int lookbehind = Agent.settings().pathReconnectionLookbehind.value;
         int lookahead = Agent.settings().pathReconnectionLookahead.value;
@@ -70,7 +70,7 @@ public class PathReconnection {
         // Scan the search window for potential reconnection points
         for (int i = searchStart; i <= searchEnd; i++) {
             Movement movement = (Movement) currentPath.movements().get(i);
-            BetterBlockPos destination = movement.getDest();
+            PackedBlockPos destination = movement.getDest();
 
             // Estimate cost to reach this point
             double estimatedCost = estimateCostToReconnect(currentPosition, destination, context);
@@ -121,8 +121,8 @@ public class PathReconnection {
      * @return Optional containing the reconnection path, or empty if calculation failed
      */
     public Optional<IPath> calculateReconnectionPath(
-            BetterBlockPos from, BetterBlockPos to, CalculationContext context) {
-        Goal reconnectionGoal = new GoalBlock(to);
+            PackedBlockPos from, PackedBlockPos to, CalculationContext context) {
+        Goal reconnectionGoal = new GoalBlock(to.toBlockPos());
 
         log.atDebug()
                 .addKeyValue("from", from)
@@ -133,9 +133,9 @@ public class PathReconnection {
         AStarPathFinder pathfinder =
                 new AStarPathFinder(
                         from,
-                        from.x,
-                        from.y,
-                        from.z,
+                        from.getX(),
+                        from.getY(),
+                        from.getZ(),
                         reconnectionGoal,
                         new Favoring(null, context), // No previous path for favoring
                         context);
@@ -143,7 +143,8 @@ public class PathReconnection {
         // Use limited timeout and node budget for reconnection
         // Scale node budget based on distance - longer reconnections need more nodes
         int baseNodes = Agent.settings().pathReconnectionMaxPartialNodes.value;
-        int distance = (int) Math.ceil(reconnectionGoal.heuristic(from));
+        int distance =
+                (int) Math.ceil(reconnectionGoal.heuristic(from.getX(), from.getY(), from.getZ()));
         int scaledNodes =
                 Math.min(
                         2000, // Cap at reasonable maximum to prevent runaway calculations
@@ -220,10 +221,10 @@ public class PathReconnection {
      * @return Estimated cost including distance and failure penalties
      */
     private double estimateCostToReconnect(
-            BetterBlockPos from, BetterBlockPos to, CalculationContext context) {
+            PackedBlockPos from, PackedBlockPos to, CalculationContext context) {
         // Base distance heuristic
-        GoalBlock goal = new GoalBlock(to);
-        double baseHeuristic = goal.heuristic(from);
+        GoalBlock goal = new GoalBlock(to.toBlockPos());
+        double baseHeuristic = goal.heuristic(from.getX(), from.getY(), from.getZ());
 
         // Apply worst-case penalty for reaching this destination
         // We don't know exact movement type, so check common ones
@@ -260,12 +261,12 @@ public class PathReconnection {
         public final int pathIndex;
 
         /** Position to reconnect to */
-        public final BetterBlockPos position;
+        public final PackedBlockPos position;
 
         /** Estimated cost to reach this position */
         public final double estimatedCost;
 
-        public ReconnectionCandidate(int pathIndex, BetterBlockPos position, double estimatedCost) {
+        public ReconnectionCandidate(int pathIndex, PackedBlockPos position, double estimatedCost) {
             this.pathIndex = pathIndex;
             this.position = position;
             this.estimatedCost = estimatedCost;

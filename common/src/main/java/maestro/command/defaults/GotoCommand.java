@@ -11,8 +11,8 @@ import maestro.api.command.datatypes.RelativeCoordinate;
 import maestro.api.command.datatypes.RelativeGoal;
 import maestro.api.command.exception.CommandException;
 import maestro.api.pathing.goals.Goal;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.BlockOptionalMeta;
+import maestro.api.utils.PackedBlockPos;
 
 public class GotoCommand extends Command {
 
@@ -27,7 +27,7 @@ public class GotoCommand extends Command {
         // is no need to handle the case of empty arguments.
         if (args.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) {
             args.requireMax(3);
-            BetterBlockPos origin = ctx.playerFeet();
+            PackedBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             log.atInfo().addKeyValue("goal", goal.toString()).log("Going to goal");
             maestro.getCustomGoalProcess().setGoalAndPath(goal);

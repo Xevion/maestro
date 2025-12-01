@@ -48,46 +48,46 @@ public class TunnelCommand extends Command {
                             case EAST -> {
                                 corner1 =
                                         new BlockPos(
-                                                ctx.playerFeet().x,
-                                                ctx.playerFeet().y,
-                                                ctx.playerFeet().z - width / 2);
+                                                ctx.playerFeet().getX(),
+                                                ctx.playerFeet().getY(),
+                                                ctx.playerFeet().getZ() - width / 2);
                                 yield new BlockPos(
-                                        ctx.playerFeet().x + depth,
-                                        ctx.playerFeet().y + height,
-                                        ctx.playerFeet().z + width / 2 + addition);
+                                        ctx.playerFeet().getX() + depth,
+                                        ctx.playerFeet().getY() + height,
+                                        ctx.playerFeet().getZ() + width / 2 + addition);
                             }
                             case WEST -> {
                                 corner1 =
                                         new BlockPos(
-                                                ctx.playerFeet().x,
-                                                ctx.playerFeet().y,
-                                                ctx.playerFeet().z + width / 2 + addition);
+                                                ctx.playerFeet().getX(),
+                                                ctx.playerFeet().getY(),
+                                                ctx.playerFeet().getZ() + width / 2 + addition);
                                 yield new BlockPos(
-                                        ctx.playerFeet().x - depth,
-                                        ctx.playerFeet().y + height,
-                                        ctx.playerFeet().z - width / 2);
+                                        ctx.playerFeet().getX() - depth,
+                                        ctx.playerFeet().getY() + height,
+                                        ctx.playerFeet().getZ() - width / 2);
                             }
                             case NORTH -> {
                                 corner1 =
                                         new BlockPos(
-                                                ctx.playerFeet().x - width / 2,
-                                                ctx.playerFeet().y,
-                                                ctx.playerFeet().z);
+                                                ctx.playerFeet().getX() - width / 2,
+                                                ctx.playerFeet().getY(),
+                                                ctx.playerFeet().getZ());
                                 yield new BlockPos(
-                                        ctx.playerFeet().x + width / 2 + addition,
-                                        ctx.playerFeet().y + height,
-                                        ctx.playerFeet().z - depth);
+                                        ctx.playerFeet().getX() + width / 2 + addition,
+                                        ctx.playerFeet().getY() + height,
+                                        ctx.playerFeet().getZ() - depth);
                             }
                             case SOUTH -> {
                                 corner1 =
                                         new BlockPos(
-                                                ctx.playerFeet().x + width / 2 + addition,
-                                                ctx.playerFeet().y,
-                                                ctx.playerFeet().z);
+                                                ctx.playerFeet().getX() + width / 2 + addition,
+                                                ctx.playerFeet().getY(),
+                                                ctx.playerFeet().getZ());
                                 yield new BlockPos(
-                                        ctx.playerFeet().x - width / 2,
-                                        ctx.playerFeet().y + height,
-                                        ctx.playerFeet().z + depth);
+                                        ctx.playerFeet().getX() - width / 2,
+                                        ctx.playerFeet().getY() + height,
+                                        ctx.playerFeet().getZ() + depth);
                             }
                             default ->
                                     throw new IllegalStateException(
@@ -101,7 +101,9 @@ public class TunnelCommand extends Command {
                 maestro.getBuilderProcess().clearArea(corner1, corner2);
             }
         } else {
-            Goal goal = new GoalStrictDirection(ctx.playerFeet(), ctx.player().getDirection());
+            Goal goal =
+                    new GoalStrictDirection(
+                            ctx.playerFeet().toBlockPos(), ctx.player().getDirection());
             maestro.getCustomGoalProcess().setGoalAndPath(goal);
             log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");
         }

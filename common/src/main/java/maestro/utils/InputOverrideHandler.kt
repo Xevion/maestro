@@ -19,8 +19,8 @@ class InputOverrideHandler(
     /** Maps inputs to whether or not we are forcing their state down. */
     private val inputForceStateMap = mutableMapOf<Input, Boolean>()
 
-    internal val blockBreakHelper = BlockBreakHelper(maestro.getPlayerContext())
-    internal val blockPlaceHelper = BlockPlaceHelper(maestro.getPlayerContext())
+    internal val blockBreakHelper = BlockBreakHelper(maestro.playerContext)
+    internal val blockPlaceHelper = BlockPlaceHelper(maestro.playerContext)
 
     /**
      * Returns whether we are forcing down the specified [Input].
@@ -87,7 +87,7 @@ class InputOverrideHandler(
             )
 
         return movementInputs.any { isInputForcedDown(it) } ||
-            maestro.getPathingBehavior().isPathing() ||
+            maestro.pathingBehavior.isPathing() ||
             maestro != MaestroAPI.getProvider().primaryAgent
     }
 

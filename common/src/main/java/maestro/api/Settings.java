@@ -822,9 +822,6 @@ public final class Settings {
     /** The alternative timeout number when slowPath is on */
     public final Setting<Long> slowPathTimeoutMS = new Setting<>(40000L);
 
-    /** allows maestro to save bed waypoints when interacting with beds */
-    public final Setting<Boolean> doBedWaypoints = new Setting<>(true);
-
     /** allows maestro to save death waypoints */
     public final Setting<Boolean> doDeathWaypoints = new Setting<>(true);
 

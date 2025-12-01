@@ -1,7 +1,7 @@
 package maestro.api.pathing.goals
 
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.SettingsUtil
+import maestro.api.utils.pack
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import kotlin.math.abs
@@ -51,7 +51,7 @@ data class GoalStrictDirection(
     override fun heuristic(): Double = Double.NEGATIVE_INFINITY
 
     override fun hashCode(): Int {
-        var hash = BetterBlockPos.longHash(x, y, z).toInt()
+        var hash = pack(x, y, z).packed.toInt()
         hash = hash * 630627507 + dx
         hash = hash * -283028380 + dz
         return hash

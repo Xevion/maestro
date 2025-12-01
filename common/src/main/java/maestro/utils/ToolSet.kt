@@ -146,7 +146,7 @@ class ToolSet(
      * @return A double containing the destruction ticks with the best tool
      */
     private fun getBestDestructionTime(b: Block): Double {
-        val stack = player.inventory.getItem(getBestSlot(b, false, true))
+        val stack = player.inventory.getItem(getBestSlot(b, preferSilkTouch = false, pathingCalculation = true))
         return calculateSpeedVsBlock(stack, b.defaultBlockState()) * avoidanceMultiplier(b)
     }
 

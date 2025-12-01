@@ -31,11 +31,11 @@ object InputHelper {
         val mc = Minecraft.getInstance()
         val currentScreen: Screen? = mc.screen
 
-        return when {
+        return when (currentScreen) {
             // No screen open - keys are active
-            currentScreen == null -> true
+            null -> true
             // Death screen - allow keys (useful for reviewing what killed you)
-            currentScreen is DeathScreen -> true
+            is DeathScreen -> true
             // Any other screen - block keys
             else -> false
         }

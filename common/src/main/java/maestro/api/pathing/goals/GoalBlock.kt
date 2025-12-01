@@ -1,8 +1,8 @@
 package maestro.api.pathing.goals
 
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.interfaces.IGoalRenderPos
+import maestro.api.utils.pack
 import net.minecraft.core.BlockPos
 import kotlin.math.abs
 import kotlin.math.min
@@ -41,7 +41,7 @@ open class GoalBlock(
         return x == other.x && y == other.y && z == other.z
     }
 
-    override fun hashCode(): Int = (BetterBlockPos.longHash(x, y, z) * 905165533).toInt()
+    override fun hashCode(): Int = (pack(x, y, z).packed * 905165533).toInt()
 
     override fun toString(): String =
         "GoalBlock{x=${SettingsUtil.maybeCensor(x)},y=${SettingsUtil.maybeCensor(y)},z=${SettingsUtil.maybeCensor(z)}}"

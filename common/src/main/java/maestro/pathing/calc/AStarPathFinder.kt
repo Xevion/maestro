@@ -4,9 +4,10 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.ActionCosts
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
+import maestro.api.utils.pack
 import maestro.pathing.calc.openset.BinaryHeapOpenSet
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.CompositeMovementProvider
@@ -25,7 +26,7 @@ import java.util.Optional
 class AStarPathFinder
     @JvmOverloads
     constructor(
-        realStart: BetterBlockPos,
+        realStart: PackedBlockPos,
         startX: Int,
         startY: Int,
         startZ: Int,
@@ -40,7 +41,7 @@ class AStarPathFinder
         ): Optional<IPath> {
             val minY = calcContext.world.dimensionType().minY()
             val height = calcContext.world.dimensionType().height()
-            startNode = getNodeAtPosition(startX, startY, startZ, BetterBlockPos.longHash(startX, startY, startZ))
+            startNode = getNodeAtPosition(startX, startY, startZ, pack(startX, startY, startZ).packed)
             startNode!!.cost = 0.0
             startNode!!.combinedCost = startNode!!.estimatedCostToGoal
             val openSet = BinaryHeapOpenSet()
@@ -71,7 +72,7 @@ class AStarPathFinder
             var numNodes = 0
             var numMovementsConsidered = 0
             var numEmptyChunk = 0
-            val isFavoring = !favoring.isEmpty()
+            val isFavoring = !favoring.isEmpty
             val timeCheckInterval = 1 shl 6
 
             // Grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
@@ -113,7 +114,7 @@ class AStarPathFinder
                 }
 
                 // Generate movements for current position
-                val currentPos = BetterBlockPos(currentNode.x, currentNode.y, currentNode.z)
+                val currentPos = PackedBlockPos(currentNode.x, currentNode.y, currentNode.z)
                 val movements = movementProvider.generateMovements(calcContext, currentPos).toList()
 
                 for (movement in movements) {
@@ -138,7 +139,7 @@ class AStarPathFinder
                     }
 
                     // Height bounds check
-                    if (newY > height || newY < minY) {
+                    if (newY !in minY..height) {
                         continue
                     }
 
@@ -151,7 +152,7 @@ class AStarPathFinder
                     // Apply failure memory penalties (only for Movement subclasses)
                     if (movement is Movement) {
                         val movementClass = movement::class.java
-                        val src = BetterBlockPos(currentNode.x, currentNode.y, currentNode.z)
+                        val src = PackedBlockPos(currentNode.x, currentNode.y, currentNode.z)
 
                         // Check if movement should be filtered due to excessive failures
                         if (calcContext.failureMemory.shouldFilter(src, dest, movementClass)) {
@@ -198,7 +199,7 @@ class AStarPathFinder
                         )
                     }
 
-                    val hashCode = BetterBlockPos.longHash(newX, newY, newZ)
+                    val hashCode = pack(newX, newY, newZ).packed
                     if (isFavoring) {
                         // see issue #18
                         actionCost *= favoring.calculate(hashCode)

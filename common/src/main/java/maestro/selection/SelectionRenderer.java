@@ -41,13 +41,13 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
             IRenderer.glColor(settings.colorSelectionPos1.value, opacity);
 
             for (ISelection selection : selections) {
-                IRenderer.emitAABB(bufferBuilder, stack, new AABB(selection.pos1()));
+                IRenderer.emitAABB(bufferBuilder, stack, new AABB(selection.pos1().toBlockPos()));
             }
 
             IRenderer.glColor(settings.colorSelectionPos2.value, opacity);
 
             for (ISelection selection : selections) {
-                IRenderer.emitAABB(bufferBuilder, stack, new AABB(selection.pos2()));
+                IRenderer.emitAABB(bufferBuilder, stack, new AABB(selection.pos2().toBlockPos()));
             }
         }
 

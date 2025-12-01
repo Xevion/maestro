@@ -5,8 +5,8 @@ import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -25,14 +25,14 @@ import org.slf4j.Logger;
 public class MovementParkour extends Movement {
     private static final Logger log = MaestroLogger.get("move");
 
-    private static final BetterBlockPos[] EMPTY = new BetterBlockPos[] {};
+    private static final PackedBlockPos[] EMPTY = new PackedBlockPos[] {};
 
     private final Direction direction;
     private final int dist;
     private final boolean ascend;
 
     private MovementParkour(
-            IAgent maestro, BetterBlockPos src, int dist, Direction dir, boolean ascend) {
+            IAgent maestro, PackedBlockPos src, int dist, Direction dir, boolean ascend) {
         super(
                 maestro,
                 src,
@@ -45,11 +45,11 @@ public class MovementParkour extends Movement {
     }
 
     public static MovementParkour cost(
-            CalculationContext context, BetterBlockPos src, Direction direction) {
+            CalculationContext context, PackedBlockPos src, Direction direction) {
         MutableMoveResult res = new MutableMoveResult();
-        cost(context, src.x, src.y, src.z, direction, res);
-        int dist = Math.abs(res.x - src.x) + Math.abs(res.z - src.z);
-        return new MovementParkour(context.getMaestro(), src, dist, direction, res.y > src.y);
+        cost(context, src.getX(), src.getY(), src.getZ(), direction, res);
+        int dist = Math.abs(res.x - src.getX()) + Math.abs(res.z - src.getZ());
+        return new MovementParkour(context.getMaestro(), src, dist, direction, res.y > src.getY());
     }
 
     public static void cost(
@@ -236,16 +236,16 @@ public class MovementParkour extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         MutableMoveResult res = new MutableMoveResult();
-        cost(context, src.x, src.y, src.z, direction, res);
-        if (res.x != dest.x || res.y != dest.y || res.z != dest.z) {
+        cost(context, src.getX(), src.getY(), src.getZ(), direction, res);
+        if (res.x != dest.getX() || res.y != dest.getY() || res.z != dest.getZ()) {
             return COST_INF;
         }
         return res.cost;
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
-        Set<BetterBlockPos> set = new HashSet<>();
+    protected Set<PackedBlockPos> calculateValidPositions() {
+        Set<PackedBlockPos> set = new HashSet<>();
         for (int i = 0; i <= dist; i++) {
             for (int y = 0; y < 2; y++) {
                 set.add(src.relative(direction, i).above(y));
@@ -269,20 +269,20 @@ public class MovementParkour extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
-        if (ctx.playerFeet().y < src.y) {
+        if (ctx.playerFeet().getY() < src.getY()) {
             // we have fallen
             log.atDebug()
-                    .addKeyValue("expected_y", src.y)
-                    .addKeyValue("actual_y", ctx.playerFeet().y)
+                    .addKeyValue("expected_y", src.getY())
+                    .addKeyValue("actual_y", ctx.playerFeet().getY())
                     .log("Parkour jump failed - player fell below start position");
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (dist >= 4 || ascend) {
             state.setInput(Input.SPRINT, true);
         }
-        MovementHelper.moveTowards(ctx, state, dest);
-        if (ctx.playerFeet().equals(dest)) {
-            Block d = BlockStateInterface.getBlock(ctx, dest);
+        MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
+        if (ctx.playerFeet().equals(dest.toBlockPos())) {
+            Block d = BlockStateInterface.getBlock(ctx, dest.toBlockPos());
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 // it physically hurt me to add support for parkour jumping onto a vine
                 // but I did it anyway
@@ -291,15 +291,15 @@ public class MovementParkour extends Movement {
             if (ctx.player().position().y - ctx.playerFeet().getY() < 0.094) { // lilypads
                 state.setStatus(MovementStatus.SUCCESS);
             }
-        } else if (!ctx.playerFeet().equals(src)) {
-            if (ctx.playerFeet().equals(src.relative(direction))
-                    || ctx.player().position().y - src.y > 0.0001) {
+        } else if (!ctx.playerFeet().equals(src.toBlockPos())) {
+            if (ctx.playerFeet().equals(src.relative(direction).toBlockPos())
+                    || ctx.player().position().y - src.getY() > 0.0001) {
                 if (Agent.settings().allowPlace.value // see PR #3775
                         && ((Agent) maestro).getInventoryBehavior().hasGenericThrowaway()
-                        && !MovementHelper.canWalkOn(ctx, dest.below())
+                        && !MovementHelper.canWalkOn(ctx, dest.toBlockPos().below())
                         && !ctx.player().onGround()
                         && MovementHelper.attemptToPlaceABlock(
-                                        state, maestro, dest.below(), true, false)
+                                        state, maestro, dest.toBlockPos().below(), true, false)
                                 == PlaceResult.READY_TO_PLACE) {
                     // go in the opposite order to check DOWN before all horizontals -- down is
                     // preferable because you don't have to look to the side while in midair, which
@@ -308,8 +308,8 @@ public class MovementParkour extends Movement {
                 }
                 // prevent jumping too late by checking for ascend
                 if (dist == 3 && !ascend) { // this is a 2 block gap, dest = src + direction * 3
-                    double xDiff = (src.x + 0.5) - ctx.player().position().x;
-                    double zDiff = (src.z + 0.5) - ctx.player().position().z;
+                    double xDiff = (src.getX() + 0.5) - ctx.player().position().x;
+                    double zDiff = (src.getZ() + 0.5) - ctx.player().position().z;
                     double distFromStart = Math.max(Math.abs(xDiff), Math.abs(zDiff));
                     if (distFromStart < 0.7) {
                         return state;
@@ -317,12 +317,13 @@ public class MovementParkour extends Movement {
                 }
 
                 state.setInput(Input.JUMP, true);
-            } else if (!ctx.playerFeet().equals(dest.relative(direction, -1))) {
+            } else if (!ctx.playerFeet().equals(dest.relative(direction, -1).toBlockPos())) {
                 state.setInput(Input.SPRINT, false);
-                if (ctx.playerFeet().equals(src.relative(direction, -1))) {
-                    MovementHelper.moveTowards(ctx, state, src);
+                if (ctx.playerFeet().equals(src.relative(direction, -1).toBlockPos())) {
+                    MovementHelper.moveTowards(ctx, state, src.toBlockPos());
                 } else {
-                    MovementHelper.moveTowards(ctx, state, src.relative(direction, -1));
+                    MovementHelper.moveTowards(
+                            ctx, state, src.relative(direction, -1).toBlockPos());
                 }
             }
         }

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.movements.MovementSwimHorizontal;
 import maestro.pathing.movement.movements.MovementSwimVertical;
 
@@ -32,9 +32,9 @@ public class ContinuousSwimmingProvider implements IMovementProvider {
     }
 
     @Override
-    public Stream<IMovement> generateMovements(CalculationContext context, BetterBlockPos from) {
+    public Stream<IMovement> generateMovements(CalculationContext context, PackedBlockPos from) {
         // Only generate if in water
-        if (!MovementHelper.isWater(context.get(from.x, from.y, from.z))) {
+        if (!MovementHelper.isWater(context.get(from.getX(), from.getY(), from.getZ()))) {
             return Stream.empty();
         }
 
@@ -54,7 +54,8 @@ public class ContinuousSwimmingProvider implements IMovementProvider {
                 continue;
             }
 
-            BetterBlockPos dest = new BetterBlockPos(from.x + dx, from.y, from.z + dz);
+            PackedBlockPos dest =
+                    new PackedBlockPos(from.getX() + dx, from.getY(), from.getZ() + dz);
             MovementSwimHorizontal movement =
                     new MovementSwimHorizontal(context.getMaestro(), from, dest);
             movement.override(movement.calculateCost(context));
@@ -72,14 +73,16 @@ public class ContinuousSwimmingProvider implements IMovementProvider {
             }
 
             // UP-diagonal variant
-            BetterBlockPos upDest = new BetterBlockPos(from.x + dx, from.y + 1, from.z + dz);
+            PackedBlockPos upDest =
+                    new PackedBlockPos(from.getX() + dx, from.getY() + 1, from.getZ() + dz);
             MovementSwimHorizontal upDiagonal =
                     new MovementSwimHorizontal(context.getMaestro(), from, upDest);
             upDiagonal.override(upDiagonal.calculateCost(context));
             movements.add(upDiagonal);
 
             // DOWN-diagonal variant
-            BetterBlockPos downDest = new BetterBlockPos(from.x + dx, from.y - 1, from.z + dz);
+            PackedBlockPos downDest =
+                    new PackedBlockPos(from.getX() + dx, from.getY() - 1, from.getZ() + dz);
             MovementSwimHorizontal downDiagonal =
                     new MovementSwimHorizontal(context.getMaestro(), from, downDest);
             downDiagonal.override(downDiagonal.calculateCost(context));

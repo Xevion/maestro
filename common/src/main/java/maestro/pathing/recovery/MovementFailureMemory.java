@@ -3,8 +3,8 @@ package maestro.pathing.recovery;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import maestro.Agent;
-import maestro.api.utils.BetterBlockPos;
 import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.Movement;
 import org.slf4j.Logger;
 
@@ -99,8 +99,8 @@ public class MovementFailureMemory {
      * @return cost multiplier (1.0 = no penalty, higher = penalized)
      */
     public double getCostPenalty(
-            BetterBlockPos source,
-            BetterBlockPos destination,
+            PackedBlockPos source,
+            PackedBlockPos destination,
             Class<? extends Movement> movementType) {
         MovementKey key = new MovementKey(source, destination);
         List<MovementFailureRecord> records = failures.get(key);
@@ -144,8 +144,8 @@ public class MovementFailureMemory {
      * @return true if movement should be filtered (too many failures)
      */
     public boolean shouldFilter(
-            BetterBlockPos source,
-            BetterBlockPos destination,
+            PackedBlockPos source,
+            PackedBlockPos destination,
             Class<? extends Movement> movementType) {
         MovementKey key = new MovementKey(source, destination);
         List<MovementFailureRecord> records = failures.get(key);

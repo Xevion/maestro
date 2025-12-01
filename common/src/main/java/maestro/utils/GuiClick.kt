@@ -5,9 +5,9 @@ import com.mojang.blaze3d.vertex.PoseStack
 import maestro.Agent
 import maestro.api.MaestroAPI
 import maestro.api.pathing.goals.GoalBlock
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.Helper
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
 import maestro.utils.chat.ChatMessageBuilder
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -91,8 +91,8 @@ class GuiClick :
                     if (start != null && start != mouseOver) {
                         agent.getSelectionManager().removeAllSelections()
 
-                        val from = BetterBlockPos.from(start)
-                        val to = BetterBlockPos.from(mouseOver)
+                        val from = PackedBlockPos(start)
+                        val to = PackedBlockPos(mouseOver)
 
                         agent.getSelectionManager().addSelection(from, to)
 
@@ -162,8 +162,8 @@ class GuiClick :
                         true,
                     )
 
-                val a = BetterBlockPos(mouseOver)
-                val b = BetterBlockPos(start)
+                val a = PackedBlockPos(mouseOver)
+                val b = PackedBlockPos(start)
 
                 IRenderer.emitAABB(
                     bufferBuilder,

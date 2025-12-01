@@ -13,6 +13,7 @@ import maestro.api.process.PathingCommandType
 import maestro.api.utils.BlockOptionalMeta
 import maestro.api.utils.BlockOptionalMetaLookup
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.input.Input
 import maestro.pathing.movement.CalculationContext
@@ -33,7 +34,7 @@ class GetToBlockProcess(
     private var gettingTo: BlockOptionalMeta? = null
     private var knownLocations: MutableList<BlockPos>? = null
     private var blacklist: MutableList<BlockPos>? = null // Locations we failed to calc to
-    private var start: BlockPos? = null
+    private var start: PackedBlockPos? = null
 
     private var tickCount = 0
     private var arrivalTickCount = 0
@@ -64,7 +65,7 @@ class GetToBlockProcess(
             if (Agent.settings().exploreForBlocks.value && !calcFailed) {
                 val currentStart = start ?: ctx.playerFeet()
                 return PathingCommand(
-                    object : GoalRunAway(1.0, currentStart) {
+                    object : GoalRunAway(1.0, currentStart.toBlockPos()) {
                         override fun isInGoal(
                             x: Int,
                             y: Int,
@@ -121,8 +122,8 @@ class GetToBlockProcess(
             Agent.getExecutor().execute { rescan(current, context) }
         }
 
-        if (goal.isInGoal(ctx.playerFeet()) &&
-            goal.isInGoal(maestro.getPathingBehavior().pathStart()) &&
+        if (goal.isInGoal(ctx.playerFeet().toBlockPos()) &&
+            maestro.pathingBehavior.pathStart()?.let { goal.isInGoal(it.toBlockPos()) } != false &&
             isSafeToCancel
         ) {
             // We're there
@@ -147,7 +148,7 @@ class GetToBlockProcess(
         val newBlacklist = mutableListOf<BlockPos>()
         val locations = knownLocations ?: return false
 
-        locations.minByOrNull { ctx.playerFeet().distSqr(it) }?.let { newBlacklist.add(it) }
+        locations.minByOrNull { ctx.playerFeet().distSqr(PackedBlockPos(it)) }?.let { newBlacklist.add(it) }
 
         outer@ while (true) {
             for (known in locations.toList()) { // Copy to avoid concurrent modification
@@ -201,7 +202,7 @@ class GetToBlockProcess(
         knownLocations = null
         start = null
         blacklist = null
-        maestro.getInputOverrideHandler().clearAllKeys()
+        maestro.inputOverrideHandler.clearAllKeys()
     }
 
     override fun displayName0(): String {
@@ -264,10 +265,10 @@ class GetToBlockProcess(
                 )
 
             if (reachable.isPresent) {
-                maestro.getLookBehavior().updateTarget(reachable.get(), true)
+                maestro.lookBehavior.updateTarget(reachable.get(), true)
 
                 if (locations.contains(ctx.getSelectedBlock().orElse(null))) {
-                    maestro.getInputOverrideHandler().setInputForceState(
+                    maestro.inputOverrideHandler.setInputForceState(
                         Input.CLICK_RIGHT,
                         true,
                     ) // TODO find some way to right click even if we're in an ESC menu

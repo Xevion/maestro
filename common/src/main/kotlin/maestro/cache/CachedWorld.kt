@@ -232,7 +232,7 @@ class CachedWorld internal constructor(
         for (maestro in MaestroAPI.getProvider().allMaestros) {
             val data = maestro.worldProvider.currentWorld
             if (data?.cachedWorld == this && maestro.playerContext.player() != null) {
-                return maestro.playerContext.playerFeet()
+                return maestro.playerContext.playerFeet().toBlockPos()
             }
         }
 

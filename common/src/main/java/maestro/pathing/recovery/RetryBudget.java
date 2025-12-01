@@ -2,7 +2,7 @@ package maestro.pathing.recovery;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 
 /**
  * Tracks retry attempts per position to prevent infinite loops.
@@ -13,7 +13,7 @@ import maestro.api.utils.BetterBlockPos;
 public class RetryBudget {
 
     private static final int MAX_RETRIES = 3;
-    private final Map<BetterBlockPos, Integer> retriesByPosition = new ConcurrentHashMap<>();
+    private final Map<PackedBlockPos, Integer> retriesByPosition = new ConcurrentHashMap<>();
 
     /**
      * Checks if we can retry at this position.
@@ -21,7 +21,7 @@ public class RetryBudget {
      * @param position position to check
      * @return true if we haven't exceeded retry budget
      */
-    public boolean canRetry(BetterBlockPos position) {
+    public boolean canRetry(PackedBlockPos position) {
         return retriesByPosition.getOrDefault(position, 0) < MAX_RETRIES;
     }
 
@@ -30,7 +30,7 @@ public class RetryBudget {
      *
      * @param position position where retry occurred
      */
-    public void recordRetry(BetterBlockPos position) {
+    public void recordRetry(PackedBlockPos position) {
         retriesByPosition.merge(position, 1, Integer::sum);
     }
 
@@ -45,7 +45,7 @@ public class RetryBudget {
      * @param position position to check
      * @return retry count
      */
-    public int getRetryCount(BetterBlockPos position) {
+    public int getRetryCount(PackedBlockPos position) {
         return retriesByPosition.getOrDefault(position, 0);
     }
 }

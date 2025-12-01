@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
@@ -17,8 +17,8 @@ public class MovementDownward extends Movement {
 
     private int numTicks = 0;
 
-    public MovementDownward(IAgent maestro, BetterBlockPos start, BetterBlockPos end) {
-        super(maestro, start, end, new BetterBlockPos[] {end});
+    public MovementDownward(IAgent maestro, PackedBlockPos start, PackedBlockPos end) {
+        super(maestro, start, end, new PackedBlockPos[] {end});
     }
 
     @Override
@@ -29,11 +29,11 @@ public class MovementDownward extends Movement {
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z);
+        return cost(context, src.getX(), src.getY(), src.getZ());
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
+    protected Set<PackedBlockPos> calculateValidPositions() {
         return ImmutableSet.of(src, dest);
     }
 
@@ -75,7 +75,7 @@ public class MovementDownward extends Movement {
         if (numTicks++ < 10 && ab < 0.2) {
             return state;
         }
-        MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+        MovementHelper.moveTowards(ctx, state, positionsToBreak[0].toBlockPos());
         return state;
     }
 }

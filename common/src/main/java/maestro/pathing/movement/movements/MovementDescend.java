@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.CalculationContext;
@@ -25,12 +25,12 @@ public class MovementDescend extends Movement {
     private int numTicks = 0;
     public boolean forceSafeMode = false;
 
-    public MovementDescend(IAgent maestro, BetterBlockPos start, BetterBlockPos end) {
+    public MovementDescend(IAgent maestro, PackedBlockPos start, PackedBlockPos end) {
         super(
                 maestro,
                 start,
                 end,
-                new BetterBlockPos[] {end.above(2), end.above(), end},
+                new PackedBlockPos[] {end.above(2), end.above(), end},
                 end.below());
     }
 
@@ -52,15 +52,15 @@ public class MovementDescend extends Movement {
     @Override
     public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
-        cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
-        if (result.y != dest.y) {
+        cost(context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ(), result);
+        if (result.y != dest.getY()) {
             return COST_INF; // doesn't apply to us, this position is a fall not a descent
         }
         return result.cost;
     }
 
     @Override
-    protected Set<BetterBlockPos> calculateValidPositions() {
+    protected Set<PackedBlockPos> calculateValidPositions() {
         return ImmutableSet.of(src, dest.above(), dest);
     }
 
@@ -264,12 +264,12 @@ public class MovementDescend extends Movement {
             return state;
         }
 
-        BlockPos playerFeet = ctx.playerFeet();
+        PackedBlockPos playerFeet = ctx.playerFeet();
         BlockPos fakeDest =
                 new BlockPos(
                         dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());
-        if ((playerFeet.equals(dest) || playerFeet.equals(fakeDest))
-                && (MovementHelper.isLiquid(ctx, dest)
+        if ((playerFeet.equals(dest) || playerFeet.toBlockPos().equals(fakeDest))
+                && (MovementHelper.isLiquid(ctx, dest.toBlockPos())
                         || ctx.player().position().y - dest.getY() < 0.5)) { // lilypads
             // Wait until we're actually on the ground before saying we're done because sometimes we
             // continue to fall if the next action starts immediately
@@ -302,7 +302,7 @@ public class MovementDescend extends Movement {
             if (numTicks++ < 20 && fromStart < 1.25) {
                 MovementHelper.moveTowards(ctx, state, fakeDest);
             } else {
-                MovementHelper.moveTowards(ctx, state, dest);
+                MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
             }
         }
         return state;
@@ -315,7 +315,8 @@ public class MovementDescend extends Movement {
         // (dest - src) + dest is offset 1 more in the same direction
         // so it's the block we'd need to worry about running into if we decide to sprint straight
         // through this descend
-        BlockPos into = dest.subtract(src.below()).offset(dest);
+        BlockPos into =
+                dest.toBlockPos().subtract(src.toBlockPos().below()).offset(dest.toBlockPos());
         if (skipToAscend()) {
             // if dest extends into can't walk through, but the two above are can walk through, then
             // we can overshoot and glitch in that weird way
@@ -330,9 +331,10 @@ public class MovementDescend extends Movement {
     }
 
     public boolean skipToAscend() {
-        BlockPos into = dest.subtract(src.below()).offset(dest);
-        return !MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into))
-                && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).above())
-                && MovementHelper.canWalkThrough(ctx, new BetterBlockPos(into).above(2));
+        BlockPos into =
+                dest.toBlockPos().subtract(src.toBlockPos().below()).offset(dest.toBlockPos());
+        return !MovementHelper.canWalkThrough(ctx, new PackedBlockPos(into))
+                && MovementHelper.canWalkThrough(ctx, new PackedBlockPos(into).above())
+                && MovementHelper.canWalkThrough(ctx, new PackedBlockPos(into).above(2));
     }
 }

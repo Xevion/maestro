@@ -131,7 +131,7 @@ class ChatMessageBuilder private constructor(
                     Level.ERROR -> ChatFormatting.RED
                     else -> ChatFormatting.GRAY
                 }
-            messageComponent.setStyle(messageComponent.style.withColor(levelColor))
+            messageComponent.style = messageComponent.style.withColor(levelColor)
 
             // Add key-value pairs
             if (keyValues.isNotEmpty()) {
@@ -145,7 +145,7 @@ class ChatMessageBuilder private constructor(
                     }
                 }
                 val kvComponent = Component.literal(kvBuilder.toString())
-                kvComponent.setStyle(kvComponent.style.withColor(ChatFormatting.DARK_GRAY))
+                kvComponent.style = kvComponent.style.withColor(ChatFormatting.DARK_GRAY)
                 messageComponent.append(kvComponent)
             }
 

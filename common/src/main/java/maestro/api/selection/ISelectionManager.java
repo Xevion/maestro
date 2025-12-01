@@ -1,6 +1,6 @@
 package maestro.api.selection;
 
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
 import net.minecraft.core.Direction;
 
 /**
@@ -23,7 +23,7 @@ public interface ISelectionManager {
      * @param pos1 One corner of the selection
      * @param pos2 The new corner of the selection
      */
-    ISelection addSelection(BetterBlockPos pos1, BetterBlockPos pos2);
+    ISelection addSelection(PackedBlockPos pos1, PackedBlockPos pos2);
 
     /**
      * Removes the selection from the current selections.

@@ -3,23 +3,30 @@ package maestro.api.command.datatypes;
 import java.util.stream.Stream;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.BetterBlockPos;
+import maestro.api.utils.PackedBlockPos;
+import net.minecraft.util.Mth;
 
-public enum RelativeBlockPos implements IDatatypePost<BetterBlockPos, BetterBlockPos> {
+public enum RelativeBlockPos implements IDatatypePost<PackedBlockPos, PackedBlockPos> {
     INSTANCE;
 
     @Override
-    public BetterBlockPos apply(IDatatypeContext ctx, BetterBlockPos origin)
+    public PackedBlockPos apply(IDatatypeContext ctx, PackedBlockPos origin)
             throws CommandException {
         if (origin == null) {
-            origin = BetterBlockPos.ORIGIN;
+            origin = PackedBlockPos.Companion.getORIGIN();
         }
 
         final IArgConsumer consumer = ctx.getConsumer();
-        return new BetterBlockPos(
-                consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.x),
-                consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.y),
-                consumer.getDatatypePost(RelativeCoordinate.INSTANCE, (double) origin.z));
+        return new PackedBlockPos(
+                Mth.floor(
+                        consumer.getDatatypePost(
+                                RelativeCoordinate.INSTANCE, (double) origin.getX())),
+                Mth.floor(
+                        consumer.getDatatypePost(
+                                RelativeCoordinate.INSTANCE, (double) origin.getY())),
+                Mth.floor(
+                        consumer.getDatatypePost(
+                                RelativeCoordinate.INSTANCE, (double) origin.getZ())));
     }
 
     @Override

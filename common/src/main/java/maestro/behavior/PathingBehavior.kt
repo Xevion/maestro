@@ -12,8 +12,8 @@ import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.goals.GoalXZ
 import maestro.api.process.PathingCommand
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
 import maestro.api.utils.interfaces.IGoalRenderPos
 import maestro.pathing.calc.AStarPathFinder
@@ -63,7 +63,7 @@ class PathingBehavior(
 
     // eta
     private var ticksElapsedSoFar = 0
-    private var startPosition: BetterBlockPos? = null
+    private var startPosition: PackedBlockPos? = null
 
     private var safeToCancel = false
     private var pauseRequestedLastTick = false
@@ -80,7 +80,7 @@ class PathingBehavior(
 
     private var lastAutoJump = false
 
-    private var expectedSegmentStart: BetterBlockPos? = null
+    private var expectedSegmentStart: PackedBlockPos? = null
 
     private val toDispatch = LinkedBlockingQueue<PathEvent>()
 
@@ -170,7 +170,7 @@ class PathingBehavior(
                 if (inProgress != null) {
                     // we are calculating
                     // are we calculating the right thing though? 🤔
-                    val calcFrom: BetterBlockPos = inProgress!!.getStart()
+                    val calcFrom: PackedBlockPos = inProgress!!.getStart()
                     val currentBest: Optional<IPath> = inProgress!!.bestPathSoFar()
                     if ((
                             current == null ||
@@ -208,7 +208,7 @@ class PathingBehavior(
             safeToCancel = current!!.onTick()
             if (current!!.failed() || current!!.finished()) {
                 current = null
-                if (goal == null || goal!!.isInGoal(ctx.playerFeet())) {
+                if (goal == null || goal!!.isInGoal(ctx.playerFeet().toBlockPos())) {
                     log.atDebug().addKeyValue("goal", goal).log("All done")
                     queuePathEvent(PathEvent.AT_GOAL)
                     next = null
@@ -255,7 +255,7 @@ class PathingBehavior(
                     }
                     // we aren't calculating
                     queuePathEvent(PathEvent.CALC_STARTED)
-                    findPathInNewThread(expectedSegmentStart!!, true, context!!)
+                    findPathInNewThread(expectedSegmentStart!!.toBlockPos(), true, context!!)
                 }
                 return
             }
@@ -284,7 +284,7 @@ class PathingBehavior(
                     // and we have no plan for what to do next
                     return
                 }
-                if (goal == null || goal!!.isInGoal(current!!.path.getDest())) {
+                if (goal == null || goal!!.isInGoal(current!!.path.getDest().toBlockPos())) {
                     // and this path doesn't get us all the way there
                     return
                 }
@@ -299,7 +299,7 @@ class PathingBehavior(
                     // its own
                     log.atDebug().log("Path almost over, planning ahead")
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED)
-                    findPathInNewThread(current!!.path.getDest(), false, context!!)
+                    findPathInNewThread(current!!.path.getDest().toBlockPos(), false, context!!)
                 }
             }
         }
@@ -340,15 +340,16 @@ class PathingBehavior(
 
     fun secretInternalSetGoalAndPath(command: PathingCommand): Boolean {
         secretInternalSetGoal(command.goal)
-        if (command is PathingCommandContext) {
-            context = command.desiredCalcContext
-        } else {
-            context = CalculationContext(maestro, true)
-        }
+        context =
+            if (command is PathingCommandContext) {
+                command.desiredCalcContext
+            } else {
+                CalculationContext(maestro, true)
+            }
         if (goal == null) {
             return false
         }
-        if (goal!!.isInGoal(ctx.playerFeet())) {
+        if (goal!!.isInGoal(ctx.playerFeet().toBlockPos())) {
             return false
         }
         synchronized(pathPlanLock) {
@@ -360,7 +361,7 @@ class PathingBehavior(
                     return false
                 }
                 queuePathEvent(PathEvent.CALC_STARTED)
-                findPathInNewThread(expectedSegmentStart!!, true, context!!)
+                findPathInNewThread(expectedSegmentStart!!.toBlockPos(), true, context!!)
                 return true
             }
         }
@@ -469,7 +470,7 @@ class PathingBehavior(
             @Suppress("UNCHECKED_CAST")
             return Optional.empty<Double>() as Optional<Double?>
         }
-        if (goal!!.isInGoal(ctx.playerFeet())) {
+        if (goal!!.isInGoal(ctx.playerFeet().toBlockPos())) {
             resetEstimatedTicksToGoal()
             @Suppress("UNCHECKED_CAST")
             return Optional.of(0.0) as Optional<Double?>
@@ -494,31 +495,31 @@ class PathingBehavior(
         return Optional.of(eta) as Optional<Double?>
     }
 
-    private fun resetEstimatedTicksToGoal(start: BetterBlockPos? = expectedSegmentStart) {
+    private fun resetEstimatedTicksToGoal(start: PackedBlockPos? = expectedSegmentStart) {
         ticksElapsedSoFar = 0
         startPosition = start
     }
 
     /**
-     * See issue #209
+     * See Baritone issue #209
      *
      * @return The starting [BlockPos] for a new path
      */
-    fun pathStart(): BetterBlockPos { // TODO move to a helper or util class
+    fun pathStart(): PackedBlockPos? { // TODO move to a helper or util class
         val feet = ctx.playerFeet()
         if (!MovementHelper.canWalkOn(ctx, feet.below())) {
             if (ctx.player().onGround()) {
                 val playerX = ctx.player().position().x
                 val playerZ = ctx.player().position().z
-                val closest = ArrayList<BetterBlockPos>()
+                val closest = ArrayList<PackedBlockPos>()
                 for (dx in -1..1) {
                     for (dz in -1..1) {
-                        closest.add(BetterBlockPos(feet.x + dx, feet.y, feet.z + dz))
+                        closest.add(PackedBlockPos(feet.x + dx, feet.y, feet.z + dz))
                     }
                 }
                 closest.sortWith(
-                    Comparator.comparingDouble<BetterBlockPos?>(
-                        ToDoubleFunction { pos: BetterBlockPos? ->
+                    Comparator.comparingDouble(
+                        ToDoubleFunction { pos: PackedBlockPos? ->
                             (
                                 ((pos!!.x + 0.5) - playerX) * ((pos.x + 0.5) - playerX) +
                                     ((pos.z + 0.5) - playerZ) *
@@ -528,7 +529,7 @@ class PathingBehavior(
                     ),
                 )
                 for (i in 0..3) {
-                    val possibleSupport = closest.get(i)
+                    val possibleSupport = closest[i]
                     val xDist = abs((possibleSupport.x + 0.5) - playerX)
                     val zDist = abs((possibleSupport.z + 0.5) - playerZ)
                     if (xDist > 0.8 && zDist > 0.8) {
@@ -607,7 +608,7 @@ class PathingBehavior(
                     val executor =
                         calcResult
                             .getPath()
-                            .map<PathExecutor>(
+                            .map(
                                 Function { p: IPath? ->
                                     PathExecutor(
                                         this@PathingBehavior,
@@ -625,7 +626,7 @@ class PathingBehavior(
                             ) {
                                 queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING)
                                 current = executor.get()
-                                resetEstimatedTicksToGoal(BetterBlockPos(start))
+                                resetEstimatedTicksToGoal(PackedBlockPos(start))
                             } else {
                                 log
                                     .atWarn()
@@ -686,7 +687,7 @@ class PathingBehavior(
                         }
                     }
                     if (talkAboutIt && current != null && current!!.path != null) {
-                        if (goal.isInGoal(current!!.path.getDest())) {
+                        if (goal.isInGoal(current!!.path.getDest().toBlockPos())) {
                             log
                                 .atDebug()
                                 .addKeyValue("start", start)
@@ -729,9 +730,9 @@ class PathingBehavior(
         val favoring =
             Favoring(context.getMaestro().getPlayerContext(), previous, context)
         val feet = ctx.playerFeet()
-        var realStart = BetterBlockPos(start)
-        val sub = feet.subtract(realStart)
-        if (feet.getY() == realStart.getY() && abs(sub.x) <= 1 && abs(sub.z) <= 1) {
+        var realStart = PackedBlockPos(start)
+        val sub = feet.subtract(realStart.toBlockPos())
+        if (feet.y == realStart.y && abs(sub.x) <= 1 && abs(sub.z) <= 1) {
             realStart = feet
         }
         return AStarPathFinder(

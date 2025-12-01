@@ -27,12 +27,12 @@ public class SelectionSchematic extends MaskSchematic {
     @Override
     protected boolean partOfMask(int x, int y, int z, BlockState currentState) {
         for (ISelection selection : selections) {
-            if (x >= selection.min().x
-                    && y >= selection.min().y
-                    && z >= selection.min().z
-                    && x <= selection.max().x
-                    && y <= selection.max().y
-                    && z <= selection.max().z) {
+            if (x >= selection.min().getX()
+                    && y >= selection.min().getY()
+                    && z >= selection.min().getZ()
+                    && x <= selection.max().getX()
+                    && y <= selection.max().getY()
+                    && z <= selection.max().getZ()) {
                 return true;
             }
         }

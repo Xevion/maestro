@@ -57,7 +57,7 @@ class DevModeManager(
             return
         }
 
-        val mc = maestro.getPlayerContext().minecraft()
+        val mc = maestro.playerContext.minecraft()
 
         // Try to open LAN (if requested and not already open)
         if (lanRequested && !lanOpened) {
@@ -106,7 +106,7 @@ class DevModeManager(
     }
 
     private fun openWorldToLAN() {
-        val mc = maestro.getPlayerContext().minecraft()
+        val mc = maestro.playerContext.minecraft()
 
         val server = mc.singleplayerServer
         if (server == null) {
@@ -133,7 +133,7 @@ class DevModeManager(
     }
 
     private fun startCoordinatorServer() {
-        var server = maestro.getCoordinationServer()
+        var server = maestro.coordinationServer
 
         // Check if already running
         if (server != null && server.isRunning()) {
@@ -162,7 +162,7 @@ class DevModeManager(
         // Create and start server
         if (server == null) {
             server = CoordinationServer()
-            maestro.setCoordinationServer(server)
+            maestro.coordinationServer = server
             log.atDebug().log("Created new CoordinationServer instance")
         }
 

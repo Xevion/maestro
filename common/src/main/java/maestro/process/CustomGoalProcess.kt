@@ -24,8 +24,8 @@ class CustomGoalProcess(
         this.goal = goal
         this.mostRecentGoal = goal
 
-        if (maestro.getElytraProcess().isActive) {
-            maestro.getElytraProcess().pathTo(goal)
+        if (maestro.elytraProcess.isActive) {
+            maestro.elytraProcess.pathTo(goal)
         }
 
         state =
@@ -70,8 +70,8 @@ class CustomGoalProcess(
                 val currentGoal = goal
                 if (currentGoal == null ||
                     (
-                        currentGoal.isInGoal(ctx.playerFeet()) &&
-                            currentGoal.isInGoal(maestro.getPathingBehavior().pathStart())
+                        currentGoal.isInGoal(ctx.playerFeet().toBlockPos()) &&
+                            maestro.pathingBehavior.pathStart()?.let { currentGoal.isInGoal(it.toBlockPos()) } != false
                     )
                 ) {
                     // We're there xd

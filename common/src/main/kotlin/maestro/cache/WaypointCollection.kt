@@ -5,8 +5,8 @@ import kotlinx.coroutines.sync.withLock
 import maestro.api.cache.IWaypoint
 import maestro.api.cache.IWaypointCollection
 import maestro.api.cache.Waypoint
-import maestro.api.utils.BetterBlockPos
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.DataInputStream
@@ -86,7 +86,7 @@ class WaypointCollection internal constructor(
                                 Waypoint(
                                     name,
                                     tag,
-                                    BetterBlockPos(x, y, z),
+                                    PackedBlockPos(x, y, z),
                                     creationTimestamp,
                                 ),
                             )

@@ -1,5 +1,9 @@
 package maestro.api.utils
 
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+
 /**
  * Represents a rotation with yaw and pitch angles.
  *
@@ -72,7 +76,7 @@ data class Rotation(
      * @param other Another rotation
      * @return true if both yaw and pitch are within tolerance (< 0.01)
      */
-    fun isReallyCloseTo(other: Rotation): Boolean = yawIsReallyClose(other) && Math.abs(pitch - other.pitch) < 0.01
+    fun isReallyCloseTo(other: Rotation): Boolean = yawIsReallyClose(other) && abs(pitch - other.pitch) < 0.01
 
     /**
      * Checks if the yaw of this rotation is really close to another rotation's yaw.
@@ -81,8 +85,8 @@ data class Rotation(
      * @return true if normalized yaw values are within tolerance (< 0.01 or > 359.99)
      */
     fun yawIsReallyClose(other: Rotation): Boolean {
-        val yawDiff = Math.abs(normalizeYaw(yaw) - normalizeYaw(other.yaw))
-        return yawDiff < 0.01 || yawDiff > 359.99
+        val yawDiff = abs(normalizeYaw(yaw) - normalizeYaw(other.yaw))
+        return yawDiff !in 0.01..359.99
     }
 
     override fun toString(): String = "Yaw: $yaw, Pitch: $pitch"
@@ -95,7 +99,7 @@ data class Rotation(
          * @return The clamped pitch
          */
         @JvmStatic
-        fun clampPitch(pitch: Float): Float = Math.max(-90f, Math.min(90f, pitch))
+        fun clampPitch(pitch: Float): Float = max(-90f, min(90f, pitch))
 
         /**
          * Normalizes the specified yaw value between -180 and 180.

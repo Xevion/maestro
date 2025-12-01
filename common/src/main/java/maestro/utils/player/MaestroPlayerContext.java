@@ -5,6 +5,7 @@ import maestro.api.cache.IWorldData;
 import maestro.api.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
@@ -48,9 +49,15 @@ public final class MaestroPlayerContext implements IPlayerContext {
     }
 
     @Override
-    public BetterBlockPos viewerPos() {
+    public PackedBlockPos viewerPos() {
         final Entity entity = this.mc.getCameraEntity();
-        return entity == null ? this.playerFeet() : BetterBlockPos.from(entity.blockPosition());
+        return entity == null ? this.playerFeet() : new PackedBlockPos(entity.blockPosition());
+    }
+
+    @Override
+    public BlockPos viewerBlockPos() {
+        final Entity entity = this.mc.getCameraEntity();
+        return entity == null ? this.playerFeetBlockPos() : entity.blockPosition();
     }
 
     @Override
