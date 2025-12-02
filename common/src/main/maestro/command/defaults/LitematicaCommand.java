@@ -11,7 +11,7 @@ import maestro.api.command.exception.CommandException;
 public class LitematicaCommand extends Command {
 
     public LitematicaCommand(IAgent maestro) {
-        super(maestro, "litematica");
+        super(maestro, "fi/dy/masa/litematica");
     }
 
     @Override

@@ -33,14 +33,15 @@ protobuf {
 sourceSets {
     main {
         java.srcDirs(
-            'src/main/java',
+            'src/main',
             'build/generated/source/proto/main/java',
             'build/generated/source/proto/main/grpc'
         )
-        kotlin.srcDirs(
-            'src/main/kotlin',
-            'src/main/java'
-        )
+        kotlin.srcDirs('src/main')
+    }
+    test {
+        java.srcDirs('src/test')
+        kotlin.srcDirs('src/test')
     }
 }
 
