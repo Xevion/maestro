@@ -22,7 +22,7 @@ class BackfillProcess(
     val blocksToReplace = mutableMapOf<BlockPos, BlockState>()
 
     override fun isActive(): Boolean {
-        val player = ctx.player() ?: return false
+        ctx.player() ?: return false
         val world = ctx.world() ?: return false
 
         if (!Agent.settings().backfill.value) {

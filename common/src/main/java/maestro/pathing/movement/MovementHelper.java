@@ -10,7 +10,6 @@ import maestro.api.MaestroAPI;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.*;
-import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.MovementState.MovementTarget;

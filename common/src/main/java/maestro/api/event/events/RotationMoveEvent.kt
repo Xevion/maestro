@@ -12,17 +12,13 @@ import net.minecraft.world.entity.LivingEntity
 class RotationMoveEvent(
     /** The type of event */
     val type: Type,
-    yaw: Float,
-    pitch: Float,
+    /** The yaw rotation (can be modified) */
+    var yaw: Float,
+    /** The pitch rotation (can be modified) */
+    var pitch: Float,
 ) {
     /** Original rotation snapshot (immutable) */
     val original: Rotation = Rotation(yaw, pitch)
-
-    /** The yaw rotation (can be modified) */
-    var yaw: Float = yaw
-
-    /** The pitch rotation (can be modified) */
-    var pitch: Float = pitch
 
     /**
      * Event type indicating when the rotation update occurs.

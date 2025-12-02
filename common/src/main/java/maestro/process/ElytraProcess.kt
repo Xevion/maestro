@@ -86,7 +86,7 @@ class ElytraProcess private constructor(
     override fun onTick(
         calcFailed: Boolean,
         isSafeToCancel: Boolean,
-    ): PathingCommand? {
+    ): PathingCommand {
         val currentBehavior = behavior ?: return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
 
         val seedSetting = Agent.settings().elytraNetherSeed.value

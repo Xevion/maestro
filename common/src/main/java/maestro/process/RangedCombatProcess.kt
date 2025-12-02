@@ -99,7 +99,7 @@ class RangedCombatProcess(
                     return onTick(calcFailed, isSafeToCancel)
                 }
 
-                val distance = ctx.player().distanceTo(target)
+                ctx.player().distanceTo(target)
 
                 if (isInShootingRange(target)) {
                     // In good range - start aiming

@@ -10,7 +10,6 @@ import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.pathing.path.IPathExecutor;
 import maestro.api.utils.*;
-import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.input.Input;
 import maestro.behavior.PathingBehavior;
 import maestro.pathing.calc.AbstractNodeCostSearch;
@@ -55,6 +54,12 @@ public class PathExecutor implements IPathExecutor, Helper {
     private HashSet<BlockPos> toBreak = new HashSet<>();
     private HashSet<BlockPos> toPlace = new HashSet<>();
     private HashSet<BlockPos> toWalkInto = new HashSet<>();
+
+    // Reusable collections for recalculation to avoid allocations
+    private HashSet<BlockPos> recalcBreak = new HashSet<>();
+    private HashSet<BlockPos> recalcPlace = new HashSet<>();
+    private HashSet<BlockPos> recalcWalkInto = new HashSet<>();
+    private int maxCollectionSize = 0; // Track high water mark for shrinking
 
     private final PathingBehavior behavior;
     private final IPlayerContext ctx;
@@ -197,7 +202,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             ticksAway = 0;
         }
         // long start = System.nanoTime() / 1000000L;
-        BlockStateInterface bsi = new BlockStateInterface(ctx);
+        BlockStateInterface bsi = behavior.maestro.bsi;
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i < 0 || i >= path.movements().size()) {
                 continue;
@@ -218,19 +223,25 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }
         if (recalcBP) {
-            HashSet<BlockPos> newBreak = new HashSet<>();
-            HashSet<BlockPos> newPlace = new HashSet<>();
-            HashSet<BlockPos> newWalkInto = new HashSet<>();
+            recalcBreak.clear();
+            recalcPlace.clear();
+            recalcWalkInto.clear();
+
             for (int i = pathPosition; i < path.movements().size(); i++) {
                 Movement m = (Movement) path.movements().get(i);
-                newBreak.addAll(m.toBreak(bsi));
-                newPlace.addAll(m.toPlace(bsi));
-                newWalkInto.addAll(m.toWalkInto(bsi));
+                recalcBreak.addAll(m.toBreak(bsi));
+                recalcPlace.addAll(m.toPlace(bsi));
+                recalcWalkInto.addAll(m.toWalkInto(bsi));
             }
-            toBreak = newBreak;
-            toPlace = newPlace;
-            toWalkInto = newWalkInto;
+
+            toBreak = recalcBreak;
+            toPlace = recalcPlace;
+            toWalkInto = recalcWalkInto;
             recalcBP = false;
+
+            // Track collection sizes for periodic shrinking
+            int totalSize = recalcBreak.size() + recalcPlace.size() + recalcWalkInto.size();
+            maxCollectionSize = Math.max(maxCollectionSize, totalSize);
         }
         if (pathPosition < path.movements().size() - 1) {
             IMovement next = path.movements().get(pathPosition + 1);
@@ -794,6 +805,24 @@ public class PathExecutor implements IPathExecutor, Helper {
         ticksOnCurrent = 0;
         corridor.updateSegment(pathPosition);
         recoveryManager.resetRetryBudget(); // Reset retry budget when moving to next position
+
+        // Shrink collections if they're significantly oversized (> 3x current needs)
+        int currentNeeds = toBreak.size() + toPlace.size() + toWalkInto.size();
+        if (maxCollectionSize > currentNeeds * 3 && maxCollectionSize > 64) {
+            log.atDebug()
+                    .addKeyValue("previous_max_size", maxCollectionSize)
+                    .addKeyValue("current_needs", currentNeeds)
+                    .addKeyValue(
+                            "shrink_ratio",
+                            String.format(
+                                    "%.1fx",
+                                    (double) maxCollectionSize / Math.max(1, currentNeeds)))
+                    .log("Shrinking recalc collections");
+            recalcBreak = new HashSet<>();
+            recalcPlace = new HashSet<>();
+            recalcWalkInto = new HashSet<>();
+            maxCollectionSize = 0;
+        }
     }
 
     private void clearKeys() {

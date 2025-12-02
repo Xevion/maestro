@@ -17,29 +17,13 @@ import kotlin.math.sqrt
  * Any pathfinding algorithm that keeps track of nodes recursively by their cost (e.g. A*, dijkstra)
  */
 abstract class AbstractNodeCostSearch(
-    realStart: PackedBlockPos,
-    startX: Int,
-    startY: Int,
-    startZ: Int,
-    goal: Goal,
-    context: CalculationContext,
+    protected val realStart: PackedBlockPos,
+    @JvmField protected val startX: Int,
+    @JvmField protected val startY: Int,
+    @JvmField protected val startZ: Int,
+    @JvmField protected val goal: Goal,
+    private val context: CalculationContext,
 ) : IPathFinder {
-    protected val realStart: PackedBlockPos = realStart
-
-    @JvmField
-    protected val startX: Int = startX
-
-    @JvmField
-    protected val startY: Int = startY
-
-    @JvmField
-    protected val startZ: Int = startZ
-
-    @JvmField
-    protected val goal: Goal = goal
-
-    private val context: CalculationContext = context
-
     /**
      * @see [Issue #107](https://github.com/cabaletta/baritone/issues/107)
      */

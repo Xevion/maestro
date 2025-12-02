@@ -5,10 +5,8 @@ package maestro.api.pathing.goals
  * for every oak log in loaded chunks would result in it pathing to the easiest oak log to get to
  */
 class GoalComposite(
-    vararg goals: Goal,
+    private vararg val goals: Goal,
 ) : Goal {
-    private val goals: Array<out Goal> = goals
-
     override fun isInGoal(
         x: Int,
         y: Int,

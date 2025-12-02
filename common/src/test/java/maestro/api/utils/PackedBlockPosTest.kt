@@ -48,6 +48,7 @@ class PackedBlockPosTest {
      * This is the direction fixed by the equals override.
      */
     @Test
+    @Suppress("AssertBetweenInconvertibleTypes")
     fun testPackedBlockPosEqualsBlockPos() {
         val packed = PackedBlockPos(100, 64, 200)
         val blockPos = BlockPos(100, 64, 200)
@@ -63,6 +64,7 @@ class PackedBlockPosTest {
      * The manual .toBlockPos() conversions in movement code handle this.
      */
     @Test
+    @Suppress("AssertBetweenInconvertibleTypes")
     fun testBlockPosDoesNotEqualPackedBlockPos() {
         val blockPos = BlockPos(100, 64, 200)
         val packed = PackedBlockPos(100, 64, 200)
@@ -76,10 +78,10 @@ class PackedBlockPosTest {
     fun testPackedBlockPosNotEqualsNull() {
         val pos = PackedBlockPos(100, 64, 200)
         assertNotEquals(pos, null)
-        assertFalse(pos == null)
     }
 
     @Test
+    @Suppress("AssertBetweenInconvertibleTypes")
     fun testPackedBlockPosNotEqualsOtherType() {
         val pos = PackedBlockPos(100, 64, 200)
         assertNotEquals(pos, "not a position")
@@ -103,6 +105,7 @@ class PackedBlockPosTest {
     }
 
     @Test
+    @Suppress("AssertBetweenInconvertibleTypes")
     fun testPackedBlockPosFromBlockPos() {
         val blockPos = BlockPos(100, 64, 200)
         val packed = PackedBlockPos(blockPos)
@@ -146,6 +149,7 @@ class PackedBlockPosTest {
     }
 
     @Test
+    @Suppress("AssertBetweenInconvertibleTypes")
     fun testOriginConstant() {
         val origin = PackedBlockPos.ORIGIN
         assertEquals(0, origin.x)

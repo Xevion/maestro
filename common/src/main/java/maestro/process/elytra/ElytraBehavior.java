@@ -19,7 +19,6 @@ import maestro.api.behavior.look.ITickableAimProcessor;
 import maestro.api.event.events.*;
 import maestro.api.pathing.goals.GoalBlock;
 import maestro.api.utils.*;
-import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.MovementHelper;
 import maestro.process.ElytraProcess;

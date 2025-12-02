@@ -6,7 +6,6 @@ import maestro.api.debug.IHudDebugRenderer
 import maestro.api.event.events.RenderEvent
 import maestro.api.event.listener.AbstractGameEventListener
 import maestro.debug.hud.HudDebugRenderer
-import maestro.debug.world.WorldDebugRenderer
 
 /**
  * Main coordinator for debug rendering system.
@@ -17,11 +16,10 @@ import maestro.debug.world.WorldDebugRenderer
  * Registered as an [AbstractGameEventListener] to receive render events each frame.
  */
 class MaestroDebugRenderer(
-    private val agent: Agent,
+    agent: Agent,
 ) : IDebugRenderer,
     AbstractGameEventListener {
     private val hudRenderer = HudDebugRenderer(agent)
-    private val worldRenderer = WorldDebugRenderer(agent)
 
     override fun onRenderPass(event: RenderEvent) {
         if (!Agent.settings().debugEnabled.value) return
@@ -31,11 +29,4 @@ class MaestroDebugRenderer(
     }
 
     override fun getHudRenderer(): IHudDebugRenderer = hudRenderer
-
-    /**
-     * Get the world renderer for direct access if needed.
-     *
-     * @return the world renderer instance
-     */
-    fun getWorldRenderer(): WorldDebugRenderer = worldRenderer
 }

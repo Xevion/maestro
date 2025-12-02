@@ -148,7 +148,7 @@ public class LoggerConfiguratorTest {
         LoggerConfigurator.configure();
 
         Logger logger = context.getLogger("path");
-        assertTrue("Logger should have DEBUG level before reset", logger.getLevel() == Level.DEBUG);
+        assertSame("Logger should have DEBUG level before reset", logger.getLevel(), Level.DEBUG);
         assertFalse("Logger should have additivity=false before reset", logger.isAdditive());
 
         LoggerConfigurator.reset(true);

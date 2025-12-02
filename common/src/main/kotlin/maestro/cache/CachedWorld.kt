@@ -11,7 +11,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
@@ -192,13 +191,13 @@ class CachedWorld internal constructor(
             return
         }
 
-        val start = System.nanoTime() / 1000000L
+        System.nanoTime() / 1000000L
         allRegions()
             .parallelStream()
             .forEach { region ->
                 region.save(directory)
             }
-        val now = System.nanoTime() / 1000000L
+        System.nanoTime() / 1000000L
 
         prune()
         scope.launch {
@@ -254,11 +253,11 @@ class CachedWorld internal constructor(
     private fun allRegions(): List<CachedRegion> = cachedRegions.values.toList()
 
     override fun reloadAllFromDisk() {
-        val start = System.nanoTime() / 1000000L
+        System.nanoTime() / 1000000L
         allRegions().forEach { region ->
             region.load(directory)
         }
-        val now = System.nanoTime() / 1000000L
+        System.nanoTime() / 1000000L
     }
 
     override fun getRegion(
