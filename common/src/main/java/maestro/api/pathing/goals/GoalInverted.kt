@@ -27,5 +27,5 @@ data class GoalInverted(
 
     override fun hashCode(): Int = origin.hashCode() * 495796690
 
-    override fun toString(): String = "GoalInverted{$origin}"
+    override fun toString(): String = "GoalInverted[$origin]"
 }

@@ -3,6 +3,7 @@ package maestro.coordination
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.stub.StreamObserver
+import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.coordination.proto.Claim
 import maestro.coordination.proto.ClaimAreaRequest
@@ -250,9 +251,7 @@ class CoordinationServer {
                 log
                     .atDebug()
                     .addKeyValue("worker_id", workerId)
-                    .addKeyValue("center_x", center.x)
-                    .addKeyValue("center_y", center.y)
-                    .addKeyValue("center_z", center.z)
+                    .addKeyValue("center", LoggingUtils.formatCoords(center.x, center.y, center.z))
                     .addKeyValue("radius", radius)
                     .log("Area claimed")
             } else {

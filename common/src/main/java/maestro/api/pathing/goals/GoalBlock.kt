@@ -44,7 +44,7 @@ open class GoalBlock(
     override fun hashCode(): Int = (pack(x, y, z).packed * 905165533).toInt()
 
     override fun toString(): String =
-        "GoalBlock{x=${SettingsUtil.maybeCensor(x)},y=${SettingsUtil.maybeCensor(y)},z=${SettingsUtil.maybeCensor(z)}}"
+        "GoalBlock[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)}]"
 
     companion object {
         @JvmStatic

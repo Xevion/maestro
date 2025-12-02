@@ -13,6 +13,7 @@ import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
 import maestro.api.utils.BlockOptionalMetaLookup
 import maestro.api.utils.BlockUtils
+import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
@@ -222,9 +223,7 @@ class MineProcess(
                 if (!claimed) {
                     log
                         .atWarn()
-                        .addKeyValue("pos_x", currentPos.x)
-                        .addKeyValue("pos_y", currentPos.y)
-                        .addKeyValue("pos_z", currentPos.z)
+                        .addKeyValue("pos", LoggingUtils.formatPos(currentPos))
                         .addKeyValue("radius", radius)
                         .log("Area claim denied, pausing mining")
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
@@ -232,9 +231,7 @@ class MineProcess(
 
                 log
                     .atInfo()
-                    .addKeyValue("pos_x", currentPos.x)
-                    .addKeyValue("pos_y", currentPos.y)
-                    .addKeyValue("pos_z", currentPos.z)
+                    .addKeyValue("pos", LoggingUtils.formatPos(currentPos))
                     .addKeyValue("radius", radius)
                     .log("Area claimed")
 
@@ -546,7 +543,7 @@ class MineProcess(
                 log
                     .atError()
                     .addKeyValue("filter", filter)
-                    .log("Mining rejected - allowBreak disabled and filter not in allowBreakAnyway")
+                    .log("Mining rejected - allow-break disabled and filter not in allow-break-anyway")
                 return null
             }
             return f

@@ -128,7 +128,7 @@ class DevModeManager(
             log.atInfo().addKeyValue("lan_port", port).log("World opened to LAN")
             lanOpened = true
         } else {
-            log.atWarn().log("Failed to open world to LAN (publishServer returned false)")
+            log.atWarn().log("Failed to open world to LAN (publish-server returned false)")
         }
     }
 
@@ -163,7 +163,7 @@ class DevModeManager(
         if (server == null) {
             server = CoordinationServer()
             maestro.coordinationServer = server
-            log.atDebug().log("Created new CoordinationServer instance")
+            log.atDebug().log("Created new coordination-server instance")
         }
 
         log

@@ -44,7 +44,7 @@ open class GoalXZ(
         return hash
     }
 
-    override fun toString(): String = "GoalXZ{x=${SettingsUtil.maybeCensor(x)},z=${SettingsUtil.maybeCensor(z)}}"
+    override fun toString(): String = "GoalXZ[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(z)}]"
 
     @JvmName("getX")
     fun getX(): Int = x

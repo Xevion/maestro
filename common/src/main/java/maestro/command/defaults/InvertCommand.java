@@ -31,7 +31,7 @@ public class InvertCommand extends Command {
             goal = new GoalInverted(goal);
         }
         customGoalProcess.setGoalAndPath(goal);
-        log.atInfo().addKeyValue("goal", goal.toString()).log("Goal updated");
+        log.atInfo().addKeyValue("goal", goal).log("Goal updated");
     }
 
     @Override

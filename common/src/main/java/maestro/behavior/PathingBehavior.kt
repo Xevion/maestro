@@ -12,6 +12,7 @@ import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.goals.GoalXZ
 import maestro.api.process.PathingCommand
+import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
@@ -596,7 +597,7 @@ class PathingBehavior(
                 if (talkAboutIt) {
                     log
                         .atDebug()
-                        .addKeyValue("start", start)
+                        .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
                         .addKeyValue("goal", goal)
                         .log("Starting path search")
                 }
@@ -687,8 +688,8 @@ class PathingBehavior(
                     if (talkAboutIt && current != null && current!!.path != null) {
                         if (goal.isInGoal(current!!.path.getDest().toBlockPos())) {
                             log
-                                .atDebug()
-                                .addKeyValue("start", start)
+                                .atInfo()
+                                .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(
                                     "nodes_considered",
@@ -697,7 +698,7 @@ class PathingBehavior(
                         } else {
                             log
                                 .atDebug()
-                                .addKeyValue("start", start)
+                                .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(
                                     "nodes_considered",

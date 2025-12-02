@@ -36,7 +36,7 @@ public class GoalCommand extends Command {
             PackedBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             goalProcess.setGoal(goal);
-            log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");
+            log.atInfo().addKeyValue("goal", goal).log("Goal set");
         }
     }
 

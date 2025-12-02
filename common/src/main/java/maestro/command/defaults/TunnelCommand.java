@@ -105,7 +105,7 @@ public class TunnelCommand extends Command {
                     new GoalStrictDirection(
                             ctx.playerFeet().toBlockPos(), ctx.player().getDirection());
             maestro.getCustomGoalProcess().setGoalAndPath(goal);
-            log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");
+            log.atInfo().addKeyValue("goal", goal).log("Goal set");
         }
     }
 

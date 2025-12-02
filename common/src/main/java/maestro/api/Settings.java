@@ -173,9 +173,6 @@ public final class Settings {
      */
     public final Setting<Boolean> enableFreeLook = new Setting<>(true);
 
-    /** Enable debug logging for swimming behavior. Useful for tuning and troubleshooting. */
-    public final Setting<Boolean> logSwimming = new Setting<>(false);
-
     /**
      * Enable gamma-mode fullbright (clears lightmap texture to full white). Provides maximum
      * brightness in dark areas without affecting actual light levels.

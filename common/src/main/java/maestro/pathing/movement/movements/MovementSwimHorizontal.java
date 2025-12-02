@@ -8,6 +8,7 @@ import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.MovementStatus;
+import maestro.api.utils.LoggingUtils;
 import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
@@ -78,14 +79,10 @@ public class MovementSwimHorizontal extends Movement {
 
         // Swimming must be enabled
         if (!context.allowSwimming) {
-            if (Agent.settings().logSwimming.value) {
-                log.atDebug()
-                        .addKeyValue("x", x)
-                        .addKeyValue("y", y)
-                        .addKeyValue("z", z)
-                        .addKeyValue("reason", "swimming_disabled")
-                        .log("Horizontal swim rejected");
-            }
+            log.atDebug()
+                    .addKeyValue("pos", LoggingUtils.formatCoords(x, y, z))
+                    .addKeyValue("reason", "swimming_disabled")
+                    .log("Swim rejected");
             return COST_INF;
         }
 
@@ -95,45 +92,21 @@ public class MovementSwimHorizontal extends Movement {
         boolean srcIsWater = MovementHelper.isWater(srcState);
         boolean destIsWater = MovementHelper.isWater(destState);
         if (!srcIsWater || !destIsWater) {
-            if (Agent.settings().logSwimming.value) {
-                log.atDebug()
-                        .addKeyValue("src_x", x)
-                        .addKeyValue("src_y", y)
-                        .addKeyValue("src_z", z)
-                        .addKeyValue("dest_x", destX)
-                        .addKeyValue("dest_y", destY)
-                        .addKeyValue("dest_z", destZ)
-                        .addKeyValue("src_water", srcIsWater)
-                        .addKeyValue("dest_water", destIsWater)
-                        .addKeyValue("reason", "not_water")
-                        .log("Horizontal swim rejected");
-            }
+            log.atDebug()
+                    .addKeyValue("src", LoggingUtils.formatCoords(x, y, z))
+                    .addKeyValue("dest", LoggingUtils.formatCoords(destX, destY, destZ))
+                    .addKeyValue("reason", "not_water")
+                    .log("Swim rejected");
             return COST_INF;
         }
 
         // Destination must be passable for swimming
         if (!MovementHelper.canSwimThrough(context, destX, destY, destZ)) {
-            if (Agent.settings().logSwimming.value) {
-                log.atDebug()
-                        .addKeyValue("x", destX)
-                        .addKeyValue("y", destY)
-                        .addKeyValue("z", destZ)
-                        .addKeyValue("reason", "blocked")
-                        .log("Horizontal swim rejected");
-            }
-            return COST_INF;
-        }
-
-        if (Agent.settings().logSwimming.value) {
             log.atDebug()
-                    .addKeyValue("cost", baseCost)
-                    .addKeyValue("src_x", x)
-                    .addKeyValue("src_y", y)
-                    .addKeyValue("src_z", z)
-                    .addKeyValue("dest_x", destX)
-                    .addKeyValue("dest_y", destY)
-                    .addKeyValue("dest_z", destZ)
-                    .log("Horizontal swim cost calculated");
+                    .addKeyValue("dest", LoggingUtils.formatCoords(destX, destY, destZ))
+                    .addKeyValue("reason", "blocked")
+                    .log("Swim rejected");
+            return COST_INF;
         }
 
         // Apply flowing water penalty (30% slower)

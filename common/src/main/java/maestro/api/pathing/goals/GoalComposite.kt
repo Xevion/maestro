@@ -29,7 +29,12 @@ class GoalComposite(
 
     override fun hashCode(): Int = goals.contentHashCode()
 
-    override fun toString(): String = "GoalComposite${goals.contentToString()}"
+    override fun toString(): String =
+        if (goals.size > 5) {
+            "GoalComposite[${goals.size} goals]"
+        } else {
+            "GoalComposite${goals.contentToString()}"
+        }
 
     fun goals(): Array<out Goal> = goals
 }

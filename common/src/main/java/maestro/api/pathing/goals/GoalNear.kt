@@ -74,5 +74,5 @@ data class GoalNear(
     override fun hashCode(): Int = pack(x, y, z).packed.toInt() + rangeSq
 
     override fun toString(): String =
-        "GoalNear{x=${SettingsUtil.maybeCensor(x)}, y=${SettingsUtil.maybeCensor(y)}, z=${SettingsUtil.maybeCensor(z)}, rangeSq=$rangeSq}"
+        "GoalNear[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)},$rangeSq]"
 }

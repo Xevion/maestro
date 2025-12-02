@@ -135,7 +135,7 @@ class BuilderProcess(
         this.stopAtHeight = schematic.heightY()
         if (Agent.settings().buildOnlySelection.value && buildingSelectionSchematic) {
             if (maestro.selectionManager.selections.isEmpty()) {
-                log.atWarn().log("No selection set while BuildOnlySelection is enabled")
+                log.atWarn().log("No selection set while build-only-selection enabled")
                 this.stopAtHeight = 0
             } else if (Agent.settings().buildInLayers.value) {
                 val minim =

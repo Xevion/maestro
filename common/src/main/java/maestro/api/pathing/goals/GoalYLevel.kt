@@ -22,7 +22,7 @@ data class GoalYLevel(
 
     override fun hashCode(): Int = level * 1271009915
 
-    override fun toString(): String = "GoalYLevel{y=${SettingsUtil.maybeCensor(level)}}"
+    override fun toString(): String = "GoalYLevel[${SettingsUtil.maybeCensor(level)}]"
 
     companion object {
         @JvmStatic

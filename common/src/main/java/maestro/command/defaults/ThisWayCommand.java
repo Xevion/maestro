@@ -36,7 +36,7 @@ public class ThisWayCommand extends Command {
 
         GoalXZ goal = GoalXZ.fromDirection(origin, yaw, args.getAs(Double.class));
         maestro.getCustomGoalProcess().setGoal(goal);
-        log.atInfo().addKeyValue("goal", goal.toString()).log("Goal set");
+        log.atInfo().addKeyValue("goal", goal).log("Goal set");
     }
 
     @Override

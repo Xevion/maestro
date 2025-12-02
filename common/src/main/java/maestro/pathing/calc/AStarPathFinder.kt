@@ -4,6 +4,7 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.ActionCosts
+import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
@@ -106,7 +107,7 @@ class AStarPathFinder
 
                 if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
                     log
-                        .atDebug()
+                        .atInfo()
                         .addKeyValue("duration_ms", System.currentTimeMillis() - startTime)
                         .addKeyValue("movements_considered", numMovementsConsidered)
                         .log("Path found")
@@ -158,8 +159,8 @@ class AStarPathFinder
                         if (calcContext.failureMemory.shouldFilter(src, dest, movementClass)) {
                             log
                                 .atDebug()
-                                .addKeyValue("source", src)
-                                .addKeyValue("destination", dest)
+                                .addKeyValue("src", LoggingUtils.formatPos(src))
+                                .addKeyValue("dest", LoggingUtils.formatPos(dest))
                                 .addKeyValue("movement_type", movement::class.java.simpleName)
                                 .log("Filtered movement due to excessive failures")
                             continue
@@ -170,12 +171,12 @@ class AStarPathFinder
                         if (penalty > 1.0) {
                             log
                                 .atDebug()
-                                .addKeyValue("source", src)
-                                .addKeyValue("destination", dest)
+                                .addKeyValue("src", LoggingUtils.formatPos(src))
+                                .addKeyValue("dest", LoggingUtils.formatPos(dest))
                                 .addKeyValue("movement_type", movement::class.java.simpleName)
-                                .addKeyValue("penalty", penalty)
-                                .addKeyValue("original_cost", actionCost)
-                                .addKeyValue("penalized_cost", actionCost * penalty)
+                                .addKeyValue("penalty", LoggingUtils.formatFloat(penalty))
+                                .addKeyValue("original_cost", LoggingUtils.formatFloat(actionCost))
+                                .addKeyValue("penalized_cost", LoggingUtils.formatFloat(actionCost * penalty))
                                 .log("Applying failure penalty")
                             actionCost *= penalty
                         }

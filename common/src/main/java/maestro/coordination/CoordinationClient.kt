@@ -3,6 +3,7 @@ package maestro.coordination
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusRuntimeException
+import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.coordination.proto.ClaimAreaRequest
 import maestro.coordination.proto.ConnectRequest
@@ -154,9 +155,7 @@ class CoordinationClient(
 
                 log
                     .atInfo()
-                    .addKeyValue("center_x", center.x)
-                    .addKeyValue("center_y", center.y)
-                    .addKeyValue("center_z", center.z)
+                    .addKeyValue("center", LoggingUtils.formatPos(center))
                     .addKeyValue("radius", radius)
                     .log("Area claim granted")
 
@@ -202,9 +201,7 @@ class CoordinationClient(
 
                 log
                     .atDebug()
-                    .addKeyValue("center_x", center.x)
-                    .addKeyValue("center_y", center.y)
-                    .addKeyValue("center_z", center.z)
+                    .addKeyValue("center", LoggingUtils.formatPos(center))
                     .log("Area released")
             }
 

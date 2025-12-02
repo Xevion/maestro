@@ -44,7 +44,7 @@ public class SurfaceCommand extends Command {
             if (!(ctx.world().getBlockState(newPos.toBlockPos()).getBlock() instanceof AirBlock)
                     && newPos.getY() > playerPos.getY()) {
                 Goal goal = new GoalBlock(newPos.toBlockPos().above());
-                log.atInfo().addKeyValue("goal", goal.toString()).log("Going to goal");
+                log.atInfo().addKeyValue("goal", goal).log("Goal set");
                 maestro.getCustomGoalProcess().setGoalAndPath(goal);
                 return;
             }

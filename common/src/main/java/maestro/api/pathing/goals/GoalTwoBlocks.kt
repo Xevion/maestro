@@ -45,5 +45,5 @@ open class GoalTwoBlocks(
     override fun hashCode(): Int = (pack(x, y, z).packed * 516508351).toInt()
 
     override fun toString(): String =
-        "GoalTwoBlocks{x=${SettingsUtil.maybeCensor(x)},y=${SettingsUtil.maybeCensor(y)},z=${SettingsUtil.maybeCensor(z)}}"
+        "GoalTwoBlocks[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)}]"
 }

@@ -48,5 +48,5 @@ open class GoalGetToBlock(
     override fun hashCode(): Int = (pack(x, y, z).packed * -49639096).toInt()
 
     override fun toString(): String =
-        "GoalGetToBlock{x=${SettingsUtil.maybeCensor(x)},y=${SettingsUtil.maybeCensor(y)},z=${SettingsUtil.maybeCensor(z)}}"
+        "GoalGetToBlock[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)}]"
 }

@@ -29,7 +29,7 @@ public class RenderCommand extends Command {
                         origin.getX() + renderDistance,
                         ctx.world().getMaxY(),
                         origin.getZ() + renderDistance);
-        log.atInfo().log("Done");
+        log.atInfo().log("Chunk rendering refreshed");
     }
 
     @Override

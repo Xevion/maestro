@@ -51,7 +51,7 @@ public class SetCommand extends Command {
             SettingsUtil.modifiedSettings(Agent.settings()).forEach(Settings.Setting::reset);
             // then load from disk
             SettingsUtil.readAndApply(Agent.settings(), file);
-            log.atInfo().log("Settings reloaded from " + file);
+            log.atInfo().addKeyValue("file", file).log("Settings reloaded");
             return;
         }
         boolean viewModified = Arrays.asList("m", "mod", "modified").contains(arg);

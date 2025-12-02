@@ -58,6 +58,6 @@ data class GoalStrictDirection(
     }
 
     override fun toString(): String =
-        "GoalStrictDirection{x=${SettingsUtil.maybeCensor(x)}, y=${SettingsUtil.maybeCensor(y)}, " +
-            "z=${SettingsUtil.maybeCensor(z)}, dx=${SettingsUtil.maybeCensor(dx)}, dz=${SettingsUtil.maybeCensor(dz)}}"
+        "GoalStrictDirection[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)}," +
+            "${SettingsUtil.maybeCensor(z)},${SettingsUtil.maybeCensor(dx)},${SettingsUtil.maybeCensor(dz)}]"
 }
