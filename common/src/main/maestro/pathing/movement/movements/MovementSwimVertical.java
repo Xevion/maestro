@@ -9,7 +9,6 @@ import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.LoggingUtils;
 import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
@@ -81,10 +80,6 @@ public class MovementSwimVertical extends Movement {
 
         // Swimming must be enabled
         if (!context.allowSwimming) {
-            log.atDebug()
-                    .addKeyValue("pos", LoggingUtils.formatCoords(x, y, z))
-                    .addKeyValue("reason", "swimming_disabled")
-                    .log("Swim rejected");
             return ActionCosts.COST_INF;
         }
 
@@ -96,20 +91,11 @@ public class MovementSwimVertical extends Movement {
         boolean srcIsWater = MovementHelper.isWater(srcState);
         boolean destIsWater = MovementHelper.isWater(destState);
         if (!srcIsWater || !destIsWater) {
-            log.atDebug()
-                    .addKeyValue("src", LoggingUtils.formatCoords(x, y, z))
-                    .addKeyValue("dest", LoggingUtils.formatCoords(x, destY, z))
-                    .addKeyValue("reason", "not_water")
-                    .log("Swim rejected");
             return ActionCosts.COST_INF;
         }
 
         // Destination must be passable for swimming
         if (!MovementHelper.canSwimThrough(context, x, destY, z)) {
-            log.atDebug()
-                    .addKeyValue("dest", LoggingUtils.formatCoords(x, destY, z))
-                    .addKeyValue("reason", "blocked")
-                    .log("Swim rejected");
             return ActionCosts.COST_INF;
         }
 

@@ -1015,36 +1015,31 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
 
         final int finalAdjustedPosition = adjustedPathPosition;
-        return SplicedPath.trySplice(currentPath, next.path, false)
-                .map(
-                        splicedPath -> {
-                            if (!splicedPath.getDest().equals(next.getPath().getDest())) {
-                                throw new IllegalStateException(
-                                        String.format(
-                                                "Path has end %s instead of %s after splicing",
-                                                splicedPath.getDest(), next.getPath().getDest()));
-                            }
-                            PathExecutor ret = new PathExecutor(behavior, splicedPath);
-                            ret.pathPosition = finalAdjustedPosition;
-                            ret.corridor = new PathCorridor(splicedPath, finalAdjustedPosition);
-                            ret.currentMovementOriginalCostEstimate =
-                                    currentMovementOriginalCostEstimate;
-                            ret.costEstimateIndex = costEstimateIndex;
-                            ret.ticksOnCurrent = ticksOnCurrent;
+        SplicedPath splicedPath = SplicedPath.trySplice(currentPath, next.path, false);
+        if (splicedPath != null) {
+            if (!splicedPath.getDest().equals(next.getPath().getDest())) {
+                throw new IllegalStateException(
+                        String.format(
+                                "Path has end %s instead of %s after splicing",
+                                splicedPath.getDest(), next.getPath().getDest()));
+            }
+            PathExecutor ret = new PathExecutor(behavior, splicedPath);
+            ret.pathPosition = finalAdjustedPosition;
+            ret.corridor = new PathCorridor(splicedPath, finalAdjustedPosition);
+            ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
+            ret.costEstimateIndex = costEstimateIndex;
+            ret.ticksOnCurrent = ticksOnCurrent;
 
-                            log.atDebug()
-                                    .addKeyValue("spliced_length", splicedPath.length())
-                                    .addKeyValue("position", finalAdjustedPosition)
-                                    .log("Successfully spliced paths");
+            log.atDebug()
+                    .addKeyValue("spliced_length", splicedPath.length())
+                    .addKeyValue("position", finalAdjustedPosition)
+                    .log("Successfully spliced paths");
 
-                            return ret;
-                        })
-                .orElseGet(
-                        () -> {
-                            log.atDebug().log("Splice failed, falling back to cutIfTooLong");
-                            return cutIfTooLong();
-                        }); // don't actually call cutIfTooLong every tick if we
-        // won't actually use it, use a method reference
+            return ret;
+        } else {
+            log.atDebug().log("Splice failed, falling back to cutIfTooLong");
+            return cutIfTooLong();
+        }
     }
 
     private PathExecutor cutIfTooLong() {
