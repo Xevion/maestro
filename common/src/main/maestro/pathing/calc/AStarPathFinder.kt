@@ -111,7 +111,7 @@ class AStarPathFinder
                         .addKeyValue("duration_ms", System.currentTimeMillis() - startTime)
                         .addKeyValue("movements_considered", numMovementsConsidered)
                         .log("Path found")
-                    return Optional.of(Path(realStart, startNode, currentNode, numNodes, goal, calcContext))
+                    return Optional.of(Path(realStart, startNode!!, currentNode, numNodes, goal, calcContext))
                 }
 
                 // Generate movements for current position
@@ -216,12 +216,6 @@ class AStarPathFinder
 
                         // Store movement reference directly in node
                         neighbor.previousMovement = movement
-
-                        // Keep ordinal for backward compatibility
-                        @Suppress("DEPRECATION")
-                        if (movement is Movement) {
-                            neighbor.movementOrdinal = movement.movesOrdinal.toByte()
-                        }
 
                         if (neighbor.isOpen()) {
                             openSet.update(neighbor)

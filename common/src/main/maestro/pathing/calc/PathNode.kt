@@ -5,7 +5,6 @@ import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.IMovement
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.pack
-import maestro.pathing.movement.Moves
 
 /** A node in the path, containing the cost and steps to get to it. */
 class PathNode(
@@ -36,29 +35,16 @@ class PathNode(
 
     /**
      * Where is this node in the array flattenization of the binary heap? Needed for decrease-key
-     * operations.
+     * operations. Internal visibility for better encapsulation.
      */
-    @JvmField
-    var heapPosition: Int = -1
+    internal var heapPosition: Int = -1
 
     /**
      * The movement used to reach this node from previous node. Storing the movement directly
-     * eliminates the need to reconstruct it later via runBackwards(). If null, fallback to
-     * movementOrdinal lookup for backward compatibility.
+     * eliminates the need to reconstruct it later.
      */
     @JvmField
     var previousMovement: IMovement? = null
-
-    /**
-     * The movement enum ordinal used to reach this node from previous node. -1 indicates no
-     * movement recorded (start node or legacy path). Kept for backward compatibility during
-     * migration; prefer using previousMovement when available.
-     *
-     * @deprecated Use [previousMovement] instead for direct movement access
-     */
-    @Deprecated("Use previousMovement instead")
-    @JvmField
-    var movementOrdinal: Byte = -1
 
     init {
         require(!estimatedCostToGoal.isNaN()) {
@@ -69,15 +55,6 @@ class PathNode(
 
     @JvmName("isOpen")
     fun isOpen(): Boolean = heapPosition != -1
-
-    /**
-     * Get the Moves enum value that was used to reach this node from its previous node.
-     *
-     * @return The Moves enum, or null if not recorded
-     */
-    @JvmName("getMovement")
-    @Suppress("DEPRECATION")
-    fun getMovement(): Moves? = if (movementOrdinal < 0) null else Moves.entries[movementOrdinal.toInt()]
 
     /**
      * TODO: Possibly reimplement hashCode and equals. They are necessary for this class to function

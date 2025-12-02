@@ -151,7 +151,7 @@ abstract class AbstractNodeCostSearch(
     override fun pathToMostRecentNodeConsidered(): Optional<IPath> =
         Optional
             .ofNullable(mostRecentConsidered)
-            .map { node -> Path(realStart, startNode, node, 0, goal, context) }
+            .map { node -> Path(realStart, startNode!!, node, 0, goal, context) }
 
     override fun bestPathSoFar(): Optional<IPath> = bestSoFar(false, 0)
 
@@ -178,7 +178,7 @@ abstract class AbstractNodeCostSearch(
                         .addKeyValue("cost_coefficient", COEFFICIENTS[i])
                         .log("Using A* cost coefficient")
                 }
-                return Optional.of(Path(realStart, startNode, node, numNodes, goal, context))
+                return Optional.of(Path(realStart, startNode!!, node, numNodes, goal, context))
             }
         }
 
