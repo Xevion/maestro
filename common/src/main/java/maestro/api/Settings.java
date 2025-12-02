@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import maestro.api.utils.Helper;
-import maestro.api.utils.NotificationHelper;
 import maestro.api.utils.SettingsUtil;
 import maestro.api.utils.TypeUtils;
 import maestro.api.utils.gui.MaestroToast;
@@ -1427,7 +1426,7 @@ public final class Settings {
      */
     @JavaOnly
     public final Setting<BiConsumer<String, Boolean>> notifier =
-            new Setting<>(NotificationHelper::notify);
+            new Setting<>(Helper::notifySystem);
 
     /**
      * The function that is called when Maestro will show a toast. This function can be added to via

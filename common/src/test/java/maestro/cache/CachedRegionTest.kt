@@ -1,7 +1,7 @@
 package maestro.cache
 
-import junit.framework.TestCase
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class CachedRegionTest {
     @Test
@@ -17,9 +17,9 @@ class CachedRegionTest {
                     if (x != decodedX || y != decodedY || z != decodedZ) {
                         println("$x $decodedX $y $decodedY $z $decodedZ")
                     }
-                    TestCase.assertEquals(x, decodedX)
-                    TestCase.assertEquals(y, decodedY)
-                    TestCase.assertEquals(z, decodedZ)
+                    assertEquals(x, decodedX)
+                    assertEquals(y, decodedY)
+                    assertEquals(z, decodedZ)
                 }
             }
         }

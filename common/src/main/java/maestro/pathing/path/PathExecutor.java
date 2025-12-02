@@ -21,6 +21,7 @@ import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.movements.*;
 import maestro.pathing.recovery.FailureReason;
 import maestro.pathing.recovery.PathRecoveryManager;
+import maestro.pathing.recovery.RecoveryAction;
 import maestro.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -101,6 +102,8 @@ public class PathExecutor implements IPathExecutor, Helper {
      * @return True if a movement just finished (and the player is therefore in a "stable" state,
      *     like, not sneaking out over lava), false otherwise
      */
+    @SuppressWarnings(
+            "NonAtomicVolatileUpdate") // Single-writer (game thread), multiple-reader pattern
     public boolean onTick() {
         if (pathPosition == path.length() - 1) {
             pathPosition++;
@@ -182,32 +185,27 @@ public class PathExecutor implements IPathExecutor, Helper {
                 if (ticksAway > MAX_TICKS_AWAY) {
                     // Try recovery via reconnection
                     if (movement.safeToCancel()) {
-                        PathRecoveryManager.RecoveryAction action =
+                        RecoveryAction action =
                                 recoveryManager.handleCorridorDeviation(
                                         whereAmI,
                                         path,
                                         corridor.currentSegment(),
                                         behavior.secretInternalGetCalculationContext());
 
-                        switch (action.type()) {
-                            case RECONNECT_PATH:
-                                jumpToReconnectionPoint(action.reconnectionIndex());
-                                ticksAway = 0;
-                                log.atInfo()
-                                        .addKeyValue(
-                                                "distance", LoggingUtils.formatFloat(distToPath))
-                                        .addKeyValue("ticks_away", ticksAway)
-                                        .log("Successfully reconnected to path");
-                                return false;
-                            case CANCEL_PATH:
-                                // Fall through to cancel below
-                                break;
-                            case CONTINUE:
-                                // Recovery wants us to keep trying - don't cancel yet
-                                return false;
-                            default:
-                                throw new IllegalStateException(
-                                        "Unknown recovery type: " + action.type());
+                        if (action instanceof RecoveryAction.Reconnect) {
+                            jumpToReconnectionPoint(
+                                    ((RecoveryAction.Reconnect) action).getPathIndex());
+                            ticksAway = 0;
+                            log.atInfo()
+                                    .addKeyValue("distance", LoggingUtils.formatFloat(distToPath))
+                                    .addKeyValue("ticks_away", ticksAway)
+                                    .log("Successfully reconnected to path");
+                            return false;
+                        } else if (action instanceof RecoveryAction.Cancel) {
+                            // Fall through to cancel below
+                        } else if (action instanceof RecoveryAction.Continue) {
+                            // Recovery wants us to keep trying - don't cancel yet
+                            return false;
                         }
                     }
 
@@ -365,21 +363,20 @@ public class PathExecutor implements IPathExecutor, Helper {
             behavior.failureMemory.recordFailure(movement, reason);
 
             // Try recovery via alternative movements
-            PathRecoveryManager.RecoveryAction action =
+            RecoveryAction action =
                     recoveryManager.handleMovementFailure(
                             movement, ctx.playerFeet(), path, pathPosition, movementStatus, reason);
 
-            switch (action.type()) {
-                case RETRY_MOVEMENT:
-                    replaceCurrentMovement(action.movement());
-                    return false; // Don't cancel - continue with alternative
-                case CANCEL_PATH:
-                    cancel();
-                    return true;
-                case CONTINUE:
-                    return false; // Keep trying current movement
-                default:
-                    throw new IllegalStateException("Unknown recovery type: " + action.type());
+            if (action instanceof RecoveryAction.Retry) {
+                replaceCurrentMovement(((RecoveryAction.Retry) action).getMovement());
+                return false; // Don't cancel - continue with alternative
+            } else if (action instanceof RecoveryAction.Cancel) {
+                cancel();
+                return true;
+            } else if (action instanceof RecoveryAction.Continue) {
+                return false; // Keep trying current movement
+            } else {
+                throw new IllegalStateException("Unknown recovery type: " + action.getClass());
             }
         }
         if (movementStatus == SUCCESS) {
@@ -521,6 +518,8 @@ public class PathExecutor implements IPathExecutor, Helper {
         return true;
     }
 
+    @SuppressWarnings(
+            "NonAtomicVolatileUpdate") // Single-writer (game thread), multiple-reader pattern
     private boolean shouldSprintNextTick() {
         boolean requested =
                 behavior.maestro.getInputOverrideHandler().isInputForcedDown(Input.SPRINT);

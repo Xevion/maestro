@@ -1,35 +1,27 @@
 package maestro.pathing.calc.openset;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
+import java.util.stream.Stream;
 import maestro.api.pathing.goals.Goal;
 import maestro.pathing.calc.PathNode;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class OpenSetsTest {
 
-    private final int size;
-
-    public OpenSetsTest(int size) {
-        this.size = size;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        ArrayList<Object[]> testSizes = new ArrayList<>();
+    static Stream<Integer> testSizes() {
+        ArrayList<Integer> sizes = new ArrayList<>();
         for (int size = 1; size < 20; size++) {
-            testSizes.add(new Object[] {size});
+            sizes.add(size);
         }
         for (int size = 100; size <= 1000; size += 100) {
-            testSizes.add(new Object[] {size});
+            sizes.add(size);
         }
-        testSizes.add(new Object[] {5000});
-        testSizes.add(new Object[] {10000});
-        return testSizes;
+        sizes.add(5000);
+        sizes.add(10000);
+        return sizes.stream();
     }
 
     private static void removeAndTest(
@@ -64,8 +56,9 @@ public class OpenSetsTest {
         }
     }
 
-    @Test
-    public void testSize() {
+    @ParameterizedTest
+    @MethodSource("testSizes")
+    public void testSize(int size) {
         System.out.println("Testing size " + size);
         // Include LinkedListOpenSet even though it's not performant because I absolutely trust that
         // it behaves properly

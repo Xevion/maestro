@@ -1,11 +1,11 @@
 package maestro.api.utils
 
 import net.minecraft.core.BlockPos
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for PackedBlockPos, particularly the equals() override that handles
@@ -54,8 +54,8 @@ class PackedBlockPosTest {
         val blockPos = BlockPos(100, 64, 200)
 
         // PackedBlockPos.equals(BlockPos) should work with our override
-        assertTrue("PackedBlockPos.equals(BlockPos) should return true", packed == blockPos)
-        assertEquals("PackedBlockPos.equals(BlockPos) should return true", packed, blockPos)
+        assertTrue(packed == blockPos, "PackedBlockPos.equals(BlockPos) should return true")
+        assertEquals(packed, blockPos, "PackedBlockPos.equals(BlockPos) should return true")
     }
 
     /**
@@ -70,8 +70,8 @@ class PackedBlockPosTest {
         val packed = PackedBlockPos(100, 64, 200)
 
         // BlockPos.equals(PackedBlockPos) always returns false (Minecraft limitation)
-        assertFalse("BlockPos.equals(PackedBlockPos) returns false (known limitation)", blockPos == packed)
-        assertNotEquals("BlockPos.equals(PackedBlockPos) returns false (known limitation)", blockPos, packed)
+        assertFalse(blockPos == packed, "BlockPos.equals(PackedBlockPos) returns false (known limitation)")
+        assertNotEquals(blockPos, packed, "BlockPos.equals(PackedBlockPos) returns false (known limitation)")
     }
 
     @Test

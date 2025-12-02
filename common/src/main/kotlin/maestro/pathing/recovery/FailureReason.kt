@@ -1,12 +1,12 @@
-package maestro.pathing.recovery;
+package maestro.pathing.recovery
 
 /**
  * Reasons why a movement execution might fail.
  *
- * <p>Used by {@link MovementFailureMemory} to categorize failures and apply appropriate recovery
+ * Used by [MovementFailureMemory] to categorize failures and apply appropriate recovery
  * strategies.
  */
-public enum FailureReason {
+enum class FailureReason {
     /** Server rejected the movement (e.g., teleport packet rejected) */
     SERVER_REJECTED,
 

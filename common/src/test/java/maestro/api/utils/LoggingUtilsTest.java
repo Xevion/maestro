@@ -1,10 +1,10 @@
 package maestro.api.utils;
 
 import static maestro.api.utils.LoggingUtils.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.minecraft.core.BlockPos;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LoggingUtilsTest {
 

@@ -19,7 +19,15 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Helper class that provides access or processes data related to Litematica schematics. */
+/**
+ * Helper class that provides access or processes data related to Litematica schematics.
+ *
+ * @deprecated Litematica mod is unmaintained and unavailable for modern Minecraft versions. This
+ *     integration is legacy code that always throws LinkageError at runtime. Schematic support may
+ *     be reimplemented using alternative formats in the future. Scheduled for removal in next major
+ *     version.
+ */
+@Deprecated(since = "1.21.4", forRemoval = true)
 public final class LitematicaHelper {
 
     /**

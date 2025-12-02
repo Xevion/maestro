@@ -1,6 +1,6 @@
 package maestro.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -9,9 +9,9 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import java.util.Iterator;
 import maestro.api.utils.LoggerConfigurator;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 /** Tests for {@link LoggerConfigurator} programmatic logger configuration. */
@@ -19,14 +19,14 @@ public class LoggerConfiguratorTest {
 
     private LoggerContext context;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         context = (LoggerContext) LoggerFactory.getILoggerFactory();
         // Reset configuration before each test
         LoggerConfigurator.reset(true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Clean up after tests
         LoggerConfigurator.reset(true);
@@ -39,7 +39,7 @@ public class LoggerConfiguratorTest {
         // Verify each category logger exists
         for (String category : new String[] {"path", "mine", "combat", "farm"}) {
             Logger logger = context.getLogger(category);
-            assertNotNull("Logger should exist for category: " + category, logger);
+            assertNotNull(logger, "Logger should exist for category: " + category);
         }
     }
 
@@ -51,9 +51,9 @@ public class LoggerConfiguratorTest {
         for (String category : new String[] {"path", "mine", "combat", "farm"}) {
             Logger logger = context.getLogger(category);
             assertEquals(
-                    "Logger should have DEBUG level for category: " + category,
                     Level.DEBUG,
-                    logger.getLevel());
+                    logger.getLevel(),
+                    "Logger should have DEBUG level for category: " + category);
         }
     }
 
@@ -65,8 +65,8 @@ public class LoggerConfiguratorTest {
         for (String category : new String[] {"path", "mine", "combat", "farm"}) {
             Logger logger = context.getLogger(category);
             assertFalse(
-                    "Logger should have additivity=false for category: " + category,
-                    logger.isAdditive());
+                    logger.isAdditive(),
+                    "Logger should have additivity=false for category: " + category);
         }
     }
 
@@ -85,7 +85,7 @@ public class LoggerConfiguratorTest {
 
         // Should have CONSOLE and CHAT appenders (2 total)
         // Note: This assumes logback.xml has been loaded
-        assertTrue("Logger should have at least 1 appender attached", appenderCount >= 1);
+        assertTrue(appenderCount >= 1, "Logger should have at least 1 appender attached");
     }
 
     @Test
@@ -114,33 +114,33 @@ public class LoggerConfiguratorTest {
         }
 
         assertEquals(
-                "Multiple configure() calls should not add duplicate appenders",
                 appenderCount,
-                appenderCountAfter);
+                appenderCountAfter,
+                "Multiple configure() calls should not add duplicate appenders");
     }
 
     @Test
     public void testConfigurationSetsFlag() {
         assertFalse(
-                "Configuration flag should be false before configure()",
-                LoggerConfigurator.isConfigured());
+                LoggerConfigurator.isConfigured(),
+                "Configuration flag should be false before configure()");
 
         LoggerConfigurator.configure();
 
         assertTrue(
-                "Configuration flag should be true after configure()",
-                LoggerConfigurator.isConfigured());
+                LoggerConfigurator.isConfigured(),
+                "Configuration flag should be true after configure()");
     }
 
     @Test
     public void testResetClearsFlag() {
         LoggerConfigurator.configure();
-        assertTrue("Configuration flag should be true", LoggerConfigurator.isConfigured());
+        assertTrue(LoggerConfigurator.isConfigured(), "Configuration flag should be true");
 
         LoggerConfigurator.reset(false);
         assertFalse(
-                "Configuration flag should be false after reset",
-                LoggerConfigurator.isConfigured());
+                LoggerConfigurator.isConfigured(),
+                "Configuration flag should be false after reset");
     }
 
     @Test
@@ -148,23 +148,23 @@ public class LoggerConfiguratorTest {
         LoggerConfigurator.configure();
 
         Logger logger = context.getLogger("path");
-        assertSame("Logger should have DEBUG level before reset", logger.getLevel(), Level.DEBUG);
-        assertFalse("Logger should have additivity=false before reset", logger.isAdditive());
+        assertSame(Level.DEBUG, logger.getLevel(), "Logger should have DEBUG level before reset");
+        assertFalse(logger.isAdditive(), "Logger should have additivity=false before reset");
 
         LoggerConfigurator.reset(true);
 
         // After reset with detach, logger should be back to defaults
-        assertFalse("Configuration flag should be false", LoggerConfigurator.isConfigured());
+        assertFalse(LoggerConfigurator.isConfigured(), "Configuration flag should be false");
 
         // Verify appenders are detached
         Iterator<Appender<ILoggingEvent>> iter = logger.iteratorForAppenders();
-        assertFalse("Logger should have no appenders after reset(true)", iter.hasNext());
+        assertFalse(iter.hasNext(), "Logger should have no appenders after reset(true)");
 
         // Verify level is reset (null = inherit from parent)
-        assertNull("Logger level should be null after reset", logger.getLevel());
+        assertNull(logger.getLevel(), "Logger level should be null after reset");
 
         // Verify additivity is reset to default (true)
-        assertTrue("Logger additivity should be true after reset", logger.isAdditive());
+        assertTrue(logger.isAdditive(), "Logger additivity should be true after reset");
     }
 
     @Test
@@ -177,8 +177,8 @@ public class LoggerConfiguratorTest {
         // Should work the same as first time
         Logger logger = context.getLogger("path");
         assertEquals(
-                "Logger should have DEBUG level after reconfigure", Level.DEBUG, logger.getLevel());
-        assertFalse("Logger should have additivity=false after reconfigure", logger.isAdditive());
+                Level.DEBUG, logger.getLevel(), "Logger should have DEBUG level after reconfigure");
+        assertFalse(logger.isAdditive(), "Logger should have additivity=false after reconfigure");
 
         int appenderCount = 0;
         Iterator<Appender<ILoggingEvent>> iter = logger.iteratorForAppenders();
@@ -186,7 +186,7 @@ public class LoggerConfiguratorTest {
             iter.next();
             appenderCount++;
         }
-        assertTrue("Logger should have appenders after reconfigure", appenderCount >= 1);
+        assertTrue(appenderCount >= 1, "Logger should have appenders after reconfigure");
     }
 
     @Test
@@ -203,12 +203,12 @@ public class LoggerConfiguratorTest {
         for (String category : allCategories) {
             Logger logger = context.getLogger(category);
             assertEquals(
-                    "All categories should have DEBUG level: " + category,
                     Level.DEBUG,
-                    logger.getLevel());
+                    logger.getLevel(),
+                    "All categories should have DEBUG level: " + category);
             assertFalse(
-                    "All categories should have additivity=false: " + category,
-                    logger.isAdditive());
+                    logger.isAdditive(),
+                    "All categories should have additivity=false: " + category);
         }
     }
 }

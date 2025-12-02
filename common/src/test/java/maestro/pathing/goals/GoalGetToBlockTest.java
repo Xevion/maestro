@@ -1,13 +1,13 @@
 package maestro.pathing.goals;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import maestro.api.pathing.goals.GoalGetToBlock;
 import net.minecraft.core.BlockPos;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GoalGetToBlockTest {
 
@@ -27,12 +27,12 @@ public class GoalGetToBlockTest {
                     String repr = x + "," + y + "," + z;
                     System.out.println(repr + " " + inGoal);
                     if (inGoal) {
-                        assertTrue(repr, acceptableOffsets.contains(repr));
+                        assertTrue(acceptableOffsets.contains(repr), repr);
                         acceptableOffsets.remove(repr);
                     }
                 }
             }
         }
-        assertTrue(acceptableOffsets.toString(), acceptableOffsets.isEmpty());
+        assertTrue(acceptableOffsets.isEmpty(), acceptableOffsets.toString());
     }
 }

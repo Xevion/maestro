@@ -1,9 +1,9 @@
 package maestro.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import maestro.api.utils.MaestroLogger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 /** Tests for {@link MaestroLogger} logger factory. */
@@ -35,14 +35,14 @@ public class MaestroLoggerTest {
 
         for (String category : categories) {
             Logger log = MaestroLogger.get(category);
-            assertNotNull("Logger for category " + category + " should not be null", log);
+            assertNotNull(log, "Logger for category " + category + " should not be null");
             assertEquals(category, log.getName());
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidCategoryThrows() {
-        MaestroLogger.get("invalid");
+        assertThrows(IllegalArgumentException.class, () -> MaestroLogger.get("invalid"));
     }
 
     @Test
@@ -68,13 +68,13 @@ public class MaestroLoggerTest {
     public void testSameLoggerInstance() {
         Logger log1 = MaestroLogger.get("path");
         Logger log2 = MaestroLogger.get("path");
-        assertSame("Should return same logger instance for same category", log1, log2);
+        assertSame(log1, log2, "Should return same logger instance for same category");
     }
 
     @Test
     public void testDifferentCategories() {
         Logger pathLog = MaestroLogger.get("path");
         Logger mineLog = MaestroLogger.get("mine");
-        assertNotSame("Different categories should have different loggers", pathLog, mineLog);
+        assertNotSame(pathLog, mineLog, "Different categories should have different loggers");
     }
 }
