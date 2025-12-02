@@ -73,6 +73,10 @@ public class PathExecutor implements IPathExecutor, Helper {
     private int ticksSinceReconnection = -1; // -1 means no recent reconnection
     private static final int RECONNECTION_SPLICE_DELAY_TICKS = 4;
 
+    // Prevent splicing immediately after movement replacement to avoid path structure corruption
+    private int ticksSinceMovementReplacement = -1; // -1 means no recent replacement
+    private static final int MOVEMENT_REPLACEMENT_SPLICE_DELAY_TICKS = 4;
+
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
         this.ctx = behavior.ctx;
@@ -94,6 +98,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (pathPosition >= path.length()) {
             ticksSinceReconnection = -1; // Clear for next path
+            ticksSinceMovementReplacement = -1; // Clear for next path
             return true; // stop bugging me, I'm done
         }
 
@@ -103,6 +108,15 @@ public class PathExecutor implements IPathExecutor, Helper {
                 ticksSinceReconnection++;
             } else if (ticksSinceReconnection == RECONNECTION_SPLICE_DELAY_TICKS) {
                 ticksSinceReconnection = -1; // Reset after delay expires
+            }
+        }
+
+        // Increment movement replacement counter to allow splicing after delay
+        if (ticksSinceMovementReplacement >= 0) {
+            if (ticksSinceMovementReplacement < MOVEMENT_REPLACEMENT_SPLICE_DELAY_TICKS) {
+                ticksSinceMovementReplacement++;
+            } else if (ticksSinceMovementReplacement == MOVEMENT_REPLACEMENT_SPLICE_DELAY_TICKS) {
+                ticksSinceMovementReplacement = -1; // Reset after delay expires
             }
         }
 
@@ -881,6 +895,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         ticksOnCurrent = 0;
         currentMovementOriginalCostEstimate = newMovement.getCost();
 
+        // Prevent splicing until replaced movement completes. Splicing with a recently-replaced
+        // movement can cause path structure corruption due to interaction with CutoffPath overlap
+        // detection.
+        ticksSinceMovementReplacement = 0;
+
         log.atDebug()
                 .addKeyValue("position", pathPosition)
                 .addKeyValue("new_movement", newMovement.getClass().getSimpleName())
@@ -941,6 +960,17 @@ public class PathExecutor implements IPathExecutor, Helper {
             log.atDebug()
                     .addKeyValue("ticks_since_reconnection", ticksSinceReconnection)
                     .log("Skipping splice due to recent reconnection");
+            return this;
+        }
+
+        // Prevent splicing immediately after movement replacement to avoid path structure
+        // corruption. When a movement is replaced, the path structure may become temporarily
+        // inconsistent until the replaced movement either completes or is no longer accessed.
+        if (ticksSinceMovementReplacement >= 0
+                && ticksSinceMovementReplacement < MOVEMENT_REPLACEMENT_SPLICE_DELAY_TICKS) {
+            log.atDebug()
+                    .addKeyValue("ticks_since_replacement", ticksSinceMovementReplacement)
+                    .log("Skipping splice due to recent movement replacement");
             return this;
         }
 
