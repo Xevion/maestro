@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import maestro.api.MaestroAPI;
+import maestro.api.Setting;
 import maestro.api.Settings;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.IDatatype;
@@ -279,7 +280,7 @@ public class TabCompleteHelper {
         return append(
                 MaestroAPI.getSettings().allSettings.stream()
                         .filter(s -> !s.isJavaOnly())
-                        .map(Settings.Setting::getName)
+                        .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
     }
 
@@ -291,7 +292,7 @@ public class TabCompleteHelper {
     public TabCompleteHelper addModifiedSettings() {
         return append(
                 SettingsUtil.modifiedSettings(MaestroAPI.getSettings()).stream()
-                        .map(Settings.Setting::getName)
+                        .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
     }
 
@@ -304,7 +305,7 @@ public class TabCompleteHelper {
     public TabCompleteHelper addToggleableSettings() {
         return append(
                 MaestroAPI.getSettings().getAllValuesByType(Boolean.class).stream()
-                        .map(Settings.Setting::getName)
+                        .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
     }
 }

@@ -3,17 +3,17 @@ package maestro.debug
 import com.mojang.blaze3d.platform.InputConstants
 import maestro.Agent
 import maestro.api.MaestroAPI
+import maestro.gui.MaestroScreen
 import maestro.utils.InputOverrideHandler
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
-import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 
 /**
- * Manages debug rendering keybindings.
+ * Manages debug keybindings.
  *
  * Keybindings:
- * - Grave (`) - Toggle debug rendering on/off
+ * - Grave (`) - Toggle GUI
  * - G - Toggle freecam
  */
 object DebugKeybindings {
@@ -64,12 +64,20 @@ object DebugKeybindings {
     fun tick() {
         if (cycleDetailKey == null || toggleDebugKey == null) return
 
-        // Grave: Toggle debug rendering
-        val gravePressed = isGravePressed()
-        if (gravePressed && !wasGravePressed) {
-            toggleDebugRendering()
+        // Grave key: Toggle GUI
+        val mc = Minecraft.getInstance()
+        val agent = MaestroAPI.getProvider().primaryAgent as? Agent
+        if (agent != null) {
+            val gravePressed = isGravePressed()
+            if (gravePressed && !wasGravePressed) {
+                if (mc.screen is MaestroScreen) {
+                    mc.setScreen(null)
+                } else if (mc.screen == null) {
+                    mc.setScreen(MaestroScreen(agent))
+                }
+            }
+            wasGravePressed = gravePressed
         }
-        wasGravePressed = gravePressed
 
         // G key: Toggle freecam
         val gPressed = isGPressed()
@@ -77,19 +85,6 @@ object DebugKeybindings {
             toggleFreecam()
         }
         wasGPressed = gPressed
-    }
-
-    /** Toggle debug rendering on/off. */
-    private fun toggleDebugRendering() {
-        val settings = MaestroAPI.getSettings()
-        val newValue = !settings.debugEnabled.value
-        settings.debugEnabled.value = newValue
-
-        val status = if (newValue) "ON" else "OFF"
-        Minecraft
-            .getInstance()
-            .gui.chat
-            .addMessage(Component.literal("Debug: $status"))
     }
 
     /** Check if grave accent key is pressed. */

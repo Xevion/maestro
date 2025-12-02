@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import maestro.api.MaestroAPI;
+import maestro.api.Setting;
 import maestro.api.Settings;
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
@@ -77,7 +78,7 @@ public class SettingsUtil {
 
     public static synchronized void save(Settings settings) {
         try (BufferedWriter out = Files.newBufferedWriter(settingsByName(SETTINGS_DEFAULT_NAME))) {
-            for (Settings.Setting setting : modifiedSettings(settings)) {
+            for (Setting setting : modifiedSettings(settings)) {
                 out.write(settingToString(setting) + "\n");
             }
         } catch (Exception ex) {
@@ -89,9 +90,9 @@ public class SettingsUtil {
         return Minecraft.getInstance().gameDirectory.toPath().resolve("maestro").resolve(name);
     }
 
-    public static List<Settings.Setting> modifiedSettings(Settings settings) {
-        List<Settings.Setting> modified = new ArrayList<>();
-        for (Settings.Setting setting : settings.allSettings) {
+    public static List<Setting> modifiedSettings(Settings settings) {
+        List<Setting> modified = new ArrayList<>();
+        for (Setting setting : settings.allSettings) {
             if (setting.value == null) {
                 System.out.println("NULL SETTING?" + setting.getName());
                 continue;
@@ -116,11 +117,11 @@ public class SettingsUtil {
      * @param setting The setting
      * @return The type
      */
-    public static String settingTypeToString(Settings.Setting setting) {
+    public static String settingTypeToString(Setting setting) {
         return setting.getType().getTypeName().replaceAll("(?:\\w+\\.)+(\\w+)", "$1");
     }
 
-    public static <T> String settingValueToString(Settings.Setting<T> setting, T value)
+    public static <T> String settingValueToString(Setting<T> setting, T value)
             throws IllegalArgumentException {
         SettingParser.Parser io = SettingParser.Parser.getParser(setting.getType());
 
@@ -132,14 +133,12 @@ public class SettingsUtil {
         return io.toString(setting.getType(), value);
     }
 
-    public static String settingValueToString(Settings.Setting setting)
-            throws IllegalArgumentException {
+    public static String settingValueToString(Setting setting) throws IllegalArgumentException {
         //noinspection unchecked
         return settingValueToString(setting, setting.value);
     }
 
-    public static String settingDefaultToString(Settings.Setting setting)
-            throws IllegalArgumentException {
+    public static String settingDefaultToString(Setting setting) throws IllegalArgumentException {
         //noinspection unchecked
         return settingValueToString(setting, setting.defaultValue);
     }
@@ -152,7 +151,7 @@ public class SettingsUtil {
         return Integer.toString(coord);
     }
 
-    public static String settingToString(Settings.Setting setting) throws IllegalStateException {
+    public static String settingToString(Setting setting) throws IllegalStateException {
         if (setting.isJavaOnly()) {
             return setting.getName();
         }
@@ -162,7 +161,7 @@ public class SettingsUtil {
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue)
             throws IllegalStateException, NumberFormatException {
-        Settings.Setting<?> setting = settings.byLowerName.get(settingName);
+        Setting<?> setting = settings.byLowerName.get(settingName);
         if (setting == null) {
             throw new IllegalStateException("No setting by that name");
         }
@@ -183,7 +182,7 @@ public class SettingsUtil {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> void setSettingValue(Settings.Setting<T> setting, Object value) {
+    private static <T> void setSettingValue(Setting<T> setting, Object value) {
         setting.value = (T) value;
     }
 }

@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.MaestroAPI;
+import maestro.api.Setting;
 import maestro.api.Settings;
 import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.exception.CommandException;
@@ -91,7 +92,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
         String rest = msg.substring(pair.getA().length());
         ArgConsumer argc = new ArgConsumer(this.manager, pair.getB());
         if (!argc.hasAny()) {
-            Settings.Setting<?> setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
+            Setting<?> setting = settings.byLowerName.get(command.toLowerCase(Locale.US));
             if (setting != null) {
                 logRanCommand(command, rest);
                 if (setting.getValueClass() == Boolean.class) {
@@ -102,7 +103,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                 return true;
             }
         } else if (argc.hasExactlyOne()) {
-            for (Settings.Setting setting : settings.allSettings) {
+            for (Setting setting : settings.allSettings) {
                 if (setting.isJavaOnly()) {
                     continue;
                 }
@@ -158,7 +159,7 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                                     .filterPrefix(argc.getString())
                                     .stream();
                 }
-                Settings.Setting<?> setting =
+                Setting<?> setting =
                         settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
                 if (setting != null && !setting.isJavaOnly()) {
                     if (setting.getValueClass() == Boolean.class) {

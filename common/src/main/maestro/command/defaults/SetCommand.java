@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
-import maestro.api.Settings;
+import maestro.api.Setting;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeFile;
@@ -48,7 +48,7 @@ public class SetCommand extends Command {
                 file = args.getString();
             }
             // reset to defaults
-            SettingsUtil.modifiedSettings(Agent.settings()).forEach(Settings.Setting::reset);
+            SettingsUtil.modifiedSettings(Agent.settings()).forEach(Setting::reset);
             // then load from disk
             SettingsUtil.readAndApply(Agent.settings(), file);
             log.atInfo().addKeyValue("file", file).log("Settings reloaded");
@@ -65,14 +65,14 @@ public class SetCommand extends Command {
             args.requireMax(1);
 
             // Collect all candidates (filtered for Java-only)
-            List<Settings.Setting> allCandidates =
+            List<Setting> allCandidates =
                     (viewModified
                                     ? SettingsUtil.modifiedSettings(Agent.settings())
                                     : Agent.settings().allSettings)
                             .stream().filter(s -> !s.isJavaOnly()).collect(Collectors.toList());
 
             // Use fuzzy search for non-empty queries, alphabetical sort for empty
-            List<? extends Settings.Setting> toPaginate =
+            List<? extends Setting> toPaginate =
                     search.isEmpty()
                             ? allCandidates.stream()
                                     .sorted(
@@ -81,11 +81,7 @@ public class SetCommand extends Command {
                                                             s1.getName(), s2.getName()))
                                     .collect(Collectors.toList())
                             : FuzzySearchHelper.search(
-                                    search,
-                                    allCandidates,
-                                    Settings.Setting::getName,
-                                    60,
-                                    Integer.MAX_VALUE);
+                                    search, allCandidates, Setting::getName, 60, Integer.MAX_VALUE);
             Paginator.paginate(
                     args,
                     new Paginator<>(toPaginate),
@@ -166,7 +162,7 @@ public class SetCommand extends Command {
                 log.atInfo().log(
                         "Specify a setting name instead of 'all' to only reset one setting");
             } else if (args.peekString().equalsIgnoreCase("all")) {
-                SettingsUtil.modifiedSettings(Agent.settings()).forEach(Settings.Setting::reset);
+                SettingsUtil.modifiedSettings(Agent.settings()).forEach(Setting::reset);
                 log.atInfo().log("All settings have been reset to their default values");
                 SettingsUtil.save(Agent.settings());
                 return;
@@ -176,7 +172,7 @@ public class SetCommand extends Command {
             args.requireMin(1);
         }
         String settingName = doingSomething ? args.getString() : arg;
-        Settings.Setting<?> setting =
+        Setting<?> setting =
                 Agent.settings().allSettings.stream()
                         .filter(s -> s.getName().equalsIgnoreCase(settingName))
                         .findFirst()
@@ -205,7 +201,7 @@ public class SetCommand extends Command {
                             args.consumed(), "a toggleable setting", "some other setting");
                 }
                 //noinspection unchecked
-                Settings.Setting<Boolean> asBoolSetting = (Settings.Setting<Boolean>) setting;
+                Setting<Boolean> asBoolSetting = (Setting<Boolean>) setting;
                 asBoolSetting.value ^= true;
                 log.atInfo().log(
                         String.format(
@@ -304,8 +300,7 @@ public class SetCommand extends Command {
                                     .resolve("maestro")
                                     .toFile());
                 }
-                Settings.Setting<?> setting =
-                        Agent.settings().byLowerName.get(arg.toLowerCase(Locale.US));
+                Setting<?> setting = Agent.settings().byLowerName.get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
