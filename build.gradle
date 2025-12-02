@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
-    id 'com.diffplug.spotless' version '7.0.3'
+    id 'com.diffplug.spotless' version '8.1.0'
     id 'org.jetbrains.kotlin.jvm' version '2.2.21' apply false
     id 'com.google.protobuf' version '0.9.4' apply false
     id 'net.ltgt.errorprone' version '4.1.0' apply false
