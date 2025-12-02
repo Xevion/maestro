@@ -6,6 +6,7 @@ import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.registry.Registry;
 
+@SuppressWarnings("ImmutableEnumChecker")
 public enum ArgParserManager implements IArgParserManager {
     INSTANCE;
 

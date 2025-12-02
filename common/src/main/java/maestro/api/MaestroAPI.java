@@ -16,10 +16,10 @@ public final class MaestroAPI {
 
         try {
             provider =
-                    (IMaestroProvider)
-                            Class.forName("maestro.MaestroProvider")
-                                    .getDeclaredConstructor()
-                                    .newInstance();
+                    Class.forName("maestro.MaestroProvider")
+                            .asSubclass(IMaestroProvider.class)
+                            .getDeclaredConstructor()
+                            .newInstance();
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }

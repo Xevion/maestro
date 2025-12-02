@@ -1,5 +1,7 @@
 package maestro.api.command.datatypes;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -78,8 +80,9 @@ public enum ForBlockOptionalMeta implements IDatatypeFor<BlockOptionalMeta> {
         if (!lastProperty.contains("=")) {
             // The last property-value pair doesn't have a value yet so we are completing its name
             Set<String> usedProps =
-                    Stream.of(leadingProperties.split(","))
-                            .map(pair -> pair.split("=")[0])
+                    Splitter.on(',')
+                            .splitToStream(leadingProperties)
+                            .map(pair -> Iterables.get(Splitter.on('=').split(pair), 0))
                             .collect(Collectors.toSet());
 
             String prefix = arg.substring(0, arg.length() - lastProperty.length());

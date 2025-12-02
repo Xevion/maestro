@@ -217,6 +217,7 @@ class AStarPathFinder
                         neighbor.previousMovement = movement
 
                         // Keep ordinal for backward compatibility
+                        @Suppress("DEPRECATION")
                         if (movement is Movement) {
                             neighbor.movementOrdinal = movement.movesOrdinal.toByte()
                         }

@@ -112,7 +112,8 @@ public class ExampleMaestroControl extends Behavior implements Helper {
                         this.manager.execute(
                                 String.format("set %s %s", setting.getName(), argc.getString()));
                     } catch (CommandException ignored) {
-                    } // The operation is safe
+                        // Ignored - the operation is safe and errors are expected
+                    }
                     return true;
                 }
             }

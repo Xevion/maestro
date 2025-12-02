@@ -1,8 +1,8 @@
 package maestro.command.argument;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
@@ -15,8 +15,12 @@ import maestro.api.command.datatypes.IDatatypeFor;
 import maestro.api.command.datatypes.IDatatypePost;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.manager.ICommandManager;
+import maestro.api.utils.MaestroLogger;
+import org.slf4j.Logger;
 
 public class ArgConsumer implements IArgConsumer {
+
+    private static final Logger log = MaestroLogger.get("cmd");
 
     /**
      * The parent {@link ICommandManager} for this {@link IArgConsumer}}. Used by {@link #context}.
@@ -33,7 +37,7 @@ public class ArgConsumer implements IArgConsumer {
     private final IDatatypeContext context;
 
     /** The list of arguments in this ArgConsumer */
-    private final LinkedList<ICommandArgument> args;
+    private final List<ICommandArgument> args;
 
     /**
      * The list of consumed arguments for this ArgConsumer. The most recently consumed argument is
@@ -47,16 +51,16 @@ public class ArgConsumer implements IArgConsumer {
             Deque<ICommandArgument> consumed) {
         this.manager = manager;
         this.context = this.new Context();
-        this.args = new LinkedList<>(args);
-        this.consumed = new LinkedList<>(consumed);
+        this.args = new ArrayList<>(args);
+        this.consumed = new ArrayDeque<>(consumed);
     }
 
     public ArgConsumer(ICommandManager manager, List<ICommandArgument> args) {
-        this(manager, new LinkedList<>(args), new LinkedList<>());
+        this(manager, new ArrayDeque<>(args), new ArrayDeque<>());
     }
 
     @Override
-    public LinkedList<ICommandArgument> getArgs() {
+    public List<ICommandArgument> getArgs() {
         return this.args;
     }
 
@@ -245,7 +249,7 @@ public class ArgConsumer implements IArgConsumer {
     @Override
     public ICommandArgument get() throws CommandException {
         requireMin(1);
-        ICommandArgument arg = args.removeFirst();
+        ICommandArgument arg = args.remove(0);
         consumed.add(arg);
         return arg;
     }
@@ -372,14 +376,17 @@ public class ArgConsumer implements IArgConsumer {
         } catch (CommandException ignored) {
             // NOP
         } catch (Exception e) {
-            e.printStackTrace();
+            log.atError()
+                    .setCause(e)
+                    .addKeyValue("datatype", datatype.getClass().getSimpleName())
+                    .log("Tab completion failed");
         }
         return Stream.empty();
     }
 
     @Override
     public String rawRest() {
-        return !args.isEmpty() ? args.getFirst().getRawRest() : "";
+        return !args.isEmpty() ? args.get(0).getRawRest() : "";
     }
 
     @Override
@@ -419,7 +426,7 @@ public class ArgConsumer implements IArgConsumer {
 
     @Override
     public ArgConsumer copy() {
-        return new ArgConsumer(manager, args, consumed);
+        return new ArgConsumer(manager, new ArrayDeque<>(args), consumed);
     }
 
     /**

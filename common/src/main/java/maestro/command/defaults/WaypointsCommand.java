@@ -2,6 +2,8 @@ package maestro.command.defaults;
 
 import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
 
+import com.google.common.collect.ImmutableList;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -62,7 +64,8 @@ public class WaypointsCommand extends Command {
                                                     ? ChatFormatting.GRAY
                                                     : ChatFormatting.DARK_GRAY));
                     MutableComponent timestamp =
-                            Component.literal(" @ " + new Date(waypoint.getCreationTimestamp()));
+                            Component.literal(
+                                    " @ " + Instant.ofEpochMilli(waypoint.getCreationTimestamp()));
                     timestamp.setStyle(timestamp.getStyle().withColor(ChatFormatting.DARK_GRAY));
                     component.append(tagComponent);
                     component.append(nameComponent);
@@ -81,7 +84,7 @@ public class WaypointsCommand extends Command {
                                                             "%s%s %s %s @ %d",
                                                             FORCE_COMMAND_PREFIX,
                                                             label,
-                                                            _action.names[0],
+                                                            _action.names.get(0),
                                                             waypoint.getTag().getName(),
                                                             waypoint.getCreationTimestamp()))));
                     return component;
@@ -114,7 +117,7 @@ public class WaypointsCommand extends Command {
                                 "%s%s %s%s",
                                 FORCE_COMMAND_PREFIX,
                                 label,
-                                action.names[0],
+                                action.names.get(0),
                                 tag != null ? " " + tag.getName() : ""));
             } else {
                 args.requireMax(0);
@@ -258,7 +261,7 @@ public class WaypointsCommand extends Command {
                                 "%s%s %s %s",
                                 FORCE_COMMAND_PREFIX,
                                 label,
-                                action.names[0],
+                                action.names.get(0),
                                 args.consumedString()));
             } else {
                 if (action == Action.INFO) {
@@ -478,10 +481,10 @@ public class WaypointsCommand extends Command {
         RESTORE("restore"),
         GOAL("goal", "g"),
         GOTO("goto");
-        private final String[] names;
+        private final ImmutableList<String> names;
 
         Action(String... names) {
-            this.names = names;
+            this.names = ImmutableList.copyOf(names);
         }
 
         public static Action getByName(String name) {
@@ -498,7 +501,7 @@ public class WaypointsCommand extends Command {
         public static String[] getAllNames() {
             Set<String> names = new HashSet<>();
             for (Action action : Action.values()) {
-                names.addAll(Arrays.asList(action.names));
+                names.addAll(action.names);
             }
             return names.toArray(new String[0]);
         }

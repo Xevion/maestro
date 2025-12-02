@@ -40,7 +40,7 @@ interface ICommandException {
         val errorMsg = Component.literal("[cmd] ")
         errorMsg.style = errorMsg.style.withColor(ChatFormatting.AQUA)
 
-        val messageComponent = Component.literal(this.message)
+        val messageComponent = Component.literal(this.message ?: "Unknown error")
         messageComponent.style = messageComponent.style.withColor(ChatFormatting.RED)
         errorMsg.append(messageComponent)
 

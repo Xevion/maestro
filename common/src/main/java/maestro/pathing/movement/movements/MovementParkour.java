@@ -191,16 +191,19 @@ public class MovementParkour extends Movement {
             for (int j = 0; j < 5; j++) {
                 int againstX =
                         destX
-                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j]
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                        .get(j)
                                         .getStepX();
                 int againstY =
                         y
                                 - 1
-                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j]
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                        .get(j)
                                         .getStepY();
                 int againstZ =
                         destZ
-                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j]
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                        .get(j)
                                         .getStepZ();
                 if (againstX == destX - xDiff
                         && againstZ == destZ - zDiff) { // we can't turn around that fast

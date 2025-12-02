@@ -22,7 +22,7 @@ public class MovementKey {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof MovementKey)) return false;
         MovementKey that = (MovementKey) o;
         return (source.equals(that.source) && destination.equals(that.destination));
     }

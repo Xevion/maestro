@@ -67,7 +67,8 @@ public class SettingsUtil {
                             return;
                         }
 
-                        String settingName = matcher.group("setting").toLowerCase();
+                        String settingName =
+                                matcher.group("setting").toLowerCase(java.util.Locale.ROOT);
                         String settingValue = matcher.group("value");
                         // TODO remove soonish
                         if ("allowjumpat256".equals(settingName)) {
@@ -185,7 +186,8 @@ public class SettingsUtil {
      * @return true if the setting can not be set or read by the user
      */
     @Deprecated
-    public static boolean javaOnlySetting(Settings.Setting setting) {
+    @com.google.errorprone.annotations.InlineMe(replacement = "setting.isJavaOnly()")
+    public static final boolean javaOnlySetting(Settings.Setting setting) {
         return setting.isJavaOnly();
     }
 
@@ -225,6 +227,7 @@ public class SettingsUtil {
         boolean accepts(Type type);
     }
 
+    @SuppressWarnings("ImmutableEnumChecker")
     private enum Parser implements ISettingParser {
         DOUBLE(Double.class, Double::parseDouble),
         BOOLEAN(Boolean.class, Boolean::parseBoolean),
@@ -236,19 +239,25 @@ public class SettingsUtil {
         ROTATION(Rotation.class, Rotation::valueOf, Rotation::name),
         COLOR(
                 Color.class,
-                str ->
-                        new Color(
-                                Integer.parseInt(str.split(",")[0]),
-                                Integer.parseInt(str.split(",")[1]),
-                                Integer.parseInt(str.split(",")[2])),
+                str -> {
+                    Iterator<String> it =
+                            com.google.common.base.Splitter.on(',').split(str).iterator();
+                    return new Color(
+                            Integer.parseInt(it.next()),
+                            Integer.parseInt(it.next()),
+                            Integer.parseInt(it.next()));
+                },
                 color -> color.getRed() + "," + color.getGreen() + "," + color.getBlue()),
         VEC3I(
                 Vec3i.class,
-                str ->
-                        new Vec3i(
-                                Integer.parseInt(str.split(",")[0]),
-                                Integer.parseInt(str.split(",")[1]),
-                                Integer.parseInt(str.split(",")[2])),
+                str -> {
+                    Iterator<String> it =
+                            com.google.common.base.Splitter.on(',').split(str).iterator();
+                    return new Vec3i(
+                            Integer.parseInt(it.next()),
+                            Integer.parseInt(it.next()),
+                            Integer.parseInt(it.next()));
+                },
                 vec -> vec.getX() + "," + vec.getY() + "," + vec.getZ()),
         BLOCK(
                 Block.class,

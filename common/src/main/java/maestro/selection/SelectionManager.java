@@ -1,6 +1,6 @@
 package maestro.selection;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.ListIterator;
 import maestro.Agent;
 import maestro.api.selection.ISelection;
@@ -10,7 +10,7 @@ import net.minecraft.core.Direction;
 
 public class SelectionManager implements ISelectionManager {
 
-    private final LinkedList<ISelection> selections = new LinkedList<>();
+    private final ArrayList<ISelection> selections = new ArrayList<>();
     private ISelection[] selectionsArr = new ISelection[0];
 
     public SelectionManager(Agent maestro) {
@@ -56,7 +56,7 @@ public class SelectionManager implements ISelectionManager {
     @Override
     public synchronized ISelection getOnlySelection() {
         if (selections.size() == 1) {
-            return selections.peekFirst();
+            return selections.get(0);
         }
 
         return null;
@@ -64,7 +64,8 @@ public class SelectionManager implements ISelectionManager {
 
     @Override
     public ISelection getLastSelection() {
-        return selections.peekLast();
+        if (selections.isEmpty()) return null;
+        return selections.get(selections.size() - 1);
     }
 
     @Override

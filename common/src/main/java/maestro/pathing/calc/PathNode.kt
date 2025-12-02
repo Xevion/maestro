@@ -76,6 +76,7 @@ class PathNode(
      * @return The Moves enum, or null if not recorded
      */
     @JvmName("getMovement")
+    @Suppress("DEPRECATION")
     fun getMovement(): Moves? = if (movementOrdinal < 0) null else Moves.entries[movementOrdinal.toInt()]
 
     /**

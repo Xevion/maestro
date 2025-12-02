@@ -1,5 +1,6 @@
 package maestro.pathing.movement;
 
+import com.google.common.collect.ImmutableList;
 import java.util.*;
 import maestro.Agent;
 import maestro.api.IAgent;
@@ -16,9 +17,14 @@ import net.minecraft.world.phys.AABB;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
-    public static final Direction[] HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP = {
-        Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, Direction.DOWN
-    };
+    public static final ImmutableList<Direction>
+            HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP =
+                    ImmutableList.of(
+                            Direction.NORTH,
+                            Direction.SOUTH,
+                            Direction.EAST,
+                            Direction.WEST,
+                            Direction.DOWN);
 
     protected final IAgent maestro;
     protected final IPlayerContext ctx;

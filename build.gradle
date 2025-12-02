@@ -64,6 +64,9 @@ allprojects {
             disable('EmptyBlockTag')   // Common in Minecraft mod code
             disable('UnusedMethod')    // Mixin methods appear unused to ErrorProne
             disable('UnusedVariable')  // Mixin injected params appear unused
+
+            // Exclude generated code
+            excludedPaths = '.*/build/generated/.*'
         }
     }
 

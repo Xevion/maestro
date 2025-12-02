@@ -94,7 +94,7 @@ public class HelpCommand extends Command {
                     },
                     FORCE_COMMAND_PREFIX + label);
         } else {
-            String commandName = args.getString().toLowerCase();
+            String commandName = args.getString().toLowerCase(java.util.Locale.ROOT);
             ICommand command = this.maestro.getCommandManager().getCommand(commandName);
             if (command == null) {
                 throw new CommandException.NotFound(commandName);

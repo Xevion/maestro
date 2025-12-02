@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(LootTable.class)
 public abstract class MixinLootTable implements ILootTable {
 
+    @Override
     @Invoker
     public abstract ObjectArrayList<ItemStack> invokeGetRandomItems(LootContext context);
 }

@@ -104,7 +104,7 @@ public final class ElytraBehavior {
 
     // auto swap
     private int invTickCountdown = 0;
-    private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
+    private final Queue<Runnable> invTransactionQueue = new ArrayDeque<>();
 
     public ElytraBehavior(
             Agent maestro, ElytraProcess process, BlockPos destination, boolean appendDestination) {
@@ -256,37 +256,41 @@ public final class ElytraBehavior {
             final long start = System.nanoTime();
             final PackedBlockPos pathStart = this.path.get(afterIncl);
 
-            this.path0(
-                            pathStart.toBlockPos(),
-                            ElytraBehavior.this.destination.toBlockPos(),
-                            segment -> segment.prepend(before.stream()))
-                    .thenRun(
-                            () -> {
-                                final int recompute = this.path.size() - before.size() - 1;
-                                final double distance =
-                                        this.path.getFirst().distanceTo(this.path.get(recompute));
+            var future =
+                    this.path0(
+                                    pathStart.toBlockPos(),
+                                    ElytraBehavior.this.destination.toBlockPos(),
+                                    segment -> segment.prepend(before.stream()))
+                            .thenRun(
+                                    () -> {
+                                        final int recompute = this.path.size() - before.size() - 1;
+                                        final double distance =
+                                                this.path
+                                                        .getFirst()
+                                                        .distanceTo(this.path.get(recompute));
 
-                                if (this.completePath) {
-                                    if (Agent.settings().elytraChatSpam.value) {
-                                        log.atDebug()
-                                                .addKeyValue("distance_blocks", distance)
-                                                .addKeyValue(
-                                                        "duration_sec",
-                                                        (System.nanoTime() - start) / 1e9d)
-                                                .log("Computed path");
-                                    }
-                                } else {
-                                    if (Agent.settings().elytraChatSpam.value) {
-                                        log.atDebug()
-                                                .addKeyValue("distance_blocks", distance)
-                                                .addKeyValue(
-                                                        "duration_sec",
-                                                        (System.nanoTime() - start) / 1e9d)
-                                                .log("Computed segment");
-                                    }
-                                }
-                            })
-                    .whenComplete(
+                                        if (this.completePath) {
+                                            if (Agent.settings().elytraChatSpam.value) {
+                                                log.atDebug()
+                                                        .addKeyValue("distance_blocks", distance)
+                                                        .addKeyValue(
+                                                                "duration_sec",
+                                                                (System.nanoTime() - start) / 1e9d)
+                                                        .log("Computed path");
+                                            }
+                                        } else {
+                                            if (Agent.settings().elytraChatSpam.value) {
+                                                log.atDebug()
+                                                        .addKeyValue("distance_blocks", distance)
+                                                        .addKeyValue(
+                                                                "duration_sec",
+                                                                (System.nanoTime() - start) / 1e9d)
+                                                        .log("Computed segment");
+                                            }
+                                        }
+                                    });
+            var unused =
+                    future.whenComplete(
                             (result, ex) -> {
                                 this.recalculating = false;
                                 if (ex != null) {
@@ -394,15 +398,16 @@ public final class ElytraBehavior {
 
             if (ElytraBehavior.this.process.state != ElytraProcess.State.LANDING
                     && this.ticksNearUnchanged > 100) {
-                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
-                        .thenRun(
-                                () -> {
-                                    if (Agent.settings().elytraChatSpam.value) {
-                                        log.atDebug().log(
-                                                "Recalculating segment, no progress in last 100"
-                                                        + " ticks");
-                                    }
-                                });
+                var unused =
+                        this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
+                                .thenRun(
+                                        () -> {
+                                            if (Agent.settings().elytraChatSpam.value) {
+                                                log.atDebug().log(
+                                                        "Recalculating segment, no progress in last"
+                                                                + " 100 ticks");
+                                            }
+                                        });
                 this.ticksNearUnchanged = 0;
                 return;
             }
@@ -439,46 +444,51 @@ public final class ElytraBehavior {
                                                     rejoinMainPathAt.orElse(path.size() - 1)));
 
                     final long start = System.nanoTime();
-                    this.pathRecalcSegment(rejoinMainPathAt)
-                            .thenRun(
-                                    () -> {
-                                        if (Agent.settings().elytraChatSpam.value) {
-                                            log.atDebug()
-                                                    .addKeyValue(
-                                                            "blockage_x",
-                                                            SettingsUtil.maybeCensor(
-                                                                    blockage.getX()))
-                                                    .addKeyValue(
-                                                            "blockage_y",
-                                                            SettingsUtil.maybeCensor(
-                                                                    blockage.getY()))
-                                                    .addKeyValue(
-                                                            "blockage_z",
-                                                            SettingsUtil.maybeCensor(
-                                                                    blockage.getZ()))
-                                                    .addKeyValue("distance_blocks", distance)
-                                                    .addKeyValue(
-                                                            "duration_sec",
-                                                            (System.nanoTime() - start) / 1e9d)
-                                                    .log(
-                                                            "Recalculated segment around path"
-                                                                    + " blockage");
-                                        }
-                                    });
+                    var unused =
+                            this.pathRecalcSegment(rejoinMainPathAt)
+                                    .thenRun(
+                                            () -> {
+                                                if (Agent.settings().elytraChatSpam.value) {
+                                                    log.atDebug()
+                                                            .addKeyValue(
+                                                                    "blockage_x",
+                                                                    SettingsUtil.maybeCensor(
+                                                                            blockage.getX()))
+                                                            .addKeyValue(
+                                                                    "blockage_y",
+                                                                    SettingsUtil.maybeCensor(
+                                                                            blockage.getY()))
+                                                            .addKeyValue(
+                                                                    "blockage_z",
+                                                                    SettingsUtil.maybeCensor(
+                                                                            blockage.getZ()))
+                                                            .addKeyValue(
+                                                                    "distance_blocks", distance)
+                                                            .addKeyValue(
+                                                                    "duration_sec",
+                                                                    (System.nanoTime() - start)
+                                                                            / 1e9d)
+                                                            .log(
+                                                                    "Recalculated segment around"
+                                                                            + " path blockage");
+                                                }
+                                            });
                     return;
                 }
             }
             if (!canSeeAny
                     && rangeStartIncl < rangeEndExcl - 2
                     && process.state != ElytraProcess.State.GET_TO_JUMP) {
-                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
-                        .thenRun(
-                                () -> {
-                                    if (Agent.settings().elytraChatSpam.value) {
-                                        log.atDebug().log(
-                                                "Recalculated segment, no path points visible");
-                                    }
-                                });
+                var unused =
+                        this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
+                                .thenRun(
+                                        () -> {
+                                            if (Agent.settings().elytraChatSpam.value) {
+                                                log.atDebug().log(
+                                                        "Recalculated segment, no path points"
+                                                                + " visible");
+                                            }
+                                        });
             }
         }
 
@@ -616,7 +626,7 @@ public final class ElytraBehavior {
 
     public void pathTo() {
         if (!Agent.settings().elytraAutoJump.value || ctx.player().isFallFlying()) {
-            this.pathManager.pathToDestination();
+            var unused = this.pathManager.pathToDestination();
         }
     }
 
@@ -1068,7 +1078,11 @@ public final class ElytraBehavior {
             }
 
             SolverContext other = (SolverContext) o;
-            return this.path == other.path // Contents aren't modified, just compare by reference
+            //noinspection ReferenceEquality
+            @SuppressWarnings("ReferenceEquality")
+            boolean pathEqual =
+                    this.path == other.path; // Contents aren't modified, just compare by reference
+            return pathEqual
                     && this.playerNear == other.playerNear
                     && Objects.equals(this.start, other.start)
                     && Objects.equals(this.motion, other.motion)
@@ -1564,7 +1578,7 @@ public final class ElytraBehavior {
             motionZ += lookDirection.z * speedModifier / pitchBase2;
         }
         if (pitchRadians < 0) { // if you are looking down (below level)
-            double anotherSpeedModifier = flatMotion * (double) (-Mth.sin(pitchRadians)) * 0.04;
+            double anotherSpeedModifier = flatMotion * (double) -Mth.sin(pitchRadians) * 0.04;
             motionY += anotherSpeedModifier * 3.2;
             motionX -= lookDirection.x * anotherSpeedModifier / pitchBase2;
             motionZ -= lookDirection.z * anotherSpeedModifier / pitchBase2;

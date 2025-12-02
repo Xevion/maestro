@@ -1,6 +1,5 @@
 package maestro.api.cache;
 
-import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
@@ -44,7 +43,7 @@ public interface ICachedWorld {
      * @param maxRegionDistanceSq The maximum region distance, squared
      * @return The locations found that match the special block
      */
-    ArrayList<BlockPos> getLocationsOf(
+    java.util.List<BlockPos> getLocationsOf(
             String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq);
 
     /**

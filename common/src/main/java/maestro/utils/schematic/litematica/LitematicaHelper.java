@@ -37,6 +37,7 @@ public final class LitematicaHelper {
     /**
      * @return if {@code i} is a valid placement index
      */
+    @SuppressWarnings("DoNotCall") // Legacy Litematica stub - always throws LinkageError
     public static boolean hasLoadedSchematic(int i) {
         return 0 <= i
                 && i
@@ -45,6 +46,7 @@ public final class LitematicaHelper {
                                 .size();
     }
 
+    @SuppressWarnings("DoNotCall") // Legacy Litematica stub - always throws LinkageError
     private static SchematicPlacement getPlacement(int i) {
         return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i);
     }
@@ -69,6 +71,7 @@ public final class LitematicaHelper {
      * @param i index of the Schematic in the schematic placement list.
      * @return The transformed schematic and the position of its minimum corner
      */
+    @SuppressWarnings("DoNotCall") // Legacy Litematica stub - always throws LinkageError
     public static Tuple<IStaticSchematic, Vec3i> getSchematic(int i) {
         SchematicPlacement placement = getPlacement(i);
         int minX = Integer.MAX_VALUE;

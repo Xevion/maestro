@@ -292,7 +292,7 @@ public class ElytraCommand extends Command {
 
     private boolean detectOn2b2t() {
         ServerData data = ctx.minecraft().getCurrentServer();
-        return data != null && data.ip.toLowerCase().contains("2b2t.org");
+        return data != null && data.ip.toLowerCase(java.util.Locale.ROOT).contains("2b2t.org");
     }
 
     private static final long OLD_2B2T_SEED = -4100785268875389365L;

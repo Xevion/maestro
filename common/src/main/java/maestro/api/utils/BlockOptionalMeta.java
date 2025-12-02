@@ -51,12 +51,15 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 import sun.misc.Unsafe;
 
 public final class BlockOptionalMeta {
     // id or id[] or id[properties] where id and properties are any text with at least one character
     private static final Pattern PATTERN =
             Pattern.compile("^(?<id>.+?)(?:\\[(?<properties>.+?)?\\])?$");
+
+    private static final Logger log = MaestroLogger.get("api");
 
     private final Block block;
     private final String
@@ -96,6 +99,7 @@ public final class BlockOptionalMeta {
         stackHashes = getStackHashes(blockstates);
     }
 
+    @SuppressWarnings("TypeParameterUnusedInFormals")
     private static <C extends Comparable<C>, P extends Property<C>> P castToIProperty(
             Object value) {
         //noinspection unchecked
@@ -104,14 +108,14 @@ public final class BlockOptionalMeta {
 
     private static Map<Property<?>, ?> parseProperties(Block block, String raw) {
         ImmutableMap.Builder<Property<?>, Object> builder = ImmutableMap.builder();
-        for (String pair : raw.split(",")) {
-            String[] parts = pair.split("=");
-            if (parts.length != 2) {
+        for (String pair : com.google.common.base.Splitter.on(',').split(raw)) {
+            List<String> parts = com.google.common.base.Splitter.on('=').splitToList(pair);
+            if (parts.size() != 2) {
                 throw new IllegalArgumentException(
                         String.format("\"%s\" is not a valid property-value pair", pair));
             }
-            String rawKey = parts[0];
-            String rawValue = parts[1];
+            String rawKey = parts.get(0);
+            String rawValue = parts.get(1);
             Property<?> key = block.getStateDefinition().getProperty(rawKey);
             Comparable<?> value =
                     castToIProperty(key)
@@ -217,7 +221,7 @@ public final class BlockOptionalMeta {
         try {
             return (VanillaPackResources) getVanillaServerPack.invoke(null);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.atError().setCause(e).log("Failed to invoke vanilla server pack");
         }
 
         return null;
@@ -248,7 +252,7 @@ public final class BlockOptionalMeta {
                                     .map(ItemStack::getItem)
                                     .forEach(items::add);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            log.atError().setCause(e).log("Failed to get drops for block");
                         }
                         return items;
                     }
@@ -267,7 +271,9 @@ public final class BlockOptionalMeta {
             LootTable lv4 = lv3.holder().getLootTable(lv.get());
             return ((ILootTable) lv4)
                     .invokeGetRandomItems(
-                            new LootContext.Builder(lv2).withOptionalRandomSeed(1).create(null));
+                            new LootContext.Builder(lv2)
+                                    .withOptionalRandomSeed(1)
+                                    .create(Optional.empty()));
         }
     }
 

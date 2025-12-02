@@ -40,7 +40,15 @@ public class OpenSetsTest {
             for (int j = 0; j < amount; j++) {
                 PathNode pn = test[i].removeLowest();
                 if (mustContain != null && !mustContain.contains(pn)) {
-                    throw new IllegalStateException(mustContain + " " + pn);
+                    throw new IllegalStateException(
+                            "PathNode not in mustContain set: pos=("
+                                    + pn.x
+                                    + ","
+                                    + pn.y
+                                    + ","
+                                    + pn.z
+                                    + ") cost="
+                                    + pn.combinedCost);
                 }
                 results[i][j] = pn.combinedCost;
             }

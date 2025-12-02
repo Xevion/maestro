@@ -144,16 +144,19 @@ public class MovementTraverse extends Movement {
                 for (int i = 0; i < 5; i++) {
                     int againstX =
                             destX
-                                    + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]
+                                    + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                            .get(i)
                                             .getStepX();
                     int againstY =
                             y
                                     - 1
-                                    + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]
+                                    + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                            .get(i)
                                             .getStepY();
                     int againstZ =
                             destZ
-                                    + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]
+                                    + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                            .get(i)
                                             .getStepZ();
                     if (againstX == x && againstZ == z) { // this would be a backplace
                         continue;
@@ -241,9 +244,9 @@ public class MovementTraverse extends Movement {
                             .getYaw();
             float pitchToBreak = state.getTarget().getRotation().get().getPitch();
             if ((MovementHelper.isBlockNormalCube(pb0)
-                    || pb0.getBlock() instanceof AirBlock
+                    || (pb0.getBlock() instanceof AirBlock
                             && (MovementHelper.isBlockNormalCube(pb1)
-                                    || pb1.getBlock() instanceof AirBlock))) {
+                                    || pb1.getBlock() instanceof AirBlock)))) {
                 // in the meantime, before we're right up against the block, we can break
                 // efficiently at this angle
                 pitchToBreak = 26;
@@ -264,12 +267,12 @@ public class MovementTraverse extends Movement {
 
         if (pb0.getBlock() instanceof DoorBlock || pb1.getBlock() instanceof DoorBlock) {
             boolean notPassable =
-                    pb0.getBlock() instanceof DoorBlock
+                    (pb0.getBlock() instanceof DoorBlock
                                     && !MovementHelper.isDoorPassable(
-                                            ctx, src.toBlockPos(), dest.toBlockPos())
-                            || pb1.getBlock() instanceof DoorBlock
+                                            ctx, src.toBlockPos(), dest.toBlockPos()))
+                            || (pb1.getBlock() instanceof DoorBlock
                                     && !MovementHelper.isDoorPassable(
-                                            ctx, dest.toBlockPos(), src.toBlockPos());
+                                            ctx, dest.toBlockPos(), src.toBlockPos()));
             boolean canOpen =
                     !(Blocks.IRON_DOOR.equals(pb0.getBlock())
                             || Blocks.IRON_DOOR.equals(pb1.getBlock()));

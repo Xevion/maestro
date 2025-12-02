@@ -9,6 +9,7 @@ import maestro.api.schematic.ISchematicSystem;
 import maestro.api.schematic.format.ISchematicFormat;
 import maestro.utils.schematic.format.DefaultSchematicFormats;
 
+@SuppressWarnings("ImmutableEnumChecker")
 public enum SchematicSystem implements ISchematicSystem {
     INSTANCE;
 

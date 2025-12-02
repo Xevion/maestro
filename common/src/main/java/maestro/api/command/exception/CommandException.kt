@@ -36,7 +36,7 @@ sealed class CommandException(
             val errorMsg = Component.literal("[cmd] ")
             errorMsg.style = errorMsg.style.withColor(ChatFormatting.AQUA)
 
-            val messageComponent = Component.literal(message)
+            val messageComponent = Component.literal(message ?: "Unknown error")
             messageComponent.style = messageComponent.style.withColor(ChatFormatting.GRAY)
             errorMsg.append(messageComponent)
 

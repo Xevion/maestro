@@ -12,14 +12,17 @@ import maestro.api.command.exception.ICommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.command.manager.ICommandManager;
 import maestro.api.command.registry.Registry;
+import maestro.api.utils.MaestroLogger;
 import maestro.command.argument.ArgConsumer;
 import maestro.command.argument.CommandArguments;
 import maestro.command.defaults.DefaultCommands;
 import net.minecraft.util.Tuple;
+import org.slf4j.Logger;
 
 /** The default, internal implementation of {@link ICommandManager} */
 public class CommandManager implements ICommandManager {
 
+    private static final Logger log = MaestroLogger.get("cmd");
     private final Registry<ICommand> registry = new Registry<>();
     private final Agent maestro;
 
@@ -133,7 +136,7 @@ public class CommandManager implements ICommandManager {
             } catch (CommandException ignored) {
                 // NOP
             } catch (Throwable t) {
-                t.printStackTrace();
+                log.atError().setCause(t).log("Error during tab completion");
             }
             return Stream.empty();
         }

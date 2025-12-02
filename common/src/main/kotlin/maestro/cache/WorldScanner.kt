@@ -8,10 +8,12 @@ import net.minecraft.core.BlockPos
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.LevelChunk
+import net.minecraft.world.level.chunk.status.ChunkStatus
 import java.util.stream.IntStream
 import kotlin.math.abs
 
 object WorldScanner : IWorldScanner {
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun scanChunkRadius(
         ctx: IPlayerContext,
         filter: BlockOptionalMetaLookup,
@@ -58,7 +60,7 @@ object WorldScanner : IWorldScanner {
                     foundChunks = true
                     val chunkX = xoff + playerChunkX
                     val chunkZ = zoff + playerChunkZ
-                    val chunk = chunkProvider.getChunk(chunkX, chunkZ, null, false) ?: continue
+                    val chunk = chunkProvider.getChunk(chunkX, chunkZ, null as ChunkStatus?, false) ?: continue
 
                     allUnloaded = false
                     if (
@@ -96,6 +98,7 @@ object WorldScanner : IWorldScanner {
         }
     }
 
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun scanChunk(
         ctx: IPlayerContext,
         filter: BlockOptionalMetaLookup,
@@ -108,7 +111,7 @@ object WorldScanner : IWorldScanner {
         }
 
         val chunkProvider = ctx.world().chunkSource as ClientChunkCache
-        val chunk = chunkProvider.getChunk(pos.x, pos.z, null, false)
+        val chunk = chunkProvider.getChunk(pos.x, pos.z, null as ChunkStatus?, false)
         val playerY = ctx.playerFeet().y
 
         if (chunk == null || chunk.isEmpty) {

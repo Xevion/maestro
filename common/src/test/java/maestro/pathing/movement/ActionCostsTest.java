@@ -9,7 +9,7 @@ public class ActionCostsTest {
 
     @Test
     public void testFallNBlocksCost() {
-        assertEquals(FALL_N_BLOCKS_COST.length, 4097); // Fall 0 blocks through fall 4096 blocks
+        assertEquals(4097, FALL_N_BLOCKS_COST.length); // Fall 0 blocks through fall 4096 blocks
         for (int i = 0; i < 4097; i++) {
             double blocks = ticksToBlocks(FALL_N_BLOCKS_COST[i]);
             assertEquals(

@@ -114,7 +114,10 @@ public final class RotationUtils {
     }
 
     @Deprecated
-    public static Vec3 calcVec3dFromRotation(Rotation rotation) {
+    @com.google.errorprone.annotations.InlineMe(
+            replacement = "RotationUtils.calcLookDirectionFromRotation(rotation)",
+            imports = "maestro.api.utils.RotationUtils")
+    public static final Vec3 calcVec3dFromRotation(Rotation rotation) {
         return calcLookDirectionFromRotation(rotation);
     }
 

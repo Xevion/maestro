@@ -3,6 +3,7 @@ package maestro.api.utils;
 import java.awt.*;
 import java.io.IOException;
 import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
 
 /**
  * This class is not called from the main game thread. Do not refer to any Minecraft classes, it
@@ -10,6 +11,7 @@ import org.apache.commons.lang3.SystemUtils;
  */
 public class NotificationHelper {
 
+    private static final Logger log = MaestroLogger.get("event");
     private static TrayIcon trayIcon;
 
     public static void notify(String text, boolean error) {
@@ -40,7 +42,7 @@ public class NotificationHelper {
                         text,
                         error ? TrayIcon.MessageType.ERROR : TrayIcon.MessageType.INFO);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.atError().setCause(e).log("Failed to show Windows notification");
             }
         } else {
             System.out.println("SystemTray is not supported");
@@ -54,7 +56,7 @@ public class NotificationHelper {
         try {
             processBuilder.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.atError().setCause(e).log("Failed to show Mac notification");
         }
     }
 
@@ -67,7 +69,7 @@ public class NotificationHelper {
         try {
             processBuilder.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.atError().setCause(e).log("Failed to show Linux notification");
         }
     }
 }

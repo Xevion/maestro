@@ -29,6 +29,7 @@ public final class NetherPath extends AbstractList<PackedBlockPos> {
     /**
      * @return The last position in the path, or {@code null} if empty
      */
+    @Override
     public PackedBlockPos getLast() {
         return this.isEmpty() ? null : this.backing.getLast();
     }

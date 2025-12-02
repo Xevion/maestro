@@ -72,15 +72,18 @@ public class MovementAscend extends Movement {
             for (int i = 0; i < 5; i++) {
                 int againstX =
                         destX
-                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                        .get(i)
                                         .getStepX();
                 int againstY =
                         y
-                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                        .get(i)
                                         .getStepY();
                 int againstZ =
                         destZ
-                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]
+                                + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP
+                                        .get(i)
                                         .getStepZ();
                 if (againstX == x
                         && againstZ
@@ -188,11 +191,7 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        BlockPos dirVec = getDirection();
-        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())
-                || ctx.playerFeet()
-                        .toBlockPos()
-                        .equals(dest.toBlockPos().offset(-dirVec.getX(), 0, -dirVec.getZ()))) {
+        if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 

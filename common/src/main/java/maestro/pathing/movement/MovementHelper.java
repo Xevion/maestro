@@ -341,6 +341,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     @Deprecated
+    @com.google.errorprone.annotations.InlineMe(
+            replacement = "MovementHelper.isReplaceable(x, y, z, state, bsi)",
+            imports = "maestro.pathing.movement.MovementHelper")
     static boolean isReplacable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
         return isReplaceable(x, y, z, state, bsi);
     }
@@ -884,7 +887,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         for (int i = 0; i < 5; i++) {
             BlockPos against1 =
-                    placeAt.relative(HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
+                    placeAt.relative(
+                            HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP.get(i));
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
                 if (!((Agent) maestro)
                         .getInventoryBehavior()

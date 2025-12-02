@@ -28,7 +28,7 @@ fun BlockPos.pack(): PackedBlockPos = PackedBlockPos(this)
  * ```
  */
 @JvmName("pack")
-inline fun pack(
+fun pack(
     x: Int,
     y: Int,
     z: Int,

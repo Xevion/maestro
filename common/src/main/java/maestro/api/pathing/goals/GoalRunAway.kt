@@ -19,7 +19,6 @@ open class GoalRunAway(
         require(from.isNotEmpty()) { "Positions to run away from must not be empty" }
     }
 
-    @JvmOverloads
     constructor(distance: Double, vararg from: BlockPos) : this(distance, null, *from)
 
     override fun isInGoal(

@@ -123,6 +123,7 @@ public class FollowCommand extends Command {
                 "> follow player <username1> <username2> <...> - Follow certain players");
     }
 
+    @SuppressWarnings("ImmutableEnumChecker")
     private enum FollowGroup {
         ENTITIES(LivingEntity.class::isInstance),
         PLAYERS(Player.class::isInstance); /* ,
@@ -135,6 +136,7 @@ public class FollowCommand extends Command {
         }
     }
 
+    @SuppressWarnings("ImmutableEnumChecker")
     private enum FollowList {
         ENTITY(EntityClassById.INSTANCE),
         PLAYER(NearbyPlayer.INSTANCE);

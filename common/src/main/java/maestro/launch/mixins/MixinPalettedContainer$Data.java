@@ -9,9 +9,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(targets = "net/minecraft/world/level/chunk/PalettedContainer$Data")
 public abstract class MixinPalettedContainer$Data<T> implements IData<T> {
 
+    @Override
     @Accessor
     public abstract Palette<T> getPalette();
 
+    @Override
     @Accessor
     public abstract BitStorage getStorage();
 }

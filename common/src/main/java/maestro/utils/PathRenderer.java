@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.pathing.goals.*;
@@ -68,7 +69,7 @@ public final class PathRenderer implements IRenderer {
                         .world()
                         .dimensionType();
 
-        if (thisPlayerDimension != currentRenderViewDimension) {
+        if (!Objects.equals(thisPlayerDimension, currentRenderViewDimension)) {
             // this is a path for a bot in a different dimension, don't render it
             return;
         }

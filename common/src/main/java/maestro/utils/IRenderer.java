@@ -21,6 +21,7 @@ public interface IRenderer {
     TextureManager textureManager = Minecraft.getInstance().getTextureManager();
     Settings settings = MaestroAPI.getSettings();
 
+    @SuppressWarnings("MutablePublicArray")
     float[] color = new float[] {1.0F, 1.0F, 1.0F, 255.0F};
 
     static void glColor(Color color, float alpha) {

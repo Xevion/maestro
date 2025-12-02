@@ -31,10 +31,10 @@ public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
                         ? 0
                         : Double.parseDouble(matcher.group(2).replaceAll(ScalesAliasRegex, ""));
 
-        if (matcher.group(2).toLowerCase().contains("k")) {
+        if (matcher.group(2).toLowerCase(java.util.Locale.ROOT).contains("k")) {
             offset *= 1000;
         }
-        if (matcher.group(2).toLowerCase().contains("m")) {
+        if (matcher.group(2).toLowerCase(java.util.Locale.ROOT).contains("m")) {
             offset *= 1000000;
         }
 

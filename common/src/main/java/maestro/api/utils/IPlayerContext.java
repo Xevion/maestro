@@ -64,6 +64,7 @@ public interface IPlayerContext {
                 return feetPos.above();
             }
         } catch (NullPointerException ignored) {
+            // expected
         }
 
         return feetPos;

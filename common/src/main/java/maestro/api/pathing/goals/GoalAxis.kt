@@ -14,18 +14,18 @@ class GoalAxis : Goal {
     ): Boolean = y == MaestroAPI.getSettings().axisHeight.value && (x == 0 || z == 0 || abs(x) == abs(z))
 
     override fun heuristic(
-        x0: Int,
+        x: Int,
         y: Int,
-        z0: Int,
+        z: Int,
     ): Double {
-        val x = abs(x0)
-        val z = abs(z0)
+        val absX = abs(x)
+        val absZ = abs(z)
 
-        val shrt = min(x, z)
-        val lng = max(x, z)
+        val shrt = min(absX, absZ)
+        val lng = max(absX, absZ)
         val diff = lng - shrt
 
-        val flatAxisDistance = min(x.toDouble(), min(z.toDouble(), diff * SQRT_2_OVER_2))
+        val flatAxisDistance = min(absX.toDouble(), min(absZ.toDouble(), diff * SQRT_2_OVER_2))
 
         return flatAxisDistance * MaestroAPI.getSettings().costHeuristic.value +
             GoalYLevel.calculate(MaestroAPI.getSettings().axisHeight.value, y)

@@ -107,6 +107,7 @@ public class Agent implements IAgent {
             try {
                 Files.createDirectories(this.directory);
             } catch (IOException ignored) {
+                // expected
             }
         }
 
@@ -438,6 +439,7 @@ public class Agent implements IAgent {
         return this.commandManager;
     }
 
+    @Override
     public MaestroDebugRenderer getDebugRenderer() {
         return this.debugRenderer;
     }
@@ -455,6 +457,7 @@ public class Agent implements IAgent {
                                 Thread.sleep(100);
                                 mc.execute(() -> mc.setScreen(new GuiClick()));
                             } catch (Exception ignored) {
+                                // expected
                             }
                         })
                 .start();

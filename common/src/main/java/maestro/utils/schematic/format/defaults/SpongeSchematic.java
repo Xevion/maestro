@@ -1,7 +1,9 @@
 package maestro.utils.schematic.format.defaults;
 
+import com.google.common.base.Splitter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -134,9 +136,9 @@ public final class SpongeSchematic extends StaticSchematic {
                 ResourceLocation resourceLocation = ResourceLocation.parse(location);
                 Map<String, String> propertiesMap = new HashMap<>();
                 if (properties != null) {
-                    for (String property : properties.split(",")) {
-                        String[] split = property.split("=");
-                        propertiesMap.put(split[0], split[1]);
+                    for (String property : Splitter.on(',').split(properties)) {
+                        List<String> split = Splitter.on('=').splitToList(property);
+                        propertiesMap.put(split.get(0), split.get(1));
                     }
                 }
 

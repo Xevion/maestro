@@ -256,12 +256,12 @@ public class SetCommand extends Command {
             Minecraft.getInstance()
                     .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
 
-            if ((setting.getName().equals("chatControl")
+            if (((setting.getName().equals("chatControl")
                             && !(Boolean) setting.value
                             && !Agent.settings().chatControlAnyway.value)
-                    || setting.getName().equals("chatControlAnyway")
+                    || (setting.getName().equals("chatControlAnyway")
                             && !(Boolean) setting.value
-                            && !Agent.settings().chatControl.value) {
+                            && !Agent.settings().chatControl.value))) {
                 log.atWarn()
                         .log(
                                 "Warning: Chat commands will no longer work. If you want to revert"

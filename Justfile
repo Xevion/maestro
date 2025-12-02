@@ -3,7 +3,8 @@ default: check
 
 # Quick type checking and linting
 check:
-    ./gradlew check -q --no-daemon
+    ./gradlew :common:compileKotlin :common:compileJava --rerun-tasks
+    ./gradlew check -q
 
 # Format code
 fmt:

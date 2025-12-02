@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id 'org.jetbrains.kotlin.jvm'
@@ -10,7 +11,7 @@ architectury {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/maestro.accesswidener")
+    accessWidenerPath = file('src/main/resources/maestro.accesswidener')
 }
 
 protobuf {
@@ -31,19 +32,15 @@ protobuf {
 
 sourceSets {
     main {
-        java {
-            srcDirs(
-                'src/main/java',
-                'build/generated/source/proto/main/java',
-                'build/generated/source/proto/main/grpc'
-            )
-        }
-        kotlin {
-            srcDirs(
-                'src/main/kotlin',
-                'src/main/java'
-            )
-        }
+        java.srcDirs(
+            'src/main/java',
+            'build/generated/source/proto/main/java',
+            'build/generated/source/proto/main/grpc'
+        )
+        kotlin.srcDirs(
+            'src/main/kotlin',
+            'src/main/java'
+        )
     }
 }
 
@@ -82,9 +79,9 @@ dependencies {
 }
 
 tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = project.java_version
-        freeCompilerArgs += ['-Xjvm-default=all']
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget(project.java_version)
+        freeCompilerArgs.add('-Xjvm-default=all')
     }
 }
 
@@ -95,7 +92,7 @@ tasks.named('compileJava') {
 
 publishing {
     publications {
-        mavenCommon(MavenPublication) {
+        create('mavenCommon', MavenPublication) {
             artifactId = rootProject.archives_base_name
             from components.java
         }

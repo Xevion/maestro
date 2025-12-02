@@ -1659,7 +1659,8 @@ public final class Settings {
          * @return the current setting value
          */
         @Deprecated
-        public T get() {
+        @com.google.errorprone.annotations.InlineMe(replacement = "this.value")
+        public final T get() {
             return value;
         }
 
@@ -1719,7 +1720,7 @@ public final class Settings {
                     String name = field.getName();
                     setting.name = name;
                     setting.javaOnly = field.isAnnotationPresent(JavaOnly.class);
-                    name = name.toLowerCase();
+                    name = name.toLowerCase(java.util.Locale.ROOT);
                     if (tmpByName.containsKey(name)) {
                         throw new IllegalStateException("Duplicate setting name");
                     }

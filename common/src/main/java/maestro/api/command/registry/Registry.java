@@ -24,7 +24,7 @@ public class Registry<V> {
      * encountered first during iteration. This is an important property of the registry that makes
      * it more useful than a simple list, and also the reason it does not just use a map.
      */
-    private final Deque<V> _entries = new LinkedList<>();
+    private final Deque<V> _entries = new ArrayDeque<>();
 
     /**
      * A HashSet containing every entry currently registered. Entries are added to this set when

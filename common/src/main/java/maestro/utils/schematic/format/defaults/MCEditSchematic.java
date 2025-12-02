@@ -29,7 +29,7 @@ public final class MCEditSchematic extends StaticSchematic {
             additional = new byte[addBlocks.length * 2];
             for (int i = 0; i < addBlocks.length; i++) {
                 additional[i * 2] = (byte) ((addBlocks[i] >> 4) & 0xF); // lower nibble
-                additional[i * 2 + 1] = (byte) ((addBlocks[i]) & 0xF); // upper nibble
+                additional[i * 2 + 1] = (byte) (addBlocks[i] & 0xF); // upper nibble
             }
         }
         this.states = new BlockState[this.x][this.z][this.y];

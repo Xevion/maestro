@@ -328,8 +328,6 @@ class PathingBehavior(
                         .options
                         .autoJump()
                         .set(lastAutoJump)
-
-                else -> {}
             }
         }
     }

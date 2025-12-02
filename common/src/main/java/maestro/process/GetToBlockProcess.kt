@@ -229,7 +229,7 @@ class GetToBlockProcess(
                 64,
                 known,
                 currentBlacklist,
-                emptyList(),
+                mutableListOf(),
             )
 
         positions.removeIf { currentBlacklist.contains(it) }

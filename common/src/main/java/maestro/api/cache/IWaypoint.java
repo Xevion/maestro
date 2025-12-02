@@ -35,6 +35,7 @@ public interface IWaypoint {
      */
     PackedBlockPos getLocation();
 
+    @SuppressWarnings("ImmutableEnumChecker")
     enum Tag {
 
         /** Tag indicating a position explictly marked as a home base */
@@ -54,17 +55,17 @@ public interface IWaypoint {
                 Collections.unmodifiableList(Arrays.asList(Tag.values()));
 
         /** The names for the tag, anything that the tag can be referred to as. */
-        public final String[] names;
+        public final List<String> names;
 
         Tag(String... names) {
-            this.names = names;
+            this.names = List.of(names);
         }
 
         /**
          * @return A name that can be passed to {@link #getByName(String)} to retrieve this tag
          */
         public String getName() {
-            return names[0];
+            return names.get(0);
         }
 
         /**
@@ -92,7 +93,7 @@ public interface IWaypoint {
             Set<String> names = new HashSet<>();
 
             for (Tag tag : Tag.values()) {
-                names.addAll(Arrays.asList(tag.names));
+                names.addAll(tag.names);
             }
 
             return names.toArray(new String[0]);

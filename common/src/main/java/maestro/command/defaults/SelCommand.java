@@ -1,5 +1,6 @@
 package maestro.command.defaults;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import java.awt.*;
 import java.util.*;
@@ -404,10 +405,10 @@ public class SelCommand extends Command {
         PASTE("paste", "p"),
         CONTRACT("contract", "ct"),
         SHIFT("shift", "sh");
-        private final String[] names;
+        private final ImmutableList<String> names;
 
         Action(String... names) {
-            this.names = names;
+            this.names = ImmutableList.copyOf(names);
         }
 
         public static Action getByName(String name) {
@@ -424,7 +425,7 @@ public class SelCommand extends Command {
         public static String[] getAllNames() {
             Set<String> names = new HashSet<>();
             for (Action action : Action.values()) {
-                names.addAll(Arrays.asList(action.names));
+                names.addAll(action.names);
             }
             return names.toArray(new String[0]);
         }
@@ -442,16 +443,17 @@ public class SelCommand extends Command {
         }
     }
 
+    @SuppressWarnings("ImmutableEnumChecker")
     enum TransformTarget {
         ALL(sels -> sels, "all", "a"),
         NEWEST(sels -> new ISelection[] {sels[sels.length - 1]}, "newest", "n"),
         OLDEST(sels -> new ISelection[] {sels[0]}, "oldest", "o");
         private final Function<ISelection[], ISelection[]> transform;
-        private final String[] names;
+        private final ImmutableList<String> names;
 
         TransformTarget(Function<ISelection[], ISelection[]> transform, String... names) {
             this.transform = transform;
-            this.names = names;
+            this.names = ImmutableList.copyOf(names);
         }
 
         public ISelection[] transform(ISelection[] selections) {
@@ -472,7 +474,7 @@ public class SelCommand extends Command {
         public static String[] getAllNames() {
             Set<String> names = new HashSet<>();
             for (TransformTarget target : TransformTarget.values()) {
-                names.addAll(Arrays.asList(target.names));
+                names.addAll(target.names);
             }
             return names.toArray(new String[0]);
         }

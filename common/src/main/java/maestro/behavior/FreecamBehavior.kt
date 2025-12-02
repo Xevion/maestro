@@ -80,7 +80,7 @@ class FreecamBehavior(
         }
     }
 
-    private inline fun calculateMovement(
+    private fun calculateMovement(
         forward: Boolean,
         back: Boolean,
         left: Boolean,
