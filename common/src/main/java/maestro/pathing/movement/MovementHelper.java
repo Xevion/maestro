@@ -339,14 +339,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.canBeReplaced();
     }
 
-    @Deprecated
-    @com.google.errorprone.annotations.InlineMe(
-            replacement = "MovementHelper.isReplaceable(x, y, z, state, bsi)",
-            imports = "maestro.pathing.movement.MovementHelper")
-    static boolean isReplacable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
-        return isReplaceable(x, y, z, state, bsi);
-    }
-
     static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {
         if (playerPos.equals(doorPos)) {
             return false;

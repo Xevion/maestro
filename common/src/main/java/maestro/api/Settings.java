@@ -243,9 +243,6 @@ public final class Settings {
      */
     public final Setting<Boolean> allowJumpAtBuildLimit = new Setting<>(false);
 
-    /** Just here so mods that use the API don't break. Does nothing. */
-    @Deprecated @JavaOnly public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
-
     /**
      * This should be monetized it's so good
      *
@@ -1498,7 +1495,7 @@ public final class Settings {
     /** Render selection corners */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
-    // ===== Debug Rendering Settings =====
+    // Debug rendering settings
 
     /** Enable debug rendering */
     public final Setting<Boolean> debugEnabled = new Setting<>(false);
@@ -1648,17 +1645,6 @@ public final class Settings {
             this.value = value;
             this.defaultValue = value;
             this.javaOnly = false;
-        }
-
-        /**
-         * Deprecated! Please use .value directly instead
-         *
-         * @return the current setting value
-         */
-        @Deprecated
-        @com.google.errorprone.annotations.InlineMe(replacement = "this.value")
-        public final T get() {
-            return value;
         }
 
         public String getName() {

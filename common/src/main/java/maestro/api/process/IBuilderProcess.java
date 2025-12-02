@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import maestro.api.schematic.ISchematic;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,15 +30,6 @@ public interface IBuilderProcess extends IMaestroProcess {
      * @return Whether the schematic was able to load from file
      */
     boolean build(String name, File schematic, Vec3i origin);
-
-    @Deprecated
-    default boolean build(String schematicFile, BlockPos origin) {
-        File file =
-                new File(
-                        new File(Minecraft.getInstance().gameDirectory, "schematics"),
-                        schematicFile);
-        return build(schematicFile, file, origin);
-    }
 
     void buildOpenLitematic(int i);
 

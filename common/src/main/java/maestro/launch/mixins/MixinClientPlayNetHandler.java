@@ -29,30 +29,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPacketListener.class)
 public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListenerImpl {
 
-    // unused lol
-    /*@Inject(
-            method = "handleChunkData",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/multiplayer/ChunkProviderClient.func_212474_a(IILnet/minecraft/network/PacketBuffer;IZ)Lnet/minecraft/world/chunk/Chunk;"
-            )
-    )
-    private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
-        for (IMaestro maestro : MaestroAPI.getProvider().getAllMaestros()) {
-            ClientPlayerEntity player = maestro.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
-                maestro.getGameEventHandler().onChunkEvent(
-                        new ChunkEvent(
-                                EventState.PRE,
-                                packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
-                                packetIn.getChunkX(),
-                                packetIn.getChunkZ()
-                        )
-                );
-            }
-        }
-    }*/
-
     protected MixinClientPlayNetHandler(
             final Minecraft arg, final Connection arg2, final CommonListenerCookie arg3) {
         super(arg, arg2, arg3);
@@ -182,71 +158,4 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
             }
         }
     }
-
-    /*
-    @Inject(
-            method = "handleChunkData",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/world/chunk/Chunk.read(Lnet/minecraft/network/PacketBuffer;IZ)V"
-            )
-    )
-    private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
-        IMaestro maestro = MaestroAPI.getProvider().getMaestroForConnection((NetHandlerPlayClient) (Object) this);
-        if (maestro == null) {
-            return;
-        }
-        maestro.getGameEventHandler().onChunkEvent(
-                new ChunkEvent(
-                        EventState.PRE,
-                        packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
-                        packetIn.getChunkX(),
-                        packetIn.getChunkZ()
-                )
-        );
-    }
-
-    @Inject(
-            method = "handleChunkData",
-            at = @At("RETURN")
-    )
-    private void postHandleChunkData(SPacketChunkData packetIn, CallbackInfo ci) {
-        IMaestro maestro = MaestroAPI.getProvider().getMaestroForConnection((NetHandlerPlayClient) (Object) this);
-        if (maestro == null) {
-            return;
-        }
-        maestro.getGameEventHandler().onChunkEvent(
-                new ChunkEvent(
-                        EventState.POST,
-                        packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
-                        packetIn.getChunkX(),
-                        packetIn.getChunkZ()
-                )
-        );
-    }
-
-    @Inject(
-            method = "handleBlockChange",
-            at = @At("RETURN")
-    )
-    private void postHandleBlockChange(SPacketBlockChange packetIn, CallbackInfo ci) {
-        IMaestro maestro = MaestroAPI.getProvider().getMaestroForConnection((NetHandlerPlayClient) (Object) this);
-        if (maestro == null) {
-            return;
-        }
-
-        final ChunkPos pos = new ChunkPos(packetIn.getBlockPosition().getX() >> 4, packetIn.getBlockPosition().getZ() >> 4);
-        final Pair<BlockPos, IBlockState> changed = new Pair<>(packetIn.getBlockPosition(), packetIn.getBlockState());
-        maestro.getGameEventHandler().onBlockChange(new BlockChangeEvent(pos, Collections.singletonList(changed)));
-    }
-
-    @Inject(
-            method = "handleMultiBlockChange",
-            at = @At("RETURN")
-    )
-    private void postHandleMultiBlockChange(SPacketMultiBlockChange packetIn, CallbackInfo ci) {
-
-    }
-
-     */
 }

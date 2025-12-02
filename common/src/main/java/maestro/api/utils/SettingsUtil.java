@@ -70,10 +70,6 @@ public class SettingsUtil {
                         String settingName =
                                 matcher.group("setting").toLowerCase(java.util.Locale.ROOT);
                         String settingValue = matcher.group("value");
-                        // TODO remove soonish
-                        if ("allowjumpat256".equals(settingName)) {
-                            settingName = "allowjumpatbuildlimit";
-                        }
                         try {
                             parseAndApply(settings, settingName, settingValue);
                         } catch (Exception ex) {
@@ -177,18 +173,6 @@ public class SettingsUtil {
         }
 
         return setting.getName() + " " + settingValueToString(setting);
-    }
-
-    /**
-     * Deprecated. Use {@link Settings.Setting#isJavaOnly()} instead.
-     *
-     * @param setting The Setting
-     * @return true if the setting can not be set or read by the user
-     */
-    @Deprecated
-    @com.google.errorprone.annotations.InlineMe(replacement = "setting.isJavaOnly()")
-    public static final boolean javaOnlySetting(Settings.Setting setting) {
-        return setting.isJavaOnly();
     }
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue)

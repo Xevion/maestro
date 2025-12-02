@@ -21,7 +21,6 @@ public final class MCEditSchematic extends StaticSchematic {
         this.y = schematic.getInt("Height");
         this.z = schematic.getInt("Length");
         byte[] blocks = schematic.getByteArray("Blocks");
-        //        byte[] metadata = schematic.getByteArray("Data");
 
         byte[] additional = null;
         if (schematic.contains("AddBlocks")) {
@@ -53,8 +52,6 @@ public final class MCEditSchematic extends StaticSchematic {
                                             .map(Holder.Reference::value)
                                             .orElse(Blocks.AIR);
 
-                    //                    int meta = metadata[blockInd] & 0xFF;
-                    //                    this.states[x][z][y] = block.getStateFromMeta(meta);
                     this.states[x][z][y] = block.defaultBlockState();
                 }
             }

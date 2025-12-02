@@ -96,18 +96,6 @@ public interface IPlayerContext {
     }
 
     /**
-     * Returns the player's eye height, taking into account whether the player is sneaking.
-     *
-     * @param ifSneaking Whether the player is sneaking
-     * @return The player's eye height
-     * @deprecated Use entity.getEyeHeight(Pose.CROUCHING) instead
-     */
-    @Deprecated
-    static double eyeHeight(boolean ifSneaking) {
-        return ifSneaking ? 1.27 : 1.62;
-    }
-
-    /**
      * Returns the block that the crosshair is currently placed over. Updated once per tick.
      *
      * @return The position of the highlighted block

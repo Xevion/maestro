@@ -18,12 +18,6 @@ public interface Helper {
     /** Instance of {@link Helper}. Used for static-context reference. */
     Helper HELPER = new Helper() {};
 
-    /**
-     * The main game instance returned by {@link Minecraft#getInstance()}. Deprecated since {@link
-     * IPlayerContext#minecraft()} should be used instead (In the majority of cases).
-     */
-    @Deprecated Minecraft mc = Minecraft.getInstance();
-
     /** The tag to assign to chat messages when {@link Settings#useMessageTag} is {@code true}. */
     GuiMessageTag MESSAGE_TAG =
             new GuiMessageTag(0xFF55FF, null, Component.literal("Maestro message."), "Maestro");

@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.Helper;
 import net.minecraft.client.Minecraft;
 
 public enum RelativeFile implements IDatatypePost<File, File> {
@@ -83,11 +82,6 @@ public enum RelativeFile implements IDatatypePost<File, File> {
                                 s.toLowerCase(Locale.US)
                                         .startsWith(currentPathStringThing.toLowerCase(Locale.US)))
                 .filter(s -> !s.contains(" "));
-    }
-
-    @Deprecated
-    public static File gameDir() {
-        return gameDir(Helper.mc);
     }
 
     public static File gameDir(Minecraft mc) {

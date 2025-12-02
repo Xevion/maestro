@@ -1,13 +1,10 @@
 package maestro.api.utils;
 
 import java.util.Optional;
-import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -111,14 +108,6 @@ public final class RotationUtils {
         float pitchBase = -Mth.cos(-rotation.getPitch() * DEG_TO_RAD_F);
         float pitchHeight = Mth.sin(-rotation.getPitch() * DEG_TO_RAD_F);
         return new Vec3(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
-    }
-
-    @Deprecated
-    @com.google.errorprone.annotations.InlineMe(
-            replacement = "RotationUtils.calcLookDirectionFromRotation(rotation)",
-            imports = "maestro.api.utils.RotationUtils")
-    public static final Vec3 calcVec3dFromRotation(Rotation rotation) {
-        return calcLookDirectionFromRotation(rotation);
     }
 
     /**
@@ -280,60 +269,6 @@ public final class RotationUtils {
                 ctx,
                 pos,
                 VecUtils.calculateBlockCenter(ctx.world(), pos),
-                blockReachDistance,
-                wouldSneak);
-    }
-
-    @Deprecated
-    public static Optional<Rotation> reachable(
-            LocalPlayer entity, BlockPos pos, double blockReachDistance) {
-        return reachable(entity, pos, blockReachDistance, false);
-    }
-
-    @Deprecated
-    public static Optional<Rotation> reachable(
-            LocalPlayer entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer(entity);
-        IPlayerContext ctx = maestro.getPlayerContext();
-        return reachable(ctx, pos, blockReachDistance, wouldSneak);
-    }
-
-    @Deprecated
-    public static Optional<Rotation> reachableOffset(
-            Entity entity,
-            BlockPos pos,
-            Vec3 offsetPos,
-            double blockReachDistance,
-            boolean wouldSneak) {
-        Vec3 eyes =
-                wouldSneak
-                        ? RayTraceUtils.inferSneakingEyePosition(entity)
-                        : entity.getEyePosition(1.0F);
-        Rotation rotation =
-                calcRotationFromVec3d(
-                        eyes, offsetPos, new Rotation(entity.getYRot(), entity.getXRot()));
-        HitResult result =
-                RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance, wouldSneak);
-        // System.out.println(result);
-        if (result != null && result.getType() == HitResult.Type.BLOCK) {
-            if (((BlockHitResult) result).getBlockPos().equals(pos)) {
-                return Optional.of(rotation);
-            }
-            if (entity.level().getBlockState(pos).getBlock() instanceof BaseFireBlock
-                    && ((BlockHitResult) result).getBlockPos().equals(pos.below())) {
-                return Optional.of(rotation);
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Deprecated
-    public static Optional<Rotation> reachableCenter(
-            Entity entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
-        return reachableOffset(
-                entity,
-                pos,
-                VecUtils.calculateBlockCenter(entity.level(), pos),
                 blockReachDistance,
                 wouldSneak);
     }

@@ -55,24 +55,6 @@ public final class VecUtils {
     }
 
     /**
-     * Gets the distance from the specified position to the assumed center of the specified block
-     * position.
-     *
-     * @param pos The block position
-     * @param x The x pos
-     * @param y The y pos
-     * @param z The z pos
-     * @return The distance from the assumed block center to the position
-     * @see #getBlockPosCenter(BlockPos)
-     */
-    public static double distanceToCenter(BlockPos pos, double x, double y, double z) {
-        double xdiff = pos.getX() + 0.5 - x;
-        double ydiff = pos.getY() + 0.5 - y;
-        double zdiff = pos.getZ() + 0.5 - z;
-        return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
-    }
-
-    /**
      * Gets the distance from the specified entity's position to the assumed center of the specified
      * block position.
      *
@@ -82,7 +64,10 @@ public final class VecUtils {
      * @see #getBlockPosCenter(BlockPos)
      */
     public static double entityDistanceToCenter(Entity entity, BlockPos pos) {
-        return distanceToCenter(pos, entity.position().x, entity.position().y, entity.position().z);
+        double xdiff = pos.getX() + 0.5 - entity.position().x;
+        double ydiff = pos.getY() + 0.5 - entity.position().y;
+        double zdiff = pos.getZ() + 0.5 - entity.position().z;
+        return Math.sqrt(xdiff * xdiff + ydiff * ydiff + zdiff * zdiff);
     }
 
     /**
@@ -95,6 +80,8 @@ public final class VecUtils {
      * @see #getBlockPosCenter(BlockPos)
      */
     public static double entityFlatDistanceToCenter(Entity entity, BlockPos pos) {
-        return distanceToCenter(pos, entity.position().x, pos.getY() + 0.5, entity.position().z);
+        double xdiff = pos.getX() + 0.5 - entity.position().x;
+        double zdiff = pos.getZ() + 0.5 - entity.position().z;
+        return Math.sqrt(xdiff * xdiff + zdiff * zdiff);
     }
 }
