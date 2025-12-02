@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Executor;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -39,7 +39,28 @@ public class Agent implements IAgent {
     static {
         threadPool =
                 new ThreadPoolExecutor(
-                        4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+                        4,
+                        8,
+                        60L,
+                        TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<>(100),
+                        new ThreadPoolExecutor.CallerRunsPolicy());
+
+        Runtime.getRuntime()
+                .addShutdownHook(
+                        new Thread(
+                                () -> {
+                                    threadPool.shutdown();
+                                    try {
+                                        if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+                                            threadPool.shutdownNow();
+                                        }
+                                    } catch (InterruptedException e) {
+                                        threadPool.shutdownNow();
+                                        Thread.currentThread().interrupt();
+                                    }
+                                },
+                                "maestro-threadpool-shutdown"));
     }
 
     private final Minecraft mc;

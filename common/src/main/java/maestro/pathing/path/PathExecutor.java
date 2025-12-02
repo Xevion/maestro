@@ -3,6 +3,7 @@ package maestro.pathing.path;
 import static maestro.api.pathing.movement.MovementStatus.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import maestro.Agent;
 import maestro.api.pathing.calc.IPath;
 import maestro.api.pathing.movement.ActionCosts;
@@ -45,21 +46,29 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private final IPath path;
     private PathCorridor corridor;
-    private int pathPosition;
+
+    @SuppressWarnings(
+            "NonAtomicVolatileUpdate") // Single-writer (game thread), multiple-reader pattern
+    private volatile int pathPosition;
+
     private int ticksAway;
-    private int ticksOnCurrent;
+
+    @SuppressWarnings(
+            "NonAtomicVolatileUpdate") // Single-writer (game thread), multiple-reader pattern
+    private volatile int ticksOnCurrent;
+
     private Double currentMovementOriginalCostEstimate;
     private Integer costEstimateIndex;
     private boolean failed;
     private boolean recalcBP = true;
-    private HashSet<BlockPos> toBreak = new HashSet<>();
-    private HashSet<BlockPos> toPlace = new HashSet<>();
-    private HashSet<BlockPos> toWalkInto = new HashSet<>();
+    private final Set<BlockPos> toBreak = ConcurrentHashMap.newKeySet();
+    private final Set<BlockPos> toPlace = ConcurrentHashMap.newKeySet();
+    private final Set<BlockPos> toWalkInto = ConcurrentHashMap.newKeySet();
 
     // Reusable collections for recalculation to avoid allocations
-    private HashSet<BlockPos> recalcBreak = new HashSet<>();
-    private HashSet<BlockPos> recalcPlace = new HashSet<>();
-    private HashSet<BlockPos> recalcWalkInto = new HashSet<>();
+    private final Set<BlockPos> recalcBreak = ConcurrentHashMap.newKeySet();
+    private final Set<BlockPos> recalcPlace = ConcurrentHashMap.newKeySet();
+    private final Set<BlockPos> recalcWalkInto = ConcurrentHashMap.newKeySet();
     private int maxCollectionSize = 0; // Track high water mark for shrinking
 
     private final PathingBehavior behavior;
@@ -250,9 +259,13 @@ public class PathExecutor implements IPathExecutor, Helper {
                 recalcWalkInto.addAll(m.toWalkInto(bsi));
             }
 
-            toBreak = recalcBreak;
-            toPlace = recalcPlace;
-            toWalkInto = recalcWalkInto;
+            // Swap contents atomically (thread-safe with concurrent sets)
+            toBreak.clear();
+            toBreak.addAll(recalcBreak);
+            toPlace.clear();
+            toPlace.addAll(recalcPlace);
+            toWalkInto.clear();
+            toWalkInto.addAll(recalcWalkInto);
             recalcBP = false;
 
             // Track collection sizes for periodic shrinking
@@ -845,9 +858,9 @@ public class PathExecutor implements IPathExecutor, Helper {
                                     "%.1fx",
                                     (double) maxCollectionSize / Math.max(1, currentNeeds)))
                     .log("Shrinking recalc collections");
-            recalcBreak = new HashSet<>();
-            recalcPlace = new HashSet<>();
-            recalcWalkInto = new HashSet<>();
+            recalcBreak.clear();
+            recalcPlace.clear();
+            recalcWalkInto.clear();
             maxCollectionSize = 0;
         }
     }
