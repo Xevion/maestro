@@ -337,7 +337,6 @@ sealed class EntityCategory(
          * @param name The category name (e.g., "hostile", "animals")
          * @return The category, or null if not found
          */
-        @JvmStatic
         fun get(name: String): EntityCategory? = registry[name.lowercase()]
 
         /**
@@ -349,7 +348,6 @@ sealed class EntityCategory(
         /**
          * Returns all registered categories.
          */
-        @JvmStatic
         fun all(): Collection<EntityCategory> = registry.values
     }
 }

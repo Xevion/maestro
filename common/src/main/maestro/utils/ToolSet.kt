@@ -207,7 +207,6 @@ class ToolSet(
          * @param state the blockstate to be mined
          * @return how long it would take in ticks
          */
-        @JvmStatic
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
         fun calculateSpeedVsBlock(
             item: ItemStack,

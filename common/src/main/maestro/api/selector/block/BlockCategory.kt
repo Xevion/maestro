@@ -212,7 +212,6 @@ sealed class BlockCategory(
          * @param name The category name (e.g., "ores", "logs")
          * @return The category, or null if not found
          */
-        @JvmStatic
         fun get(name: String): BlockCategory? = registry[name.lowercase()]
 
         /**
@@ -224,7 +223,6 @@ sealed class BlockCategory(
         /**
          * Returns all registered categories.
          */
-        @JvmStatic
         fun all(): Collection<BlockCategory> = registry.values
     }
 }

@@ -106,7 +106,6 @@ class InputOverrideHandler(
          *
          * @return true if bot keys should process input, false otherwise
          */
-        @JvmStatic
         fun canUseBotKeys(): Boolean {
             val mc = Minecraft.getInstance()
             val currentScreen: Screen? = mc.screen
@@ -130,7 +129,6 @@ class InputOverrideHandler(
          * @param glfwKey The GLFW key constant (e.g., GLFW.GLFW_KEY_W)
          * @return true if key is physically pressed and bot keys are active
          */
-        @JvmStatic
         fun isKeyPressed(glfwKey: Int): Boolean {
             if (!canUseBotKeys()) {
                 return false
@@ -145,7 +143,6 @@ class InputOverrideHandler(
          *
          * @return true if any CTRL key is pressed and bot keys are active
          */
-        @JvmStatic
         fun isCtrlPressed(): Boolean {
             if (!canUseBotKeys()) {
                 return false

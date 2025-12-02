@@ -55,7 +55,6 @@ open class GoalXZ(
     companion object {
         private val SQRT_2 = sqrt(2.0)
 
-        @JvmStatic
         fun calculate(
             xDiff: Double,
             zDiff: Double,

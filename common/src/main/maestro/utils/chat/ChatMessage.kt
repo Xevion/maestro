@@ -210,7 +210,6 @@ class ChatMessage private constructor(
          * @param category The logger category (e.g., "waypoint", "cmd")
          * @return Builder instance
          */
-        @JvmStatic
         fun info(
             logger: Logger,
             category: String,
@@ -223,7 +222,6 @@ class ChatMessage private constructor(
          * @param category The logger category
          * @return Builder instance
          */
-        @JvmStatic
         fun warn(
             logger: Logger,
             category: String,
@@ -236,7 +234,6 @@ class ChatMessage private constructor(
          * @param category The logger category
          * @return Builder instance
          */
-        @JvmStatic
         fun error(
             logger: Logger,
             category: String,

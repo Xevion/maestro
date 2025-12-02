@@ -98,7 +98,6 @@ data class Rotation(
          * @param pitch The input pitch
          * @return The clamped pitch
          */
-        @JvmStatic
         fun clampPitch(pitch: Float): Float = max(-90f, min(90f, pitch))
 
         /**
@@ -107,7 +106,6 @@ data class Rotation(
          * @param yaw The input yaw
          * @return The normalized yaw
          */
-        @JvmStatic
         fun normalizeYaw(yaw: Float): Float {
             var newYaw = yaw % 360f
             if (newYaw < -180f) {

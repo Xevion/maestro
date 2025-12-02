@@ -35,19 +35,15 @@ sealed class RecoveryAction {
 
     companion object {
         /** Factory method for cancel action (for Java interop) */
-        @JvmStatic
         fun cancelPath(): RecoveryAction = Cancel
 
         /** Factory method for continue action (for Java interop) */
-        @JvmStatic
         fun continueExecution(): RecoveryAction = Continue
 
         /** Factory method for retry action (for Java interop) */
-        @JvmStatic
         fun retryMovement(movement: Movement): RecoveryAction = Retry(movement)
 
         /** Factory method for reconnect action (for Java interop) */
-        @JvmStatic
         fun reconnectPath(index: Int): RecoveryAction = Reconnect(index)
     }
 }

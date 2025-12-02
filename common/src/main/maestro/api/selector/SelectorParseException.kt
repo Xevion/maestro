@@ -11,10 +11,8 @@ class SelectorParseException(
     val rawInput: String,
 ) : IllegalArgumentException("Invalid selector '$rawInput': $message") {
     companion object {
-        @JvmStatic
         fun blankInput(): SelectorParseException = SelectorParseException("selector cannot be empty", "")
 
-        @JvmStatic
         fun unknownCategory(
             name: String,
             validCategories: Set<String>,
@@ -24,22 +22,16 @@ class SelectorParseException(
                 "@$name",
             )
 
-        @JvmStatic
         fun unknownTag(tagId: String): SelectorParseException = SelectorParseException("unknown or empty tag", "#$tagId")
 
-        @JvmStatic
         fun invalidTagFormat(tagId: String): SelectorParseException = SelectorParseException("invalid tag format", "#$tagId")
 
-        @JvmStatic
         fun invalidBlockId(blockId: String): SelectorParseException = SelectorParseException("invalid block ID format", blockId)
 
-        @JvmStatic
         fun unknownBlock(blockId: String): SelectorParseException = SelectorParseException("unknown block", blockId)
 
-        @JvmStatic
         fun invalidEntityId(entityId: String): SelectorParseException = SelectorParseException("invalid entity ID format", entityId)
 
-        @JvmStatic
         fun unknownEntity(entityId: String): SelectorParseException = SelectorParseException("unknown entity type", entityId)
     }
 }

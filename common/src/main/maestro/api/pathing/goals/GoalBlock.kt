@@ -47,7 +47,6 @@ open class GoalBlock(
         "GoalBlock[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)}]"
 
     companion object {
-        @JvmStatic
         fun calculate(
             xDiff: Double,
             yDiff: Int,

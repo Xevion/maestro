@@ -18,9 +18,9 @@ import kotlin.math.sqrt
  */
 abstract class AbstractNodeCostSearch(
     protected val realStart: PackedBlockPos,
-    @JvmField protected val startX: Int,
-    @JvmField protected val startY: Int,
-    @JvmField protected val startZ: Int,
+    protected val startX: Int,
+    protected val startY: Int,
+    protected val startZ: Int,
     @JvmField protected val goal: Goal,
     private val context: CalculationContext,
 ) : IPathFinder {
@@ -33,19 +33,15 @@ abstract class AbstractNodeCostSearch(
             Agent.settings().pathingMapLoadFactor.value,
         )
 
-    @JvmField
     protected var startNode: PathNode? = null
 
-    @JvmField
     protected var mostRecentConsidered: PathNode? = null
 
-    @JvmField
     protected val bestSoFar: Array<PathNode?> = arrayOfNulls(COEFFICIENTS.size)
 
     @Volatile
     private var isFinished: Boolean = false
 
-    @JvmField
     protected var cancelRequested: Boolean = false
 
     fun cancel() {

@@ -89,7 +89,6 @@ object FasterWorldScanner : IWorldScanner {
     }
 
     /** Generates chunks in spiral order, closest first */
-    @JvmStatic
     fun getChunkRange(
         centerX: Int,
         centerZ: Int,

@@ -173,7 +173,6 @@ class BlockStateInterface
             }
 
             // Get the block at x,y,z from this chunk WITHOUT creating a single blockpos object
-            @JvmStatic
             fun getFromChunk(
                 chunk: LevelChunk,
                 x: Int,

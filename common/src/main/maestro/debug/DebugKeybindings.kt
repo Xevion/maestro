@@ -50,7 +50,6 @@ object DebugKeybindings {
      *
      * Must be called from client initialization.
      */
-    @JvmStatic
     fun register(minecraft: Minecraft) {
         // Note: Minecraft's KeyMapping.ALL list is automatically populated when KeyMapping is
         // created, but we may need platform-specific registration for some mod loaders

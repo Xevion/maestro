@@ -554,7 +554,6 @@ class MineProcess(
     companion object {
         private val log: Logger = MaestroLogger.get("mine")
 
-        @JvmStatic
         fun searchWorld(
             ctx: CalculationContext,
             filter: BlockOptionalMetaLookup,
@@ -667,7 +666,6 @@ class MineProcess(
             }
         }
 
-        @JvmStatic
         fun isNextToAir(
             ctx: CalculationContext,
             pos: BlockPos,
@@ -689,7 +687,6 @@ class MineProcess(
             return false
         }
 
-        @JvmStatic
         fun plausibleToBreak(
             ctx: CalculationContext,
             pos: BlockPos,

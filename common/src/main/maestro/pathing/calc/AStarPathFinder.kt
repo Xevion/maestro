@@ -262,7 +262,6 @@ class AStarPathFinder
             private val log: Logger = MaestroLogger.get("path")
 
             /** Creates the default movement provider with all movement types. */
-            @JvmStatic
             fun createDefaultProvider(): IMovementProvider =
                 CompositeMovementProvider(
                     EnumMovementProvider(), // Standard terrestrial movements

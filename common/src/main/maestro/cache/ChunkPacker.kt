@@ -20,7 +20,6 @@ import java.util.BitSet
 private val log = MaestroLogger.get("cache")
 
 object ChunkPacker {
-    @JvmStatic
     fun pack(chunk: LevelChunk): CachedChunk {
         val specialBlocks = mutableMapOf<String, MutableList<BlockPos>>()
         val height = chunk.level.dimensionType().height()
@@ -90,7 +89,6 @@ object ChunkPacker {
         )
     }
 
-    @JvmStatic
     private fun getPathingBlockType(
         state: BlockState,
         chunk: LevelChunk,
@@ -148,7 +146,6 @@ object ChunkPacker {
         return PathingBlockType.SOLID
     }
 
-    @JvmStatic
     fun pathingTypeToBlock(
         type: PathingBlockType,
         dimension: DimensionType,

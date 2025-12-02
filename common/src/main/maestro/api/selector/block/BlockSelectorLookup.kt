@@ -69,19 +69,16 @@ class BlockSelectorLookup(
         /**
          * Creates an empty lookup.
          */
-        @JvmStatic
         fun empty(): BlockSelectorLookup = BlockSelectorLookup(emptyList())
 
         /**
          * Creates a lookup from a single selector.
          */
-        @JvmStatic
         fun of(selector: BlockSelector): BlockSelectorLookup = BlockSelectorLookup(listOf(selector))
 
         /**
          * Creates a lookup from multiple selectors.
          */
-        @JvmStatic
         fun of(vararg selectors: BlockSelector): BlockSelectorLookup = BlockSelectorLookup(selectors.toList())
 
         /**
@@ -90,7 +87,6 @@ class BlockSelectorLookup(
          * @param inputs The raw inputs to parse
          * @return The lookup containing all parsed selectors
          */
-        @JvmStatic
         fun parse(vararg inputs: String): BlockSelectorLookup = BlockSelectorLookup(inputs.map { BlockSelector.parse(it) })
     }
 }

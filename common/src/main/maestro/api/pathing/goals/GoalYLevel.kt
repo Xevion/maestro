@@ -25,7 +25,6 @@ data class GoalYLevel(
     override fun toString(): String = "GoalYLevel[${SettingsUtil.maybeCensor(level)}]"
 
     companion object {
-        @JvmStatic
         fun calculate(
             goalY: Int,
             currentY: Int,

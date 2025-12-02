@@ -126,7 +126,6 @@ sealed class EntitySelector(
          * @return The parsed selector
          * @throws SelectorParseException if the input is invalid
          */
-        @JvmStatic
         fun parse(input: String): EntitySelector {
             if (input.isBlank()) {
                 throw SelectorParseException.blankInput()
