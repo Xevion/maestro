@@ -11,9 +11,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Intercepts mouse input during swimming to enable free-look camera control. When swimming is
- * active, mouse movements update the free-look camera instead of the player's rotation, allowing
- * the bot to control movement direction while the user can look around independently.
+ * Intercepts mouse input for:
+ *
+ * <ul>
+ *   <li>Swimming free-look camera control (mouse movement)
+ * </ul>
  */
 @Mixin(MouseHandler.class)
 public class MixinMouseHandler {
@@ -21,6 +23,16 @@ public class MixinMouseHandler {
     @Shadow private double accumulatedDX;
 
     @Shadow private double accumulatedDY;
+
+    @Shadow
+    public double xpos() {
+        throw new AssertionError();
+    }
+
+    @Shadow
+    public double ypos() {
+        throw new AssertionError();
+    }
 
     /**
      * Intercepts the turnPlayer() method that applies mouse input to player rotation. When swimming
@@ -32,8 +44,8 @@ public class MixinMouseHandler {
     @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
     private void onTurnPlayer(CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) {
-            return;
+        if (mc.player == null || mc.screen != null) {
+            return; // No player or screen is open (including MaestroScreen)
         }
 
         Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();

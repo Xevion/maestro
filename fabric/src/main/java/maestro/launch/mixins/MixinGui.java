@@ -20,15 +20,13 @@ public class MixinGui {
 
     @Inject(method = "render", at = @At("RETURN"))
     private void onRenderHud(GuiGraphics graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        if (!MaestroAPI.getSettings().debugEnabled.value) {
-            return;
-        }
-
         float tickDelta = deltaTracker.getGameTimeDeltaTicks();
 
         // Render debug HUD for all agents
-        for (IAgent agent : MaestroAPI.getProvider().getAllMaestros()) {
-            agent.getDebugRenderer().getHudRenderer().render(graphics, tickDelta);
+        if (MaestroAPI.getSettings().debugEnabled.value) {
+            for (IAgent agent : MaestroAPI.getProvider().getAllMaestros()) {
+                agent.getDebugRenderer().getHudRenderer().render(graphics, tickDelta);
+            }
         }
     }
 }

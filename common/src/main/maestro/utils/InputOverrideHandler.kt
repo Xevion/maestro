@@ -6,6 +6,7 @@ import maestro.api.event.events.TickEvent
 import maestro.api.utils.IInputOverrideHandler
 import maestro.api.utils.input.Input
 import maestro.behavior.Behavior
+import maestro.gui.MaestroScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.DeathScreen
 import net.minecraft.client.gui.screens.Screen
@@ -115,6 +116,7 @@ class InputOverrideHandler(
                 null -> true
                 // Death screen - allow keys (useful for reviewing what killed you)
                 is DeathScreen -> true
+                is MaestroScreen -> true
                 // Any other screen - block keys
                 else -> false
             }
