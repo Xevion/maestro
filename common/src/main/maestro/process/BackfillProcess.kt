@@ -16,10 +16,22 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.EmptyLevelChunk
 import org.slf4j.Logger
 
+/**
+ * Process that tracks blocks broken during pathfinding and attempts to replace them.
+ *
+ * This process monitors blocks that the bot breaks while pathing and queues them for
+ * replacement with dirt blocks when safe to do so. It's designed to "backfill" gaps
+ * created during movement, preventing fall damage or navigation issues.
+ *
+ * Note: Incompatible with parkour movement setting.
+ */
 class BackfillProcess(
     maestro: Agent,
 ) : MaestroProcessHelper(maestro) {
-    val blocksToReplace = mutableMapOf<BlockPos, BlockState>()
+    private val _blocksToReplace = mutableMapOf<BlockPos, BlockState>()
+
+    /** Read-only view of blocks queued for replacement */
+    val blocksToReplace: Map<BlockPos, BlockState> get() = _blocksToReplace
 
     override fun isActive(): Boolean {
         ctx.player() ?: return false
@@ -29,6 +41,22 @@ class BackfillProcess(
             return false
         }
 
+        if (isParkourConflict()) {
+            return false
+        }
+
+        cleanUpInvalidPositions(world)
+        trackCurrentlyBreakingBlock()
+        maestro.inputOverrideHandler.clearAllKeys()
+
+        return toFillIn().isNotEmpty()
+    }
+
+    /**
+     * Checks if parkour setting conflicts with backfill and disables backfill if so.
+     * Parkour movements create intentional gaps that should not be filled.
+     */
+    private fun isParkourConflict(): Boolean {
         if (Agent.settings().allowParkour.value) {
             log
                 .atWarn()
@@ -37,22 +65,19 @@ class BackfillProcess(
                 .addKeyValue("setting_2", "allowParkour")
                 .log("Backfill disabled due to incompatible settings")
             Agent.settings().backfill.value = false
-            return false
+            return true
         }
+        return false
+    }
 
-        // Clean up invalid positions
-        blocksToReplace.keys.toList().forEach { pos ->
-            if (world.getChunk(pos) is EmptyLevelChunk ||
-                world.getBlockState(pos).block != Blocks.AIR
-            ) {
-                blocksToReplace.remove(pos)
-            }
+    /**
+     * Removes positions from the backfill queue that are no longer valid.
+     * A position is invalid if its chunk is unloaded or the block is no longer air.
+     */
+    private fun cleanUpInvalidPositions(world: net.minecraft.world.level.Level) {
+        _blocksToReplace.entries.removeIf { (pos, _) ->
+            world.getChunk(pos) is EmptyLevelChunk || world.getBlockState(pos).block != Blocks.AIR
         }
-
-        amIBreakingABlockHMMMMMMM()
-        maestro.inputOverrideHandler.clearAllKeys()
-
-        return toFillIn().isNotEmpty()
     }
 
     override fun onTick(
@@ -66,8 +91,10 @@ class BackfillProcess(
         maestro.inputOverrideHandler.clearAllKeys()
 
         for (toPlace in toFillIn()) {
-            val fake = MovementState()
-            when (MovementHelper.attemptToPlaceABlock(fake, maestro, toPlace, false, false)) {
+            val state = MovementState()
+            val result = MovementHelper.attemptToPlaceABlock(state, maestro, toPlace, false, false)
+
+            when (result) {
                 MovementHelper.PlaceResult.NO_OPTION -> continue
 
                 MovementHelper.PlaceResult.READY_TO_PLACE -> {
@@ -76,8 +103,7 @@ class BackfillProcess(
                 }
 
                 MovementHelper.PlaceResult.ATTEMPTING -> {
-                    // Patience
-                    fake.getTarget().getRotation().ifPresent { rotation ->
+                    state.getTarget().getRotation().ifPresent { rotation ->
                         maestro.lookBehavior.updateTarget(rotation, true)
                     }
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
@@ -85,30 +111,46 @@ class BackfillProcess(
             }
         }
 
-        return PathingCommand(null, PathingCommandType.DEFER) // Cede to other process
+        return PathingCommand(null, PathingCommandType.DEFER)
     }
 
-    private fun amIBreakingABlockHMMMMMMM() {
+    /**
+     * Tracks the block currently being broken by the player if actively pathing.
+     * This allows backfill to queue the position for later replacement.
+     */
+    private fun trackCurrentlyBreakingBlock() {
         val selectedBlock = ctx.getSelectedBlock()
         if (selectedBlock.isEmpty || !maestro.pathingBehavior.isPathing()) {
             return
         }
 
+        val world = ctx.world() ?: return
         selectedBlock.ifPresent { pos ->
-            blocksToReplace[pos] = ctx.world().getBlockState(pos)
+            _blocksToReplace[pos] = world.getBlockState(pos)
         }
     }
 
+    /**
+     * Returns a list of positions ready to be filled, sorted by distance from player.
+     * Uses sequence for lazy evaluation to avoid intermediate collections.
+     */
     fun toFillIn(): List<BlockPos> {
+        val world = ctx.world() ?: return emptyList()
         val playerFeet = ctx.playerFeet()
-        return blocksToReplace.keys
-            .filter { pos -> ctx.world().getBlockState(pos).block == Blocks.AIR }
-            .filter { pos ->
-                maestro.builderProcess.placementPlausible(pos, Blocks.DIRT.defaultBlockState())
-            }.filter { pos -> !partOfCurrentMovement(pos) }
+
+        return _blocksToReplace.keys
+            .asSequence()
+            .filter { pos -> world.getBlockState(pos).block == Blocks.AIR }
+            .filter { pos -> maestro.builderProcess.placementPlausible(pos, DIRT_STATE) }
+            .filter { pos -> !partOfCurrentMovement(pos) }
             .sortedByDescending { pos -> playerFeet.distSqr(PackedBlockPos(pos)) }
+            .toList()
     }
 
+    /**
+     * Checks if a position is part of the current movement's blocks to break.
+     * Returns true if the position should not be filled because it's being actively used.
+     */
     private fun partOfCurrentMovement(pos: BlockPos): Boolean {
         val exec = maestro.pathingBehavior.getCurrent() ?: return false
 
@@ -116,12 +158,19 @@ class BackfillProcess(
             return false
         }
 
-        val movement = exec.path.movements()[exec.position] as Movement
+        val movements = exec.path.movements()
+        val currentPos = exec.position
+
+        if (currentPos < 0 || currentPos >= movements.size) {
+            return false
+        }
+
+        val movement = movements[currentPos] as? Movement ?: return false
         return movement.toBreakAll().contains(pos)
     }
 
     override fun onLostControl() {
-        blocksToReplace.clear()
+        _blocksToReplace.clear()
     }
 
     override fun displayName0(): String = "Backfill"
@@ -132,5 +181,6 @@ class BackfillProcess(
 
     companion object {
         private val log: Logger = MaestroLogger.get("move")
+        private val DIRT_STATE: BlockState = Blocks.DIRT.defaultBlockState()
     }
 }

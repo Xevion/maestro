@@ -80,7 +80,7 @@ interface IPathingBehavior : IBehavior {
      *
      * @return The current path
      */
-    fun getPath(): Optional<IPath> = Optional.ofNullable(getCurrent()).map(IPathExecutor::getPath)
+    fun getPath(): Optional<IPath> = Optional.ofNullable(getCurrent()).map { it.path }
 
     /** @return The current pathfinder being executed */
     fun getInProgress(): Optional<out IPathFinder?>

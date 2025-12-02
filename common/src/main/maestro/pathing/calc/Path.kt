@@ -17,9 +17,12 @@ internal class Path(
     start: PathNode,
     end: PathNode,
     private val numNodes: Int,
-    private val goal: Goal,
+    goal_: Goal,
     private val context: CalculationContext,
 ) : PathBase() {
+    override val goal: Goal = goal_
+    override val numNodesConsidered: Int get() = numNodes
+
     /** The start position of this path */
     private val start: PackedBlockPos
 
@@ -72,8 +75,6 @@ internal class Path(
         path = tempPath.reversed()
         nodes = tempNodes.reversed()
     }
-
-    override fun getGoal(): Goal = goal
 
     private fun assembleMovements(): Boolean {
         if (path.isEmpty() || movements.isNotEmpty()) {
@@ -141,12 +142,6 @@ internal class Path(
     }
 
     override fun positions(): List<PackedBlockPos> = path
-
-    override fun getNumNodesConsidered(): Int = numNodes
-
-    override fun getSrc(): PackedBlockPos = start
-
-    override fun getDest(): PackedBlockPos = end
 
     override fun replaceMovement(
         index: Int,

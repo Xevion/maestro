@@ -178,7 +178,7 @@ class PathingBehavior(
                                 (
                                     current!!
                                         .path
-                                        .getDest()
+                                        .dest
                                         != calcFrom
                                 )
                         ) &&
@@ -273,7 +273,7 @@ class PathingBehavior(
             if (Agent.settings().splicePath.value) {
                 current = current!!.trySplice(next)
             }
-            if (next != null && current!!.path.getDest() == next!!.path.getDest()) {
+            if (next != null && current!!.path.dest == next!!.path.dest) {
                 next = null
             }
             synchronized(pathCalcLock) {
@@ -285,7 +285,7 @@ class PathingBehavior(
                     // and we have no plan for what to do next
                     return
                 }
-                if (goal == null || goal!!.isInGoal(current!!.path.getDest().toBlockPos())) {
+                if (goal == null || goal!!.isInGoal(current!!.path.dest.toBlockPos())) {
                     // and this path doesn't get us all the way there
                     return
                 }
@@ -300,7 +300,7 @@ class PathingBehavior(
                     // its own
                     log.atDebug().log("Path almost over, planning ahead")
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED)
-                    findPathInNewThread(current!!.path.getDest().toBlockPos(), false, context!!)
+                    findPathInNewThread(current!!.path.dest.toBlockPos(), false, context!!)
                 }
             }
         }
@@ -655,7 +655,7 @@ class PathingBehavior(
                                         .get()
                                         .path
                                         .src
-                                    == current!!.path.getDest()
+                                    == current!!.path.dest
                                 ) {
                                     queuePathEvent(
                                         PathEvent.NEXT_SEGMENT_CALC_FINISHED,
@@ -686,14 +686,14 @@ class PathingBehavior(
                         }
                     }
                     if (talkAboutIt && current != null && current!!.path != null) {
-                        if (goal.isInGoal(current!!.path.getDest().toBlockPos())) {
+                        if (goal.isInGoal(current!!.path.dest.toBlockPos())) {
                             log
                                 .atInfo()
                                 .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(
                                     "nodes_considered",
-                                    current!!.path.getNumNodesConsidered(),
+                                    current!!.path.numNodesConsidered,
                                 ).log("Finished finding path")
                         } else {
                             log
@@ -702,7 +702,7 @@ class PathingBehavior(
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(
                                     "nodes_considered",
-                                    current!!.path.getNumNodesConsidered(),
+                                    current!!.path.numNodesConsidered,
                                 ).log("Found path segment")
                         }
                     }
