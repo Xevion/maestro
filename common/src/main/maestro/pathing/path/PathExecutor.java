@@ -949,7 +949,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private void cancel() {
         stopMovement();
-        behavior.maestro.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+        behavior.maestro.getInputOverrideHandler().getBlockBreakManager().stop();
         pathPosition = path.length() + 3;
         failed = true;
     }

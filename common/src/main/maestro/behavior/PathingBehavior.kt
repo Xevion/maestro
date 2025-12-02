@@ -153,7 +153,7 @@ class PathingBehavior(
             pauseRequestedLastTick = false
             if (unpausedLastTick) {
                 maestro.inputOverrideHandler.clearAllKeys()
-                maestro.inputOverrideHandler.blockBreakHelper.stopBreakingBlock()
+                maestro.inputOverrideHandler.blockBreakManager.stop()
                 // Deactivate swimming mode when pausing
                 (maestro as Agent).swimmingBehavior.deactivateSwimming()
             }
@@ -407,7 +407,7 @@ class PathingBehavior(
             // Restore user control even when pathing can't be safely cancelled to prevent stuck
             // camera/input states
             maestro.inputOverrideHandler.clearAllKeys()
-            maestro.inputOverrideHandler.blockBreakHelper.stopBreakingBlock()
+            maestro.inputOverrideHandler.blockBreakManager.stop()
             maestro.swimmingBehavior.deactivateSwimming()
         }
         maestro.pathingControlManager
@@ -446,7 +446,7 @@ class PathingBehavior(
                 current = null
                 next = null
                 maestro.inputOverrideHandler.clearAllKeys()
-                maestro.inputOverrideHandler.blockBreakHelper.stopBreakingBlock()
+                maestro.inputOverrideHandler.blockBreakManager.stop()
                 // Deactivate swimming mode to restore normal camera control
                 (maestro as Agent).swimmingBehavior.deactivateSwimming()
             }

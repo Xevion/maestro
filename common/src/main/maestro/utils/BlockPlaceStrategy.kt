@@ -7,29 +7,17 @@ import net.minecraft.world.InteractionResult
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.HitResult
 
-class BlockPlaceHelper internal constructor(
-    private val ctx: IPlayerContext,
-) {
-    private var rightClickTimer = 0
-
-    fun tick(rightClickRequested: Boolean) {
-        if (rightClickTimer > 0) {
-            rightClickTimer--
-            return
-        }
-
+class BlockPlaceStrategy : BlockInteractionStrategy {
+    override fun interact(ctx: IPlayerContext): Int? {
         val mouseOver = ctx.objectMouseOver()
-        val player = ctx.player() ?: return
+        val player = ctx.player() ?: return null
 
-        if (!rightClickRequested ||
-            player.isHandsBusy ||
+        if (player.isHandsBusy ||
             mouseOver == null ||
             mouseOver.type != HitResult.Type.BLOCK
         ) {
-            return
+            return null
         }
-
-        rightClickTimer = Agent.settings().rightClickSpeed.value - BASE_PLACE_DELAY
 
         for (hand in InteractionHand.entries) {
             if (ctx.playerController().processRightClickBlock(
@@ -40,16 +28,18 @@ class BlockPlaceHelper internal constructor(
                 ) == InteractionResult.SUCCESS
             ) {
                 player.swing(hand)
-                return
+                return Agent.settings().rightClickSpeed.value - BASE_PLACE_DELAY
             }
 
             if (!player.getItemInHand(hand).isEmpty &&
                 ctx.playerController().processRightClick(player, ctx.world(), hand)
                 == InteractionResult.SUCCESS
             ) {
-                return
+                return Agent.settings().rightClickSpeed.value - BASE_PLACE_DELAY
             }
         }
+
+        return null
     }
 
     companion object {

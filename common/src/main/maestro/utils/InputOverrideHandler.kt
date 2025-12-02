@@ -23,8 +23,8 @@ class InputOverrideHandler(
     /** Maps inputs to whether or not we are forcing their state down. */
     private val inputForceStateMap = mutableMapOf<Input, Boolean>()
 
-    internal val blockBreakHelper = BlockBreakHelper(maestro.playerContext)
-    internal val blockPlaceHelper = BlockPlaceHelper(maestro.playerContext)
+    internal val blockBreakManager = BlockInteractionManager(maestro.playerContext, BlockBreakStrategy())
+    internal val blockPlaceManager = BlockInteractionManager(maestro.playerContext, BlockPlaceStrategy())
 
     /**
      * Returns whether we are forcing down the specified [Input].
@@ -61,8 +61,8 @@ class InputOverrideHandler(
             setInputForceState(Input.CLICK_RIGHT, false)
         }
 
-        blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT))
-        blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT))
+        blockBreakManager.tick(isInputForcedDown(Input.CLICK_LEFT))
+        blockPlaceManager.tick(isInputForcedDown(Input.CLICK_RIGHT))
 
         if (inControl()) {
             if (ctx.player().input !is PlayerMovementInput) {
@@ -95,7 +95,7 @@ class InputOverrideHandler(
             maestro != MaestroAPI.getProvider().primaryAgent
     }
 
-    fun getBlockBreakHelper(): BlockBreakHelper = blockBreakHelper
+    fun getBlockBreakManager(): BlockInteractionManager = blockBreakManager
 
     companion object {
         /**
