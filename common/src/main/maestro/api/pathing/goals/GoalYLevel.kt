@@ -6,8 +6,7 @@ import maestro.api.utils.SettingsUtil
 /** Useful for mining (getting to diamond / iron level) */
 data class GoalYLevel(
     @JvmField val level: Int,
-) : Goal,
-    ActionCosts {
+) : Goal {
     override fun isInGoal(
         x: Int,
         y: Int,

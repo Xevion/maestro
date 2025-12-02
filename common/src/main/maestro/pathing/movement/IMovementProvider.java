@@ -1,6 +1,7 @@
 package maestro.pathing.movement;
 
 import java.util.stream.Stream;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.PackedBlockPos;
 
@@ -31,8 +32,7 @@ public interface IMovementProvider {
      *
      * <ul>
      *   <li>Have costs already calculated via {@link IMovement#getCost()}
-     *   <li>Be filtered to exclude impossible movements (cost >= {@link
-     *       maestro.api.pathing.movement.ActionCosts#COST_INF})
+     *   <li>Be filtered to exclude impossible movements (cost >= {@link ActionCosts#COST_INF})
      *   <li>Have valid source and destination positions
      * </ul>
      *

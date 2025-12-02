@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.input.Input;
@@ -62,11 +63,11 @@ public class MovementAscend extends Movement {
         double additionalPlacementCost = 0;
         if (!MovementHelper.canWalkOn(context, destX, y, destZ, toPlace)) {
             additionalPlacementCost = context.costOfPlacingAt(destX, y, destZ, toPlace);
-            if (additionalPlacementCost >= COST_INF) {
-                return COST_INF;
+            if (additionalPlacementCost >= ActionCosts.COST_INF) {
+                return ActionCosts.COST_INF;
             }
             if (!MovementHelper.isReplaceable(destX, y, destZ, toPlace, context.bsi)) {
-                return COST_INF;
+                return ActionCosts.COST_INF;
             }
             boolean foundPlaceOption = false;
             for (int i = 0; i < 5; i++) {
@@ -98,7 +99,7 @@ public class MovementAscend extends Movement {
                 }
             }
             if (!foundPlaceOption) { // didn't find a valid place =(
-                return COST_INF;
+                return ActionCosts.COST_INF;
             }
         }
         BlockState srcUp2 = context.get(x, y + 2, z); // used lower down anyway
@@ -119,7 +120,7 @@ public class MovementAscend extends Movement {
             // as in, if we have a block, then two FallingBlocks on top of it
             // and that block is x, y+1, z, and we'd have to clear it to even start this movement
             // we don't need to worry about those FallingBlocks because we've already cleared them
-            return COST_INF;
+            return ActionCosts.COST_INF;
             // you may think we only need to check srcUp2, not srcUp
             // however, in the scenario where glitchy world gen where unsupported sand / gravel
             // generates
@@ -129,13 +130,14 @@ public class MovementAscend extends Movement {
         }
         BlockState srcDown = context.get(x, y - 1, z);
         if (srcDown.getBlock() == Blocks.LADDER || srcDown.getBlock() == Blocks.VINE) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         // we can jump from soul sand, but not from a bottom slab
         boolean jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown);
         boolean jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace);
         if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
-            return COST_INF; // the only thing we can ascend onto from a bottom slab is another
+            return ActionCosts
+                    .COST_INF; // the only thing we can ascend onto from a bottom slab is another
             // bottom slab
         }
         double walk;
@@ -143,19 +145,21 @@ public class MovementAscend extends Movement {
             if (jumpingFromBottomSlab) {
                 walk =
                         Math.max(
-                                JUMP_ONE_BLOCK_COST,
-                                WALK_ONE_BLOCK_COST); // we hit space immediately on entering this
+                                ActionCosts.JUMP_ONE_BLOCK_COST,
+                                ActionCosts.WALK_ONE_BLOCK_COST); // we hit space immediately on
+                // entering this
                 // action
                 walk += context.jumpPenalty;
             } else {
-                walk = WALK_ONE_BLOCK_COST; // we don't hit space we just walk into the slab
+                walk = ActionCosts.WALK_ONE_BLOCK_COST; // we don't hit space we just walk into the
+                // slab
             }
         } else {
             // jumpingFromBottomSlab must be false
             if (toPlace.getBlock() == Blocks.SOUL_SAND) {
-                walk = WALK_ONE_OVER_SOUL_SAND_COST;
+                walk = ActionCosts.WALK_ONE_OVER_SOUL_SAND_COST;
             } else {
-                walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);
+                walk = Math.max(ActionCosts.JUMP_ONE_BLOCK_COST, ActionCosts.WALK_ONE_BLOCK_COST);
             }
             walk += context.jumpPenalty;
         }
@@ -163,14 +167,14 @@ public class MovementAscend extends Movement {
         double totalCost = walk + additionalPlacementCost;
         // start with srcUp2 since we already have its state
         // includeFalling isn't needed because of the falling check above -- if srcUp3 is falling we
-        // will have already exited with COST_INF if we'd actually have to break it
+        // will have already exited with ActionCosts.COST_INF if we'd actually have to break it
         totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false);
-        if (totalCost >= COST_INF) {
-            return COST_INF;
+        if (totalCost >= ActionCosts.COST_INF) {
+            return ActionCosts.COST_INF;
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, false);
-        if (totalCost >= COST_INF) {
-            return COST_INF;
+        if (totalCost >= ActionCosts.COST_INF) {
+            return ActionCosts.COST_INF;
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 2, destZ, true);
         return totalCost;

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.LoggingUtils;
 import maestro.api.utils.MaestroLogger;
@@ -73,7 +74,7 @@ public class MovementSwimVertical extends Movement {
      * @param y Position Y
      * @param z Position Z
      * @param ascending True if swimming upward, false if swimming downward
-     * @return Cost in ticks, or COST_INF if movement is not possible
+     * @return Cost in ticks, or ActionCosts.COST_INF if movement is not possible
      */
     public static double cost(CalculationContext context, int x, int y, int z, boolean ascending) {
         double baseCost = SWIM_VERTICAL_ONE_BLOCK_COST;
@@ -84,7 +85,7 @@ public class MovementSwimVertical extends Movement {
                     .addKeyValue("pos", LoggingUtils.formatCoords(x, y, z))
                     .addKeyValue("reason", "swimming_disabled")
                     .log("Swim rejected");
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         int destY = ascending ? y + 1 : y - 1;
@@ -100,7 +101,7 @@ public class MovementSwimVertical extends Movement {
                     .addKeyValue("dest", LoggingUtils.formatCoords(x, destY, z))
                     .addKeyValue("reason", "not_water")
                     .log("Swim rejected");
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Destination must be passable for swimming
@@ -109,7 +110,7 @@ public class MovementSwimVertical extends Movement {
                     .addKeyValue("dest", LoggingUtils.formatCoords(x, destY, z))
                     .addKeyValue("reason", "blocked")
                     .log("Swim rejected");
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Bubble column handling (0.5x with assist, 2.0x against)

@@ -1,17 +1,19 @@
-package maestro.api.pathing.movement;
+package maestro.api.pathing.movement
 
-public enum MovementStatus {
-
+enum class MovementStatus(
+    /** Whether this status indicates a complete movement. */
+    val isComplete: Boolean,
+) {
     /**
      * We are preparing the movement to be executed. This is when any blocks obstructing the
      * destination are broken.
      */
     PREPPING(false),
 
-    /** We are waiting for the movement to begin, after {@link MovementStatus#PREPPING}. */
+    /** We are waiting for the movement to begin, after [PREPPING]. */
     WAITING(false),
 
-    /** The movement is currently in progress, after {@link MovementStatus#WAITING} */
+    /** The movement is currently in progress, after [WAITING] */
     RUNNING(false),
 
     /** The movement has been completed, and we are at our destination */
@@ -27,16 +29,5 @@ public enum MovementStatus {
     FAILED(true),
 
     /** "Unused" */
-    CANCELED(true);
-
-    /** Whether this status indicates a complete movement. */
-    private final boolean complete;
-
-    MovementStatus(boolean complete) {
-        this.complete = complete;
-    }
-
-    public final boolean isComplete() {
-        return this.complete;
-    }
+    CANCELED(true),
 }

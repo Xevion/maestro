@@ -42,7 +42,7 @@ import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 /** Static helpers for cost calculation */
-public interface MovementHelper extends ActionCosts, Helper {
+public interface MovementHelper extends Helper {
     Logger log = MaestroLogger.get("move");
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
@@ -635,18 +635,18 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block block = state.getBlock();
         if (!canWalkThrough(context, x, y, z, state)) {
             if (!state.getFluidState().isEmpty()) {
-                return COST_INF;
+                return ActionCosts.COST_INF;
             }
             double mult = context.breakCostMultiplierAt(x, y, z, state);
-            if (mult >= COST_INF) {
-                return COST_INF;
+            if (mult >= ActionCosts.COST_INF) {
+                return ActionCosts.COST_INF;
             }
             if (avoidBreaking(context.bsi, x, y, z, state)) {
-                return COST_INF;
+                return ActionCosts.COST_INF;
             }
             double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
-                return COST_INF;
+                return ActionCosts.COST_INF;
             }
             double result = 1 / strVsBlock;
             result += context.breakBlockAdditionalCost;

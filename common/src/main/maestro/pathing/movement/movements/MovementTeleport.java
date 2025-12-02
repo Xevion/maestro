@@ -48,7 +48,7 @@ public class MovementTeleport extends Movement {
 
         // Check distance bounds
         if (distance < context.teleportMinDistance || distance > context.teleportMaxDistance) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Calculate required packets
@@ -56,12 +56,12 @@ public class MovementTeleport extends Movement {
 
         // Check packet limit (exploit limitation)
         if (packetsRequired > 19) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Validate destination
         if (!isValidDestination(context)) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Calculate fall height (difference between arrival and landing positions)

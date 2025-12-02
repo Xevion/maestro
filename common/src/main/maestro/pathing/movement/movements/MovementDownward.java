@@ -3,6 +3,7 @@ package maestro.pathing.movement.movements;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.CalculationContext;
@@ -39,19 +40,19 @@ public class MovementDownward extends Movement {
 
     public static double cost(CalculationContext context, int x, int y, int z) {
         if (!context.allowDownward) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         if (!MovementHelper.canWalkOn(context, x, y - 2, z)) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         BlockState down = context.get(x, y - 1, z);
         Block downBlock = down.getBlock();
         if (downBlock == Blocks.LADDER || downBlock == Blocks.VINE) {
-            return LADDER_DOWN_ONE_COST;
+            return ActionCosts.LADDER_DOWN_ONE_COST;
         } else {
             // we're standing on it, while it might be block falling, it'll be air by the time we
             // get here in the movement
-            return FALL_N_BLOCKS_COST[1]
+            return ActionCosts.FALL_N_BLOCKS_COST[1]
                     + MovementHelper.getMiningDurationTicks(context, x, y - 1, z, down, false);
         }
     }

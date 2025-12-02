@@ -77,7 +77,7 @@ class BackfillProcess(
 
                 MovementHelper.PlaceResult.ATTEMPTING -> {
                     // Patience
-                    fake.target.getRotation().ifPresent { rotation ->
+                    fake.getTarget().getRotation().ifPresent { rotation ->
                         maestro.lookBehavior.updateTarget(rotation, true)
                     }
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)

@@ -500,7 +500,7 @@ public final class Settings {
      * Maximum consecutive failures before treating a movement as impossible.
      *
      * <p>After this many failures at the same position with the same movement type, the movement
-     * will be filtered out entirely (treated as COST_INF).
+     * will be filtered out entirely (treated as ActionCosts.COST_INF).
      *
      * <p>Default: 3 attempts
      */
@@ -708,8 +708,9 @@ public final class Settings {
     public final Setting<Double> maxCostIncrease = new Setting<>(10D);
 
     /**
-     * Stop 5 movements before anything that made the path COST_INF. For example, if lava has spread
-     * across the path, don't walk right up to it then recalculate, it might still be spreading
+     * Stop 5 movements before anything that made the path ActionCosts.COST_INF. For example, if
+     * lava has spread across the path, don't walk right up to it then recalculate, it might still
+     * be spreading
      */
     public final Setting<Integer> costVerificationLookahead = new Setting<>(5);
 

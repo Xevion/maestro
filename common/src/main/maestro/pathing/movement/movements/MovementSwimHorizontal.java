@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.LoggingUtils;
 import maestro.api.utils.MaestroLogger;
@@ -71,7 +72,7 @@ public class MovementSwimHorizontal extends Movement {
      * @param destX Destination X
      * @param destY Destination Y
      * @param destZ Destination Z
-     * @return Cost in ticks, or COST_INF if movement is not possible
+     * @return Cost in ticks, or ActionCosts.COST_INF if movement is not possible
      */
     public static double cost(
             CalculationContext context, int x, int y, int z, int destX, int destY, int destZ) {
@@ -83,7 +84,7 @@ public class MovementSwimHorizontal extends Movement {
                     .addKeyValue("pos", LoggingUtils.formatCoords(x, y, z))
                     .addKeyValue("reason", "swimming_disabled")
                     .log("Swim rejected");
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Both source and destination must be water
@@ -97,7 +98,7 @@ public class MovementSwimHorizontal extends Movement {
                     .addKeyValue("dest", LoggingUtils.formatCoords(destX, destY, destZ))
                     .addKeyValue("reason", "not_water")
                     .log("Swim rejected");
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Destination must be passable for swimming
@@ -106,7 +107,7 @@ public class MovementSwimHorizontal extends Movement {
                     .addKeyValue("dest", LoggingUtils.formatCoords(destX, destY, destZ))
                     .addKeyValue("reason", "blocked")
                     .log("Swim rejected");
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
 
         // Apply flowing water penalty (30% slower)

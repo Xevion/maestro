@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PackedBlockPos;
@@ -47,12 +48,13 @@ public class MovementPillar extends Movement {
         BlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
             if (fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE) {
-                return COST_INF; // can't pillar from a ladder or vine onto something that isn't
+                return ActionCosts
+                        .COST_INF; // can't pillar from a ladder or vine onto something that isn't
                 // also climbable
             }
             if (fromDown.getBlock() instanceof SlabBlock
                     && fromDown.getValue(SlabBlock.TYPE) == SlabType.BOTTOM) {
-                return COST_INF; // can't pillar up from a bottom slab onto a non ladder
+                return ActionCosts.COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
         if (from == Blocks.VINE
@@ -61,12 +63,12 @@ public class MovementPillar extends Movement {
                         z)) { // TODO this vine can't be climbed, but we could place a pillar still
             // since vines are replacable, no? perhaps the pillar jump would be
             // impossible because of the slowdown actually.
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         BlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof FenceGateBlock) { // see issue #172
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         BlockState srcUp = null;
         if (MovementHelper.isWater(toBreak)
@@ -74,7 +76,8 @@ public class MovementPillar extends Movement {
                         fromState)) { // TODO should this also be allowed if toBreakBlock is air?
             srcUp = context.get(x, y + 1, z);
             if (MovementHelper.isWater(srcUp)) {
-                return LADDER_UP_ONE_COST; // allow ascending pillars of water, but only if we're
+                return ActionCosts
+                        .LADDER_UP_ONE_COST; // allow ascending pillars of water, but only if we're
                 // already in one
             }
         }
@@ -82,8 +85,8 @@ public class MovementPillar extends Movement {
         if (!ladder) {
             // we need to place a block where we started to jump on it
             placeCost = context.costOfPlacingAt(x, y, z, fromState);
-            if (placeCost >= COST_INF) {
-                return COST_INF;
+            if (placeCost >= ActionCosts.COST_INF) {
+                return ActionCosts.COST_INF;
             }
             if (fromDown.getBlock() instanceof AirBlock) {
                 placeCost += 0.1; // slightly (1/200th of a second) penalize pillaring on what's
@@ -97,17 +100,17 @@ public class MovementPillar extends Movement {
             // if we're standing on water and assumeWalkOnWater is true, we cannot pillar
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to
             // here, or sneak backplaced, so it is possible to pillar again
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         if ((from == Blocks.LILY_PAD || from instanceof CarpetBlock)
                 && !fromDown.getFluidState().isEmpty()) {
             // to ascend here we'd have to break the block we are standing on
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         double hardness =
                 MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
-        if (hardness >= COST_INF) {
-            return COST_INF;
+        if (hardness >= ActionCosts.COST_INF) {
+            return ActionCosts.COST_INF;
         }
         if (hardness != 0) {
             if (toBreakBlock == Blocks.LADDER || toBreakBlock == Blocks.VINE) {
@@ -128,7 +131,7 @@ public class MovementPillar extends Movement {
                     }
                     if (!(toBreakBlock instanceof FallingBlock)
                             || !(srcUp.getBlock() instanceof FallingBlock)) {
-                        return COST_INF;
+                        return ActionCosts.COST_INF;
                     }
                 }
                 // this is commented because it may have had a purpose, but it's very unclear what
@@ -136,18 +139,18 @@ public class MovementPillar extends Movement {
                 // if (!MovementHelper.canWalkOn(context, chkPos, check) ||
                 // MovementHelper.canWalkThrough(context, chkPos, check)) {//if the block above
                 // where we want to break is not a full block, don't do it
-                // TODO why does canWalkThrough mean this action is COST_INF?
+                // TODO why does canWalkThrough mean this action is ActionCosts.COST_INF?
                 // FallingBlock makes sense, and !canWalkOn deals with weird cases like if it were
                 // lava
                 // but I don't understand why canWalkThrough makes it impossible
-                //    return COST_INF;
+                //    return ActionCosts.COST_INF;
                 // }
             }
         }
         if (ladder) {
-            return LADDER_UP_ONE_COST + hardness * 5;
+            return ActionCosts.LADDER_UP_ONE_COST + hardness * 5;
         } else {
-            return JUMP_ONE_BLOCK_COST + placeCost + context.jumpPenalty + hardness;
+            return ActionCosts.JUMP_ONE_BLOCK_COST + placeCost + context.jumpPenalty + hardness;
         }
     }
 

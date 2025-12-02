@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.input.Input;
@@ -109,7 +110,7 @@ public class MovementDiagonal extends Movement {
         MutableMoveResult result = new MutableMoveResult();
         cost(context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ(), result);
         if (result.y != dest.getY()) {
-            return COST_INF; // doesn't apply to us, this position is incorrect
+            return ActionCosts.COST_INF; // doesn't apply to us, this position is incorrect
         }
         return result.cost;
     }
@@ -177,10 +178,12 @@ public class MovementDiagonal extends Movement {
             // can't prevent the water from freezing, it just
             // prevents us from relying on the water freezing
         }
-        double multiplier = WALK_ONE_BLOCK_COST;
+        double multiplier = ActionCosts.WALK_ONE_BLOCK_COST;
         // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
-            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+            multiplier +=
+                    (ActionCosts.WALK_ONE_OVER_SOUL_SAND_COST - ActionCosts.WALK_ONE_BLOCK_COST)
+                            / 2;
         } else if (frostWalker) {
             // frostwalker lets us walk on water without the penalty
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
@@ -191,7 +194,9 @@ public class MovementDiagonal extends Movement {
             return;
         }
         if (fromDownBlock == Blocks.SOUL_SAND) {
-            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+            multiplier +=
+                    (ActionCosts.WALK_ONE_OVER_SOUL_SAND_COST - ActionCosts.WALK_ONE_BLOCK_COST)
+                            / 2;
         }
         BlockState cuttingOver1 = context.get(x, y - 1, destZ);
         if (cuttingOver1.getBlock() == Blocks.MAGMA_BLOCK || MovementHelper.isLava(cuttingOver1)) {
@@ -239,7 +244,7 @@ public class MovementDiagonal extends Movement {
                     || (!BTop && BMid && BLow)) { // head bonk B
                 return;
             }
-            res.cost = multiplier * SQRT_2 + JUMP_ONE_BLOCK_COST;
+            res.cost = multiplier * SQRT_2 + ActionCosts.JUMP_ONE_BLOCK_COST;
             res.x = destX;
             res.z = destZ;
             res.y = y + 1;
@@ -293,12 +298,13 @@ public class MovementDiagonal extends Movement {
                 // If we aren't edging around anything, and we aren't in water
                 // We can sprint =D
                 // Don't check for soul sand, since we can sprint on that too
-                multiplier *= SPRINT_MULTIPLIER;
+                multiplier *= ActionCosts.SPRINT_MULTIPLIER;
             }
         }
         res.cost = multiplier * SQRT_2;
         if (descend) {
-            res.cost += Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
+            res.cost +=
+                    Math.max(ActionCosts.FALL_N_BLOCKS_COST[1], ActionCosts.CENTER_AFTER_FALL_COST);
             res.y = y - 1;
         } else {
             res.y = y;

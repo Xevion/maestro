@@ -1,7 +1,5 @@
 package maestro.pathing.movement;
 
-import static maestro.api.pathing.movement.ActionCosts.COST_INF;
-
 import java.util.ArrayList;
 import java.util.List;
 import maestro.Agent;
@@ -189,32 +187,32 @@ public class CalculationContext {
 
     public double costOfPlacingAt(int x, int y, int z, BlockState current) {
         if (!hasThrowaway) { // only true if allowPlace is true, see constructor
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         if (!worldBorder.canPlaceAt(x, z)) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         if (!Agent.settings().allowPlaceInFluidsSource.value
                 && current.getFluidState().isSource()) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         if (!Agent.settings().allowPlaceInFluidsFlow.value
                 && !current.getFluidState().isEmpty()
                 && !current.getFluidState().isSource()) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         return placeBlockCost;
     }
 
     public double breakCostMultiplierAt(int x, int y, int z, BlockState current) {
         if (!allowBreak && !allowBreakAnyway.contains(current.getBlock())) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         return 1;
     }

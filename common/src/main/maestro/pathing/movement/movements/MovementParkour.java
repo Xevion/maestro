@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PackedBlockPos;
@@ -137,7 +138,7 @@ public class MovementParkour extends Movement {
                     res.x = destX;
                     res.y = y + 1;
                     res.z = destZ;
-                    res.cost = i * SPRINT_ONE_BLOCK_COST + context.jumpPenalty;
+                    res.cost = i * ActionCosts.SPRINT_ONE_BLOCK_COST + context.jumpPenalty;
                     return;
                 }
                 break;
@@ -179,7 +180,7 @@ public class MovementParkour extends Movement {
             int destZ = z + i * zDiff;
             BlockState toReplace = context.get(destX, y - 1, destZ);
             double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, toReplace);
-            if (placeCost >= COST_INF) {
+            if (placeCost >= ActionCosts.COST_INF) {
                 continue;
             }
             if (!MovementHelper.isReplaceable(destX, y - 1, destZ, toReplace, context.bsi)) {
@@ -229,9 +230,9 @@ public class MovementParkour extends Movement {
 
     private static double costFromJumpDistance(int dist) {
         return switch (dist) {
-            case 2 -> WALK_ONE_BLOCK_COST * 2;
-            case 3 -> WALK_ONE_BLOCK_COST * 3;
-            case 4 -> SPRINT_ONE_BLOCK_COST * 4;
+            case 2 -> ActionCosts.WALK_ONE_BLOCK_COST * 2;
+            case 3 -> ActionCosts.WALK_ONE_BLOCK_COST * 3;
+            case 4 -> ActionCosts.SPRINT_ONE_BLOCK_COST * 4;
             default -> throw new IllegalStateException("Invalid distance: " + dist);
         };
     }
@@ -241,7 +242,7 @@ public class MovementParkour extends Movement {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.getX(), src.getY(), src.getZ(), direction, res);
         if (res.x != dest.getX() || res.y != dest.getY() || res.z != dest.getZ()) {
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
         return res.cost;
     }

@@ -3,6 +3,7 @@ package maestro.pathing.movement.movements;
 import java.util.HashSet;
 import java.util.Set;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
@@ -44,7 +45,8 @@ public class MovementFall extends Movement {
         MovementDescend.cost(
                 context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ(), result);
         if (result.y != dest.getY()) {
-            return COST_INF; // doesn't apply to us, this position is a descent not a fall
+            return ActionCosts
+                    .COST_INF; // doesn't apply to us, this position is a descent not a fall
         }
         return result.cost;
     }

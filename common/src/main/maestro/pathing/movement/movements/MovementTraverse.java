@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import maestro.Agent;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PackedBlockPos;
@@ -74,14 +75,17 @@ public class MovementTraverse extends Movement {
         if (frostWalker
                 || MovementHelper.canWalkOn(
                         context, destX, y - 1, destZ, destOn)) { // this is a walk, not a bridge
-            double WC = WALK_ONE_BLOCK_COST;
+            double WC = ActionCosts.WALK_ONE_BLOCK_COST;
             boolean water = false;
             if (MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1)) {
                 WC = context.waterWalkSpeed;
                 water = true;
             } else {
                 if (destOn.getBlock() == Blocks.SOUL_SAND) {
-                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+                    WC +=
+                            (ActionCosts.WALK_ONE_OVER_SOUL_SAND_COST
+                                            - ActionCosts.WALK_ONE_BLOCK_COST)
+                                    / 2;
                 } else if (frostWalker) {
                     // with frostwalker we can walk on water without the penalty, if we are sure we
                     // won't be using jesus
@@ -89,13 +93,16 @@ public class MovementTraverse extends Movement {
                     WC += context.walkOnWaterOnePenalty;
                 }
                 if (srcDownBlock == Blocks.SOUL_SAND) {
-                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+                    WC +=
+                            (ActionCosts.WALK_ONE_OVER_SOUL_SAND_COST
+                                            - ActionCosts.WALK_ONE_BLOCK_COST)
+                                    / 2;
                 }
             }
             double hardness1 =
                     MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
-            if (hardness1 >= COST_INF) {
-                return COST_INF;
+            if (hardness1 >= ActionCosts.COST_INF) {
+                return ActionCosts.COST_INF;
             }
             double hardness2 =
                     MovementHelper.getMiningDurationTicks(
@@ -107,7 +114,7 @@ public class MovementTraverse extends Movement {
                     // placing
                     // We can sprint =D
                     // Don't check for soul sand, since we can sprint on that too
-                    WC *= SPRINT_MULTIPLIER;
+                    WC *= ActionCosts.SPRINT_MULTIPLIER;
                 }
                 return WC;
             }
@@ -118,29 +125,29 @@ public class MovementTraverse extends Movement {
             return WC + hardness1 + hardness2;
         } else { // this is a bridge, so we need to place a block
             if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {
-                return COST_INF;
+                return ActionCosts.COST_INF;
             }
             if (MovementHelper.isReplaceable(destX, y - 1, destZ, destOn, context.bsi)) {
                 boolean throughWater = MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1);
                 if (MovementHelper.isWater(destOn) && throughWater) {
                     // this happens when assume walk on water is true and this is a traverse in
                     // water, which isn't allowed
-                    return COST_INF;
+                    return ActionCosts.COST_INF;
                 }
                 double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, destOn);
-                if (placeCost >= COST_INF) {
-                    return COST_INF;
+                if (placeCost >= ActionCosts.COST_INF) {
+                    return ActionCosts.COST_INF;
                 }
                 double hardness1 =
                         MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
-                if (hardness1 >= COST_INF) {
-                    return COST_INF;
+                if (hardness1 >= ActionCosts.COST_INF) {
+                    return ActionCosts.COST_INF;
                 }
                 double hardness2 =
                         MovementHelper.getMiningDurationTicks(
                                 context, destX, y + 1, destZ, pb0,
                                 true); // only include falling on the upper block to break
-                double WC = throughWater ? context.waterWalkSpeed : WALK_ONE_BLOCK_COST;
+                double WC = throughWater ? context.waterWalkSpeed : ActionCosts.WALK_ONE_BLOCK_COST;
                 for (int i = 0; i < 5; i++) {
                     int againstX =
                             destX
@@ -174,25 +181,28 @@ public class MovementTraverse extends Movement {
                 if (srcDownBlock == Blocks.SOUL_SAND
                         || (srcDownBlock instanceof SlabBlock
                                 && srcDown.getValue(SlabBlock.TYPE) != SlabType.DOUBLE)) {
-                    return COST_INF; // can't sneak and backplace against soul sand or half slabs
+                    return ActionCosts
+                            .COST_INF; // can't sneak and backplace against soul sand or half slabs
                     // (regardless of whether it's top half or bottom half) =/
                 }
                 if (!standingOnABlock) { // standing on water / swimming
-                    return COST_INF; // this is obviously impossible
+                    return ActionCosts.COST_INF; // this is obviously impossible
                 }
                 Block blockSrc = context.getBlock(x, y, z);
                 if ((blockSrc == Blocks.LILY_PAD || blockSrc instanceof CarpetBlock)
                         && !srcDown.getFluidState().isEmpty()) {
-                    return COST_INF; // we can stand on these but can't place against them
+                    return ActionCosts
+                            .COST_INF; // we can stand on these but can't place against them
                 }
                 WC =
                         WC
-                                * (SNEAK_ONE_BLOCK_COST
-                                        / WALK_ONE_BLOCK_COST); // since we are sneak backplacing,
+                                * (ActionCosts.SNEAK_ONE_BLOCK_COST
+                                        / ActionCosts.WALK_ONE_BLOCK_COST); // since we are sneak
+                // backplacing,
                 // we are sneaking lol
                 return WC + placeCost + hardness1 + hardness2;
             }
-            return COST_INF;
+            return ActionCosts.COST_INF;
         }
     }
 

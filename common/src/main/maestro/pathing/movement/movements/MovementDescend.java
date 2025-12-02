@@ -3,6 +3,7 @@ package maestro.pathing.movement.movements;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import maestro.api.IAgent;
+import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.RotationUtils;
@@ -54,7 +55,8 @@ public class MovementDescend extends Movement {
         MutableMoveResult result = new MutableMoveResult();
         cost(context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ(), result);
         if (result.y != dest.getY()) {
-            return COST_INF; // doesn't apply to us, this position is a fall not a descent
+            return ActionCosts
+                    .COST_INF; // doesn't apply to us, this position is a fall not a descent
         }
         return result.cost;
     }
@@ -77,11 +79,11 @@ public class MovementDescend extends Movement {
         totalCost +=
                 MovementHelper.getMiningDurationTicks(
                         context, destX, y - 1, destZ, destDown, false);
-        if (totalCost >= COST_INF) {
+        if (totalCost >= ActionCosts.COST_INF) {
             return;
         }
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false);
-        if (totalCost >= COST_INF) {
+        if (totalCost >= ActionCosts.COST_INF) {
             return;
         }
         totalCost +=
@@ -89,7 +91,7 @@ public class MovementDescend extends Movement {
                         context, destX, y + 1, destZ,
                         true); // only the top block in the 3 we need to mine needs to consider the
         // falling blocks above
-        if (totalCost >= COST_INF) {
+        if (totalCost >= ActionCosts.COST_INF) {
             return;
         }
 
@@ -124,12 +126,16 @@ public class MovementDescend extends Movement {
 
         // we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while
         // simultaneously falling (math.max because of how it's in parallel)
-        double walk = WALK_OFF_BLOCK_COST;
+        double walk = ActionCosts.WALK_OFF_BLOCK_COST;
         if (fromDown == Blocks.SOUL_SAND) {
             // use this ratio to apply the soul sand speed penalty to our 0.8 block distance
-            walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
+            walk *= ActionCosts.WALK_ONE_OVER_SOUL_SAND_COST / ActionCosts.WALK_ONE_BLOCK_COST;
         }
-        totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
+        totalCost +=
+                walk
+                        + Math.max(
+                                ActionCosts.FALL_N_BLOCKS_COST[1],
+                                ActionCosts.CENTER_AFTER_FALL_COST);
         res.x = destX;
         res.y = y - 1;
         res.z = destZ;
@@ -177,8 +183,8 @@ public class MovementDescend extends Movement {
             // which is equal to
             // effectiveFallHeight - newY
             double tentativeCost =
-                    WALK_OFF_BLOCK_COST
-                            + FALL_N_BLOCKS_COST[unprotectedFallHeight]
+                    ActionCosts.WALK_OFF_BLOCK_COST
+                            + ActionCosts.FALL_N_BLOCKS_COST[unprotectedFallHeight]
                             + frontBreak
                             + costSoFar;
             if (reachedMinimum && MovementHelper.isWater(ontoBlock)) {
@@ -217,11 +223,11 @@ public class MovementDescend extends Movement {
                 // or ladders. the more you know
                 // this effectively "resets" our falling speed
                 costSoFar +=
-                        FALL_N_BLOCKS_COST[
+                        ActionCosts.FALL_N_BLOCKS_COST[
                                 unprotectedFallHeight
                                         - 1]; // we fall until the top of this block (not including
                 // this block)
-                costSoFar += LADDER_DOWN_ONE_COST;
+                costSoFar += ActionCosts.LADDER_DOWN_ONE_COST;
                 effectiveStartHeight = newY;
                 continue;
             }
