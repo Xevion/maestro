@@ -2,9 +2,55 @@ package maestro.gui.widget
 
 import maestro.gui.GuiColors
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
+import kotlin.math.pow
 import kotlin.math.roundToInt
+
+/**
+ * Layout calculator for slider widget dimensions.
+ *
+ * Memoizes font width calculations and track positioning to avoid redundant
+ * calculations across render(), handleClick(), handleDrag(), and handleScroll().
+ *
+ * @property labelWidth Width of the label text
+ * @property valueText Formatted value string
+ * @property valueWidth Width of the value text
+ * @property trackStartX Left edge of the track
+ * @property trackEndX Right edge of the track
+ * @property trackWidth Total width of the track
+ */
+private class SliderLayout(
+    font: Font,
+    label: String,
+    currentValue: Double,
+    precision: Int,
+    x: Int,
+    width: Int,
+) {
+    val labelWidth: Int = font.width(label)
+    val valueText: String = formatValue(currentValue, precision)
+    val valueWidth: Int = font.width(valueText)
+
+    val trackStartX: Int = x + labelWidth + LABEL_SPACING
+    val trackEndX: Int = x + width - valueWidth - GuiColors.SLIDER_VALUE_SPACING
+    val trackWidth: Int = trackEndX - trackStartX
+
+    private fun formatValue(
+        value: Double,
+        precision: Int,
+    ): String =
+        if (precision == 0) {
+            value.toInt().toString()
+        } else {
+            String.format("%.${precision}f", value)
+        }
+
+    companion object {
+        private const val LABEL_SPACING = 5
+    }
+}
 
 /**
  * Interactive slider widget for numeric settings.
@@ -38,7 +84,19 @@ class SliderWidget(
     private var handleHovered: Boolean = false
     private var valueAtDragStart: Double = currentValue
 
-    // Ghost handle for scroll-after-move behavior (Meteor Client pattern)
+    /**
+     * Ghost handle for scroll-after-move behavior.
+     *
+     * When the user starts scrolling while hovering over the handle, we remember
+     * the handle's position at that moment. This allows continued scrolling even
+     * if the mouse moves away from the handle (as the handle moves while scrolling).
+     *
+     * Without this pattern, scrolling would stop as soon as the handle moved under
+     * the cursor, making scroll-to-value awkward and requiring users to chase the handle.
+     *
+     * The "ghost" handle stays at the initial position until the mouse moves away
+     * completely, then resets to track the real handle again.
+     */
     private var scrollHandleX: Int = 0
     private var scrollHandleY: Int = 0
     private var scrollHandleWidth: Int = 0
@@ -51,40 +109,28 @@ class SliderWidget(
         tickDelta: Float,
     ) {
         val font = Minecraft.getInstance().font
-
-        // Calculate layout dimensions
-        val labelWidth = font.width(label)
-        val valueText = formatValue(currentValue)
-        val valueWidth = font.width(valueText)
+        val layout = SliderLayout(font, label, currentValue, precision, x, width)
 
         val labelX = x
-        val labelY = y + (height - font.lineHeight) / 2
-
-        val valueX = x + width - valueWidth
-        val valueY = labelY
-
-        // Track area between label and value
-        val trackStartX = labelX + labelWidth + LABEL_SPACING
-        val trackEndX = valueX - LABEL_SPACING
-        val trackWidth = trackEndX - trackStartX
+        val labelY = y + (height - font.lineHeight) / 2 + 1
+        val valueX = x + width - layout.valueWidth
         val trackY = y + (height - TRACK_HEIGHT) / 2
 
-        // Handle position and dimensions (same height as track for boxy look)
-        val handleWidth = HANDLE_WIDTH
-        val handleX = calculateHandleX(trackStartX, trackWidth, handleWidth)
+        // Handle position and dimensions
+        val handleX = calculateHandleX(layout.trackStartX, layout.trackWidth, HANDLE_WIDTH)
         val handleY = y + (height - TRACK_HEIGHT) / 2
 
         // Update handle hover state
-        updateHandleHover(mouseX, mouseY, handleX, handleY, handleWidth, TRACK_HEIGHT)
+        updateHandleHover(mouseX, mouseY, handleX, handleY, HANDLE_WIDTH, TRACK_HEIGHT)
 
         // Render label
         graphics.drawString(font, label, labelX, labelY, GuiColors.TEXT, false)
 
         // Render track
         graphics.fill(
-            trackStartX,
+            layout.trackStartX,
             trackY,
-            trackEndX,
+            layout.trackEndX,
             trackY + TRACK_HEIGHT,
             GuiColors.BUTTON_NORMAL,
         )
@@ -96,10 +142,10 @@ class SliderWidget(
                 handleHovered -> GuiColors.SLIDER_HANDLE_HOVERED
                 else -> GuiColors.SLIDER_HANDLE_NORMAL
             }
-        graphics.fill(handleX, handleY, handleX + handleWidth, handleY + TRACK_HEIGHT, handleColor)
+        graphics.fill(handleX, handleY, handleX + HANDLE_WIDTH, handleY + TRACK_HEIGHT, handleColor)
 
         // Render value
-        graphics.drawString(font, valueText, valueX, valueY, GuiColors.TEXT, false)
+        graphics.drawString(font, layout.valueText, valueX, labelY, GuiColors.TEXT, false)
     }
 
     override fun handleClick(
@@ -111,20 +157,11 @@ class SliderWidget(
 
         valueAtDragStart = currentValue
 
-        // Calculate track bounds
-        val font = Minecraft.getInstance().font
-        val labelWidth = font.width(label)
-        val valueText = formatValue(currentValue)
-        val valueWidth = font.width(valueText)
-
-        val trackStartX = x + labelWidth + LABEL_SPACING
-        val trackEndX = x + width - valueWidth - LABEL_SPACING
-        val trackWidth = trackEndX - trackStartX
-        val handleWidth = HANDLE_WIDTH
+        val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, x, width)
 
         // Set value based on click position
-        val valueWidthCalc = mouseX - (trackStartX + handleWidth / 2)
-        val normalizedValue = valueWidthCalc.toDouble() / (trackWidth - handleWidth)
+        val valueWidthCalc = mouseX - (layout.trackStartX + HANDLE_WIDTH / 2)
+        val normalizedValue = valueWidthCalc.toDouble() / (layout.trackWidth - HANDLE_WIDTH)
         setValue(normalizedValue * (max - min) + min)
 
         dragging = true
@@ -132,38 +169,29 @@ class SliderWidget(
     }
 
     /**
-     * Handles mouse drag events. Called by GuiPanel.
+     * Handles mouse drag events.
      */
-    fun handleDrag(
+    override fun handleDrag(
         mouseX: Int,
         mouseY: Int,
         button: Int,
     ): Boolean {
         if (!dragging || button != 0) return false
 
-        // Calculate track bounds
-        val font = Minecraft.getInstance().font
-        val labelWidth = font.width(label)
-        val valueText = formatValue(currentValue)
-        val valueWidth = font.width(valueText)
+        val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, x, width)
 
-        val trackStartX = x + labelWidth + LABEL_SPACING
-        val trackEndX = x + width - valueWidth - LABEL_SPACING
-        val trackWidth = trackEndX - trackStartX
-        val handleWidth = HANDLE_WIDTH
-
-        val mouseOverX = mouseX >= trackStartX + handleWidth / 2 && mouseX <= trackEndX - handleWidth / 2
+        val mouseOverX = mouseX >= layout.trackStartX + HANDLE_WIDTH / 2 && mouseX <= layout.trackEndX - HANDLE_WIDTH / 2
 
         if (mouseOverX) {
-            val valueWidthCalc = mouseX - (trackStartX + handleWidth / 2)
-            val clampedValueWidth = Mth.clamp(valueWidthCalc, 0, trackWidth - handleWidth)
-            val normalizedValue = clampedValueWidth.toDouble() / (trackWidth - handleWidth)
+            val valueWidthCalc = mouseX - (layout.trackStartX + HANDLE_WIDTH / 2)
+            val clampedValueWidth = Mth.clamp(valueWidthCalc, 0, layout.trackWidth - HANDLE_WIDTH)
+            val normalizedValue = clampedValueWidth.toDouble() / (layout.trackWidth - HANDLE_WIDTH)
             setValue(normalizedValue * (max - min) + min)
         } else {
             // Clamp to min/max when dragging outside track
-            if (currentValue > min && mouseX < trackStartX + handleWidth / 2) {
+            if (currentValue > min && mouseX < layout.trackStartX + HANDLE_WIDTH / 2) {
                 setValue(min)
-            } else if (currentValue < max && mouseX > trackEndX - handleWidth / 2) {
+            } else if (currentValue < max && mouseX > layout.trackEndX - HANDLE_WIDTH / 2) {
                 setValue(max)
             }
         }
@@ -172,9 +200,9 @@ class SliderWidget(
     }
 
     /**
-     * Handles mouse release events. Called by GuiPanel.
+     * Handles mouse release events.
      */
-    fun handleRelease(
+    override fun handleRelease(
         mouseX: Int,
         mouseY: Int,
         button: Int,
@@ -185,29 +213,22 @@ class SliderWidget(
     }
 
     /**
-     * Handles mouse scroll events. Called by GuiPanel.
-     * Implements ghost handle behavior from Meteor Client.
+     * Handles mouse scroll events.
+     * Implements ghost handle behavior for improved scroll interaction.
      */
-    fun handleScroll(
+    override fun handleScroll(
         mouseX: Int,
         mouseY: Int,
         amount: Double,
     ): Boolean {
         // When user starts to scroll over regular handle, remember its position
         if (!scrollHandleMouseOver && handleHovered) {
-            val font = Minecraft.getInstance().font
-            val labelWidth = font.width(label)
-            val valueText = formatValue(currentValue)
-            val valueWidth = font.width(valueText)
-
-            val trackStartX = x + labelWidth + LABEL_SPACING
-            val trackWidth = (x + width - valueWidth - LABEL_SPACING) - trackStartX
-            val handleWidth = HANDLE_WIDTH
-            val handleX = calculateHandleX(trackStartX, trackWidth, handleWidth)
+            val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, x, width)
+            val handleX = calculateHandleX(layout.trackStartX, layout.trackWidth, HANDLE_WIDTH)
 
             scrollHandleX = handleX
             scrollHandleY = y
-            scrollHandleWidth = handleWidth
+            scrollHandleWidth = HANDLE_WIDTH
             scrollHandleMouseOver = true
         }
 
@@ -246,7 +267,7 @@ class SliderWidget(
             if (precision == 0) {
                 clampedValue.roundToInt().toDouble()
             } else {
-                val factor = Math.pow(10.0, precision.toDouble())
+                val factor = 10.0.pow(precision)
                 (clampedValue * factor).roundToInt() / factor
             }
 
@@ -296,20 +317,9 @@ class SliderWidget(
         }
     }
 
-    /**
-     * Formats the value for display based on precision.
-     */
-    private fun formatValue(value: Double): String =
-        if (precision == 0) {
-            value.toInt().toString()
-        } else {
-            String.format("%.${precision}f", value)
-        }
-
     companion object {
         private const val SLIDER_HEIGHT = 20
         private const val HANDLE_WIDTH = 8
         private const val TRACK_HEIGHT = 12
-        private const val LABEL_SPACING = 5
     }
 }

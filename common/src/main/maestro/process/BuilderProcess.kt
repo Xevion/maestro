@@ -93,10 +93,18 @@ class BuilderProcess(
                 .buildSubstitutes.value
                 .isNotEmpty()
         ) {
-            currentSchematic = SubstituteSchematic(currentSchematic, Agent.settings().buildSubstitutes.value)
+            @Suppress("UNCHECKED_CAST")
+            val substitutes =
+                Agent.settings().buildSubstitutes.value as
+                    MutableMap<
+                        net.minecraft.world.level.block.Block,
+                        MutableList<net.minecraft.world.level.block.Block>,
+                    >
+            currentSchematic = SubstituteSchematic(currentSchematic, substitutes)
         }
-        if (Agent.settings().buildSchematicMirror.value != net.minecraft.world.level.block.Mirror.NONE) {
-            currentSchematic = MirroredSchematic(currentSchematic, Agent.settings().buildSchematicMirror.value)
+        val mirrorValue = Agent.settings().buildSchematicMirror.value
+        if (mirrorValue != net.minecraft.world.level.block.Mirror.NONE) {
+            currentSchematic = MirroredSchematic(currentSchematic, mirrorValue)
         }
         if (Agent.settings().buildSchematicRotation.value != net.minecraft.world.level.block.Rotation.NONE) {
             currentSchematic = RotatedSchematic(currentSchematic, Agent.settings().buildSchematicRotation.value)

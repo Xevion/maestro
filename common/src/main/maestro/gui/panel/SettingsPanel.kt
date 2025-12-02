@@ -3,12 +3,16 @@ package maestro.gui.panel
 import maestro.Agent
 import maestro.api.Setting
 import maestro.api.SettingCategory
+import maestro.gui.GuiColors
 import maestro.gui.MaestroScreen
+import maestro.gui.container.ScrollableContainer
+import maestro.gui.container.VBox
+import maestro.gui.container.scrollable
+import maestro.gui.container.vbox
 import maestro.gui.settings.SettingWidgetFactory
 import maestro.gui.settings.SettingsMetadata
 import maestro.gui.widget.ButtonWidget
 import maestro.gui.widget.LabelWidget
-import maestro.gui.widget.ScrollContainerWidget
 import maestro.gui.widget.SeparatorWidget
 import maestro.gui.widget.SettingRowWidget
 import maestro.gui.widget.TabWidget
@@ -25,45 +29,33 @@ import maestro.gui.widget.TextInputWidget
  * - Dynamic content updates based on tab/search
  */
 class SettingsPanel(
-    screen: MaestroScreen,
-) : GuiPanel(screen) {
+    private val screen: MaestroScreen,
+) : VBox(spacing = 5) {
     private val settings = Agent.settings()
 
-    // UI state
     private var activeCategory: SettingCategory? = null
     private var searchQuery: String = ""
 
-    // Widgets that need to be accessible
     private lateinit var searchInput: TextInputWidget
     private lateinit var tabWidget: TabWidget
-    private lateinit var scrollContainer: ScrollContainerWidget
+    private lateinit var scrollContainer: ScrollableContainer<VBox>
 
     init {
-        initializeWidgets()
-    }
+        add(ButtonWidget("← Back", Runnable { screen.popPanel() }, PANEL_WIDTH))
 
-    private fun initializeWidgets() {
-        // Back button (fixed at top)
-        addWidget(ButtonWidget("← Back", Runnable { screen.popPanel() }, PANEL_WIDTH))
-
-        // Header
-        addWidget(LabelWidget("Settings", PANEL_WIDTH))
-
-        // Search box
         searchInput =
             TextInputWidget(
-                placeholder = "Search settings...",
+                placeholder = "Search for settings here...",
                 onTextChange = { query ->
                     searchQuery = query
                     rebuildContent()
                 },
                 width = PANEL_WIDTH,
             )
-        addWidget(searchInput)
+        add(searchInput)
 
-        addWidget(SeparatorWidget(PANEL_WIDTH))
+        add(SeparatorWidget(PANEL_WIDTH))
 
-        // Category tabs
         val categories = SettingCategory.entries.toList()
         val tabLabels = listOf("All") + categories.map { it.displayName }
 
@@ -72,19 +64,19 @@ class SettingsPanel(
                 tabs = tabLabels,
                 activeTabIndex = 0,
                 onTabChange = { tabIndex ->
-                    // Tab 0 = "All", others map to categories
                     activeCategory = if (tabIndex == 0) null else categories[tabIndex - 1]
                     rebuildContent()
                 },
                 width = PANEL_WIDTH,
             )
-        addWidget(tabWidget)
+        add(tabWidget)
 
-        // Create scroll container for settings
-        scrollContainer = ScrollContainerWidget(PANEL_WIDTH, SCROLL_HEIGHT)
-        addWidget(scrollContainer)
+        scrollContainer =
+            vbox {
+                // Content added by rebuildContent()
+            }.scrollable(maxHeight = SCROLL_HEIGHT)
+        add(scrollContainer)
 
-        // Initial content
         rebuildContent()
     }
 
@@ -92,14 +84,11 @@ class SettingsPanel(
      * Rebuilds the scroll container content based on current tab and search query.
      */
     private fun rebuildContent() {
-        scrollContainer.clearChildren()
+        scrollContainer.inner.clear()
 
-        val contentWidth = PANEL_WIDTH - SCROLLBAR_SPACE
-
-        // Get filtered settings
+        val contentWidth = PANEL_WIDTH - GuiColors.SCROLLBAR_CONTENT_PADDING
         val filteredSettings = getFilteredSettings()
 
-        // If no results, show message
         if (filteredSettings.isEmpty()) {
             val message =
                 if (searchQuery.isNotEmpty()) {
@@ -107,24 +96,23 @@ class SettingsPanel(
                 } else {
                     "No settings in this category"
                 }
-            scrollContainer.addChild(LabelWidget(message, contentWidth))
+            scrollContainer.inner.add(LabelWidget(message, contentWidth))
+            scrollContainer.calculateSize()
+            scrollContainer.calculateWidgetPositions()
             return
         }
 
-        // Create setting rows
         for (setting in filteredSettings) {
             val controlWidget =
                 SettingWidgetFactory.createWidget(
                     setting = setting,
                     width = contentWidth,
                     onChange = { newValue ->
-                        // Update setting value
                         @Suppress("UNCHECKED_CAST")
                         (setting as Setting<Any>).value = newValue
                     },
                 )
 
-            // Only add if widget creation succeeded
             if (controlWidget != null) {
                 val settingRow =
                     SettingRowWidget(
@@ -132,25 +120,26 @@ class SettingsPanel(
                         controlWidget = controlWidget,
                         width = contentWidth,
                     )
-                scrollContainer.addChild(settingRow)
+                scrollContainer.inner.add(settingRow)
             }
         }
+
+        scrollContainer.calculateSize()
+        scrollContainer.calculateWidgetPositions()
     }
 
     /**
      * Gets the list of settings to display based on current filters.
      */
     private fun getFilteredSettings(): List<Setting<*>> {
-        // If search query is active, use fuzzy search (ignores category)
         if (searchQuery.isNotEmpty()) {
             return SettingsMetadata.search(
                 query = searchQuery,
                 settings = settings,
-                category = null, // Search across all categories
+                category = null,
             )
         }
 
-        // Otherwise, filter by category
         return if (activeCategory != null) {
             SettingsMetadata
                 .getByCategory(settings, activeCategory!!)
@@ -161,8 +150,7 @@ class SettingsPanel(
     }
 
     companion object {
-        private const val PANEL_WIDTH = 500 // Wider panel for settings
-        private const val SCROLL_HEIGHT = 400 // Max viewport height
-        private const val SCROLLBAR_SPACE = 8 // 6px scrollbar + 2px padding
+        private const val PANEL_WIDTH = 500
+        private const val SCROLL_HEIGHT = 400
     }
 }

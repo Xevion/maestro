@@ -2,6 +2,7 @@ package maestro.gui.panel
 
 import maestro.Agent
 import maestro.gui.MaestroScreen
+import maestro.gui.container.VBox
 import maestro.gui.widget.ButtonWidget
 import maestro.gui.widget.LabelWidget
 import maestro.gui.widget.SeparatorWidget
@@ -15,42 +16,17 @@ import maestro.gui.widget.SeparatorWidget
  * - Demo feature buttons (placeholders)
  */
 class MainMenuPanel(
-    screen: MaestroScreen,
-) : GuiPanel(screen) {
+    private val screen: MaestroScreen,
+) : VBox(spacing = 5) {
     init {
-        initializeWidgets()
-    }
-
-    private fun initializeWidgets() {
-        // Toggle Debug button
-        addWidget(ButtonWidget("Toggle Debug", Runnable { toggleDebug() }, BUTTON_WIDTH))
-
-        // Navigation buttons
-        addWidget(
-            ButtonWidget(
-                "Settings →",
-                Runnable { screen.pushPanel(SettingsPanel(screen)) },
-                BUTTON_WIDTH,
-            ),
-        )
-        addWidget(
-            ButtonWidget(
-                "Commands →",
-                Runnable { screen.pushPanel(CommandsPanel(screen)) },
-                BUTTON_WIDTH,
-            ),
-        )
-
-        // Separator
-        addWidget(SeparatorWidget(BUTTON_WIDTH))
-
-        // Demo features label
-        addWidget(LabelWidget("Demo Features:", BUTTON_WIDTH))
-
-        // Placeholder demo buttons
-        addWidget(ButtonWidget("Start Mining", Runnable { placeholderAction() }, BUTTON_WIDTH))
-        addWidget(ButtonWidget("Start Pathing", Runnable { placeholderAction() }, BUTTON_WIDTH))
-        addWidget(ButtonWidget("Stop All", Runnable { placeholderAction() }, BUTTON_WIDTH))
+        add(ButtonWidget("Toggle Debug", Runnable { toggleDebug() }, 150))
+        add(ButtonWidget("Settings →", Runnable { screen.pushPanel(SettingsPanel(screen)) }, 150))
+        add(ButtonWidget("Commands →", Runnable { screen.pushPanel(CommandsPanel(screen)) }, 150))
+        add(SeparatorWidget(150))
+        add(LabelWidget("Demo Features:", 150))
+        add(ButtonWidget("Start Mining", Runnable { placeholderAction() }, 150))
+        add(ButtonWidget("Start Pathing", Runnable { placeholderAction() }, 150))
+        add(ButtonWidget("Stop All", Runnable { placeholderAction() }, 150))
     }
 
     private fun toggleDebug() {
@@ -59,9 +35,5 @@ class MainMenuPanel(
     }
 
     private fun placeholderAction() {
-    }
-
-    companion object {
-        private const val BUTTON_WIDTH = 150
     }
 }

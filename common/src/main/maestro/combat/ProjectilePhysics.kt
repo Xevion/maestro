@@ -15,7 +15,6 @@ import kotlin.math.sqrt
 
 /**
  * Ballistic physics calculations for arrow trajectories.
- * Based on meteor-client's BowAimbot implementation.
  */
 object ProjectilePhysics {
     // Physics constants (verified from Minecraft source)
@@ -30,7 +29,6 @@ object ProjectilePhysics {
 
     /**
      * Calculate pitch angle needed to hit target position using ballistic equation.
-     * Based on meteor-client's BowAimbot ballistic formula.
      *
      * @param origin Shooter's eye position
      * @param target Target position to hit

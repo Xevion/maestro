@@ -42,13 +42,21 @@ class ResetButtonWidget(
         graphics.fill(x, y + 1, x + 1, y + height - 1, borderColor) // Left
         graphics.fill(x + width - 1, y + 1, x + width, y + height - 1, borderColor) // Right
 
-        // Reset icon "↻" centered
         val icon = "↻"
+        val scale = 1.8f
+
+        graphics.pose().pushPose()
+        graphics.pose().scale(scale, scale, 1.0f)
+
         val iconWidth = font.width(icon)
-        val iconX = x + (width - iconWidth) / 2
-        val iconY = y + (height - font.lineHeight) / 2
+        val iconHeight = font.lineHeight
+
+        val iconX = (x / scale + (width / scale - iconWidth) / 2).toInt()
+        val iconY = (y / scale + (height / scale - iconHeight) / 2).toInt()
 
         graphics.drawString(font, icon, iconX, iconY, GuiColors.TEXT, false)
+
+        graphics.pose().popPose()
     }
 
     override fun handleClick(

@@ -38,7 +38,7 @@ object SettingsMetadata {
         // Use existing FuzzySearchHelper for search
         return FuzzySearchHelper.search(
             query,
-            candidates,
+            candidates.toMutableList(),
             { setting -> setting.getName() },
             FuzzySearchHelper.DEFAULT_THRESHOLD,
             FuzzySearchHelper.DEFAULT_LIMIT,

@@ -1,6 +1,7 @@
 package maestro.gui.widget
 
 import maestro.gui.GuiColors
+import maestro.gui.utils.drawBorder
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import org.lwjgl.glfw.GLFW
@@ -73,10 +74,7 @@ class TextInputWidget(
                 GuiColors.BUTTON_BORDER
             }
 
-        graphics.fill(x, y, x + width, y + 1, borderColor) // Top
-        graphics.fill(x, y + height - 1, x + width, y + height, borderColor) // Bottom
-        graphics.fill(x, y + 1, x + 1, y + height - 1, borderColor) // Left
-        graphics.fill(x + width - 1, y + 1, x + width, y + height - 1, borderColor) // Right
+        graphics.drawBorder(x, y, width, height, borderColor)
 
         // Text or placeholder
         val displayText = if (text.isEmpty() && !focused) placeholder else text
@@ -148,7 +146,7 @@ class TextInputWidget(
      * @param modifiers Key modifiers (shift, ctrl, alt)
      * @return true if key was consumed
      */
-    fun handleKeyPress(
+    override fun handleKeyPress(
         key: Int,
         scanCode: Int,
         modifiers: Int,
@@ -222,7 +220,7 @@ class TextInputWidget(
      * @param modifiers Key modifiers
      * @return true if character was consumed
      */
-    fun handleCharTyped(
+    override fun handleCharTyped(
         char: Char,
         modifiers: Int,
     ): Boolean {

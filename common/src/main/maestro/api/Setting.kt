@@ -97,3 +97,26 @@ class Setting<T : Any> private constructor(
         ): Setting<T> = Builder(defaultValue).apply(block).build()
     }
 }
+
+/**
+ * Safely converts the setting's value to a Double.
+ *
+ * Supports conversion from Int, Long, Float, and Double types.
+ *
+ * @return The value as Double, or null if conversion is not possible
+ */
+fun Setting<*>.toDoubleOrNull(): Double? =
+    when (val v = value) {
+        is Int -> v.toDouble()
+        is Long -> v.toDouble()
+        is Float -> v.toDouble()
+        is Double -> v
+        else -> null
+    }
+
+/**
+ * Safely converts the setting's value to a Boolean.
+ *
+ * @return The value as Boolean, or null if not a Boolean type
+ */
+fun Setting<*>.toBooleanOrNull(): Boolean? = value as? Boolean

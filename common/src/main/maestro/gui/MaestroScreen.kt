@@ -1,12 +1,16 @@
 package maestro.gui
 
 import maestro.Agent
-import maestro.gui.panel.GuiPanel
+import maestro.gui.core.Container
+import maestro.gui.core.Insets
+import maestro.gui.core.Rect
 import maestro.gui.panel.MainMenuPanel
+import maestro.gui.utils.drawPanel
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import java.util.ArrayDeque
+import kotlin.math.min
 
 /**
  * Main GUI screen for Maestro, using Screen-based architecture for proper input handling.
@@ -20,7 +24,7 @@ import java.util.ArrayDeque
 class MaestroScreen(
     private val agent: Agent,
 ) : Screen(Component.literal("Maestro")) {
-    private val panelStack = ArrayDeque<GuiPanel>()
+    private val panelStack = ArrayDeque<Container>()
 
     init {
         panelStack.push(MainMenuPanel(this))
@@ -38,7 +42,7 @@ class MaestroScreen(
      *
      * @param panel The panel to push
      */
-    fun pushPanel(panel: GuiPanel) {
+    fun pushPanel(panel: Container) {
         panelStack.push(panel)
     }
 
@@ -76,63 +80,53 @@ class MaestroScreen(
 
         val currentPanel = panelStack.peek() ?: return
 
-        // Calculate panel dimensions
-        val panelWidth = currentPanel.getWidth()
-        val panelHeight = currentPanel.getHeight()
+        // Two-phase layout
+        currentPanel.calculateSize()
+
+        // Calculate panel insets (border + padding)
+        val panelInsets = Insets(all = 1) + Insets(all = GuiColors.PADDING) // border + padding
+
+        // Calculate requested panel size (content + insets)
+        val requestedPanelWidth = currentPanel.width + panelInsets.horizontal
+        val requestedPanelHeight = currentPanel.height + panelInsets.vertical
+
+        // Constrain to screen with margins
+        val maxPanelWidth = width - GuiColors.SCREEN_MARGIN * 2
+        val maxPanelHeight = height - GuiColors.SCREEN_MARGIN * 2
+
+        val panelWidth = min(requestedPanelWidth, maxPanelWidth)
+        val panelHeight = min(requestedPanelHeight, maxPanelHeight)
 
         // Center panel on screen
-        val panelX = (width - panelWidth) / 2
-        val panelY = (height - panelHeight) / 2
+        val panelRect =
+            Rect(
+                (width - panelWidth) / 2,
+                (height - panelHeight) / 2,
+                panelWidth,
+                panelHeight,
+            )
 
-        // Draw panel background
-        graphics.fill(
-            panelX,
-            panelY,
-            panelX + panelWidth,
-            panelY + panelHeight,
-            GuiColors.PANEL_BACKGROUND,
+        // Draw panel background and border
+        graphics.drawPanel(panelRect, GuiColors.PANEL_BACKGROUND, GuiColors.BORDER)
+
+        // Calculate content area (panel inset by border + padding)
+        val contentRect = panelRect.inset(panelInsets)
+
+        // Position and render content
+        currentPanel.setPosition(contentRect.x, contentRect.y)
+        currentPanel.calculateWidgetPositions()
+
+        // Clip to content area
+        graphics.enableScissor(
+            contentRect.x,
+            contentRect.y,
+            contentRect.right,
+            contentRect.bottom,
         )
-
-        // Draw panel border
-        drawBorder(graphics, panelX, panelY, panelWidth, panelHeight)
-
-        // Render panel content (inside padding)
-        currentPanel.render(
-            graphics,
-            panelX + GuiColors.PADDING,
-            panelY + GuiColors.PADDING,
-            mouseX,
-            mouseY,
-            delta,
-        )
+        currentPanel.render(graphics, mouseX, mouseY, delta)
+        graphics.disableScissor()
 
         super.render(graphics, mouseX, mouseY, delta)
-    }
-
-    /**
-     * Draws a border around the panel.
-     *
-     * @param graphics GuiGraphics for rendering
-     * @param x Panel X coordinate
-     * @param y Panel Y coordinate
-     * @param width Panel width
-     * @param height Panel height
-     */
-    private fun drawBorder(
-        graphics: GuiGraphics,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-    ) {
-        // Top
-        graphics.fill(x, y, x + width, y + 1, GuiColors.BORDER)
-        // Bottom
-        graphics.fill(x, y + height - 1, x + width, y + height, GuiColors.BORDER)
-        // Left
-        graphics.fill(x, y + 1, x + 1, y + height - 1, GuiColors.BORDER)
-        // Right
-        graphics.fill(x + width - 1, y + 1, x + width, y + height - 1, GuiColors.BORDER)
     }
 
     override fun mouseClicked(
@@ -142,7 +136,7 @@ class MaestroScreen(
     ): Boolean {
         val currentPanel = panelStack.peek()
         if (currentPanel != null) {
-            if (currentPanel.handleMouseClick(mouseX.toInt(), mouseY.toInt(), button)) {
+            if (currentPanel.handleClick(mouseX.toInt(), mouseY.toInt(), button)) {
                 return true // Click consumed by panel
             }
         }
@@ -158,7 +152,7 @@ class MaestroScreen(
     ): Boolean {
         val currentPanel = panelStack.peek()
         if (currentPanel != null) {
-            if (currentPanel.handleMouseDrag(mouseX.toInt(), mouseY.toInt(), button)) {
+            if (currentPanel.handleDrag(mouseX.toInt(), mouseY.toInt(), button)) {
                 return true // Drag consumed by panel
             }
         }
@@ -172,7 +166,7 @@ class MaestroScreen(
     ): Boolean {
         val currentPanel = panelStack.peek()
         if (currentPanel != null) {
-            if (currentPanel.handleMouseRelease(mouseX.toInt(), mouseY.toInt(), button)) {
+            if (currentPanel.handleRelease(mouseX.toInt(), mouseY.toInt(), button)) {
                 return true // Release consumed by panel
             }
         }
@@ -187,7 +181,7 @@ class MaestroScreen(
     ): Boolean {
         val currentPanel = panelStack.peek()
         if (currentPanel != null) {
-            if (currentPanel.handleMouseScroll(mouseX.toInt(), mouseY.toInt(), verticalAmount)) {
+            if (currentPanel.handleScroll(mouseX.toInt(), mouseY.toInt(), verticalAmount)) {
                 return true // Scroll consumed by panel
             }
         }

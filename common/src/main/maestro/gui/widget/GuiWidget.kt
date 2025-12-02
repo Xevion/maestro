@@ -11,13 +11,11 @@ import net.minecraft.client.gui.GuiGraphics
  * - Abstract render and click handling
  */
 abstract class GuiWidget(
-    val width: Int,
-    val height: Int,
+    var width: Int,
+    var height: Int,
 ) {
     var x: Int = 0
-        protected set
     var y: Int = 0
-        protected set
     var hovered: Boolean = false
         protected set
 
@@ -88,4 +86,72 @@ abstract class GuiWidget(
         this.x = x
         this.y = y
     }
+
+    /**
+     * Handles mouse drag event.
+     *
+     * @param mouseX Mouse X coordinate
+     * @param mouseY Mouse Y coordinate
+     * @param button Mouse button being dragged
+     * @return true if the drag was consumed by this widget
+     */
+    open fun handleDrag(
+        mouseX: Int,
+        mouseY: Int,
+        button: Int,
+    ): Boolean = false
+
+    /**
+     * Handles mouse release event.
+     *
+     * @param mouseX Mouse X coordinate
+     * @param mouseY Mouse Y coordinate
+     * @param button Mouse button released
+     * @return true if the release was consumed by this widget
+     */
+    open fun handleRelease(
+        mouseX: Int,
+        mouseY: Int,
+        button: Int,
+    ): Boolean = false
+
+    /**
+     * Handles mouse scroll event.
+     *
+     * @param mouseX Mouse X coordinate
+     * @param mouseY Mouse Y coordinate
+     * @param amount Scroll amount (positive = scroll up, negative = scroll down)
+     * @return true if the scroll was consumed by this widget
+     */
+    open fun handleScroll(
+        mouseX: Int,
+        mouseY: Int,
+        amount: Double,
+    ): Boolean = false
+
+    /**
+     * Handles key press event.
+     *
+     * @param key Key code
+     * @param scanCode Scan code
+     * @param modifiers Modifier keys (shift, ctrl, alt)
+     * @return true if the key press was consumed by this widget
+     */
+    open fun handleKeyPress(
+        key: Int,
+        scanCode: Int,
+        modifiers: Int,
+    ): Boolean = false
+
+    /**
+     * Handles character typed event.
+     *
+     * @param char Character typed
+     * @param modifiers Modifier keys (shift, ctrl, alt)
+     * @return true if the character was consumed by this widget
+     */
+    open fun handleCharTyped(
+        char: Char,
+        modifiers: Int,
+    ): Boolean = false
 }

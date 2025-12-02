@@ -1,6 +1,8 @@
 package maestro.gui.widget
 
 import maestro.api.Setting
+import maestro.api.toBooleanOrNull
+import maestro.api.toDoubleOrNull
 import maestro.gui.GuiColors
 import net.minecraft.client.gui.GuiGraphics
 
@@ -50,23 +52,10 @@ class SettingRowWidget(
     private fun updateControlWidget() {
         when (controlWidget) {
             is SliderWidget -> {
-                // Update slider's current value
-                val valueClass = setting.getValueClass()
-                val newValue =
-                    when {
-                        valueClass == java.lang.Integer::class.java -> (setting.value as Int).toDouble()
-                        valueClass == java.lang.Long::class.java -> (setting.value as Long).toDouble()
-                        valueClass == java.lang.Float::class.java -> (setting.value as Float).toDouble()
-                        valueClass == java.lang.Double::class.java -> setting.value as Double
-                        else -> controlWidget.currentValue
-                    }
-                controlWidget.currentValue = newValue
+                setting.toDoubleOrNull()?.let { controlWidget.currentValue = it }
             }
             is CheckboxWidget -> {
-                // Update checkbox's checked state
-                if (setting.value is Boolean) {
-                    controlWidget.checked = setting.value as Boolean
-                }
+                setting.toBooleanOrNull()?.let { controlWidget.checked = it }
             }
         }
         updateModifiedState()
@@ -94,9 +83,12 @@ class SettingRowWidget(
 
         // Position control widget (offset by indicator width + spacing)
         val controlX = x + INDICATOR_WIDTH + INDICATOR_SPACING
-        // Reserve space for reset button only if modified
-        val resetButtonSpace = if (isModified) RESET_SPACING + ResetButtonWidget.BUTTON_SIZE else 0
+        // Always reserve space for reset button to ensure consistent sizing
+        val resetButtonSpace = GuiColors.RESET_BUTTON_PADDING + ResetButtonWidget.BUTTON_SIZE
         val controlWidth = width - INDICATOR_WIDTH - INDICATOR_SPACING - resetButtonSpace
+
+        // Apply calculated width and position
+        controlWidget.width = controlWidth
         controlWidget.setPosition(controlX, y)
 
         // Update hover state for control widget
@@ -136,58 +128,63 @@ class SettingRowWidget(
     }
 
     /**
-     * Forwards drag events to the control widget (for SliderWidget).
+     * Forwards drag events to the control widget.
      */
-    fun handleDrag(
+    override fun handleDrag(
         mouseX: Int,
         mouseY: Int,
         button: Int,
     ): Boolean {
-        if (controlWidget is SliderWidget) {
-            val result = controlWidget.handleDrag(mouseX, mouseY, button)
-            if (result) {
-                updateModifiedState()
-            }
-            return result
+        val result = controlWidget.handleDrag(mouseX, mouseY, button)
+        if (result) {
+            updateModifiedState()
         }
-        return false
+        return result
     }
 
     /**
-     * Forwards release events to the control widget (for SliderWidget).
+     * Forwards release events to the control widget.
      */
-    fun handleRelease(
+    override fun handleRelease(
         mouseX: Int,
         mouseY: Int,
         button: Int,
-    ): Boolean {
-        if (controlWidget is SliderWidget) {
-            return controlWidget.handleRelease(mouseX, mouseY, button)
-        }
-        return false
-    }
+    ): Boolean = controlWidget.handleRelease(mouseX, mouseY, button)
 
     /**
-     * Forwards scroll events to the control widget (for SliderWidget).
+     * Forwards scroll events to the control widget.
      */
-    fun handleScroll(
+    override fun handleScroll(
         mouseX: Int,
         mouseY: Int,
         amount: Double,
     ): Boolean {
-        if (controlWidget is SliderWidget) {
-            val result = controlWidget.handleScroll(mouseX, mouseY, amount)
-            if (result) {
-                updateModifiedState()
-            }
-            return result
+        val result = controlWidget.handleScroll(mouseX, mouseY, amount)
+        if (result) {
+            updateModifiedState()
         }
-        return false
+        return result
     }
+
+    /**
+     * Forwards key press events to the control widget.
+     */
+    override fun handleKeyPress(
+        key: Int,
+        scanCode: Int,
+        modifiers: Int,
+    ): Boolean = controlWidget.handleKeyPress(key, scanCode, modifiers)
+
+    /**
+     * Forwards char typed events to the control widget.
+     */
+    override fun handleCharTyped(
+        char: Char,
+        modifiers: Int,
+    ): Boolean = controlWidget.handleCharTyped(char, modifiers)
 
     companion object {
         private const val INDICATOR_WIDTH = 3 // Width of modified indicator bar
         private const val INDICATOR_SPACING = 4 // Space between indicator and control widget
-        private const val RESET_SPACING = 4 // Space between control widget and reset button
     }
 }

@@ -5,7 +5,6 @@ import maestro.api.utils.gui.MaestroToast
 import net.minecraft.client.Minecraft
 import net.minecraft.core.Vec3i
 import net.minecraft.network.chat.Component
-import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.Mirror
@@ -15,9 +14,9 @@ import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import java.util.ArrayList
-import java.util.HashMap
+import java.util.Collections
 import java.util.List
+import java.util.Locale
 import java.util.Map
 import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
@@ -44,7 +43,7 @@ class Settings {
     /** Blocks that maestro will be allowed to break even with allowBreak set to false */
     @JvmField
     val allowBreakAnyway =
-        Setting<List<Block>>(ArrayList()) {
+        Setting(arrayListOf<Block>()) {
             category = SettingCategory.PATHFINDING
             description = "Blocks that maestro will be allowed to break even with allowBreak set to false"
         }
@@ -301,14 +300,12 @@ class Settings {
      */
     @JvmField
     val acceptableThrowawayItems =
-        Setting<List<Item>>(
-            ArrayList(
-                listOf(
-                    Blocks.DIRT.asItem(),
-                    Blocks.COBBLESTONE.asItem(),
-                    Blocks.NETHERRACK.asItem(),
-                    Blocks.STONE.asItem(),
-                ),
+        Setting(
+            arrayListOf(
+                Blocks.DIRT.asItem(),
+                Blocks.COBBLESTONE.asItem(),
+                Blocks.NETHERRACK.asItem(),
+                Blocks.STONE.asItem(),
             ),
         ) {
             category = SettingCategory.PATHFINDING
@@ -318,7 +315,7 @@ class Settings {
     /** Blocks that Maestro will attempt to avoid (Used in avoidance) */
     @JvmField
     val blocksToAvoid =
-        Setting<List<Block>>(ArrayList()) {
+        Setting(arrayListOf<Block>()) {
             category = SettingCategory.PATHFINDING
             description = "Blocks that Maestro will attempt to avoid"
         }
@@ -326,7 +323,7 @@ class Settings {
     /** Blocks that Maestro is not allowed to break */
     @JvmField
     val blocksToDisallowBreaking =
-        Setting<List<Block>>(ArrayList()) {
+        Setting(arrayListOf<Block>()) {
             category = SettingCategory.PATHFINDING
             description = "Blocks that Maestro is not allowed to break"
         }
@@ -334,14 +331,12 @@ class Settings {
     /** blocks that maestro shouldn't break, but can if it needs to. */
     @JvmField
     val blocksToAvoidBreaking =
-        Setting<List<Block>>(
-            ArrayList(
-                listOf(
-                    Blocks.CRAFTING_TABLE,
-                    Blocks.FURNACE,
-                    Blocks.CHEST,
-                    Blocks.TRAPPED_CHEST,
-                ),
+        Setting(
+            arrayListOf(
+                Blocks.CRAFTING_TABLE,
+                Blocks.FURNACE,
+                Blocks.CHEST,
+                Blocks.TRAPPED_CHEST,
             ),
         ) {
             category = SettingCategory.PATHFINDING
@@ -1853,7 +1848,7 @@ class Settings {
      */
     @JvmField
     val buildIgnoreBlocks =
-        Setting<List<Block>>(ArrayList()) {
+        Setting(arrayListOf<Block>()) {
             category = SettingCategory.BUILDING
             description = "Blocks treated as air in schematics"
         }
@@ -1866,7 +1861,7 @@ class Settings {
      */
     @JvmField
     val buildSkipBlocks =
-        Setting<List<Block>>(ArrayList()) {
+        Setting(arrayListOf<Block>()) {
             category = SettingCategory.BUILDING
             description = "Blocks always treated as correct"
         }
@@ -1879,7 +1874,7 @@ class Settings {
      */
     @JvmField
     val buildValidSubstitutes =
-        Setting<Map<Block, List<Block>>>(HashMap()) {
+        Setting(hashMapOf<Block, List<Block>>()) {
             category = SettingCategory.BUILDING
             description = "Valid block substitutes"
         }
@@ -1892,7 +1887,7 @@ class Settings {
      */
     @JvmField
     val buildSubstitutes =
-        Setting<Map<Block, List<Block>>>(HashMap()) {
+        Setting(hashMapOf<Block, List<Block>>()) {
             category = SettingCategory.BUILDING
             description = "Block substitutes to build"
         }
@@ -1905,7 +1900,7 @@ class Settings {
      */
     @JvmField
     val okIfAir =
-        Setting<List<Block>>(ArrayList()) {
+        Setting(arrayListOf<Block>()) {
             category = SettingCategory.BUILDING
             description = "Blocks that can be air"
         }
@@ -1935,7 +1930,7 @@ class Settings {
     /** A list of names of block properties the builder will ignore. */
     @JvmField
     val buildIgnoreProperties =
-        Setting<List<String>>(ArrayList()) {
+        Setting(arrayListOf<String>()) {
             category = SettingCategory.BUILDING
             description = "Block properties to ignore"
         }
@@ -2942,14 +2937,14 @@ class Settings {
 
     /** A map of lowercase setting field names to their respective setting */
     @JvmField
-    val byLowerName: Map<String, Setting<*>>
+    val byLowerName: java.util.Map<String, Setting<*>>
 
     /** A list of all settings */
     @JvmField
-    val allSettings: List<Setting<*>>
+    val allSettings: java.util.List<Setting<*>>
 
     @JvmField
-    val settingTypes: Map<Setting<*>, Type>
+    val settingTypes: java.util.Map<Setting<*>, Type>
 
     init {
         val fields = javaClass.declaredFields
@@ -2981,9 +2976,9 @@ class Settings {
             throw IllegalStateException(e)
         }
 
-        byLowerName = Collections.unmodifiableMap(tmpByName)
-        allSettings = Collections.unmodifiableList(tmpAll)
-        settingTypes = Collections.unmodifiableMap(tmpSettingTypes)
+        byLowerName = Collections.unmodifiableMap(tmpByName) as java.util.Map<String, Setting<*>>
+        allSettings = Collections.unmodifiableList(tmpAll) as java.util.List<Setting<*>>
+        settingTypes = Collections.unmodifiableMap(tmpSettingTypes) as java.util.Map<Setting<*>, Type>
     }
 
     /**

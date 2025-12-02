@@ -33,7 +33,11 @@ object GuiColors {
     // Modified indicator color
     const val MODIFIED_INDICATOR = 0xFFFF8800.toInt() // Orange
 
-    // Spacing
+    // Spacing and padding
     const val PADDING = 10
     const val WIDGET_SPACING = 5
+    const val SCREEN_MARGIN = 40 // Minimum margin from screen edges
+    const val SCROLLBAR_CONTENT_PADDING = 8 // Left padding for scrollable content
+    const val RESET_BUTTON_PADDING = 8 // Left padding before reset button
+    const val SLIDER_VALUE_SPACING = 10 // Space between slider value and label
 }
