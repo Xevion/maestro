@@ -38,8 +38,6 @@ abstract class AbstractNodeCostSearch(
 
     protected var mostRecentConsidered: PathNode? = null
 
-    protected val bestSoFar: Array<PathNode?> = arrayOfNulls(COEFFICIENTS.size)
-
     @Volatile
     private var isFinished: Boolean = false
 
@@ -154,35 +152,23 @@ abstract class AbstractNodeCostSearch(
             .ofNullable(mostRecentConsidered)
             .map { node -> Path(realStart, startNode!!, node, 0, goal, context) }
 
-    override fun bestPathSoFar(): Optional<IPath> = bestSoFar(false, 0, 0, null)
+    override fun bestPathSoFar(): Optional<IPath> = bestSoFar(false, 0, 0, null, null)
 
     protected fun bestSoFar(
         logInfo: Boolean,
         numNodes: Int,
         durationMs: Long,
         failureReason: PathfindingFailureReason?,
+        bestNode: PathNode?,
     ): Optional<IPath> {
-        if (startNode == null) {
+        if (startNode == null || bestNode == null) {
             return Optional.empty()
         }
 
-        var bestDist = 0.0
-        for (i in COEFFICIENTS.indices) {
-            val node = bestSoFar[i] ?: continue
-            val dist = getDistFromStartSq(node)
-            if (dist > bestDist) {
-                bestDist = dist
-            }
-            // square the comparison since distFromStartSq is squared
-            if (dist > MIN_DIST_PATH * MIN_DIST_PATH) {
-                if (logInfo) {
-                    log
-                        .atDebug()
-                        .addKeyValue("cost_coefficient", COEFFICIENTS[i])
-                        .log("Using A* cost coefficient")
-                }
-                return Optional.of(Path(realStart, startNode!!, node, numNodes, goal, context))
-            }
+        val bestDist = getDistFromStartSq(bestNode)
+        // square the comparison since distFromStartSq is squared
+        if (bestDist > MIN_DIST_PATH * MIN_DIST_PATH) {
+            return Optional.of(Path(realStart, startNode!!, bestNode, numNodes, goal, context))
         }
 
         // instead of returning bestSoFar[0], be less misleading
@@ -267,7 +253,8 @@ abstract class AbstractNodeCostSearch(
          * @see [here](https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit)
          */
         @JvmField
-        protected val COEFFICIENTS = doubleArrayOf(1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 10.0)
+        protected val COEFFICIENTS =
+            doubleArrayOf(0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 10.0, 15.0, 20.0, 30.0, 50.0, 100.0, 150.0, 200.0)
 
         /**
          * If a path goes less than 5 blocks and doesn't make it to its goal, it's not worth

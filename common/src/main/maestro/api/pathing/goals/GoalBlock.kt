@@ -56,14 +56,15 @@ open class GoalBlock(
 
             // Vertical heuristic: Use swimming cost (3.5) as minimum estimate
             // This provides a better heuristic for underwater goals than terrestrial movement costs
-            // TODO: Ideally this would detect if we're actually in water, but using the minimum
-            // of swimming vs terrestrial costs ensures the heuristic is admissible (never overestimates)
+            // Note: Both GoalYLevel.calculate() and swimmingVerticalHeuristic already include
+            // costHeuristic multiplier, so we don't multiply again here (was causing 3.563^2 overestimate!)
             val verticalHeuristic = GoalYLevel.calculate(0, yDiff)
-            val swimmingVerticalHeuristic = abs(yDiff) * 3.5 // SWIM_UP/DOWN cost
-            heuristic += min(verticalHeuristic, swimmingVerticalHeuristic) *
-                maestro.api.MaestroAPI
-                    .getSettings()
-                    .costHeuristic.value
+            val swimmingVerticalHeuristic =
+                abs(yDiff) * 3.5 *
+                    maestro.api.MaestroAPI
+                        .getSettings()
+                        .costHeuristic.value
+            heuristic += min(verticalHeuristic, swimmingVerticalHeuristic)
 
             // use the pythagorean and manhattan mixture from GoalXZ
             heuristic += GoalXZ.calculate(xDiff, zDiff)

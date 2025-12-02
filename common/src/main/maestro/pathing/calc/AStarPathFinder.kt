@@ -49,15 +49,30 @@ class AStarPathFinder
             val openSet = BinaryHeapOpenSet()
             openSet.insert(startNode!!)
 
-            // Keep track of the best node by the metric of (estimatedCostToGoal + cost / COEFFICIENTS[i])
-            val bestHeuristicSoFar = DoubleArray(COEFFICIENTS.size) { startNode!!.estimatedCostToGoal }
-            for (i in bestSoFar.indices) {
-                bestSoFar[i] = startNode
-            }
-
             val res = MutableMoveResult()
             val worldBorder = BetterWorldBorder(calcContext.world.worldBorder)
             val startTime = System.currentTimeMillis()
+
+            // Phase configuration for progressive epsilon search
+            data class SearchPhase(
+                val epsilon: Double,
+                val durationMs: Long,
+            )
+            val phases =
+                listOf(
+                    SearchPhase(1.0, 200L), // Standard A*
+                    SearchPhase(3.0, 150L), // Modest goal bias
+                    SearchPhase(10.0, 150L), // Greedy
+                    SearchPhase(30.0, 500L), // Very greedy (extended)
+                    SearchPhase(100.0, 1000L), // Extremely greedy (extended)
+                )
+
+            var currentPhaseIndex = 0
+            var currentEpsilon = phases[0].epsilon
+            var phaseStartTime = startTime
+
+            var bestNodeThisSearch: PathNode? = startNode
+            var bestHeuristicThisSearch = startNode!!.estimatedCostToGoal
             val slowPath = Agent.settings().slowPath.value
 
             if (slowPath) {
@@ -85,6 +100,49 @@ class AStarPathFinder
                 // Only call this once every 64 nodes (about half a millisecond)
                 if ((numNodes and (timeCheckInterval - 1)) == 0) {
                     val now = System.currentTimeMillis() // since nanoTime is slow on windows (takes many microseconds)
+
+                    // Debug: Log timing info every 1000 checkpoints (64000 nodes)
+                    if ((numNodes and 0xFFFF) == 0) {
+                        log
+                            .atDebug()
+                            .addKeyValue("nodes", numNodes)
+                            .addKeyValue("elapsed_ms", now - startTime)
+                            .addKeyValue("phase", currentPhaseIndex + 1)
+                            .addKeyValue("phase_elapsed_ms", now - phaseStartTime)
+                            .addKeyValue("phase_duration_ms", phases[currentPhaseIndex].durationMs)
+                            .addKeyValue("failing", failing)
+                            .log("Search progress checkpoint")
+                    }
+
+                    // Check phase transition
+                    if (currentPhaseIndex < phases.size - 1 &&
+                        now - phaseStartTime >= phases[currentPhaseIndex].durationMs
+                    ) {
+                        currentPhaseIndex++
+                        val newPhase = phases[currentPhaseIndex]
+
+                        // Only activate extended phases if failing
+                        if (currentPhaseIndex >= 3 && !failing) {
+                            log
+                                .atInfo()
+                                .addKeyValue("reason", "not_failing")
+                                .log("Skipping extended phases")
+                            break
+                        }
+
+                        currentEpsilon = newPhase.epsilon
+                        phaseStartTime = now
+                        openSet.rebuildWithEpsilon(currentEpsilon)
+
+                        log
+                            .atDebug()
+                            .addKeyValue("phase", currentPhaseIndex + 1)
+                            .addKeyValue("epsilon", currentEpsilon)
+                            .addKeyValue("elapsed_ms", now - startTime)
+                            .log("Phase transition")
+                    }
+
+                    // Existing timeout checks
                     if (now - failureTimeoutTime >= 0 || (!failing && now - primaryTimeoutTime >= 0)) {
                         break
                     }
@@ -213,7 +271,7 @@ class AStarPathFinder
                     if (neighbor.cost - tentativeCost > minimumImprovement) {
                         neighbor.previous = currentNode
                         neighbor.cost = tentativeCost
-                        neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal
+                        neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal * currentEpsilon
 
                         // Store movement reference directly in node
                         neighbor.previousMovement = movement
@@ -224,15 +282,13 @@ class AStarPathFinder
                             openSet.insert(neighbor)
                         }
 
-                        for (i in COEFFICIENTS.indices) {
-                            val heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i]
-                            if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
-                                bestHeuristicSoFar[i] = heuristic
-                                bestSoFar[i] = neighbor
-                                // Don't flip on tiny heuristic improvements that come from mining cost amortization
-                                if (failing && getDistFromStartSq(neighbor) > 1.0) {
-                                    failing = false
-                                }
+                        val heuristic = neighbor.estimatedCostToGoal * currentEpsilon + neighbor.cost
+                        if (bestHeuristicThisSearch - heuristic > minimumImprovement) {
+                            bestHeuristicThisSearch = heuristic
+                            bestNodeThisSearch = neighbor
+
+                            if (failing && getDistFromStartSq(neighbor) > 1.0) {
+                                failing = false
                             }
                         }
                     }
@@ -255,7 +311,7 @@ class AStarPathFinder
                 return Optional.empty()
             }
 
-            val result = bestSoFar(true, numNodes, durationMs, reason)
+            val result = bestSoFar(true, numNodes, durationMs, reason, bestNodeThisSearch)
             if (result.isPresent) {
                 log
                     .atDebug()

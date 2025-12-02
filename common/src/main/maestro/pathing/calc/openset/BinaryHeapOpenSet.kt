@@ -91,6 +91,60 @@ class BinaryHeapOpenSet(
         return result
     }
 
+    /**
+     * Rebuild heap with new epsilon coefficient.
+     * Recalculates all combinedCosts and re-heapifies in O(n) time.
+     */
+    fun rebuildWithEpsilon(epsilon: Double) {
+        // Recalculate f-values for all nodes
+        for (i in 1..size) {
+            val node = array[i]!!
+            node.combinedCost = node.cost + node.estimatedCostToGoal * epsilon
+        }
+
+        // Re-heapify from bottom up
+        for (i in (size / 2) downTo 1) {
+            siftDown(i)
+        }
+    }
+
+    /**
+     * Sift node down to restore min-heap property.
+     */
+    private fun siftDown(startIndex: Int) {
+        val value = array[startIndex]!!
+        var index = startIndex
+        var smallerChild = index shl 1
+        val cost = value.combinedCost
+
+        while (smallerChild <= size) {
+            var smallerChildNode = array[smallerChild]!!
+            var smallerChildCost = smallerChildNode.combinedCost
+
+            if (smallerChild < size) {
+                val rightChildNode = array[smallerChild + 1]!!
+                val rightChildCost = rightChildNode.combinedCost
+                if (smallerChildCost > rightChildCost) {
+                    smallerChild++
+                    smallerChildCost = rightChildCost
+                    smallerChildNode = rightChildNode
+                }
+            }
+
+            if (cost <= smallerChildCost) {
+                break
+            }
+
+            array[index] = smallerChildNode
+            array[smallerChild] = value
+            value.heapPosition = smallerChild
+            smallerChildNode.heapPosition = index
+
+            index = smallerChild
+            smallerChild = index shl 1
+        }
+    }
+
     companion object {
         /** The initial capacity of the heap (2^10) */
         private const val INITIAL_CAPACITY = 1024
