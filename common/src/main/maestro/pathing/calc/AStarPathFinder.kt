@@ -9,6 +9,7 @@ import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.pack
+import maestro.pathing.calc.PathfindingFailureReason
 import maestro.pathing.calc.openset.BinaryHeapOpenSet
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.CompositeMovementProvider
@@ -228,7 +229,8 @@ class AStarPathFinder
                             if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
                                 bestHeuristicSoFar[i] = heuristic
                                 bestSoFar[i] = neighbor
-                                if (failing && getDistFromStartSq(neighbor) > MIN_DIST_PATH * MIN_DIST_PATH) {
+                                // Don't flip on tiny heuristic improvements that come from mining cost amortization
+                                if (failing && getDistFromStartSq(neighbor) > 1.0) {
                                     failing = false
                                 }
                             }
@@ -237,16 +239,31 @@ class AStarPathFinder
                 }
             }
 
+            val durationMs = System.currentTimeMillis() - startTime
+
+            // Determine why pathfinding stopped
+            val reason =
+                when {
+                    cancelRequested -> PathfindingFailureReason.CANCELLED
+                    numEmptyChunk >= pathingMaxChunkBorderFetch -> PathfindingFailureReason.CHUNK_LOAD_LIMIT
+                    failing -> PathfindingFailureReason.UNREACHABLE
+                    System.currentTimeMillis() >= failureTimeoutTime -> PathfindingFailureReason.FAILURE_TIMEOUT
+                    else -> PathfindingFailureReason.PRIMARY_TIMEOUT
+                }
+
             if (cancelRequested) {
                 return Optional.empty()
             }
 
-            val result = bestSoFar(true, numNodes)
+            val result = bestSoFar(true, numNodes, durationMs, reason)
             if (result.isPresent) {
                 log
                     .atDebug()
-                    .addKeyValue("duration_ms", System.currentTimeMillis() - startTime)
+                    .addKeyValue("start", LoggingUtils.formatCoords(startNode!!.x, startNode!!.y, startNode!!.z))
+                    .addKeyValue("goal", goal.toString())
+                    .addKeyValue("duration_ms", durationMs)
                     .addKeyValue("movements_considered", numMovementsConsidered)
+                    .addKeyValue("nodes_explored", numNodes)
                     .log("Path segment found")
             }
             return result

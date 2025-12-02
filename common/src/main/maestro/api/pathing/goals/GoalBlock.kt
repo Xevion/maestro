@@ -60,7 +60,10 @@ open class GoalBlock(
             // of swimming vs terrestrial costs ensures the heuristic is admissible (never overestimates)
             val verticalHeuristic = GoalYLevel.calculate(0, yDiff)
             val swimmingVerticalHeuristic = abs(yDiff) * 3.5 // SWIM_UP/DOWN cost
-            heuristic += min(verticalHeuristic, swimmingVerticalHeuristic)
+            heuristic += min(verticalHeuristic, swimmingVerticalHeuristic) *
+                maestro.api.MaestroAPI
+                    .getSettings()
+                    .costHeuristic.value
 
             // use the pythagorean and manhattan mixture from GoalXZ
             heuristic += GoalXZ.calculate(xDiff, zDiff)

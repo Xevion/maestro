@@ -257,7 +257,7 @@ public final class Settings {
      *
      * <p>For a generic "take some risks" mode I'd turn on this one, parkour, and parkour place.
      */
-    public final Setting<Boolean> allowDiagonalDescend = new Setting<>(false);
+    public final Setting<Boolean> allowDiagonalDescend = new Setting<>(true);
 
     /**
      * Allow diagonal ascending
@@ -631,7 +631,7 @@ public final class Settings {
      * The maximum number of times it will fetch outside loaded or cached chunks before assuming
      * that pathing has reached the end of the known area, and should therefore stop.
      */
-    public final Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(50);
+    public final Setting<Integer> pathingMaxChunkBorderFetch = new Setting<>(300);
 
     /**
      * Set to 1.0 to effectively disable this feature

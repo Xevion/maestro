@@ -256,7 +256,7 @@ class PathingBehavior(
                     }
                     // we aren't calculating
                     queuePathEvent(PathEvent.CALC_STARTED)
-                    findPathInNewThread(expectedSegmentStart!!.toBlockPos(), true, context!!)
+                    findPathInNewThread(expectedSegmentStart!!.toBlockPos(), PathfindingReason.INITIAL_PATH, context!!)
                 }
                 return
             }
@@ -300,7 +300,7 @@ class PathingBehavior(
                     // its own
                     log.atDebug().log("Path almost over, planning ahead")
                     queuePathEvent(PathEvent.NEXT_SEGMENT_CALC_STARTED)
-                    findPathInNewThread(current!!.path.dest.toBlockPos(), false, context!!)
+                    findPathInNewThread(current!!.path.dest.toBlockPos(), PathfindingReason.PLAN_AHEAD, context!!)
                 }
             }
         }
@@ -360,7 +360,7 @@ class PathingBehavior(
                     return false
                 }
                 queuePathEvent(PathEvent.CALC_STARTED)
-                findPathInNewThread(expectedSegmentStart!!.toBlockPos(), true, context!!)
+                findPathInNewThread(expectedSegmentStart!!.toBlockPos(), PathfindingReason.INITIAL_PATH, context!!)
                 return true
             }
         }
@@ -560,7 +560,7 @@ class PathingBehavior(
     /** In a new thread, pathfind to target blockpos  */
     private fun findPathInNewThread(
         start: BlockPos,
-        talkAboutIt: Boolean,
+        reason: PathfindingReason,
         context: CalculationContext,
     ) {
         // this must be called with synchronization on pathCalcLock!
@@ -594,9 +594,16 @@ class PathingBehavior(
         Agent
             .getExecutor()
             .execute {
-                if (talkAboutIt) {
+                val shouldLogStart =
+                    when (reason) {
+                        PathfindingReason.INITIAL_PATH, PathfindingReason.RECOVERY -> true
+                        PathfindingReason.PLAN_AHEAD -> false
+                    }
+
+                if (shouldLogStart) {
                     log
                         .atDebug()
+                        .addKeyValue("reason", reason.name.lowercase())
                         .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
                         .addKeyValue("goal", goal)
                         .log("Starting path search")
@@ -685,10 +692,17 @@ class PathingBehavior(
                                 )
                         }
                     }
-                    if (talkAboutIt && current != null && current!!.path != null) {
+                    val shouldLogCompletion =
+                        when (reason) {
+                            PathfindingReason.INITIAL_PATH, PathfindingReason.RECOVERY -> true
+                            PathfindingReason.PLAN_AHEAD -> false
+                        }
+
+                    if (shouldLogCompletion && current != null) {
                         if (goal.isInGoal(current!!.path.dest.toBlockPos())) {
                             log
                                 .atInfo()
+                                .addKeyValue("reason", reason.name.lowercase())
                                 .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(
@@ -698,6 +712,7 @@ class PathingBehavior(
                         } else {
                             log
                                 .atDebug()
+                                .addKeyValue("reason", reason.name.lowercase())
                                 .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(

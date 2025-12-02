@@ -5,6 +5,7 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.calc.IPathFinder
 import maestro.api.pathing.goals.Goal
+import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
@@ -153,11 +154,13 @@ abstract class AbstractNodeCostSearch(
             .ofNullable(mostRecentConsidered)
             .map { node -> Path(realStart, startNode!!, node, 0, goal, context) }
 
-    override fun bestPathSoFar(): Optional<IPath> = bestSoFar(false, 0)
+    override fun bestPathSoFar(): Optional<IPath> = bestSoFar(false, 0, 0, null)
 
     protected fun bestSoFar(
         logInfo: Boolean,
         numNodes: Int,
+        durationMs: Long,
+        failureReason: PathfindingFailureReason?,
     ): Optional<IPath> {
         if (startNode == null) {
             return Optional.empty()
@@ -186,12 +189,62 @@ abstract class AbstractNodeCostSearch(
         // if it actually won't find any path, don't make them think it will by rendering a dark
         // blue that will never actually happen
         if (logInfo) {
-            log
-                .atDebug()
-                .addKeyValue("max_coefficient", COEFFICIENTS[COEFFICIENTS.size - 1])
-                .addKeyValue("max_distance_blocks", sqrt(bestDist))
-                .log("Could not find path with any coefficient")
-            log.atInfo().log("No path found")
+            requireNotNull(failureReason) { "failureReason required when logInfo=true" }
+
+            val maxDistReached = sqrt(bestDist)
+            val goalDescription = goal.toString()
+
+            // Calculate distance to goal for progress estimation
+            val startToGoalDist = goal.heuristic(startX, startY, startZ)
+            val progressPct =
+                if (startToGoalDist > 0.0) {
+                    (maxDistReached / startToGoalDist * 100.0).coerceIn(0.0, 100.0)
+                } else {
+                    0.0
+                }
+
+            // Choose log level based on failure severity
+            val logBuilder =
+                when (failureReason) {
+                    PathfindingFailureReason.UNREACHABLE,
+                    PathfindingFailureReason.FAILURE_TIMEOUT,
+                    -> log.atWarn()
+                    PathfindingFailureReason.PRIMARY_TIMEOUT,
+                    PathfindingFailureReason.CHUNK_LOAD_LIMIT,
+                    -> log.atInfo()
+                    PathfindingFailureReason.CANCELLED -> log.atDebug()
+                }
+
+            logBuilder
+                .addKeyValue("reason", failureReason.name.lowercase())
+                .addKeyValue("goal", goalDescription)
+                .addKeyValue("start", LoggingUtils.formatCoords(startNode!!.x, startNode!!.y, startNode!!.z))
+                .addKeyValue("nodes_explored", numNodes)
+                .addKeyValue("max_distance_blocks", LoggingUtils.formatFloat(maxDistReached))
+                .addKeyValue("duration_ms", durationMs)
+
+            // Add reason-specific context and message
+            when (failureReason) {
+                PathfindingFailureReason.UNREACHABLE -> {
+                    logBuilder.log("Goal unreachable - stuck at start position")
+                }
+                PathfindingFailureReason.PRIMARY_TIMEOUT -> {
+                    logBuilder
+                        .addKeyValue("progress_pct", LoggingUtils.formatFloat(progressPct))
+                        .log("Timeout - making partial progress toward goal")
+                }
+                PathfindingFailureReason.FAILURE_TIMEOUT -> {
+                    logBuilder.log("Failure timeout - maximum search time exhausted")
+                }
+                PathfindingFailureReason.CHUNK_LOAD_LIMIT -> {
+                    logBuilder
+                        .addKeyValue("chunk_fetch_limit", Agent.settings().pathingMaxChunkBorderFetch.value)
+                        .log("Chunk load limit - unloaded chunks block path")
+                }
+                PathfindingFailureReason.CANCELLED -> {
+                    logBuilder.log("Pathfinding cancelled")
+                }
+            }
         }
         return Optional.empty()
     }

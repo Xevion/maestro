@@ -27,11 +27,21 @@ data class GoalYLevel(
         fun calculate(
             goalY: Int,
             currentY: Int,
-        ): Double =
-            when {
-                currentY > goalY -> ActionCosts.FALL_N_BLOCKS_COST[2] / 2 * (currentY - goalY) // need to descend
-                currentY < goalY -> (goalY - currentY) * ActionCosts.JUMP_ONE_BLOCK_COST // need to ascend
-                else -> 0.0
-            }
+        ): Double {
+            val baseCost =
+                when {
+                    // Use realistic descent cost: WALK_OFF_BLOCK + FALL[1] ≈ 4.025 ticks per block
+                    // Previously used FALL_N_BLOCKS_COST[2] / 2 ≈ 0.314 ticks, which was 13x underestimate
+                    currentY > goalY -> ActionCosts.WALK_OFF_BLOCK_COST * (currentY - goalY)
+                    currentY < goalY -> (goalY - currentY) * ActionCosts.JUMP_ONE_BLOCK_COST // need to ascend
+                    else -> 0.0
+                }
+            // Apply costHeuristic multiplier to match horizontal weighting
+            // This ensures vertical progress is valued equally with horizontal progress in A* priority
+            return baseCost *
+                maestro.api.MaestroAPI
+                    .getSettings()
+                    .costHeuristic.value
+        }
     }
 }
