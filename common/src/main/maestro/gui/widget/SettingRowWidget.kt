@@ -38,6 +38,28 @@ class SettingRowWidget(
         updateModifiedState()
     }
 
+    override fun getTooltip(): List<String>? {
+        if (!hovered) return null
+
+        return when (controlWidget) {
+            is SliderWidget -> {
+                if (controlWidget.isMouseOverLabel()) {
+                    controlWidget.getLabelTooltip()
+                } else {
+                    controlWidget.getSliderTooltip()
+                }
+            }
+            is CheckboxWidget -> {
+                if (controlWidget.isMouseOverCheckbox()) {
+                    controlWidget.getCheckboxTooltip()
+                } else {
+                    controlWidget.getLabelTooltip()
+                }
+            }
+            else -> null
+        }
+    }
+
     /**
      * Updates the modified state by comparing current value to default.
      */
@@ -72,9 +94,16 @@ class SettingRowWidget(
 
         // Render modified indicator (3px orange bar on left)
         if (isModified) {
+            // For sliders, align indicator with slider row (exclude small text above)
+            val indicatorY =
+                if (controlWidget is SliderWidget) {
+                    y + controlWidget.sliderRowOffset
+                } else {
+                    y
+                }
             graphics.fill(
                 x,
-                y,
+                indicatorY,
                 x + INDICATOR_WIDTH,
                 y + height,
                 GuiColors.MODIFIED_INDICATOR,
@@ -100,7 +129,8 @@ class SettingRowWidget(
         // Only render reset button if setting is modified
         if (isModified) {
             val resetX = x + width - ResetButtonWidget.BUTTON_SIZE
-            val resetY = y + (height - ResetButtonWidget.BUTTON_SIZE) / 2
+            // Align with bottom of slider track instead of centering in entire row
+            val resetY = y + height - ResetButtonWidget.BUTTON_SIZE - 2
             resetButton.setPosition(resetX, resetY)
             resetButton.updateHover(mouseX, mouseY)
             resetButton.render(graphics, mouseX, mouseY, tickDelta)

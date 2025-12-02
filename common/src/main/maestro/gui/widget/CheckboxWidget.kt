@@ -18,11 +18,61 @@ import net.minecraft.client.gui.GuiGraphics
 class CheckboxWidget(
     private val label: String,
     initialChecked: Boolean,
+    val defaultValue: Boolean,
+    private val description: String? = null,
     private val onChange: (Boolean) -> Unit,
     width: Int,
 ) : GuiWidget(width, CHECKBOX_HEIGHT) {
     var checked: Boolean = initialChecked
         internal set
+    private var lastMouseX: Int = 0
+    private var lastMouseY: Int = 0
+
+    override fun updateHover(
+        mouseX: Int,
+        mouseY: Int,
+    ) {
+        lastMouseX = mouseX
+        lastMouseY = mouseY
+        super.updateHover(mouseX, mouseY)
+    }
+
+    fun getLabelTooltip(): List<String>? {
+        val lines = mutableListOf<String>()
+
+        if (description != null && description.isNotEmpty()) {
+            lines.add(description)
+        }
+
+        lines.add("Default: ${if (defaultValue) "Enabled" else "Disabled"}")
+
+        return lines.ifEmpty { null }
+    }
+
+    fun getCheckboxTooltip(): List<String>? {
+        val lines = mutableListOf<String>()
+
+        val isModified = checked != defaultValue
+        val currentState = if (checked) "Enabled" else "Disabled"
+
+        if (isModified) {
+            lines.add("Current: $currentState")
+            lines.add("Default: ${if (defaultValue) "Enabled" else "Disabled"}")
+        } else {
+            lines.add("$currentState (Default)")
+        }
+
+        return lines
+    }
+
+    fun isMouseOverCheckbox(): Boolean {
+        val checkboxX = x
+        val checkboxY = y + (height - CHECKBOX_SIZE) / 2
+        return lastMouseX >= checkboxX &&
+            lastMouseX < checkboxX + CHECKBOX_SIZE &&
+            lastMouseY >= checkboxY &&
+            lastMouseY < checkboxY + CHECKBOX_SIZE
+    }
 
     override fun render(
         graphics: GuiGraphics,

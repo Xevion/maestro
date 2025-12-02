@@ -254,4 +254,35 @@ abstract class Container : GuiWidget(0, 0) {
         }
         return false
     }
+
+    // ===== TOOLTIP COLLECTION =====
+
+    /**
+     * Collects tooltip lines from all child widgets.
+     *
+     * Recursively searches for any widget with a tooltip ready to display.
+     * Returns the first non-null tooltip found (only one tooltip shown at a time).
+     *
+     * @return Tooltip lines, or empty list if no widget has a tooltip ready
+     */
+    open fun collectTooltips(): List<String> {
+        for (cell in cells) {
+            val widget = cell.widget
+
+            // Check if widget has a tooltip ready
+            val tooltip = widget.getTooltip()
+            if (tooltip != null) {
+                return tooltip
+            }
+
+            // Recurse into child containers
+            if (widget is Container) {
+                val childTooltip = widget.collectTooltips()
+                if (childTooltip.isNotEmpty()) {
+                    return childTooltip
+                }
+            }
+        }
+        return emptyList()
+    }
 }

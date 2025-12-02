@@ -19,6 +19,13 @@ abstract class GuiWidget(
     var hovered: Boolean = false
         protected set
 
+    protected var tooltipLines: List<String>? = null
+    private var hoverStartTime: Long = 0
+
+    companion object {
+        const val TOOLTIP_DELAY_MS = 500L
+    }
+
     /**
      * Renders the widget at its current position.
      *
@@ -63,14 +70,53 @@ abstract class GuiWidget(
     /**
      * Updates hover state based on mouse position.
      *
+     * Tracks hover start time for tooltip delay.
+     *
      * @param mouseX Mouse X coordinate
      * @param mouseY Mouse Y coordinate
      */
-    fun updateHover(
+    open fun updateHover(
         mouseX: Int,
         mouseY: Int,
     ) {
+        val wasHovered = hovered
         hovered = isMouseOver(mouseX, mouseY)
+
+        // Track hover start time for tooltip delay
+        if (hovered && !wasHovered) {
+            hoverStartTime = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * Sets the tooltip text for this widget.
+     *
+     * Tooltip will be displayed after hovering for TOOLTIP_DELAY_MS milliseconds.
+     *
+     * @param lines Text lines to display in tooltip
+     */
+    fun setTooltip(lines: List<String>) {
+        tooltipLines = lines
+    }
+
+    /**
+     * Gets the raw tooltip lines without hover/delay checks.
+     * Used by composite widgets to copy tooltips from child widgets.
+     *
+     * @return Tooltip lines, or null if no tooltip set
+     */
+    fun getRawTooltipLines(): List<String>? = tooltipLines
+
+    /**
+     * Gets the tooltip lines if hovering and delay has elapsed.
+     *
+     * @return Tooltip lines, or null if not ready to display
+     */
+    open fun getTooltip(): List<String>? {
+        if (tooltipLines == null || !hovered) return null
+
+        val hoverDuration = System.currentTimeMillis() - hoverStartTime
+        return if (hoverDuration >= TOOLTIP_DELAY_MS) tooltipLines else null
     }
 
     /**

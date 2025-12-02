@@ -30,7 +30,7 @@ import maestro.gui.widget.TextInputWidget
  */
 class SettingsPanel(
     private val screen: MaestroScreen,
-) : VBox(spacing = 5) {
+) : VBox(spacing = 4) {
     private val settings = Agent.settings()
 
     private var activeCategory: SettingCategory? = null

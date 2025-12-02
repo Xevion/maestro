@@ -5,6 +5,7 @@ import maestro.gui.core.Container
 import maestro.gui.core.Insets
 import maestro.gui.core.Rect
 import maestro.gui.panel.MainMenuPanel
+import maestro.gui.utils.TooltipRenderer
 import maestro.gui.utils.drawPanel
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
@@ -126,7 +127,31 @@ class MaestroScreen(
         currentPanel.render(graphics, mouseX, mouseY, delta)
         graphics.disableScissor()
 
+        // Render parent elements first (buttons, overlays, etc.)
         super.render(graphics, mouseX, mouseY, delta)
+
+        // Render tooltips last so they appear on top of everything
+        renderTooltips(graphics, mouseX, mouseY, currentPanel)
+    }
+
+    /**
+     * Renders tooltips for any widget currently being hovered.
+     *
+     * @param graphics Graphics context
+     * @param mouseX Mouse X position
+     * @param mouseY Mouse Y position
+     * @param container Container to collect tooltips from
+     */
+    private fun renderTooltips(
+        graphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+        container: Container,
+    ) {
+        val tooltipLines = container.collectTooltips()
+        if (tooltipLines.isNotEmpty()) {
+            TooltipRenderer.renderTooltip(graphics, tooltipLines, mouseX, mouseY, width, height)
+        }
     }
 
     override fun mouseClicked(
@@ -186,6 +211,16 @@ class MaestroScreen(
             }
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    }
+
+    override fun mouseMoved(
+        mouseX: Double,
+        mouseY: Double,
+    ) {
+        // Update hover states for tooltips when mouse moves
+        val currentPanel = panelStack.peek()
+        currentPanel?.updateHover(mouseX.toInt(), mouseY.toInt())
+        super.mouseMoved(mouseX, mouseY)
     }
 
     override fun keyPressed(

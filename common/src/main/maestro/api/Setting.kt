@@ -1,5 +1,7 @@
 package maestro.api
 
+import maestro.api.constraints.NumericConstraints
+import maestro.api.units.SettingUnit
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.TypeUtils
 import java.lang.reflect.Type
@@ -22,6 +24,7 @@ class Setting<T : Any> private constructor(
     val category: SettingCategory?,
     val description: String?,
     private val javaOnly: Boolean,
+    val constraints: NumericConstraints?,
 ) {
     @JvmField
     var value: T = initialValue
@@ -79,8 +82,41 @@ class Setting<T : Any> private constructor(
         var category: SettingCategory? = null
         var description: String? = null
         var javaOnly: Boolean = false
+        var constraints: NumericConstraints? = null
 
-        fun build(): Setting<T> = Setting(defaultValue, category, description, javaOnly)
+        /**
+         * Defines range constraints for numeric settings.
+         *
+         * @param min Minimum value
+         * @param max Maximum value
+         * @param unit Optional unit for display formatting
+         */
+        fun range(
+            min: Double,
+            max: Double,
+            unit: SettingUnit? = null,
+        ) {
+            constraints = NumericConstraints(min, max, unit)
+        }
+
+        /**
+         * Defines range constraints with discrete steps.
+         *
+         * @param min Minimum value
+         * @param max Maximum value
+         * @param step Step size for discrete values
+         * @param unit Optional unit for display formatting
+         */
+        fun range(
+            min: Double,
+            max: Double,
+            step: Double,
+            unit: SettingUnit? = null,
+        ) {
+            constraints = NumericConstraints(min, max, unit, step)
+        }
+
+        fun build(): Setting<T> = Setting(defaultValue, category, description, javaOnly, constraints)
     }
 
     companion object {

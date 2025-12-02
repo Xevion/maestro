@@ -70,6 +70,8 @@ class ScrollableContainer<T : Container>(
             }
 
         graphics.enableScissor(x, y, x + contentWidth, y + height)
+        // Update hover states before rendering (required for tooltips)
+        inner.updateHover(mouseX, mouseY)
         inner.render(graphics, mouseX, mouseY, tickDelta)
         graphics.disableScissor()
 
@@ -219,6 +221,11 @@ class ScrollableContainer<T : Container>(
         char: Char,
         modifiers: Int,
     ): Boolean = inner.handleCharTyped(char, modifiers)
+
+    override fun collectTooltips(): List<String> {
+        // Delegate to inner container since widgets are stored there, not in cells
+        return inner.collectTooltips()
+    }
 
     private fun needsScrollbar() = inner.height > maxHeight
 

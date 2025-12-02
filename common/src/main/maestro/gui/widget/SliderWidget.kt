@@ -1,5 +1,6 @@
 package maestro.gui.widget
 
+import maestro.api.units.SettingUnit
 import maestro.gui.GuiColors
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -15,8 +16,9 @@ import kotlin.math.roundToInt
  * calculations across render(), handleClick(), handleDrag(), and handleScroll().
  *
  * @property labelWidth Width of the label text
- * @property valueText Formatted value string
+ * @property valueText Formatted value string (compact, for display above slider)
  * @property valueWidth Width of the value text
+ * @property smallValueWidth Width of scaled-down value text (0.8x)
  * @property trackStartX Left edge of the track
  * @property trackEndX Right edge of the track
  * @property trackWidth Total width of the track
@@ -26,18 +28,25 @@ private class SliderLayout(
     label: String,
     currentValue: Double,
     precision: Int,
+    unit: SettingUnit?,
     x: Int,
     width: Int,
 ) {
     val labelWidth: Int = font.width(label)
-    val valueText: String = formatValue(currentValue, precision)
+    val valueText: String =
+        if (unit != null) {
+            "${unit.formatCompact(currentValue)} ${unit.displayName()}"
+        } else {
+            formatValueFallback(currentValue, precision)
+        }
     val valueWidth: Int = font.width(valueText)
+    val smallValueWidth: Int = (valueWidth * SMALL_TEXT_SCALE).toInt()
 
     val trackStartX: Int = x + labelWidth + LABEL_SPACING
-    val trackEndX: Int = x + width - valueWidth - GuiColors.SLIDER_VALUE_SPACING
+    val trackEndX: Int = x + width
     val trackWidth: Int = trackEndX - trackStartX
 
-    private fun formatValue(
+    private fun formatValueFallback(
         value: Double,
         precision: Int,
     ): String =
@@ -49,6 +58,7 @@ private class SliderLayout(
 
     companion object {
         private const val LABEL_SPACING = 5
+        private const val SMALL_TEXT_SCALE = 0.8f
     }
 }
 
@@ -56,13 +66,15 @@ private class SliderLayout(
  * Interactive slider widget for numeric settings.
  *
  * Supports click-to-position, drag, and mouse wheel scrolling.
- * Displays label on left, track with handle in middle, and value on right.
+ * Displays label on left, small value text above track, and track with handle below.
  *
  * @param label Display label for the setting
  * @param min Minimum value
  * @param max Maximum value
  * @param initialValue Initial value (clamped to range)
  * @param precision Number of decimal places (0 for integers, 1-3 for decimals)
+ * @param unit Optional unit for formatting display values
+ * @param description Optional description for tooltip
  * @param onChange Callback fired on every value change
  * @param width Total widget width
  */
@@ -71,10 +83,13 @@ class SliderWidget(
     private val min: Double,
     private val max: Double,
     initialValue: Double,
+    val defaultValue: Double,
     private val precision: Int = 0,
+    private val unit: SettingUnit? = null,
+    private val description: String? = null,
     private val onChange: (Double) -> Unit,
     width: Int,
-) : GuiWidget(width, SLIDER_HEIGHT) {
+) : GuiWidget(width, WIDGET_HEIGHT) {
     var currentValue: Double = Mth.clamp(initialValue, min, max)
         internal set
 
@@ -83,6 +98,8 @@ class SliderWidget(
 
     private var handleHovered: Boolean = false
     private var valueAtDragStart: Double = currentValue
+    private var lastMouseX: Int = 0
+    private var lastMouseY: Int = 0
 
     /**
      * Ghost handle for scroll-after-move behavior.
@@ -102,6 +119,89 @@ class SliderWidget(
     private var scrollHandleWidth: Int = 0
     private var scrollHandleMouseOver: Boolean = false
 
+    init {
+        // Tooltips are now generated dynamically in getLabelTooltip() and getSliderTooltip()
+    }
+
+    override fun updateHover(
+        mouseX: Int,
+        mouseY: Int,
+    ) {
+        lastMouseX = mouseX
+        lastMouseY = mouseY
+        super.updateHover(mouseX, mouseY)
+    }
+
+    fun getLabelTooltip(): List<String>? {
+        val lines = mutableListOf<String>()
+
+        if (description != null && description.isNotEmpty()) {
+            lines.add(description)
+        }
+
+        val defaultFormatted =
+            if (unit != null) {
+                unit.format(defaultValue)
+            } else {
+                if (precision == 0) defaultValue.toInt().toString() else String.format("%.${precision}f", defaultValue)
+            }
+
+        lines.add("Default: $defaultFormatted")
+
+        if (unit != null) {
+            lines.add("Unit: ${unit.displayName()}")
+        }
+
+        return lines.ifEmpty { null }
+    }
+
+    fun getSliderTooltip(): List<String>? {
+        val lines = mutableListOf<String>()
+
+        val isModified = currentValue != defaultValue
+        val currentFormatted =
+            if (unit != null) {
+                unit.format(currentValue)
+            } else {
+                if (precision == 0) currentValue.toInt().toString() else String.format("%.${precision}f", currentValue)
+            }
+
+        if (isModified) {
+            lines.add("Current: $currentFormatted")
+        } else {
+            lines.add("$currentFormatted (Default)")
+        }
+
+        val rangeFormatted =
+            if (unit != null) {
+                "${unit.format(min)} - ${unit.format(max)}"
+            } else {
+                val minStr = if (precision == 0) min.toInt().toString() else String.format("%.${precision}f", min)
+                val maxStr = if (precision == 0) max.toInt().toString() else String.format("%.${precision}f", max)
+                "$minStr - $maxStr"
+            }
+
+        lines.add("Range: $rangeFormatted")
+
+        if (isModified) {
+            val defaultFormatted =
+                if (unit != null) {
+                    unit.format(defaultValue)
+                } else {
+                    if (precision == 0) defaultValue.toInt().toString() else String.format("%.${precision}f", defaultValue)
+                }
+            lines.add("Default: $defaultFormatted")
+        }
+
+        return lines
+    }
+
+    fun isMouseOverLabel(): Boolean {
+        val font = Minecraft.getInstance().font
+        val labelWidth = font.width(label)
+        return lastMouseX < x + labelWidth
+    }
+
     override fun render(
         graphics: GuiGraphics,
         mouseX: Int,
@@ -109,19 +209,37 @@ class SliderWidget(
         tickDelta: Float,
     ) {
         val font = Minecraft.getInstance().font
-        val layout = SliderLayout(font, label, currentValue, precision, x, width)
+        val layout = SliderLayout(font, label, currentValue, precision, unit, x, width)
 
+        // Small text above slider (scaled 0.8x, right-aligned with track)
+        val smallTextX = layout.trackStartX + layout.trackWidth - layout.smallValueWidth
+        val smallTextY = y
+
+        // Slider components below small text
+        val sliderY = y + SMALL_TEXT_HEIGHT + TEXT_SPACING
         val labelX = x
-        val labelY = y + (height - font.lineHeight) / 2 + 1
-        val valueX = x + width - layout.valueWidth
-        val trackY = y + (height - TRACK_HEIGHT) / 2
+        val labelY = sliderY + (SLIDER_HEIGHT - font.lineHeight) / 2 + 1
+        val trackY = sliderY + (SLIDER_HEIGHT - TRACK_HEIGHT) / 2
 
         // Handle position and dimensions
         val handleX = calculateHandleX(layout.trackStartX, layout.trackWidth, HANDLE_WIDTH)
-        val handleY = y + (height - TRACK_HEIGHT) / 2
+        val handleY = trackY
 
         // Update handle hover state
         updateHandleHover(mouseX, mouseY, handleX, handleY, HANDLE_WIDTH, TRACK_HEIGHT)
+
+        // Render small value text above (scaled 0.8x)
+        graphics.pose().pushPose()
+        graphics.pose().scale(0.8f, 0.8f, 1.0f)
+        graphics.drawString(
+            font,
+            layout.valueText,
+            (smallTextX / 0.8f).toInt(),
+            (smallTextY / 0.8f).toInt(),
+            GuiColors.TEXT_SECONDARY,
+            false,
+        )
+        graphics.pose().popPose()
 
         // Render label
         graphics.drawString(font, label, labelX, labelY, GuiColors.TEXT, false)
@@ -143,9 +261,6 @@ class SliderWidget(
                 else -> GuiColors.SLIDER_HANDLE_NORMAL
             }
         graphics.fill(handleX, handleY, handleX + HANDLE_WIDTH, handleY + TRACK_HEIGHT, handleColor)
-
-        // Render value
-        graphics.drawString(font, layout.valueText, valueX, labelY, GuiColors.TEXT, false)
     }
 
     override fun handleClick(
@@ -157,7 +272,12 @@ class SliderWidget(
 
         valueAtDragStart = currentValue
 
-        val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, x, width)
+        val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, unit, x, width)
+
+        // Only accept clicks on track, not label area
+        if (mouseX < layout.trackStartX || mouseX > layout.trackStartX + layout.trackWidth) {
+            return false
+        }
 
         // Set value based on click position
         val valueWidthCalc = mouseX - (layout.trackStartX + HANDLE_WIDTH / 2)
@@ -178,7 +298,7 @@ class SliderWidget(
     ): Boolean {
         if (!dragging || button != 0) return false
 
-        val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, x, width)
+        val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, unit, x, width)
 
         val mouseOverX = mouseX >= layout.trackStartX + HANDLE_WIDTH / 2 && mouseX <= layout.trackEndX - HANDLE_WIDTH / 2
 
@@ -223,7 +343,7 @@ class SliderWidget(
     ): Boolean {
         // When user starts to scroll over regular handle, remember its position
         if (!scrollHandleMouseOver && handleHovered) {
-            val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, x, width)
+            val layout = SliderLayout(Minecraft.getInstance().font, label, currentValue, precision, unit, x, width)
             val handleX = calculateHandleX(layout.trackStartX, layout.trackWidth, HANDLE_WIDTH)
 
             scrollHandleX = handleX
@@ -317,8 +437,18 @@ class SliderWidget(
         }
     }
 
+    /**
+     * Vertical offset from widget top to the slider row (excludes small text area).
+     * Used by SettingRowWidget to align the modified indicator with the slider row.
+     */
+    val sliderRowOffset: Int
+        get() = SMALL_TEXT_HEIGHT + TEXT_SPACING
+
     companion object {
+        private const val SMALL_TEXT_HEIGHT = 7
+        private const val TEXT_SPACING = 0
         private const val SLIDER_HEIGHT = 20
+        private const val WIDGET_HEIGHT = SMALL_TEXT_HEIGHT + TEXT_SPACING + SLIDER_HEIGHT
         private const val HANDLE_WIDTH = 8
         private const val TRACK_HEIGHT = 12
     }

@@ -41,6 +41,8 @@ object SettingWidgetFactory {
                 CheckboxWidget(
                     label = formatSettingName(name),
                     initialChecked = boolSetting.value,
+                    defaultValue = boolSetting.defaultValue,
+                    description = setting.description,
                     onChange = { newValue -> onChange(newValue) },
                     width = width,
                 )
@@ -49,13 +51,26 @@ object SettingWidgetFactory {
             valueClass == java.lang.Integer::class.java -> {
                 @Suppress("UNCHECKED_CAST")
                 val intSetting = setting as Setting<Int>
-                val range = inferIntRange(name, intSetting.defaultValue)
+
+                // Use explicit constraints if provided, otherwise infer from name
+                val constraints = intSetting.constraints
+                val (min, max, unit) =
+                    if (constraints != null) {
+                        Triple(constraints.min, constraints.max, constraints.unit)
+                    } else {
+                        val range = inferIntRange(name, intSetting.defaultValue)
+                        Triple(range.first.toDouble(), range.second.toDouble(), null)
+                    }
+
                 SliderWidget(
                     label = formatSettingName(name),
-                    min = range.first.toDouble(),
-                    max = range.second.toDouble(),
+                    min = min,
+                    max = max,
                     initialValue = intSetting.value.toDouble(),
+                    defaultValue = intSetting.defaultValue.toDouble(),
                     precision = 0,
+                    unit = unit,
+                    description = setting.description,
                     onChange = { newValue -> onChange(newValue.toInt()) },
                     width = width,
                 )
@@ -64,13 +79,26 @@ object SettingWidgetFactory {
             valueClass == java.lang.Long::class.java -> {
                 @Suppress("UNCHECKED_CAST")
                 val longSetting = setting as Setting<Long>
-                val range = inferLongRange(name, longSetting.defaultValue)
+
+                // Use explicit constraints if provided, otherwise infer from name
+                val constraints = longSetting.constraints
+                val (min, max, unit) =
+                    if (constraints != null) {
+                        Triple(constraints.min, constraints.max, constraints.unit)
+                    } else {
+                        val range = inferLongRange(name, longSetting.defaultValue)
+                        Triple(range.first.toDouble(), range.second.toDouble(), null)
+                    }
+
                 SliderWidget(
                     label = formatSettingName(name),
-                    min = range.first.toDouble(),
-                    max = range.second.toDouble(),
+                    min = min,
+                    max = max,
                     initialValue = longSetting.value.toDouble(),
+                    defaultValue = longSetting.defaultValue.toDouble(),
                     precision = 0,
+                    unit = unit,
+                    description = setting.description,
                     onChange = { newValue -> onChange(newValue.toLong()) },
                     width = width,
                 )
@@ -79,13 +107,29 @@ object SettingWidgetFactory {
             valueClass == java.lang.Float::class.java -> {
                 @Suppress("UNCHECKED_CAST")
                 val floatSetting = setting as Setting<Float>
-                val range = inferFloatRange(name, floatSetting.defaultValue)
+
+                // Use explicit constraints if provided, otherwise infer from name
+                val constraints = floatSetting.constraints
+                val (min, max, unit) =
+                    if (constraints != null) {
+                        Triple(constraints.min, constraints.max, constraints.unit)
+                    } else {
+                        val range = inferFloatRange(name, floatSetting.defaultValue)
+                        Triple(range.first.toDouble(), range.second.toDouble(), null)
+                    }
+
+                // Determine precision from unit or default to 2
+                val precision = unit?.defaultPrecision() ?: 2
+
                 SliderWidget(
                     label = formatSettingName(name),
-                    min = range.first.toDouble(),
-                    max = range.second.toDouble(),
+                    min = min,
+                    max = max,
                     initialValue = floatSetting.value.toDouble(),
-                    precision = 2,
+                    defaultValue = floatSetting.defaultValue.toDouble(),
+                    precision = precision,
+                    unit = unit,
+                    description = setting.description,
                     onChange = { newValue -> onChange(newValue.toFloat()) },
                     width = width,
                 )
@@ -94,13 +138,29 @@ object SettingWidgetFactory {
             valueClass == java.lang.Double::class.java -> {
                 @Suppress("UNCHECKED_CAST")
                 val doubleSetting = setting as Setting<Double>
-                val range = inferDoubleRange(name, doubleSetting.defaultValue)
+
+                // Use explicit constraints if provided, otherwise infer from name
+                val constraints = doubleSetting.constraints
+                val (min, max, unit) =
+                    if (constraints != null) {
+                        Triple(constraints.min, constraints.max, constraints.unit)
+                    } else {
+                        val range = inferDoubleRange(name, doubleSetting.defaultValue)
+                        Triple(range.first, range.second, null)
+                    }
+
+                // Determine precision from unit or default to 2
+                val precision = unit?.defaultPrecision() ?: 2
+
                 SliderWidget(
                     label = formatSettingName(name),
-                    min = range.first,
-                    max = range.second,
+                    min = min,
+                    max = max,
                     initialValue = doubleSetting.value,
-                    precision = 2,
+                    defaultValue = doubleSetting.defaultValue,
+                    precision = precision,
+                    unit = unit,
+                    description = setting.description,
                     onChange = { newValue -> onChange(newValue) },
                     width = width,
                 )
