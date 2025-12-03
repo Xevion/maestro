@@ -1,6 +1,8 @@
 package maestro.launch.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import java.util.function.BiFunction;
+import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.PlayerUpdateEvent;
@@ -13,6 +15,7 @@ import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -157,5 +160,27 @@ public class MixinMinecraft {
             return null;
         }
         return instance.screen;
+    }
+
+    /**
+     * Enables glowing outline for the player entity when freecam is active. This makes the player
+     * visible through walls when observing from freecam.
+     *
+     * <p>Currently uses Minecraft's default white outline color. To customize the color in the
+     * future, add a mixin to LevelRenderer.renderEntities() that calls {@code
+     * outlineBufferSource.setColor(red, green, blue, alpha)} before rendering the player entity
+     * (see LevelRenderer.java line ~1800 where OutlineBufferSource.setColor is called).
+     */
+    @SuppressWarnings("ReferenceEquality") // Intentional: checking for same entity instance
+    @ModifyReturnValue(method = "shouldEntityAppearGlowing", at = @At("RETURN"))
+    private boolean onShouldEntityAppearGlowing(boolean original, Entity entity) {
+        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        if (agent != null && agent.isFreecamActive()) {
+            Minecraft mc = (Minecraft) (Object) this;
+            if (mc.player != null && entity == mc.player) {
+                return true;
+            }
+        }
+        return original;
     }
 }
