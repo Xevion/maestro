@@ -16,6 +16,7 @@ import maestro.api.event.listener.IEventBus;
 import maestro.api.process.IElytraProcess;
 import maestro.api.process.IMaestroProcess;
 import maestro.api.utils.IPlayerContext;
+import maestro.api.utils.MaestroLogger;
 import maestro.behavior.*;
 import maestro.cache.WorldProvider;
 import maestro.command.manager.CommandManager;
@@ -117,6 +118,15 @@ public class Agent implements IAgent {
     private boolean freecamActive = false;
     private int savedFov = -1;
     private boolean savedSmoothCamera = false;
+    private FreecamMode freecamMode = FreecamMode.STATIC;
+    private Vec3 lastPlayerPosition = null;
+    private Vec3 freecamFollowOffset = null;
+    private Vec3 prevFreecamFollowOffset = null;
+
+    // Follow mode position tracking - we track our own snapshots to avoid physics artifacts
+    // from Minecraft's built-in xOld/x interpolation
+    private Vec3 followTargetPrev = null;
+    private Vec3 followTargetCurrent = null;
 
     Agent(Minecraft mc) {
         this.mc = mc;
@@ -328,8 +338,135 @@ public class Agent implements IAgent {
         this.freecamPosition = position;
     }
 
+    public FreecamMode getFreecamMode() {
+        return freecamMode;
+    }
+
+    public void setFreecamMode(FreecamMode mode) {
+        this.freecamMode = mode;
+    }
+
+    /** Gets the saved FOV value from when freecam was activated. */
+    public int getSavedFov() {
+        return this.savedFov;
+    }
+
+    public void toggleFreecamMode() {
+        FreecamMode newMode =
+                (freecamMode == FreecamMode.STATIC) ? FreecamMode.FOLLOW : FreecamMode.STATIC;
+        this.freecamMode = newMode;
+
+        // When switching to FOLLOW mode, calculate offset from current static position to player
+        if (newMode == FreecamMode.FOLLOW && this.mc.player != null && freecamPosition != null) {
+            Vec3 playerPos =
+                    new Vec3(this.mc.player.getX(), this.mc.player.getY(), this.mc.player.getZ());
+            Vec3 offset = freecamPosition.subtract(playerPos);
+
+            // Initialize both current and prev to the same value for stable start
+            this.freecamFollowOffset = offset;
+            this.prevFreecamFollowOffset = offset;
+
+            // Initialize follow target positions for stable interpolation
+            this.followTargetPrev = playerPos;
+            this.followTargetCurrent = playerPos;
+
+            MaestroLogger.get("dev")
+                    .atDebug()
+                    .addKeyValue("mode", "FOLLOW")
+                    .log("Freecam mode switched");
+        } else if (newMode == FreecamMode.STATIC
+                && this.mc.player != null
+                && freecamFollowOffset != null) {
+            // When switching to STATIC mode, set position from current follow position
+            Vec3 playerPos =
+                    new Vec3(this.mc.player.getX(), this.mc.player.getY(), this.mc.player.getZ());
+            Vec3 staticPos = playerPos.add(freecamFollowOffset);
+
+            // Initialize both current and prev to the same value for stable start
+            this.freecamPosition = staticPos;
+            this.prevFreecamPosition = staticPos;
+
+            MaestroLogger.get("dev")
+                    .atDebug()
+                    .addKeyValue("mode", "STATIC")
+                    .log("Freecam mode switched");
+        } else {
+            MaestroLogger.get("dev")
+                    .atDebug()
+                    .addKeyValue("mode", newMode)
+                    .log("Freecam mode switched");
+        }
+    }
+
+    public Vec3 getLastPlayerPosition() {
+        return lastPlayerPosition;
+    }
+
+    public void setLastPlayerPosition(Vec3 pos) {
+        this.lastPlayerPosition = pos;
+    }
+
+    public Vec3 getFreecamFollowOffset() {
+        return freecamFollowOffset;
+    }
+
+    public void setFreecamFollowOffset(Vec3 offset) {
+        this.prevFreecamFollowOffset = this.freecamFollowOffset;
+        this.freecamFollowOffset = offset;
+
+        // Initialize prev if this is the first offset set
+        if (this.prevFreecamFollowOffset == null) {
+            this.prevFreecamFollowOffset = offset;
+        }
+    }
+
+    /**
+     * Updates follow target position snapshots. Call this once per tick to capture consistent
+     * positions for smooth interpolation. This avoids jitter from Minecraft's physics artifacts in
+     * the entity's xOld/x interpolation.
+     */
+    public void updateFollowTarget() {
+        if (this.mc.player == null) return;
+
+        Vec3 currentPos = this.mc.player.position();
+
+        // Shift current to prev, update current
+        this.followTargetPrev = this.followTargetCurrent;
+        this.followTargetCurrent = currentPos;
+
+        // Initialize prev if this is the first update
+        if (this.followTargetPrev == null) {
+            this.followTargetPrev = currentPos;
+        }
+    }
+
     /** Gets interpolated freecam X coordinate for smooth rendering between ticks. */
     public double getFreecamX(float tickDelta) {
+        // In FOLLOW mode, interpolate both player position AND offset for smooth 60 FPS
+        if (freecamMode == FreecamMode.FOLLOW
+                && freecamFollowOffset != null
+                && prevFreecamFollowOffset != null) {
+            // Interpolate player position
+            double playerX;
+            if (followTargetPrev != null && followTargetCurrent != null) {
+                playerX =
+                        followTargetPrev.x
+                                + (followTargetCurrent.x - followTargetPrev.x) * tickDelta;
+            } else if (this.mc.player != null) {
+                playerX = this.mc.player.getX();
+            } else {
+                playerX = 0;
+            }
+
+            // Interpolate offset
+            double offsetX =
+                    prevFreecamFollowOffset.x
+                            + (freecamFollowOffset.x - prevFreecamFollowOffset.x) * tickDelta;
+
+            return playerX + offsetX;
+        }
+
+        // STATIC mode: standard interpolation
         if (freecamPosition == null || prevFreecamPosition == null) {
             return freecamPosition != null ? freecamPosition.x : 0;
         }
@@ -338,6 +475,31 @@ public class Agent implements IAgent {
 
     /** Gets interpolated freecam Y coordinate for smooth rendering between ticks. */
     public double getFreecamY(float tickDelta) {
+        // In FOLLOW mode, interpolate both player position AND offset for smooth 60 FPS
+        if (freecamMode == FreecamMode.FOLLOW
+                && freecamFollowOffset != null
+                && prevFreecamFollowOffset != null) {
+            // Interpolate player position
+            double playerY;
+            if (followTargetPrev != null && followTargetCurrent != null) {
+                playerY =
+                        followTargetPrev.y
+                                + (followTargetCurrent.y - followTargetPrev.y) * tickDelta;
+            } else if (this.mc.player != null) {
+                playerY = this.mc.player.getY();
+            } else {
+                playerY = 0;
+            }
+
+            // Interpolate offset
+            double offsetY =
+                    prevFreecamFollowOffset.y
+                            + (freecamFollowOffset.y - prevFreecamFollowOffset.y) * tickDelta;
+
+            return playerY + offsetY;
+        }
+
+        // STATIC mode: standard interpolation
         if (freecamPosition == null || prevFreecamPosition == null) {
             return freecamPosition != null ? freecamPosition.y : 0;
         }
@@ -346,6 +508,31 @@ public class Agent implements IAgent {
 
     /** Gets interpolated freecam Z coordinate for smooth rendering between ticks. */
     public double getFreecamZ(float tickDelta) {
+        // In FOLLOW mode, interpolate both player position AND offset for smooth 60 FPS
+        if (freecamMode == FreecamMode.FOLLOW
+                && freecamFollowOffset != null
+                && prevFreecamFollowOffset != null) {
+            // Interpolate player position
+            double playerZ;
+            if (followTargetPrev != null && followTargetCurrent != null) {
+                playerZ =
+                        followTargetPrev.z
+                                + (followTargetCurrent.z - followTargetPrev.z) * tickDelta;
+            } else if (this.mc.player != null) {
+                playerZ = this.mc.player.getZ();
+            } else {
+                playerZ = 0;
+            }
+
+            // Interpolate offset
+            double offsetZ =
+                    prevFreecamFollowOffset.z
+                            + (freecamFollowOffset.z - prevFreecamFollowOffset.z) * tickDelta;
+
+            return playerZ + offsetZ;
+        }
+
+        // STATIC mode: standard interpolation
         if (freecamPosition == null || prevFreecamPosition == null) {
             return freecamPosition != null ? freecamPosition.z : 0;
         }
@@ -368,7 +555,18 @@ public class Agent implements IAgent {
             this.savedFov = this.mc.options.fov().get();
             this.savedSmoothCamera = this.mc.options.smoothCamera;
 
+            // Initialize freecam mode and player tracking
+            this.freecamMode = Agent.settings().freecamDefaultMode.value;
+            if (this.mc.player != null) {
+                this.lastPlayerPosition = this.mc.player.position();
+            }
+
             this.freecamActive = true;
+
+            // Reload chunks if configured (queue for next tick)
+            if (Agent.settings().freecamReloadChunks.value && this.mc.levelRenderer != null) {
+                this.mc.execute(() -> this.mc.levelRenderer.allChanged());
+            }
         }
     }
 
@@ -377,6 +575,11 @@ public class Agent implements IAgent {
         this.freecamActive = false;
         this.freecamPosition = null;
         this.prevFreecamPosition = null;
+        this.lastPlayerPosition = null;
+        this.followTargetPrev = null;
+        this.followTargetCurrent = null;
+        this.freecamFollowOffset = null;
+        this.prevFreecamFollowOffset = null;
 
         // Restore FOV settings
         if (this.savedFov >= 0) {
@@ -384,6 +587,11 @@ public class Agent implements IAgent {
             this.savedFov = -1;
         }
         this.mc.options.smoothCamera = this.savedSmoothCamera;
+
+        // Reload chunks if configured (queue for next tick)
+        if (Agent.settings().freecamReloadChunks.value && this.mc.levelRenderer != null) {
+            this.mc.execute(() -> this.mc.levelRenderer.allChanged());
+        }
     }
 
     @Override

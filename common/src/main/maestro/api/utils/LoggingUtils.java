@@ -2,6 +2,7 @@ package maestro.api.utils;
 
 import maestro.api.pathing.goals.Goal;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Utilities for compact, readable logging output.
@@ -31,6 +32,16 @@ public final class LoggingUtils {
      */
     public static String formatPos(PackedBlockPos pos) {
         return pos.getX() + "," + pos.getY() + "," + pos.getZ();
+    }
+
+    /**
+     * Format Vec3 as compact coordinate string with 3 decimal precision.
+     *
+     * @param pos Vector position to format
+     * @return Formatted string: "x,y,z" (e.g., "100.500,64.000,200.250")
+     */
+    public static String formatPos(Vec3 pos) {
+        return formatFloat(pos.x) + "," + formatFloat(pos.y) + "," + formatFloat(pos.z);
     }
 
     /**

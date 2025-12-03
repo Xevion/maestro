@@ -2,6 +2,7 @@ package maestro.launch.mixins;
 
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
+import maestro.Agent;
 import maestro.api.IAgent;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.RenderEvent;
@@ -13,10 +14,31 @@ import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
-public class MixinWorldRenderer {
+public class MixinLevelRenderer {
+
+    /**
+     * Disables smart culling when freecam is active to prevent cave/chunk occlusion. Modifies the
+     * first parameter (smartCull boolean) of SectionOcclusionGraph.update().
+     */
+    @ModifyArg(
+            method = "setupRender",
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "Lnet/minecraft/client/renderer/SectionOcclusionGraph;update(ZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;Ljava/util/List;Lit/unimi/dsi/fastutil/longs/LongOpenHashSet;)V"),
+            index = 0)
+    private boolean maestro$disableSmartCullDuringFreecam(boolean smartCull) {
+        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        if (agent != null && agent.isFreecamActive()) {
+            return false;
+        }
+        return smartCull;
+    }
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void onStartHand(

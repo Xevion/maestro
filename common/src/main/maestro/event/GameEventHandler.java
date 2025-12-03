@@ -214,6 +214,11 @@ public final class GameEventHandler implements IEventBus {
     }
 
     @Override
+    public void onChunkOcclusion(ChunkOcclusionEvent event) {
+        listeners.forEach(l -> l.onChunkOcclusion(event));
+    }
+
+    @Override
     public void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }

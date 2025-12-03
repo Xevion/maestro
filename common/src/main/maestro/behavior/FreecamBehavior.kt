@@ -1,8 +1,15 @@
 package maestro.behavior
 
 import maestro.Agent
+import maestro.api.event.events.ChunkOcclusionEvent
 import maestro.api.event.events.TickEvent
+import maestro.api.pathing.goals.GoalGetToBlock
+import maestro.api.utils.Rotation
+import maestro.api.utils.RotationUtils
 import maestro.utils.InputOverrideHandler
+import net.minecraft.world.level.ClipContext
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import org.lwjgl.glfw.GLFW
 import kotlin.math.cos
@@ -25,12 +32,28 @@ class FreecamBehavior(
     private var sinPitch = 0.0
     private var cosPitch = 0.0
 
+    // Click tracking for teleport and pathfinding
+    private var wasLeftClickPressed = false
+    private var wasRightClickPressed = false
+    private var rightClickHoldTicks = 0
+    private var rightClickPathQueued = false
+
     override fun onTick(event: TickEvent) {
         if (!maestro.isFreecamActive || event.type != TickEvent.Type.IN) {
             return
         }
 
+        // Update follow target position snapshots for smooth interpolation
+        maestro.updateFollowTarget()
+
         updateFreecamPosition()
+        handleFreecamInput()
+    }
+
+    override fun onChunkOcclusion(event: ChunkOcclusionEvent) {
+        if (maestro.isFreecamActive && Agent.settings().freecamDisableOcclusion.value) {
+            event.cancel()
+        }
     }
 
     private fun updateFreecamPosition() {
@@ -49,11 +72,16 @@ class FreecamBehavior(
         val up = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_SPACE) == GLFW.GLFW_PRESS
         val down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
 
-        // Calculate movement vector based on camera rotation
-        val currentPos = maestro.freecamPosition ?: return
-
         val movement = calculateMovement(forward, back, left, right, up, down, isSprintKeyPressed())
-        maestro.setFreecamPosition(currentPos.add(movement))
+
+        // In FOLLOW mode, update offset; in STATIC mode, update position
+        if (maestro.freecamMode == FreecamMode.FOLLOW) {
+            val currentOffset = maestro.freecamFollowOffset ?: Vec3.ZERO
+            maestro.setFreecamFollowOffset(currentOffset.add(movement))
+        } else {
+            val currentPos = maestro.freecamPosition ?: return
+            maestro.setFreecamPosition(currentPos.add(movement))
+        }
     }
 
     private fun isSprintKeyPressed(): Boolean =
@@ -138,6 +166,136 @@ class FreecamBehavior(
         }
 
         return Vec3(moveX, moveY, moveZ)
+    }
+
+    private fun handleFreecamInput() {
+        if (!InputOverrideHandler.canUseBotKeys()) return
+
+        val window = ctx.minecraft().window.window
+        val leftClick =
+            GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS
+        val rightClick =
+            GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS
+
+        // Left click: Teleport camera
+        if (leftClick && !wasLeftClickPressed) {
+            handleTeleport()
+        }
+
+        // Right click hold: Pathfinding
+        if (rightClick) {
+            rightClickHoldTicks++
+            val requiredTicks = Agent.settings().freecamPathfindHoldDuration.value
+            if (rightClickHoldTicks >= requiredTicks && !rightClickPathQueued) {
+                handlePathfinding()
+                rightClickPathQueued = true
+            }
+        } else {
+            rightClickHoldTicks = 0
+            rightClickPathQueued = false
+        }
+
+        wasLeftClickPressed = leftClick
+        wasRightClickPressed = rightClick
+    }
+
+    private fun handleTeleport() {
+        val player = ctx.player()
+        val rotation = Rotation(maestro.freeLookYaw, maestro.freeLookPitch)
+        val distance = Agent.settings().freecamTeleportDistance.value
+
+        // Get current camera position based on mode
+        val freecamPos =
+            if (maestro.freecamMode == FreecamMode.FOLLOW && maestro.freecamFollowOffset != null) {
+                Vec3(player.getX(), player.getY(), player.getZ()).add(maestro.freecamFollowOffset)
+            } else {
+                maestro.freecamPosition ?: return
+            }
+
+        // Calculate ray direction
+        val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
+        val start = Vec3(freecamPos.x, freecamPos.y, freecamPos.z)
+        val end =
+            start.add(
+                direction.x * distance,
+                direction.y * distance,
+                direction.z * distance,
+            )
+
+        // Raycast to find target
+        val hitResult =
+            ctx
+                .world()
+                .clip(
+                    ClipContext(
+                        start,
+                        end,
+                        ClipContext.Block.OUTLINE,
+                        ClipContext.Fluid.NONE,
+                        player,
+                    ),
+                )
+
+        // Teleport to hit location or max distance
+        val targetPos =
+            if (hitResult.type == HitResult.Type.BLOCK) {
+                hitResult.location
+            } else {
+                end
+            }
+
+        // Update offset in FOLLOW mode, position in STATIC mode
+        if (maestro.freecamMode == FreecamMode.FOLLOW) {
+            val playerPos = Vec3(player.getX(), player.getY(), player.getZ())
+            maestro.setFreecamFollowOffset(targetPos.subtract(playerPos))
+        } else {
+            maestro.setFreecamPosition(targetPos)
+        }
+    }
+
+    private fun handlePathfinding() {
+        val player = ctx.player()
+        val rotation = Rotation(maestro.freeLookYaw, maestro.freeLookPitch)
+        val distance = Agent.settings().freecamPathfindDistance.value
+
+        // Get current camera position based on mode
+        val freecamPos =
+            if (maestro.freecamMode == FreecamMode.FOLLOW && maestro.freecamFollowOffset != null) {
+                Vec3(player.getX(), player.getY(), player.getZ()).add(maestro.freecamFollowOffset)
+            } else {
+                maestro.freecamPosition ?: return
+            }
+
+        // Calculate ray direction
+        val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
+        val start = Vec3(freecamPos.x, freecamPos.y, freecamPos.z)
+        val end =
+            start.add(
+                direction.x * distance,
+                direction.y * distance,
+                direction.z * distance,
+            )
+
+        // Raycast to find target block
+        val hitResult =
+            ctx
+                .world()
+                .clip(
+                    ClipContext(
+                        start,
+                        end,
+                        ClipContext.Block.OUTLINE,
+                        ClipContext.Fluid.NONE,
+                        player,
+                    ),
+                )
+
+        // Set pathfinding goal if we hit a block
+        if (hitResult.type == HitResult.Type.BLOCK) {
+            val targetBlock = (hitResult as BlockHitResult).blockPos
+            val goal = GoalGetToBlock(targetBlock)
+            maestro.customGoalProcess.setGoalAndPath(goal)
+        }
     }
 
     companion object {

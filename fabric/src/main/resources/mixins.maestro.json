@@ -27,13 +27,14 @@
     "MixinLootContextBuilder",
     "MixinLootTable",
     "MixinMinecraft",
+    "MixinMinecraftAttack",
     "MixinMouseHandler",
     "MixinNetworkManager",
     "MixinPalettedContainer",
     "MixinPalettedContainer$Data",
     "MixinPlayerController",
     "MixinScreen",
-    "MixinWorldRenderer"
+    "MixinLevelRenderer"
   ],
   "mixins": [
   ]

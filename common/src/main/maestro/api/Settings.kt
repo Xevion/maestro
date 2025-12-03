@@ -1838,6 +1838,57 @@ class Settings {
             description = "Render elytra simulation"
         }
 
+    /** Disable chunk occlusion culling in freecam to prevent disappearing chunks */
+    @JvmField
+    val freecamDisableOcclusion =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Disable chunk occlusion culling in freecam (prevents disappearing chunks)"
+        }
+
+    /** Reload chunks when toggling freecam on/off */
+    @JvmField
+    val freecamReloadChunks =
+        Setting(false) {
+            category = SettingCategory.RENDERING
+            description = "Reload chunks when toggling freecam (fixes culling, causes brief lag)"
+        }
+
+    /** Default freecam mode (STATIC: fixed position, FOLLOW: tracks player) */
+    @JvmField
+    val freecamDefaultMode =
+        Setting(maestro.behavior.FreecamMode.STATIC) {
+            category = SettingCategory.RENDERING
+            description = "Default freecam mode (STATIC: fixed position, FOLLOW: tracks player)"
+        }
+
+    /** Distance to teleport when left-clicking sky/void (no block hit) */
+    @JvmField
+    val freecamTeleportDistance =
+        Setting(25.0) {
+            category = SettingCategory.RENDERING
+            description = "Distance to teleport when left-clicking sky/void (no block hit)"
+            range(1.0, 100.0)
+        }
+
+    /** Ticks to hold right-click for pathfinding (10 = 0.5s) */
+    @JvmField
+    val freecamPathfindHoldDuration =
+        Setting(10) {
+            category = SettingCategory.RENDERING
+            description = "Ticks to hold right-click for pathfinding (10 = 0.5s)"
+            range(1.0, 40.0)
+        }
+
+    /** Max raytrace distance for pathfinding click */
+    @JvmField
+    val freecamPathfindDistance =
+        Setting(100.0) {
+            category = SettingCategory.RENDERING
+            description = "Max raytrace distance for pathfinding click"
+            range(10.0, 256.0)
+        }
+
     // BUILDING SETTINGS
 
     /**

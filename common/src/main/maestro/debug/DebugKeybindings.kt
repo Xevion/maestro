@@ -3,10 +3,12 @@ package maestro.debug
 import com.mojang.blaze3d.platform.InputConstants
 import maestro.Agent
 import maestro.api.MaestroAPI
+import maestro.api.utils.gui.MaestroToast
 import maestro.gui.MaestroScreen
 import maestro.utils.InputOverrideHandler
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -24,6 +26,7 @@ object DebugKeybindings {
 
     private var wasGravePressed = false
     private var wasGPressed = false
+    private var wasCtrlGPressed = false
 
     /** Initialize keybindings. Called during client initialization. */
     @JvmStatic
@@ -79,12 +82,27 @@ object DebugKeybindings {
             wasGravePressed = gravePressed
         }
 
-        // G key: Toggle freecam
-        val gPressed = isGPressed()
+        // G key: Toggle freecam (but NOT when CTRL is pressed)
+        val gRawPressed = isGPressed()
+        val gPressed = gRawPressed && !InputOverrideHandler.isCtrlPressed()
         if (gPressed && !wasGPressed) {
             toggleFreecam()
         }
-        wasGPressed = gPressed
+        wasGPressed = gRawPressed
+
+        // CTRL+G: Toggle freecam mode (only when freecam is active)
+        if (agent != null && agent.isFreecamActive) {
+            val ctrlGPressed = InputOverrideHandler.isCtrlPressed() && isGPressed()
+            if (ctrlGPressed && !wasCtrlGPressed) {
+                agent.toggleFreecamMode()
+                val mode = agent.freecamMode.toString()
+                MaestroToast.addOrUpdate(
+                    Component.literal("Freecam Mode"),
+                    Component.literal(mode),
+                )
+            }
+            wasCtrlGPressed = ctrlGPressed
+        }
     }
 
     /** Check if grave accent key is pressed. */

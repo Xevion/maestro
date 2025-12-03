@@ -1,5 +1,6 @@
 package maestro.launch.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import maestro.Agent;
 import maestro.api.MaestroAPI;
@@ -38,5 +39,18 @@ public class MixinGameRenderer {
         if (agent != null && agent.isFreecamActive()) {
             ci.cancel();
         }
+    }
+
+    /**
+     * Disables FOV effects when freecam is active. This prevents FOV changes from sprinting,
+     * flying, or other movement states from affecting the spectator view.
+     */
+    @ModifyReturnValue(method = "getFov", at = @At("RETURN"))
+    private float onGetFov(float original) {
+        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        if (agent != null && agent.isFreecamActive()) {
+            return (float) agent.getSavedFov();
+        }
+        return original;
     }
 }

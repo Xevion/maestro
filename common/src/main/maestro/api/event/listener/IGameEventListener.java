@@ -127,4 +127,11 @@ public interface IGameEventListener {
      * @param event The event
      */
     void onPathEvent(PathEvent event);
+
+    /**
+     * Fired when chunk occlusion is being calculated.
+     *
+     * @param event The chunk occlusion event
+     */
+    void onChunkOcclusion(ChunkOcclusionEvent event);
 }
