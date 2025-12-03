@@ -38,7 +38,7 @@ dependencies {
     modImplementation 'ch.qos.logback:logback-classic:1.5.21'
 
     // gRPC and Protocol Buffers - required for coordination system
-    modImplementation 'io.grpc:grpc-netty-shaded:1.75.0'
+    modImplementation 'io.grpc:grpc-netty-shaded:1.77.0'
     modImplementation 'io.grpc:grpc-protobuf:1.60.0'
     modImplementation 'io.grpc:grpc-stub:1.60.0'
     modImplementation 'io.grpc:grpc-kotlin-stub:1.4.1'
@@ -56,7 +56,7 @@ dependencies {
     shadowCommon('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0') { transitive = false }
     shadowCommon('ch.qos.logback:logback-classic:1.5.21') { transitive = false }
     shadowCommon('ch.qos.logback:logback-core:1.5.19') { transitive = false }
-    shadowCommon('io.grpc:grpc-netty-shaded:1.75.0') { transitive = false }
+    shadowCommon('io.grpc:grpc-netty-shaded:1.77.0') { transitive = false }
     shadowCommon('io.grpc:grpc-protobuf:1.60.0') { transitive = false }
     shadowCommon('io.grpc:grpc-stub:1.60.0') { transitive = false }
     shadowCommon('io.grpc:grpc-kotlin-stub:1.4.1') { transitive = false }

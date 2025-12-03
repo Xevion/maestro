@@ -68,7 +68,7 @@ dependencies {
     modImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
 
     // gRPC and Protocol Buffers
-    modImplementation 'io.grpc:grpc-netty-shaded:1.75.0'
+    modImplementation 'io.grpc:grpc-netty-shaded:1.77.0'
     modImplementation 'io.grpc:grpc-protobuf:1.60.0'
     modImplementation 'io.grpc:grpc-stub:1.60.0'
     modImplementation 'io.grpc:grpc-kotlin-stub:1.4.1'
