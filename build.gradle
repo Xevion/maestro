@@ -95,6 +95,12 @@ subprojects {
 
     loom {
         silentMojangMappingsLicense()
+
+        runs {
+            client {
+                programArgs '--width', '1280', '--height', '720'
+            }
+        }
     }
 
     dependencies {
