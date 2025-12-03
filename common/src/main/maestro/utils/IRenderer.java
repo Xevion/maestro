@@ -316,4 +316,120 @@ public interface IRenderer {
                 end.y - vpY,
                 end.z - vpZ);
     }
+
+    /**
+     * Start rendering filled quads (transparent faces).
+     *
+     * @param color Base color for the quads
+     * @param alpha Transparency (0.0-1.0)
+     * @param ignoreDepth If true, render through blocks
+     * @return BufferBuilder ready for quad vertices
+     */
+    static BufferBuilder startQuads(Color color, float alpha, boolean ignoreDepth) {
+        RenderSystem.enableBlend();
+        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        RenderSystem.blendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO);
+        glColor(color, alpha);
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+
+        if (ignoreDepth) {
+            RenderSystem.disableDepthTest();
+        }
+
+        return tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+    }
+
+    /**
+     * Finish rendering quads and upload to GPU.
+     *
+     * @param bufferBuilder The buffer from startQuads()
+     * @param ignoredDepth If depth test was disabled
+     */
+    static void endQuads(BufferBuilder bufferBuilder, boolean ignoredDepth) {
+        MeshData meshData = bufferBuilder.build();
+        if (meshData != null) {
+            BufferUploader.drawWithShader(meshData);
+        }
+
+        if (ignoredDepth) {
+            RenderSystem.enableDepthTest();
+        }
+
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableBlend();
+    }
+
+    /**
+     * Emit a horizontal quad (for top/bottom faces of blocks). Vertices are emitted
+     * counter-clockwise when viewed from above.
+     *
+     * @param buf Buffer from startQuads()
+     * @param stack Transformation stack
+     * @param x1 Min X coordinate
+     * @param z1 Min Z coordinate
+     * @param x2 Max X coordinate
+     * @param z2 Max Z coordinate
+     * @param y Y coordinate (height)
+     */
+    static void emitQuadHorizontal(
+            BufferBuilder buf,
+            PoseStack stack,
+            double x1,
+            double z1,
+            double x2,
+            double z2,
+            double y) {
+        PoseStack.Pose pose = stack.last();
+
+        // Counter-clockwise winding when viewed from above
+        buf.addVertex(pose, (float) x1, (float) y, (float) z1)
+                .setColor(color[0], color[1], color[2], color[3]);
+        buf.addVertex(pose, (float) x1, (float) y, (float) z2)
+                .setColor(color[0], color[1], color[2], color[3]);
+        buf.addVertex(pose, (float) x2, (float) y, (float) z2)
+                .setColor(color[0], color[1], color[2], color[3]);
+        buf.addVertex(pose, (float) x2, (float) y, (float) z1)
+                .setColor(color[0], color[1], color[2], color[3]);
+    }
+
+    /**
+     * Emit a vertical quad (for side faces of blocks). Vertices are emitted counter-clockwise when
+     * viewed from outside.
+     *
+     * @param buf Buffer from startQuads()
+     * @param stack Transformation stack
+     * @param x1 First X coordinate
+     * @param z1 First Z coordinate
+     * @param x2 Second X coordinate
+     * @param z2 Second Z coordinate
+     * @param y1 Min Y coordinate (bottom)
+     * @param y2 Max Y coordinate (top)
+     */
+    static void emitQuadVertical(
+            BufferBuilder buf,
+            PoseStack stack,
+            double x1,
+            double z1,
+            double x2,
+            double z2,
+            double y1,
+            double y2) {
+        PoseStack.Pose pose = stack.last();
+
+        // Counter-clockwise winding when viewed from outside
+        buf.addVertex(pose, (float) x1, (float) y1, (float) z1)
+                .setColor(color[0], color[1], color[2], color[3]);
+        buf.addVertex(pose, (float) x1, (float) y2, (float) z1)
+                .setColor(color[0], color[1], color[2], color[3]);
+        buf.addVertex(pose, (float) x2, (float) y2, (float) z2)
+                .setColor(color[0], color[1], color[2], color[3]);
+        buf.addVertex(pose, (float) x2, (float) y1, (float) z2)
+                .setColor(color[0], color[1], color[2], color[3]);
+    }
 }

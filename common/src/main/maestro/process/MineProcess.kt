@@ -551,6 +551,14 @@ class MineProcess(
         return currentFilter
     }
 
+    /**
+     * Get current known ore locations for visualization.
+     * Returns immutable copy for thread safety.
+     *
+     * @return List of block positions of known ores
+     */
+    fun getKnownOreLocations(): List<BlockPos> = knownOreLocations.toList()
+
     companion object {
         private val log: Logger = MaestroLogger.get("mine")
 

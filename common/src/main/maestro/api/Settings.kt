@@ -1889,6 +1889,144 @@ class Settings {
             range(10.0, 256.0)
         }
 
+    // HIGHLIGHT RENDERING SETTINGS
+
+    /** Use filled highlight rendering for goal blocks */
+    @JvmField
+    val renderGoalHighlight =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Use filled highlight rendering for goal blocks"
+        }
+
+    /** Use top-side highlighting for path rendering */
+    @JvmField
+    val renderPathHighlight =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Use top-side highlighting for path rendering"
+        }
+
+    /** Show blocks being mined with highlighting */
+    @JvmField
+    val renderMiningBlocks =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Show blocks being mined with highlighting"
+        }
+
+    /** Color for mining block visualization */
+    @JvmField
+    val colorMiningBlocks =
+        Setting(Color.ORANGE) {
+            category = SettingCategory.RENDERING
+            description = "Color for mining block visualization"
+        }
+
+    /** Transparency for highlight rendering (0.0-1.0) */
+    @JvmField
+    val highlightAlpha =
+        Setting(0.3f) {
+            category = SettingCategory.RENDERING
+            description = "Transparency for highlight rendering (0.0-1.0)"
+            range(0.0, 1.0)
+        }
+
+    /** Use filled highlight rendering for selection boxes (blocks to break/place/walk into) */
+    @JvmField
+    val renderSelectionBoxesHighlight =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Use filled highlight rendering for selection boxes"
+        }
+
+    // PRIORITY-BASED HIGHLIGHT RENDERING
+
+    /** Enable priority-based highlight rendering with visual hierarchy */
+    @JvmField
+    val renderPriorityBasedHighlight =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Enable priority-based highlight with visual hierarchy"
+        }
+
+    /** Opacity for active mining targets (priority 0) */
+    @JvmField
+    val highlightOpacityActiveMining =
+        Setting(0.5f) {
+            category = SettingCategory.RENDERING
+            description = "Opacity for active mining targets (priority 0)"
+            range(0.0, 1.0)
+        }
+
+    /** Opacity for immediate path position (priority 1) */
+    @JvmField
+    val highlightOpacityImmediatePath =
+        Setting(0.65f) {
+            category = SettingCategory.RENDERING
+            description = "Opacity for immediate path position (priority 1)"
+            range(0.0, 1.0)
+        }
+
+    /** Opacity for current path (priority 3) */
+    @JvmField
+    val highlightOpacityCurrentPath =
+        Setting(0.25f) {
+            category = SettingCategory.RENDERING
+            description = "Opacity for current path (priority 3)"
+            range(0.0, 1.0)
+        }
+
+    /** Opacity for discovered ores (priority 5) */
+    @JvmField
+    val highlightOpacityDiscoveredOres =
+        Setting(0.1f) {
+            category = SettingCategory.RENDERING
+            description = "Opacity for discovered ores (priority 5)"
+            range(0.0, 1.0)
+        }
+
+    /** Opacity for historical path (priority 6) */
+    @JvmField
+    val highlightOpacityHistoricalPath =
+        Setting(0.25f) {
+            category = SettingCategory.RENDERING
+            description = "Opacity for historical path (priority 6)"
+            range(0.0, 1.0)
+        }
+
+    /** Use ore-specific colors (diamond=blue, gold=gold, etc.) */
+    @JvmField
+    val highlightOreSpecificColors =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Use ore-specific colors (diamond=blue, gold=gold, etc.)"
+        }
+
+    /** Show already-traversed path positions */
+    @JvmField
+    val highlightShowHistoricalPath =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Show already-traversed path positions"
+        }
+
+    /** Pulse animation for active mining targets */
+    @JvmField
+    val highlightPulseActiveMining =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Pulse animation for active mining targets"
+        }
+
+    /** Fade blocks with distance (50% at 64 blocks) */
+    @JvmField
+    val highlightDistanceFading =
+        Setting(false) {
+            category = SettingCategory.RENDERING
+            description = "Fade blocks with distance (breaks highlight grouping)"
+        }
+
     // BUILDING SETTINGS
 
     /**

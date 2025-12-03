@@ -4,10 +4,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import maestro.api.MaestroAPI;
 import maestro.api.event.events.RenderEvent;
@@ -74,97 +77,213 @@ public final class PathRenderer implements IRenderer {
             return;
         }
 
-        if (goal != null && settings.renderGoal.value) {
-            drawGoal(event.modelViewStack, ctx, goal, partialTicks, settings.colorGoalBox.value);
+        PathExecutor current = behavior.getCurrent();
+        PathExecutor next = behavior.getNext();
+
+        // Priority-based highlight rendering (unified system)
+        if (settings.renderPriorityBasedHighlight.value && settings.renderGoalHighlight.value) {
+            // Collect all necessary state
+            maestro.process.MineProcess mineProcess =
+                    (maestro.process.MineProcess) behavior.maestro.getMineProcess();
+
+            // Classify all blocks into priority tiers
+            Map<BlockPos, maestro.debug.PriorityBlock> classified =
+                    maestro.debug.BlockPriorityClassifier.INSTANCE.classifyBlocks(
+                            goal, current, mineProcess, ctx);
+
+            // Group blocks by render parameters for batching
+            Map<RenderKey, List<BlockPos>> grouped = groupByRenderKey(classified);
+
+            // Render each group
+            for (Map.Entry<RenderKey, List<BlockPos>> entry : grouped.entrySet()) {
+                RenderKey key = entry.getKey();
+                maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                        event.modelViewStack,
+                        entry.getValue(),
+                        key.color,
+                        key.sides,
+                        key.opacity,
+                        settings.renderGoalIgnoreDepth.value);
+            }
+        } else {
+            // Legacy rendering (fallback)
+            if (goal != null && settings.renderGoal.value) {
+                if (settings.renderGoalHighlight.value) {
+                    // Highlight rendering: filled transparent boxes
+                    List<BlockPos> goalPositions = extractGoalPositions(ctx, goal);
+                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                            event.modelViewStack,
+                            goalPositions,
+                            settings.colorGoalBox.value,
+                            maestro.debug.SideHighlights.Companion.all(),
+                            settings.highlightAlpha.value,
+                            settings.renderGoalIgnoreDepth.value);
+                } else {
+                    // Legacy rendering: animated line boxes
+                    drawGoal(
+                            event.modelViewStack,
+                            ctx,
+                            goal,
+                            partialTicks,
+                            settings.colorGoalBox.value);
+                }
+            }
+
+            if (!settings.renderPath.value) {
+                return;
+            }
+
+            if (current != null && settings.renderSelectionBoxes.value) {
+                if (settings.renderSelectionBoxesHighlight.value) {
+                    // Highlight rendering: filled transparent boxes
+                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                            event.modelViewStack,
+                            current.toBreak(),
+                            settings.colorBlocksToBreak.value,
+                            maestro.debug.SideHighlights.Companion.all(),
+                            settings.highlightAlpha.value,
+                            settings.renderSelectionBoxesIgnoreDepth.value);
+                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                            event.modelViewStack,
+                            current.toPlace(),
+                            settings.colorBlocksToPlace.value,
+                            maestro.debug.SideHighlights.Companion.all(),
+                            settings.highlightAlpha.value,
+                            settings.renderSelectionBoxesIgnoreDepth.value);
+                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                            event.modelViewStack,
+                            current.toWalkInto(),
+                            settings.colorBlocksToWalkInto.value,
+                            maestro.debug.SideHighlights.Companion.all(),
+                            settings.highlightAlpha.value,
+                            settings.renderSelectionBoxesIgnoreDepth.value);
+                } else {
+                    // Legacy rendering: line-based selection boxes
+                    drawManySelectionBoxes(
+                            event.modelViewStack,
+                            ctx.player(),
+                            current.toBreak(),
+                            settings.colorBlocksToBreak.value);
+                    drawManySelectionBoxes(
+                            event.modelViewStack,
+                            ctx.player(),
+                            current.toPlace(),
+                            settings.colorBlocksToPlace.value);
+                    drawManySelectionBoxes(
+                            event.modelViewStack,
+                            ctx.player(),
+                            current.toWalkInto(),
+                            settings.colorBlocksToWalkInto.value);
+                }
+            }
+
+            // Render the current path, if there is one
+            if (current != null && current.getPath() != null) {
+                if (settings.renderPathHighlight.value) {
+                    // Highlight rendering: top-side highlighting
+                    List<BlockPos> pathPositions = extractPathPositions(current);
+                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                            event.modelViewStack,
+                            pathPositions,
+                            settings.colorCurrentPath.value,
+                            maestro.debug.SideHighlights.Companion.top(),
+                            settings.highlightAlpha.value,
+                            settings.renderPathIgnoreDepth.value);
+                } else {
+                    // Legacy rendering: line-based path
+                    int renderBegin = Math.max(current.getPosition() - 3, 0);
+                    try {
+                        drawPathWithMovements(
+                                event.modelViewStack,
+                                current.getPath().positions(),
+                                current.getPath().movements(),
+                                renderBegin,
+                                settings.colorCurrentPath.value,
+                                settings.fadePath.value,
+                                10,
+                                20,
+                                current.getPosition(),
+                                0.4f);
+                    } catch (Exception e) {
+                        // Fall back to old rendering if movements access fails
+                        drawPath(
+                                event.modelViewStack,
+                                current.getPath().positions(),
+                                renderBegin,
+                                settings.colorCurrentPath.value,
+                                settings.fadePath.value,
+                                10,
+                                20,
+                                0.5D,
+                                current.getPosition(),
+                                0.4f);
+                    }
+                }
+            }
+
+            if (next != null && next.getPath() != null) {
+                if (settings.renderPathHighlight.value) {
+                    // Highlight rendering: top-side highlighting
+                    List<BlockPos> nextPathPositions = extractPathPositions(next);
+                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                            event.modelViewStack,
+                            nextPathPositions,
+                            settings.colorNextPath.value,
+                            maestro.debug.SideHighlights.Companion.top(),
+                            settings.highlightAlpha.value,
+                            settings.renderPathIgnoreDepth.value);
+                } else {
+                    // Legacy rendering: line-based path
+                    try {
+                        drawPathWithMovements(
+                                event.modelViewStack,
+                                next.getPath().positions(),
+                                next.getPath().movements(),
+                                0,
+                                settings.colorNextPath.value,
+                                settings.fadePath.value,
+                                10,
+                                20,
+                                -1,
+                                0.4f);
+                    } catch (Exception e) {
+                        // Fall back to old rendering if movements access fails
+                        drawPath(
+                                event.modelViewStack,
+                                next.getPath().positions(),
+                                0,
+                                settings.colorNextPath.value,
+                                settings.fadePath.value,
+                                10,
+                                20,
+                                0.5D,
+                                -1,
+                                0.4f);
+                    }
+                }
+            }
+
+            // Render mining blocks if enabled
+            if (settings.renderMiningBlocks.value) {
+                maestro.process.MineProcess mineProcess =
+                        (maestro.process.MineProcess) behavior.maestro.getMineProcess();
+                if (mineProcess != null) {
+                    List<BlockPos> miningBlocks = mineProcess.getKnownOreLocations();
+                    if (!miningBlocks.isEmpty()) {
+                        maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
+                                event.modelViewStack,
+                                miningBlocks,
+                                settings.colorMiningBlocks.value,
+                                maestro.debug.SideHighlights.Companion.all(),
+                                settings.highlightAlpha.value * 0.8f,
+                                false);
+                    }
+                }
+            }
         }
 
         if (!settings.renderPath.value) {
             return;
-        }
-
-        PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
-        PathExecutor next =
-                behavior.getNext(); // like, now it's not possible for current!=null to be true,
-        // then suddenly false because of another thread
-        if (current != null && settings.renderSelectionBoxes.value) {
-            drawManySelectionBoxes(
-                    event.modelViewStack,
-                    ctx.player(),
-                    current.toBreak(),
-                    settings.colorBlocksToBreak.value);
-            drawManySelectionBoxes(
-                    event.modelViewStack,
-                    ctx.player(),
-                    current.toPlace(),
-                    settings.colorBlocksToPlace.value);
-            drawManySelectionBoxes(
-                    event.modelViewStack,
-                    ctx.player(),
-                    current.toWalkInto(),
-                    settings.colorBlocksToWalkInto.value);
-        }
-
-        // drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()),
-        // partialTicks, Color.WHITE);
-
-        // Render the current path, if there is one
-        if (current != null && current.getPath() != null) {
-            int renderBegin = Math.max(current.getPosition() - 3, 0);
-            try {
-                drawPathWithMovements(
-                        event.modelViewStack,
-                        current.getPath().positions(),
-                        current.getPath().movements(),
-                        renderBegin,
-                        settings.colorCurrentPath.value,
-                        settings.fadePath.value,
-                        10,
-                        20,
-                        current.getPosition(),
-                        0.4f);
-            } catch (Exception e) {
-                // Fall back to old rendering if movements access fails
-                drawPath(
-                        event.modelViewStack,
-                        current.getPath().positions(),
-                        renderBegin,
-                        settings.colorCurrentPath.value,
-                        settings.fadePath.value,
-                        10,
-                        20,
-                        0.5D,
-                        current.getPosition(),
-                        0.4f);
-            }
-        }
-
-        if (next != null && next.getPath() != null) {
-            try {
-                drawPathWithMovements(
-                        event.modelViewStack,
-                        next.getPath().positions(),
-                        next.getPath().movements(),
-                        0,
-                        settings.colorNextPath.value,
-                        settings.fadePath.value,
-                        10,
-                        20,
-                        -1,
-                        0.4f);
-            } catch (Exception e) {
-                // Fall back to old rendering if movements access fails
-                drawPath(
-                        event.modelViewStack,
-                        next.getPath().positions(),
-                        0,
-                        settings.colorNextPath.value,
-                        settings.fadePath.value,
-                        10,
-                        20,
-                        0.5D,
-                        -1,
-                        0.4f);
-            }
         }
 
         // If there is a path calculation currently running, render the path calculation process
@@ -1015,5 +1134,81 @@ public final class PathRenderer implements IRenderer {
                 rightX - vpX,
                 rightY - vpY,
                 rightZ - vpZ);
+    }
+
+    /**
+     * Extract block positions from a goal for highlight rendering.
+     *
+     * @param ctx Player context
+     * @param goal The goal to extract positions from
+     * @return List of block positions to render
+     */
+    private static List<BlockPos> extractGoalPositions(IPlayerContext ctx, Goal goal) {
+        if (goal instanceof IGoalRenderPos) {
+            BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
+            return Collections.singletonList(goalPos);
+        }
+        // Fallback for other goal types
+        return Collections.emptyList();
+    }
+
+    /**
+     * Extract block positions from a path executor for highlight rendering.
+     *
+     * @param executor The path executor
+     * @return List of block positions in the path (ground blocks, not player feet)
+     */
+    private static List<BlockPos> extractPathPositions(PathExecutor executor) {
+        return executor.getPath().positions().stream()
+                .map(PackedBlockPos::toBlockPos)
+                .map(BlockPos::below) // Move down by 1 to get ground block
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Group priority blocks by their render parameters for batching.
+     *
+     * @param classified Map of classified priority blocks
+     * @return Map of render keys to lists of block positions
+     */
+    private static Map<RenderKey, List<BlockPos>> groupByRenderKey(
+            Map<BlockPos, maestro.debug.PriorityBlock> classified) {
+        Map<RenderKey, List<BlockPos>> grouped = new HashMap<>();
+        for (Map.Entry<BlockPos, maestro.debug.PriorityBlock> entry : classified.entrySet()) {
+            maestro.debug.PriorityBlock pb = entry.getValue();
+            RenderKey key = new RenderKey(pb.getColor(), pb.getOpacity(), pb.getSides());
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(entry.getKey());
+        }
+        return grouped;
+    }
+
+    /**
+     * Helper class for grouping blocks by render parameters. Allows batching of blocks with same
+     * color, opacity, and sides.
+     */
+    private static class RenderKey {
+        final Color color;
+        final float opacity;
+        final maestro.debug.SideHighlights sides;
+
+        RenderKey(Color c, float o, maestro.debug.SideHighlights s) {
+            this.color = c;
+            this.opacity = o;
+            this.sides = s;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof RenderKey)) return false;
+            RenderKey r = (RenderKey) o;
+            return color.equals(r.color)
+                    && Math.abs(opacity - r.opacity) < 0.001f
+                    && sides.equals(r.sides);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(color, Float.floatToIntBits(opacity), sides);
+        }
     }
 }
