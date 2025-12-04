@@ -11,10 +11,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Prevents block breaking and entity attacking when freecam is active and bot keys are enabled.
- * Freecam input handling uses left-click for teleportation, so we need to prevent vanilla
- * attack/break logic from executing on the same click. When screens are open (inventory, etc.),
- * vanilla click handling is allowed to enable normal GUI interaction.
+ * Prevents block breaking, entity attacking, and item use when freecam is active and bot keys are
+ * enabled. Freecam input handling uses left-click for teleportation and right-click for
+ * pathfinding, so we need to prevent vanilla attack/break/use logic from executing on the same
+ * click. When screens are open (inventory, etc.), vanilla click handling is allowed to enable
+ * normal GUI interaction.
  */
 @Mixin(Minecraft.class)
 public class MixinMinecraftAttack {
@@ -31,6 +32,16 @@ public class MixinMinecraftAttack {
 
     @Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
     private void maestro$preventContinueAttackDuringFreecam(CallbackInfo ci) {
+        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        if (agent != null
+                && agent.isFreecamActive()
+                && InputOverrideHandler.Companion.canUseBotKeys()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
+    private void maestro$preventUseItemDuringFreecam(CallbackInfo ci) {
         Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
         if (agent != null
                 && agent.isFreecamActive()
