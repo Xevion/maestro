@@ -8,15 +8,16 @@ import maestro.api.pathing.goals.GoalGetToBlock
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
 import maestro.utils.InputOverrideHandler
+import maestro.utils.clampLength
+import maestro.utils.forward
+import maestro.utils.strafe
+import maestro.utils.vertical
 import net.minecraft.Util
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import org.lwjgl.glfw.GLFW
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 /**
  * Handles freecam movement input and position updates. When freecam is active, this behavior
@@ -26,18 +27,21 @@ import kotlin.math.sqrt
 class FreecamBehavior(
     maestro: Agent,
 ) : Behavior(maestro) {
-    // Trig cache to avoid recalculating sin/cos every tick
-    private var cachedYaw = Float.NaN
-    private var cachedPitch = Float.NaN
-    private var sinYaw = 0.0
-    private var cosYaw = 0.0
-    private var sinPitch = 0.0
-    private var cosPitch = 0.0
+    companion object {
+        private const val MOVEMENT_VELOCITY_PER_SECOND = 22.0
+        private const val SPRINT_MULTIPLIER = 2.0
+        private const val PATHFIND_HOLD_DURATION_MS = 350L
 
-    // Real-time tracking for tickrate-independent movement
+        // Acceleration easing; seconds to reach max speed
+        private const val ACCELERATION_TIME = 0.12
+
+        // Deceleration easing; seconds to stop
+        private const val DECELERATION_TIME = 0.10
+    }
+
     private var lastUpdateTimeMs = 0L
+    private var currentVelocity = Vec3.ZERO // Smoothed velocity for easing
 
-    // Click tracking for teleport and pathfinding
     private var wasLeftClickPressed = false
     private var wasRightClickPressed = false
     private var rightClickStartTimeMs = 0L
@@ -57,7 +61,7 @@ class FreecamBehavior(
             return
         }
 
-        // Handle input every frame for instant response regardless of tickrate
+        // Handle input every frame for instant response regardless of tick-rate
         updateFreecamPosition()
         handleFreecamInput()
     }
@@ -69,12 +73,51 @@ class FreecamBehavior(
     }
 
     private fun updateFreecamPosition() {
-        // Don't process freecam movement when screens are open
-        if (!InputOverrideHandler.canUseBotKeys()) {
-            return
+        val input = readInputState()
+        val deltaTimeSeconds = calculateDeltaTime()
+        val targetMovement = calculateMovement(input, deltaTimeSeconds)
+
+        // Apply easing to velocity
+        currentVelocity = applyEasing(currentVelocity, targetMovement, deltaTimeSeconds)
+
+        when (maestro.freecamMode) {
+            FreecamMode.FOLLOW -> {
+                val currentOffset = maestro.freecamFollowOffset ?: Vec3.ZERO
+                maestro.setFreecamFollowOffset(currentOffset.add(currentVelocity))
+            }
+            else -> {
+                maestro.freecamPosition?.let { currentPos ->
+                    maestro.setFreecamPosition(currentPos.add(currentVelocity))
+                }
+            }
+        }
+    }
+
+    private fun applyEasing(
+        current: Vec3,
+        target: Vec3,
+        deltaTime: Double,
+    ): Vec3 {
+        // If target is zero (no input), decelerate quickly
+        if (target.lengthSqr() < 0.001) {
+            val decelerationRate = 1.0 / DECELERATION_TIME
+            val decelerationFactor = (decelerationRate * deltaTime).coerceAtMost(1.0)
+            return current.scale(1.0 - decelerationFactor)
         }
 
-        // Calculate real-time delta for tickrate-independent movement
+        // Accelerate toward target velocity
+        val accelerationRate = 1.0 / ACCELERATION_TIME
+        val accelerationFactor = (accelerationRate * deltaTime).coerceAtMost(1.0)
+
+        // Lerp between current and target
+        return Vec3(
+            current.x + (target.x - current.x) * accelerationFactor,
+            current.y + (target.y - current.y) * accelerationFactor,
+            current.z + (target.z - current.z) * accelerationFactor,
+        )
+    }
+
+    private fun calculateDeltaTime(): Double {
         val currentTimeMs = Util.getMillis()
         val deltaTimeSeconds =
             if (lastUpdateTimeMs == 0L) {
@@ -83,132 +126,102 @@ class FreecamBehavior(
                 (currentTimeMs - lastUpdateTimeMs) / 1000.0
             }
         lastUpdateTimeMs = currentTimeMs
+        return deltaTimeSeconds
+    }
+
+    private data class InputState(
+        val forward: Boolean,
+        val back: Boolean,
+        val left: Boolean,
+        val right: Boolean,
+        val up: Boolean,
+        val down: Boolean,
+        val sprint: Boolean,
+    )
+
+    private fun readInputState(): InputState {
+        if (!InputOverrideHandler.canUseBotKeys()) {
+            return InputState(
+                forward = false,
+                back = false,
+                left = false,
+                right = false,
+                up = false,
+                down = false,
+                sprint = false,
+            )
+        }
 
         val window = ctx.minecraft().window.window
-
-        // Read WASD/Space/Shift keys
-        val forward = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_W) == GLFW.GLFW_PRESS
-        val back = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_S) == GLFW.GLFW_PRESS
-        val left = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_A) == GLFW.GLFW_PRESS
-        val right = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_D) == GLFW.GLFW_PRESS
-        val up = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_SPACE) == GLFW.GLFW_PRESS
-        val down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
-
-        val movement =
-            calculateMovement(forward, back, left, right, up, down, isSprintKeyPressed(), deltaTimeSeconds)
-
-        // In FOLLOW mode, update offset; in STATIC mode, update position
-        if (maestro.freecamMode == FreecamMode.FOLLOW) {
-            val currentOffset = maestro.freecamFollowOffset ?: Vec3.ZERO
-            maestro.setFreecamFollowOffset(currentOffset.add(movement))
-        } else {
-            val currentPos = maestro.freecamPosition ?: return
-            maestro.setFreecamPosition(currentPos.add(movement))
-        }
+        return InputState(
+            forward = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_W) == GLFW.GLFW_PRESS,
+            back = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_S) == GLFW.GLFW_PRESS,
+            left = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_A) == GLFW.GLFW_PRESS,
+            right = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_D) == GLFW.GLFW_PRESS,
+            up = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_SPACE) == GLFW.GLFW_PRESS,
+            down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS,
+            sprint =
+                ctx
+                    .minecraft()
+                    .options.keySprint.isDown,
+        )
     }
 
-    private fun isSprintKeyPressed(): Boolean =
-        ctx
-            .minecraft()
-            .options.keySprint.isDown
-
-    private fun updateTrigCache() {
-        val currentYaw = maestro.freeLookYaw
-        val currentPitch = maestro.freeLookPitch
-
-        // Only recalculate if camera rotated
-        if (currentYaw != cachedYaw || currentPitch != cachedPitch) {
-            val yawRad = currentYaw.toDouble() * DEG_TO_RAD
-            val pitchRad = currentPitch.toDouble() * DEG_TO_RAD
-
-            sinYaw = sin(yawRad)
-            cosYaw = cos(yawRad)
-            sinPitch = sin(pitchRad)
-            cosPitch = cos(pitchRad)
-
-            cachedYaw = currentYaw
-            cachedPitch = currentPitch
-        }
-    }
-
-    private fun calculateMovement(
-        forward: Boolean,
-        back: Boolean,
-        left: Boolean,
-        right: Boolean,
-        up: Boolean,
-        down: Boolean,
+    private fun calculateEffectiveSpeed(
         sprint: Boolean,
         deltaTimeSeconds: Double,
+    ): Double = MOVEMENT_VELOCITY_PER_SECOND * (if (sprint) SPRINT_MULTIPLIER else 1.0) * deltaTimeSeconds
+
+    private fun calculateMovement(
+        input: InputState,
+        deltaTimeSeconds: Double,
     ): Vec3 {
-        updateTrigCache()
+        val speed = calculateEffectiveSpeed(input.sprint, deltaTimeSeconds)
+        val yaw = maestro.freeLookYaw
+        val pitch = maestro.freeLookPitch
 
-        var moveX = 0.0
-        var moveY = 0.0
-        var moveZ = 0.0
+        var movement = Vec3.ZERO
 
-        // Calculate effective speed: blocks/second (independent of tickrate)
-        val speedMultiplier = if (sprint) SPRINT_MULTIPLIER else 1.0
-        val velocityPerSecond = MOVEMENT_VELOCITY_PER_SECOND * speedMultiplier
-        val effectiveSpeed = velocityPerSecond * deltaTimeSeconds
+        if (input.forward) movement = movement.forward(yaw, pitch, speed)
+        if (input.back) movement = movement.forward(yaw, pitch, -speed)
+        if (input.left) movement = movement.strafe(yaw, -speed)
+        if (input.right) movement = movement.strafe(yaw, speed)
 
-        // Forward/back relative to camera pitch and yaw (3D movement)
-        if (forward) {
-            moveX -= sinYaw * cosPitch * effectiveSpeed
-            moveY -= sinPitch * effectiveSpeed // Vertical component
-            moveZ += cosYaw * cosPitch * effectiveSpeed
-        }
-        if (back) {
-            moveX += sinYaw * cosPitch * effectiveSpeed
-            moveY += sinPitch * effectiveSpeed // Opposite vertical
-            moveZ -= cosYaw * cosPitch * effectiveSpeed
-        }
+        movement =
+            when {
+                input.up -> movement.vertical(speed)
+                input.down -> movement.vertical(-speed)
+                else -> movement
+            }
 
-        // Left/right relative to camera yaw (perpendicular to forward, horizontal only)
-        if (left) {
-            moveX += cosYaw * effectiveSpeed
-            moveZ += sinYaw * effectiveSpeed
-        }
-        if (right) {
-            moveX -= cosYaw * effectiveSpeed
-            moveZ -= sinYaw * effectiveSpeed
+        return movement.clampLength(speed)
+    }
+
+    private data class MouseState(
+        val leftClick: Boolean,
+        val rightClick: Boolean,
+    )
+
+    private fun readMouseState(): MouseState {
+        if (!InputOverrideHandler.canUseBotKeys()) {
+            return MouseState(leftClick = false, rightClick = false)
         }
 
-        // Up/down in world space (overrides pitch-based vertical)
-        if (up) {
-            moveY = effectiveSpeed // Override
-        } else if (down) {
-            moveY = -effectiveSpeed // Override
-        }
-
-        // Normalize 3D movement vector to prevent faster movement
-        val totalLength = sqrt(moveX * moveX + moveY * moveY + moveZ * moveZ)
-        if (totalLength > effectiveSpeed + 0.001) { // Epsilon for float precision
-            val normalized = effectiveSpeed / totalLength
-            moveX *= normalized
-            moveY *= normalized
-            moveZ *= normalized
-        }
-
-        return Vec3(moveX, moveY, moveZ)
+        val window = ctx.minecraft().window.window
+        return MouseState(
+            leftClick = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS,
+            rightClick = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS,
+        )
     }
 
     private fun handleFreecamInput() {
-        if (!InputOverrideHandler.canUseBotKeys()) return
+        val mouse = readMouseState()
 
-        val window = ctx.minecraft().window.window
-        val leftClick =
-            GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS
-        val rightClick =
-            GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS
-
-        // Left click: Teleport camera
-        if (leftClick && !wasLeftClickPressed) {
+        if (mouse.leftClick && !wasLeftClickPressed) {
             handleTeleport()
         }
 
-        // Right click hold: Pathfinding (real-time based)
-        if (rightClick) {
+        if (mouse.rightClick) {
             if (rightClickStartTimeMs == 0L) {
                 rightClickStartTimeMs = Util.getMillis()
             }
@@ -223,117 +236,72 @@ class FreecamBehavior(
             rightClickPathQueued = false
         }
 
-        wasLeftClickPressed = leftClick
-        wasRightClickPressed = rightClick
+        wasLeftClickPressed = mouse.leftClick
+        wasRightClickPressed = mouse.rightClick
     }
 
-    private fun handleTeleport() {
-        val player = ctx.player()
+    private fun getCurrentFreecamPosition(): Vec3? =
+        when (maestro.freecamMode) {
+            FreecamMode.FOLLOW ->
+                maestro.freecamFollowOffset?.let { offset ->
+                    ctx.player().position().add(offset)
+                }
+            else -> maestro.freecamPosition
+        }
+
+    private fun raycastFromFreecam(distance: Double): HitResult? {
+        val start = getCurrentFreecamPosition() ?: return null
         val rotation = Rotation(maestro.freeLookYaw, maestro.freeLookPitch)
-        val distance = Agent.settings().freecamTeleportDistance.value
-
-        // Get current camera position based on mode
-        val freecamPos =
-            if (maestro.freecamMode == FreecamMode.FOLLOW && maestro.freecamFollowOffset != null) {
-                Vec3(player.getX(), player.getY(), player.getZ()).add(maestro.freecamFollowOffset)
-            } else {
-                maestro.freecamPosition ?: return
-            }
-
-        // Calculate ray direction
         val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
-        val start = Vec3(freecamPos.x, freecamPos.y, freecamPos.z)
-        val end =
-            start.add(
-                direction.x * distance,
-                direction.y * distance,
-                direction.z * distance,
-            )
+        val end = start.add(direction.scale(distance))
 
-        // Raycast to find target
-        val hitResult =
-            ctx
-                .world()
-                .clip(
-                    ClipContext(
-                        start,
-                        end,
-                        ClipContext.Block.OUTLINE,
-                        ClipContext.Fluid.NONE,
-                        player,
-                    ),
-                )
+        return ctx.world().clip(
+            ClipContext(
+                start,
+                end,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.NONE,
+                ctx.player(),
+            ),
+        )
+    }
 
-        // Teleport to hit location or max distance
-        val targetPos =
-            if (hitResult.type == HitResult.Type.BLOCK) {
-                hitResult.location
-            } else {
-                end
+    private fun updateFreecamTarget(targetPos: Vec3) {
+        when (maestro.freecamMode) {
+            FreecamMode.FOLLOW -> {
+                val playerPos = ctx.player().position()
+                maestro.setFreecamFollowOffset(targetPos.subtract(playerPos))
             }
-
-        // Update offset in FOLLOW mode, position in STATIC mode
-        if (maestro.freecamMode == FreecamMode.FOLLOW) {
-            val playerPos = Vec3(player.getX(), player.getY(), player.getZ())
-            maestro.setFreecamFollowOffset(targetPos.subtract(playerPos))
-        } else {
-            maestro.setFreecamPosition(targetPos)
+            else -> maestro.setFreecamPosition(targetPos)
         }
     }
 
-    private fun handlePathfinding() {
-        val player = ctx.player()
-        val rotation = Rotation(maestro.freeLookYaw, maestro.freeLookPitch)
-        val distance = Agent.settings().freecamPathfindDistance.value
+    private fun handleTeleport() {
+        val distance = Agent.settings().freecamTeleportDistance.value
+        val hitResult = raycastFromFreecam(distance) ?: return
 
-        // Get current camera position based on mode
-        val freecamPos =
-            if (maestro.freecamMode == FreecamMode.FOLLOW && maestro.freecamFollowOffset != null) {
-                Vec3(player.getX(), player.getY(), player.getZ()).add(maestro.freecamFollowOffset)
-            } else {
-                maestro.freecamPosition ?: return
+        val targetPos =
+            when (hitResult.type) {
+                HitResult.Type.BLOCK -> hitResult.location
+                else -> {
+                    val start = getCurrentFreecamPosition() ?: return
+                    val rotation = Rotation(maestro.freeLookYaw, maestro.freeLookPitch)
+                    val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
+                    start.add(direction.scale(distance))
+                }
             }
 
-        // Calculate ray direction
-        val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
-        val start = Vec3(freecamPos.x, freecamPos.y, freecamPos.z)
-        val end =
-            start.add(
-                direction.x * distance,
-                direction.y * distance,
-                direction.z * distance,
-            )
+        updateFreecamTarget(targetPos)
+    }
 
-        // Raycast to find target block
-        val hitResult =
-            ctx
-                .world()
-                .clip(
-                    ClipContext(
-                        start,
-                        end,
-                        ClipContext.Block.OUTLINE,
-                        ClipContext.Fluid.NONE,
-                        player,
-                    ),
-                )
+    private fun handlePathfinding() {
+        val distance = Agent.settings().freecamPathfindDistance.value
+        val hitResult = raycastFromFreecam(distance) ?: return
 
-        // Set pathfinding goal if we hit a block
         if (hitResult.type == HitResult.Type.BLOCK) {
             val targetBlock = (hitResult as BlockHitResult).blockPos
             val goal = GoalGetToBlock(targetBlock)
             maestro.customGoalProcess.setGoalAndPath(goal)
         }
-    }
-
-    companion object {
-        // Movement velocity in blocks per second (0.85 blocks/tick * 20 ticks/second = 17 blocks/second)
-        private const val MOVEMENT_VELOCITY_PER_SECOND = 17.0
-
-        private const val SPRINT_MULTIPLIER = 2.0
-        private const val DEG_TO_RAD = Math.PI / 180.0
-
-        // Pathfinding hold duration: 350ms (70% of original 500ms = 10 ticks at 20 TPS)
-        private const val PATHFIND_HOLD_DURATION_MS = 350L
     }
 }
