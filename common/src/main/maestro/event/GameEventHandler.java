@@ -8,7 +8,6 @@ import maestro.api.event.events.type.EventState;
 import maestro.api.event.listener.IEventBus;
 import maestro.api.event.listener.IGameEventListener;
 import maestro.api.utils.MaestroLogger;
-import maestro.api.utils.Pair;
 import maestro.cache.CachedChunk;
 import maestro.cache.WorldProvider;
 import maestro.utils.BlockStateInterface;
@@ -141,7 +140,7 @@ public final class GameEventHandler implements IEventBus {
         if (Agent.settings().repackOnAnyBlockChange.value) {
             final boolean keepingTrackOf =
                     event.blocks.stream()
-                            .map(Pair::second)
+                            .map(pair -> pair.component2())
                             .map(BlockState::getBlock)
                             .anyMatch(CachedChunk.BLOCKS_TO_KEEP_TRACK_OF::contains);
 

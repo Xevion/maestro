@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import maestro.api.utils.MaestroLogger;
 import maestro.utils.schematic.StaticSchematic;
-import maestro.utils.type.VarInt;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -60,9 +59,23 @@ public final class SpongeSchematic extends StaticSchematic {
                         "No remaining bytes in BlockData for complete schematic");
             }
 
-            VarInt varInt = VarInt.read(rawBlockData, offset);
-            blockData[i] = varInt.getValue();
-            offset += varInt.getSize();
+            // Decode VarInt manually (protocol buffer style encoding)
+            int value = 0;
+            int size = 0;
+            while (true) {
+                byte b = rawBlockData[offset++];
+                value |= (b & 0x7F) << (size++ * 7);
+
+                if (size > 5) {
+                    throw new IllegalArgumentException("VarInt size exceeds 5 bytes");
+                }
+
+                // Most significant bit indicates another byte follows
+                if ((b & 0x80) == 0) {
+                    break;
+                }
+            }
+            blockData[i] = value;
         }
 
         for (int y = 0; y < this.y; y++) {

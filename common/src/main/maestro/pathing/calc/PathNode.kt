@@ -4,7 +4,6 @@ import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.IMovement
 import maestro.api.utils.SettingsUtil
-import maestro.api.utils.pack
 
 /** A node in the path, containing the cost and steps to get to it. */
 class PathNode(
@@ -57,24 +56,23 @@ class PathNode(
     fun isOpen(): Boolean = heapPosition != -1
 
     /**
-     * TODO: Possibly reimplement hashCode and equals. They are necessary for this class to function
-     * but they could be done better
+     * PathNode equality is based solely on position (x, y, z).
+     * This is used by pathfinding algorithms to identify unique nodes.
      *
-     * @return The hash code value for this [PathNode]
+     * Note: PathNode is stored in Long2ObjectOpenHashMap keyed by packed position,
+     * so this hashCode/equals is only used if PathNode is placed in standard collections.
      */
-    override fun hashCode(): Int = pack(x, y, z).packed.toInt()
+    override fun hashCode(): Int {
+        var result = x
+        result = 31 * result + y
+        result = 31 * result + z
+        return result
+    }
 
     override fun equals(other: Any?): Boolean {
-        // GOTTA GO FAST
-        // ALL THESE CHECKS ARE FOR PEOPLE WHO WANT SLOW CODE
-        // SKRT SKRT
-        // if (obj == null || !(obj instanceof PathNode)) {
-        //    return false;
-        // }
+        if (this === other) return true
+        if (other !is PathNode) return false
 
-        val otherNode = other as PathNode
-        // return Objects.equals(this.pos, other.pos) && Objects.equals(this.goal, other.goal);
-
-        return x == otherNode.x && y == otherNode.y && z == otherNode.z
+        return x == other.x && y == other.y && z == other.z
     }
 }
