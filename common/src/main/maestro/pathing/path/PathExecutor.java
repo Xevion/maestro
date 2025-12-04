@@ -865,22 +865,20 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private void clearKeys() {
-        // Don't clear keys during swimming transitions - preserve swimming inputs
-        Agent agent = behavior.maestro;
-        if (agent.getSwimmingBehavior().shouldActivateSwimming()) {
-            return; // Keep swimming inputs active across movement transitions
-        }
-        behavior.maestro.getInputOverrideHandler().clearAllKeys();
+        // Clear only movement keys (WASD, JUMP, SNEAK) owned by movements
+        // Preserve interaction keys (CLICK_LEFT/RIGHT) owned by processes
+        // Sprint is managed directly by SwimmingBehavior, not via inputs
+        behavior.maestro.getInputOverrideHandler().clearMovementKeys();
     }
 
     private void stopMovement() {
-        // Deactivate swimming mode if active, then clear all inputs
+        // Deactivate swimming mode if active, then clear movement inputs
         // Used when path execution stops (pause, cancel, goal reached, etc.)
         Agent agent = behavior.maestro;
-        if (agent.getSwimmingBehavior().shouldActivateSwimming()) {
+        if (agent.isSwimmingActive()) {
             agent.getSwimmingBehavior().deactivateSwimming();
         }
-        behavior.maestro.getInputOverrideHandler().clearAllKeys();
+        behavior.maestro.getInputOverrideHandler().clearMovementKeys();
     }
 
     /**

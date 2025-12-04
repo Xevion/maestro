@@ -110,7 +110,7 @@ public class MovementFall extends Movement {
 
                 if (ctx.isLookingAt(dest.toBlockPos())
                         || ctx.isLookingAt(dest.below().toBlockPos())) {
-                    state.setInput(Input.CLICK_RIGHT, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
             }
         }
@@ -129,10 +129,10 @@ public class MovementFall extends Movement {
                     ctx.player().getInventory().selected =
                             ctx.player().getInventory().findSlotMatchingItem(STACK_BUCKET_EMPTY);
                     if (ctx.player().getDeltaMovement().y >= 0) {
-                        return state.setInput(Input.CLICK_RIGHT, true);
-                    } else {
-                        return state;
+                        maestro.getInputOverrideHandler()
+                                .setInputForceState(Input.CLICK_RIGHT, true);
                     }
+                    return state;
                 } else {
                     if (ctx.player().getDeltaMovement().y >= 0) {
                         return state.setStatus(MovementStatus.SUCCESS);
@@ -156,9 +156,9 @@ public class MovementFall extends Movement {
                                         - destCenter.z)
                         > 0.1) {
             if (!ctx.player().onGround() && Math.abs(ctx.player().getDeltaMovement().y) > 0.4) {
-                state.setInput(Input.SNEAK, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
-            state.setInput(Input.MOVE_FORWARD, true);
+            maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
         }
         Direction avoidDir = avoid();
         Vec3i avoid;
@@ -182,9 +182,9 @@ public class MovementFall extends Movement {
                                                     - avoid.getZ() / 2.0
                                                     - ctx.player().position().z));
             if (dist < 0.6) {
-                state.setInput(Input.MOVE_FORWARD, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
             } else if (!ctx.player().onGround()) {
-                state.setInput(Input.SNEAK, false);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
             }
         }
         if (targetRotation == null) {

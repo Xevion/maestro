@@ -152,7 +152,8 @@ class PathingBehavior(
         if (pauseRequestedLastTick && safeToCancel) {
             pauseRequestedLastTick = false
             if (unpausedLastTick) {
-                maestro.inputOverrideHandler.clearAllKeys()
+                // Clear only movement keys - let processes manage interaction keys
+                maestro.inputOverrideHandler.clearMovementKeys()
                 maestro.inputOverrideHandler.blockBreakManager.stop()
                 // Deactivate swimming mode when pausing
                 (maestro as Agent).swimmingBehavior.deactivateSwimming()
@@ -164,7 +165,9 @@ class PathingBehavior(
         unpausedLastTick = true
         if (cancelRequested) {
             cancelRequested = false
-            maestro.inputOverrideHandler.clearAllKeys()
+            // Clear only movement keys - preserve interaction keys (CLICK_LEFT/RIGHT)
+            // This prevents mining interruption during path revalidation
+            maestro.inputOverrideHandler.clearMovementKeys()
         }
         synchronized(pathPlanLock) {
             synchronized(pathCalcLock) {

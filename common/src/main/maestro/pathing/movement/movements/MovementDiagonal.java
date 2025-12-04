@@ -330,12 +330,36 @@ public class MovementDiagonal extends Movement {
         if (dest.getY() > src.getY()
                 && ctx.player().position().y < src.getY() + 0.1
                 && ctx.player().horizontalCollision) {
-            state.setInput(Input.JUMP, true);
+            maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
         }
         if (sprint()) {
-            state.setInput(Input.SPRINT, true);
+            maestro.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
         }
-        MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
+
+        // Check if there are still blocks to break (6 positions: dir1, dir1.above, dir2,
+        // dir2.above, end, end.above)
+        boolean blocksRemaining = false;
+        for (PackedBlockPos pos : positionsToBreak) {
+            if (!MovementHelper.canWalkThrough(ctx, pos)) {
+                blocksRemaining = true;
+                break;
+            }
+        }
+
+        // Don't walk into the block if already close enough and blocks still exist
+        double distToTarget =
+                Math.max(
+                        Math.abs(ctx.player().position().x - (dest.getX() + 0.5D)),
+                        Math.abs(ctx.player().position().z - (dest.getZ() + 0.5D)));
+
+        if (blocksRemaining && distToTarget < 0.83) {
+            // Already close and blocks still exist - stop moving to prevent drift
+            maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
+        } else {
+            // Keep moving toward target until we reach destination
+            MovementHelper.moveTowards(ctx, state, dest.toBlockPos(), maestro);
+        }
+
         return state;
     }
 

@@ -264,7 +264,8 @@ public class MovementSwimVertical extends Movement {
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
                     if (ctx.isLookingAt(blockPosConverted)
                             || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
-                        state.setInput(Input.CLICK_LEFT, true);
+                        maestro.getInputOverrideHandler()
+                                .setInputForceState(Input.CLICK_LEFT, true);
                     }
                     return false;
                 }
@@ -276,7 +277,7 @@ public class MovementSwimVertical extends Movement {
                                         VecUtils.getBlockPosCenter(blockPosConverted),
                                         ctx.playerRotations()),
                                 true));
-                state.setInput(Input.CLICK_LEFT, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                 return false;
             }
         }

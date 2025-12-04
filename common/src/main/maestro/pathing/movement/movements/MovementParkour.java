@@ -282,9 +282,9 @@ public class MovementParkour extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (dist >= 4 || ascend) {
-            state.setInput(Input.SPRINT, true);
+            maestro.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
         }
-        MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
+        MovementHelper.moveTowards(ctx, state, dest.toBlockPos(), maestro);
         if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
             Block d = BlockStateInterface.getBlock(ctx, dest.toBlockPos());
             if (d == Blocks.VINE || d == Blocks.LADDER) {
@@ -308,7 +308,7 @@ public class MovementParkour extends Movement {
                     // go in the opposite order to check DOWN before all horizontals -- down is
                     // preferable because you don't have to look to the side while in midair, which
                     // could mess up the trajectory
-                    state.setInput(Input.CLICK_RIGHT, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
                 // prevent jumping too late by checking for ascend
                 if (dist == 3 && !ascend) { // this is a 2 block gap, dest = src + direction * 3
@@ -320,18 +320,18 @@ public class MovementParkour extends Movement {
                     }
                 }
 
-                state.setInput(Input.JUMP, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             } else if (!ctx.playerFeet()
                     .toBlockPos()
                     .equals(dest.relative(direction, -1).toBlockPos())) {
-                state.setInput(Input.SPRINT, false);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
                 if (ctx.playerFeet()
                         .toBlockPos()
                         .equals(src.relative(direction, -1).toBlockPos())) {
-                    MovementHelper.moveTowards(ctx, state, src.toBlockPos());
+                    MovementHelper.moveTowards(ctx, state, src.toBlockPos(), maestro);
                 } else {
                     MovementHelper.moveTowards(
-                            ctx, state, src.relative(direction, -1).toBlockPos());
+                            ctx, state, src.relative(direction, -1).toBlockPos(), maestro);
                 }
             }
         }

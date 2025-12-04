@@ -205,19 +205,39 @@ public class MovementAscend extends Movement {
             if (MovementHelper.attemptToPlaceABlock(
                             state, maestro, dest.below().toBlockPos(), false, true)
                     == PlaceResult.READY_TO_PLACE) {
-                state.setInput(Input.SNEAK, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
                 if (ctx.player().isCrouching()) {
-                    state.setInput(Input.CLICK_RIGHT, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
             }
             if (ticksWithoutPlacement > 10) {
                 // After 10 ticks without placement, we might be standing in the way, move back
-                state.setInput(Input.MOVE_BACK, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_BACK, true);
             }
 
             return state;
         }
-        MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
+
+        // Check if there are still blocks to break (dest, src.above(2), dest.above())
+        boolean blocksRemaining =
+                !MovementHelper.canWalkThrough(ctx, positionsToBreak[0])
+                        || !MovementHelper.canWalkThrough(ctx, positionsToBreak[1])
+                        || !MovementHelper.canWalkThrough(ctx, positionsToBreak[2]);
+
+        // Don't walk into the block if already close enough and blocks still exist
+        double distToTarget =
+                Math.max(
+                        Math.abs(ctx.player().position().x - (dest.getX() + 0.5D)),
+                        Math.abs(ctx.player().position().z - (dest.getZ() + 0.5D)));
+
+        if (blocksRemaining && distToTarget < 0.83) {
+            // Already close and blocks still exist - stop moving to prevent drift
+            maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
+        } else {
+            // Keep moving toward target until we reach destination
+            MovementHelper.moveTowards(ctx, state, dest.toBlockPos(), maestro);
+        }
+
         if (MovementHelper.isBottomSlab(jumpingOnto)
                 && !MovementHelper.isBottomSlab(
                         BlockStateInterface.get(ctx, src.below().toBlockPos()))) {
@@ -247,7 +267,8 @@ public class MovementAscend extends Movement {
         }
 
         if (headBonkClear()) {
-            return state.setInput(Input.JUMP, true);
+            maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+            return state;
         }
 
         if (flatDistToNext > 1.2 || sideDist > 0.2) {
@@ -259,7 +280,8 @@ public class MovementAscend extends Movement {
         // and fall down without moving onto the block we want to jump onto
         // Also wait until we are close enough, because we might jump and hit our head on an
         // adjacent block
-        return state.setInput(Input.JUMP, true);
+        maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+        return state;
     }
 
     public boolean headBonkClear() {

@@ -506,7 +506,8 @@ class BuilderProcess(
         } else {
             ticks--
         }
-        maestro.inputOverrideHandler.clearAllKeys()
+        // Don't clear all keys - preserve CLICK_LEFT/RIGHT across path revalidation
+        // Interaction keys are managed explicitly based on building state
         if (paused) {
             return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
         }
@@ -1033,6 +1034,8 @@ class BuilderProcess(
     }
 
     override fun onLostControl() {
+        // Clear interaction keys when losing control
+        maestro.inputOverrideHandler.clearInteractionKeys()
         incorrectPositions = null
         name = null
         schematic = null

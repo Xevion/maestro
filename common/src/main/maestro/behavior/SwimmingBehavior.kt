@@ -40,9 +40,9 @@ class SwimmingBehavior(
      * - Sprint + Forward = initiate swimming
      * - Movement classes control pitch/yaw based on position error
      *
-     * Uses target velocity approach with exponential damping to prevent velocity compounding.
+     * Uses direct sprint control and target velocity approach with exponential damping.
      *
-     * @param state The movement state to apply swimming inputs to
+     * @param state The movement state (unused, kept for API compatibility)
      * @param targetY The Y coordinate (unused, kept for API compatibility)
      */
     fun applySwimmingInputs(
@@ -65,9 +65,10 @@ class SwimmingBehavior(
         // Activate swimming mode (enables free-look camera)
         agent.setSwimmingActive(true)
 
-        // Core swimming inputs: Sprint + Forward = swimming pose
-        state.setInput(Input.SPRINT, true)
-        state.setInput(Input.MOVE_FORWARD, true)
+        // Core swimming inputs: Direct sprint control + Forward input
+        // Direct sprint prevents jittering from input clearing
+        player.isSprinting = true
+        maestro.inputOverrideHandler.setInputForceState(Input.MOVE_FORWARD, true)
 
         // Apply velocity using rotation already set by Movement class
         // Movement calculated optimal yaw/pitch based on position error
@@ -165,6 +166,7 @@ class SwimmingBehavior(
 
         // Clear vanilla swimming state (restores normal physics)
         player.isSwimming = false
+        player.isSprinting = false
 
         maestro.setSwimmingActive(false)
 

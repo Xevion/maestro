@@ -205,7 +205,7 @@ public class MovementPillar extends Movement {
             Vec3 destCenter = VecUtils.getBlockPosCenter(dest.toBlockPos());
             if (Math.abs(ctx.player().position().x - destCenter.x) > 0.2
                     || Math.abs(ctx.player().position().z - destCenter.z) > 0.2) {
-                state.setInput(Input.MOVE_FORWARD, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
             }
             if (ctx.playerFeet().toBlockPos().equals(dest.toBlockPos())) {
                 return state.setStatus(MovementStatus.SUCCESS);
@@ -247,7 +247,7 @@ public class MovementPillar extends Movement {
             }
             if (MovementHelper.isBottomSlab(
                     BlockStateInterface.get(ctx, src.toBlockPos().below()))) {
-                state.setInput(Input.JUMP, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             }
             /*
             if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
@@ -255,7 +255,7 @@ public class MovementPillar extends Movement {
             }
              */
 
-            MovementHelper.moveTowards(ctx, state, against);
+            MovementHelper.moveTowards(ctx, state, against, maestro);
             return state;
         } else {
             // Get ready to place a throwaway block
@@ -265,11 +265,13 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            state.setInput(
-                    Input.SNEAK,
-                    ctx.player().position().y > dest.getY()
-                            || ctx.player().position().y
-                                    < src.getY() + 0.2D); // delay placement by 1 tick for ncp
+            maestro.getInputOverrideHandler()
+                    .setInputForceState(
+                            Input.SNEAK,
+                            ctx.player().position().y > dest.getY()
+                                    || ctx.player().position().y
+                                            < src.getY()
+                                                    + 0.2D); // delay placement by 1 tick for ncp
             // compatibility
             // since (lower down) we only right-click once player.isSneaking, and that happens the
             // tick after we request to sneak
@@ -288,13 +290,14 @@ public class MovementPillar extends Movement {
 
                 // If it's been more than forty ticks of trying to jump, and we aren't done yet, go
                 // forward, maybe we are stuck
-                state.setInput(Input.MOVE_FORWARD, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
 
                 // revise our target to both yaw and pitch if we're going to be moving forward
                 state.setTarget(new MovementState.MovementTarget(rotation, true));
             } else if (flatMotion < 0.05) {
                 // If our Y coordinate is above our goal, stop jumping
-                state.setInput(Input.JUMP, ctx.player().position().y < dest.getY());
+                maestro.getInputOverrideHandler()
+                        .setInputForceState(Input.JUMP, ctx.player().position().y < dest.getY());
             }
 
             if (!blockIsThere) {
@@ -308,15 +311,17 @@ public class MovementPillar extends Movement {
                                     ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);
-                    state.setInput(
-                            Input.JUMP, false); // breaking is like 5x slower when you're jumping
-                    state.setInput(Input.CLICK_LEFT, true);
+                    maestro.getInputOverrideHandler()
+                            .setInputForceState(
+                                    Input.JUMP,
+                                    false); // breaking is like 5x slower when you're jumping
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                     blockIsThere = false;
                 } else if (ctx.player().isCrouching()
                         && (ctx.isLookingAt(src.toBlockPos().below())
                                 || ctx.isLookingAt(src.toBlockPos()))
                         && ctx.player().position().y > dest.getY() + 0.1) {
-                    state.setInput(Input.CLICK_RIGHT, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
             }
         }
@@ -335,7 +340,7 @@ public class MovementPillar extends Movement {
                 || ctx.playerFeet().toBlockPos().equals(src.toBlockPos().below())) {
             Block block = BlockStateInterface.getBlock(ctx, src.toBlockPos().below());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
-                state.setInput(Input.SNEAK, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
         }
         if (MovementHelper.isWater(ctx, dest.toBlockPos().above())) {

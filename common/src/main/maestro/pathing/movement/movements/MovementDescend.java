@@ -288,14 +288,14 @@ public class MovementDescend extends Movement {
             double destX = (src.getX() + 0.5) * 0.17 + (dest.getX() + 0.5) * 0.83;
             double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
             state.setTarget(
-                            new MovementState.MovementTarget(
-                                    RotationUtils.calcRotationFromVec3d(
-                                                    ctx.playerHead(),
-                                                    new Vec3(destX, dest.getY(), destZ),
-                                                    ctx.playerRotations())
-                                            .withPitch(ctx.playerRotations().getPitch()),
-                                    false))
-                    .setInput(Input.MOVE_FORWARD, true);
+                    new MovementState.MovementTarget(
+                            RotationUtils.calcRotationFromVec3d(
+                                            ctx.playerHead(),
+                                            new Vec3(destX, dest.getY(), destZ),
+                                            ctx.playerRotations())
+                                    .withPitch(ctx.playerRotations().getPitch()),
+                            false));
+            maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
             return state;
         }
         double diffX = ctx.player().position().x - (dest.getX() + 0.5);
@@ -306,9 +306,9 @@ public class MovementDescend extends Movement {
         double fromStart = Math.sqrt(x * x + z * z);
         if (!playerFeet.equals(dest) || ab > 0.25) {
             if (numTicks++ < 20 && fromStart < 1.25) {
-                MovementHelper.moveTowards(ctx, state, fakeDest);
+                MovementHelper.moveTowards(ctx, state, fakeDest, maestro);
             } else {
-                MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
+                MovementHelper.moveTowards(ctx, state, dest.toBlockPos(), maestro);
             }
         }
         return state;

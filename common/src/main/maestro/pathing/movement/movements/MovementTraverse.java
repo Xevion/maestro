@@ -233,6 +233,9 @@ public class MovementTraverse extends Movement {
                             Math.abs(ctx.player().position().x - (dest.getX() + 0.5D)),
                             Math.abs(ctx.player().position().z - (dest.getZ() + 0.5D)));
             if (dist < 0.83) {
+                // Already close enough - stop moving forward to prevent drift
+                maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
                 return state;
             }
             if (state.getTarget().getRotation().isEmpty()) {
@@ -262,15 +265,15 @@ public class MovementTraverse extends Movement {
                 pitchToBreak = 26;
             }
 
-            return state.setTarget(
-                            new MovementState.MovementTarget(
-                                    new Rotation(yawToDest, pitchToBreak), true))
-                    .setInput(Input.MOVE_FORWARD, true)
-                    .setInput(Input.SPRINT, true);
+            state.setTarget(
+                    new MovementState.MovementTarget(new Rotation(yawToDest, pitchToBreak), true));
+            maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+            maestro.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+            return state;
         }
 
         // sneak may have been set to true in the PREPPING state while mining an adjacent block
-        state.setInput(Input.SNEAK, false);
+        maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
 
         Block fd = BlockStateInterface.get(ctx, src.below().toBlockPos()).getBlock();
         boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
@@ -288,16 +291,16 @@ public class MovementTraverse extends Movement {
                             || Blocks.IRON_DOOR.equals(pb1.getBlock()));
 
             if (notPassable && canOpen) {
-                return state.setTarget(
-                                new MovementState.MovementTarget(
-                                        RotationUtils.calcRotationFromVec3d(
-                                                ctx.playerHead(),
-                                                VecUtils.calculateBlockCenter(
-                                                        ctx.world(),
-                                                        positionsToBreak[0].toBlockPos()),
-                                                ctx.playerRotations()),
-                                        true))
-                        .setInput(Input.CLICK_RIGHT, true);
+                state.setTarget(
+                        new MovementState.MovementTarget(
+                                RotationUtils.calcRotationFromVec3d(
+                                        ctx.playerHead(),
+                                        VecUtils.calculateBlockCenter(
+                                                ctx.world(), positionsToBreak[0].toBlockPos()),
+                                        ctx.playerRotations()),
+                                true));
+                maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                return state;
             }
         }
 
@@ -313,8 +316,9 @@ public class MovementTraverse extends Movement {
             if (blocked != null) {
                 Optional<Rotation> rotation = RotationUtils.reachable(ctx, blocked);
                 if (rotation.isPresent()) {
-                    return state.setTarget(new MovementState.MovementTarget(rotation.get(), true))
-                            .setInput(Input.CLICK_RIGHT, true);
+                    state.setTarget(new MovementState.MovementTarget(rotation.get(), true));
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    return state;
                 }
             }
         }
@@ -332,7 +336,7 @@ public class MovementTraverse extends Movement {
                     .addKeyValue("player_z", feet.getZ())
                     .log("Movement Y coordinate mismatch");
             if (feet.getY() < dest.getY()) {
-                return state.setInput(Input.JUMP, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             }
             return state;
         }
@@ -369,7 +373,7 @@ public class MovementTraverse extends Movement {
                     && (!MovementHelper.avoidWalkingInto(intoBelow)
                             || MovementHelper.isWater(intoBelow))
                     && !MovementHelper.avoidWalkingInto(intoAbove)) {
-                state.setInput(Input.SPRINT, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
             }
 
             BlockState destDown = BlockStateInterface.get(ctx, dest.below().toBlockPos());
@@ -395,7 +399,26 @@ public class MovementTraverse extends Movement {
                     return state.setStatus(MovementStatus.UNREACHABLE);
                 }
             }
-            MovementHelper.moveTowards(ctx, state, against);
+
+            // Check if there are still blocks to break
+            boolean blocksRemaining =
+                    !MovementHelper.canWalkThrough(ctx, positionsToBreak[0])
+                            || !MovementHelper.canWalkThrough(ctx, positionsToBreak[1]);
+
+            // Don't walk into the block if already close enough and blocks still exist
+            double distToTarget =
+                    Math.max(
+                            Math.abs(ctx.player().position().x - (against.getX() + 0.5D)),
+                            Math.abs(ctx.player().position().z - (against.getZ() + 0.5D)));
+
+            if (blocksRemaining && distToTarget < 0.83) {
+                // Already close and blocks still exist - stop moving to prevent drift
+                maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
+            } else {
+                // Keep moving toward target until we reach destination
+                MovementHelper.moveTowards(ctx, state, against, maestro);
+            }
+
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
@@ -407,9 +430,10 @@ public class MovementTraverse extends Movement {
                                 Math.abs(dest.getX() + 0.5D - ctx.player().position().x),
                                 Math.abs(dest.getZ() + 0.5D - ctx.player().position().z));
                 if (dist < 0.85) { // 0.5 + 0.3 + epsilon
-                    MovementHelper.moveTowards(ctx, state, dest.toBlockPos());
-                    return state.setInput(Input.MOVE_FORWARD, false)
-                            .setInput(Input.MOVE_BACK, true);
+                    MovementHelper.moveTowards(ctx, state, dest.toBlockPos(), maestro);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_BACK, true);
+                    return state;
                 }
             }
             double dist1 =
@@ -421,13 +445,14 @@ public class MovementTraverse extends Movement {
                             state, maestro, dest.below().toBlockPos(), false, true);
             if ((p == PlaceResult.READY_TO_PLACE || dist1 < 0.6)
                     && !Agent.settings().assumeSafeWalk.value) {
-                state.setInput(Input.SNEAK, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
             switch (p) {
                 case READY_TO_PLACE:
                     {
                         if (ctx.player().isCrouching() || Agent.settings().assumeSafeWalk.value) {
-                            state.setInput(Input.CLICK_RIGHT, true);
+                            maestro.getInputOverrideHandler()
+                                    .setInputForceState(Input.CLICK_RIGHT, true);
                         }
                         return state;
                     }
@@ -443,12 +468,16 @@ public class MovementTraverse extends Movement {
                                             .getYaw();
                             if (Math.abs(state.getTarget().rotation.getYaw() - yaw) < 0.1) {
                                 // but only if our attempted place is straight ahead
-                                return state.setInput(Input.MOVE_FORWARD, true);
+                                maestro.getInputOverrideHandler()
+                                        .setInputForceState(Input.MOVE_FORWARD, true);
+                                return state;
                             }
                         } else if (ctx.playerRotations()
                                 .isReallyCloseTo(state.getTarget().rotation)) {
                             // well I guess there's something in the way
-                            return state.setInput(Input.CLICK_LEFT, true);
+                            maestro.getInputOverrideHandler()
+                                    .setInputForceState(Input.CLICK_LEFT, true);
+                            return state;
                         }
                         return state;
                     }
@@ -489,23 +518,23 @@ public class MovementTraverse extends Movement {
                                     .getYaw();
                     state.setTarget(
                             new MovementState.MovementTarget(new Rotation(yaw, pitch), true));
-                    state.setInput(Input.MOVE_BACK, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_BACK, true);
                 } else {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
                 if (ctx.isLookingAt(goalLook)) {
-                    return state.setInput(
-                            Input.CLICK_RIGHT,
-                            true); // wait to right-click until we are able to place
+                    // wait to right-click until we are able to place
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    return state;
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" +
                 // Maestro.whatAreYouLookingAt());
                 if (ctx.playerRotations().isReallyCloseTo(state.getTarget().rotation)) {
-                    state.setInput(Input.CLICK_LEFT, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                 }
                 return state;
             }
-            MovementHelper.moveTowards(ctx, state, positionsToBreak[0].toBlockPos());
+            MovementHelper.moveTowards(ctx, state, positionsToBreak[0].toBlockPos(), maestro);
             return state;
             // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we
             // are bridging for a couple blocks in a row, it is faster if we dont spin around and
@@ -528,7 +557,7 @@ public class MovementTraverse extends Movement {
                 || ctx.playerFeet().toBlockPos().equals(src.below().toBlockPos())) {
             Block block = BlockStateInterface.getBlock(ctx, src.below().toBlockPos());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
-                state.setInput(Input.SNEAK, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
         }
         return super.prepared(state);

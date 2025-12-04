@@ -125,7 +125,7 @@ public abstract class Movement implements IMovement, MovementHelper {
             if (!((Agent) maestro).getSwimmingBehavior().shouldActivateSwimming()) {
                 // Fallback: vanilla treading water when enhanced swimming disabled
                 if (ctx.player().position().y < dest.getY() + 0.6) {
-                    currentState.setInput(Input.JUMP, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
                 }
             }
         } else {
@@ -138,7 +138,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                             pos ->
                                     MovementHelper.switchToBestToolFor(
                                             ctx, BlockStateInterface.get(ctx, pos)));
-            currentState.setInput(Input.CLICK_LEFT, true);
+            maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
         }
 
         // If the movement target has to force the new rotations, or we aren't using silent move,
@@ -152,26 +152,6 @@ public abstract class Movement implements IMovement, MovementHelper {
                                         .updateTarget(
                                                 rotation,
                                                 currentState.getTarget().hasToForceRotations()));
-        maestro.getInputOverrideHandler().clearAllKeys();
-        currentState
-                .getInputStates()
-                .forEach(
-                        (input, forced) -> {
-                            maestro.getInputOverrideHandler().setInputForceState(input, forced);
-                        });
-        currentState.getInputStates().clear();
-
-        // If the current status indicates a completed movement
-        if (currentState.getStatus().isComplete()) {
-            // Only clear keys if not swimming - preserve swimming inputs across transitions
-            Agent agent = (Agent) maestro;
-            if (!agent.getSwimmingBehavior().shouldActivateSwimming()) {
-                maestro.getInputOverrideHandler().clearAllKeys();
-            }
-
-            // Swimming stays active across movement transitions
-            // Only deactivates when exiting water (line 139) or path ends (PathingBehavior)
-        }
 
         return currentState.getStatus();
     }
@@ -204,7 +184,8 @@ public abstract class Movement implements IMovement, MovementHelper {
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
                     if (ctx.isLookingAt(blockPos.toBlockPos())
                             || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
-                        state.setInput(Input.CLICK_LEFT, true);
+                        maestro.getInputOverrideHandler()
+                                .setInputForceState(Input.CLICK_LEFT, true);
                     }
                     return false;
                 }
@@ -217,7 +198,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                                 true));
                 // don't check selectedblock on this one, this is a fallback when we can't see any
                 // face directly, it's intended to be breaking the "incorrect" block
-                state.setInput(Input.CLICK_LEFT, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                 return false;
             }
         }

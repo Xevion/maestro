@@ -2,13 +2,15 @@ package maestro.pathing.movement
 
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.utils.Rotation
-import maestro.api.utils.input.Input
 import java.util.Optional
 
+/**
+ * Represents the state of a movement during execution.
+ * Contains only status and rotation targets - inputs are managed directly via InputOverrideHandler.
+ */
 class MovementState {
     private var status: MovementStatus? = null
     private var target: MovementTarget = MovementTarget()
-    private val inputState: MutableMap<Input, Boolean> = mutableMapOf()
 
     fun setStatus(status: MovementStatus): MovementState {
         this.status = status
@@ -23,16 +25,6 @@ class MovementState {
         this.target = target
         return this
     }
-
-    fun setInput(
-        input: Input,
-        forced: Boolean,
-    ): MovementState {
-        inputState[input] = forced
-        return this
-    }
-
-    fun getInputStates(): Map<Input, Boolean> = inputState
 
     class MovementTarget(
         /** Yaw and pitch angles that must be matched */

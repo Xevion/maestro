@@ -692,16 +692,16 @@ public interface MovementHelper extends Helper {
         }
     }
 
-    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
+    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos, IAgent maestro) {
         state.setTarget(
-                        new MovementTarget(
-                                RotationUtils.calcRotationFromVec3d(
-                                                ctx.playerHead(),
-                                                VecUtils.getBlockPosCenter(pos),
-                                                ctx.playerRotations())
-                                        .withPitch(ctx.playerRotations().getPitch()),
-                                false))
-                .setInput(Input.MOVE_FORWARD, true);
+                new MovementTarget(
+                        RotationUtils.calcRotationFromVec3d(
+                                        ctx.playerHead(),
+                                        VecUtils.getBlockPosCenter(pos),
+                                        ctx.playerRotations())
+                                .withPitch(ctx.playerRotations().getPitch()),
+                        false));
+        maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
     }
 
     /**
@@ -940,7 +940,7 @@ public interface MovementHelper extends Helper {
                     || (MovementHelper.canPlaceAgainst(ctx, selectedBlock)
                             && selectedBlock.relative(side).equals(placeAt))) {
                 if (wouldSneak) {
-                    state.setInput(Input.SNEAK, true);
+                    maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
                 }
                 ((Agent) maestro)
                         .getInventoryBehavior()
@@ -951,7 +951,7 @@ public interface MovementHelper extends Helper {
         }
         if (found) {
             if (wouldSneak) {
-                state.setInput(Input.SNEAK, true);
+                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
             ((Agent) maestro)
                     .getInventoryBehavior()

@@ -33,11 +33,6 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.FallingBlock
 import org.slf4j.Logger
 
-/**
- * Mine blocks of a certain type
- *
- * @author leijurv
- */
 class MineProcess(
     maestro: Agent,
 ) : MaestroProcessHelper(maestro),
@@ -151,7 +146,8 @@ class MineProcess(
                         .distSqr(pos)
                 }
 
-        maestro.inputOverrideHandler.clearAllKeys()
+        // Don't clear all keys - preserve CLICK_LEFT across path revalidation
+        // CLICK_LEFT lifecycle is managed explicitly based on mining state
         if (shaft != null && ctx.player().onGround()) {
             val pos = shaft
             val state = maestro.bsi.get0(pos)
@@ -162,10 +158,22 @@ class MineProcess(
                     MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos))
                     if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
                         maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, true)
+                    } else {
+                        // Not looking at target - clear CLICK_LEFT
+                        maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
                     }
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
+                } else {
+                    // Target not reachable - clear CLICK_LEFT
+                    maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
                 }
+            } else {
+                // Target should be avoided - clear CLICK_LEFT
+                maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
             }
+        } else {
+            // No valid shaft target - clear CLICK_LEFT
+            maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
         }
         val command = updateGoal()
         if (command == null) {
@@ -194,6 +202,9 @@ class MineProcess(
     }
 
     override fun onLostControl() {
+        // Clear CLICK_LEFT when losing control
+        maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
+
         // Release area claim
         val client = maestro.coordinationClient
         val claimedArea = lastClaimedArea

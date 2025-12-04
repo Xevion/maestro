@@ -233,7 +233,8 @@ class FarmProcess(
             }
         }
 
-        maestro.inputOverrideHandler.clearAllKeys()
+        // Don't clear all keys - preserve CLICK_LEFT across path revalidation
+        // CLICK_LEFT lifecycle is managed explicitly based on farming state
         val playerPos = ctx.playerFeet()
         val blockReachDistance = ctx.playerController().blockReachDistance
 
@@ -420,6 +421,8 @@ class FarmProcess(
     }
 
     override fun onLostControl() {
+        // Clear interaction keys when losing control
+        maestro.inputOverrideHandler.clearInteractionKeys()
         active = false
     }
 

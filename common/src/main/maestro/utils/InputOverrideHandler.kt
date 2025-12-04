@@ -48,7 +48,33 @@ class InputOverrideHandler(
         inputForceStateMap[input] = forced
     }
 
-    /** Clears the override state for all keys */
+    /**
+     * Clears movement-related inputs (WASD, JUMP, SNEAK).
+     * Use this when transitioning between path nodes or movements.
+     */
+    fun clearMovementKeys() {
+        setInputForceState(Input.MOVE_FORWARD, false)
+        setInputForceState(Input.MOVE_BACK, false)
+        setInputForceState(Input.MOVE_LEFT, false)
+        setInputForceState(Input.MOVE_RIGHT, false)
+        setInputForceState(Input.JUMP, false)
+        setInputForceState(Input.SNEAK, false)
+    }
+
+    /**
+     * Clears interaction inputs (CLICK_LEFT, CLICK_RIGHT).
+     * Use this when a process loses control or explicitly stops interacting.
+     */
+    fun clearInteractionKeys() {
+        setInputForceState(Input.CLICK_LEFT, false)
+        setInputForceState(Input.CLICK_RIGHT, false)
+    }
+
+    /**
+     * Clears the override state for all keys.
+     * Use sparingly - prefer selective clearing (clearMovementKeys, clearInteractionKeys)
+     * to maintain clear ownership of input lifecycle.
+     */
     override fun clearAllKeys() {
         inputForceStateMap.clear()
     }
