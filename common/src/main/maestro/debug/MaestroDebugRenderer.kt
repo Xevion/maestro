@@ -16,7 +16,7 @@ import maestro.debug.hud.HudDebugRenderer
  * Registered as an [AbstractGameEventListener] to receive render events each frame.
  */
 class MaestroDebugRenderer(
-    agent: Agent,
+    private val agent: Agent,
 ) : IDebugRenderer,
     AbstractGameEventListener {
     private val hudRenderer = HudDebugRenderer(agent)
@@ -24,8 +24,22 @@ class MaestroDebugRenderer(
     override fun onRenderPass(event: RenderEvent) {
         if (!Agent.settings().debugEnabled.value) return
 
-        // World rendering not yet implemented in this version
-        // Will be added in future phases
+        // Render 3D debug visualization for current movement
+        val pathExecutor = agent.pathingBehavior.getCurrent()
+        if (pathExecutor != null) {
+            val path = pathExecutor.path
+            val pos = pathExecutor.position
+
+            // Render debug info for current movement
+            if (pos >= 0 && pos < path.movements().size) {
+                val movement = path.movements()[pos]
+
+                // Cast to Movement to access debug context
+                if (movement is maestro.pathing.movement.Movement) {
+                    movement.debug.render3D(event.modelViewStack, event.partialTicks)
+                }
+            }
+        }
     }
 
     override fun getHudRenderer(): IHudDebugRenderer = hudRenderer

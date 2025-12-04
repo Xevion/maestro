@@ -103,9 +103,10 @@ class BackfillProcess(
                 }
 
                 MovementHelper.PlaceResult.ATTEMPTING -> {
-                    state.getTarget().getRotation().ifPresent { rotation ->
-                        maestro.lookBehavior.updateTarget(rotation, true)
-                    }
+                    // TODO: Update to use LookIntent after movement system refactor
+                    // state.getTarget().getRotation().ifPresent { rotation ->
+                    //     maestro.lookBehavior.updateTarget(rotation, true)
+                    // }
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                 }
             }

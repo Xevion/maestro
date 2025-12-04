@@ -1,6 +1,8 @@
 package maestro.api.utils
 
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.core.Vec3i
 import kotlin.math.sqrt
 
 /**
@@ -54,7 +56,7 @@ data class PackedBlockPos(
         /**
          * Origin position at (0, 0, 0).
          */
-        val ORIGIN = PackedBlockPos(0, 0, 0)
+        val ORIGIN: PackedBlockPos = PackedBlockPos(0, 0, 0)
 
         /**
          * Creates a PackedBlockPos from a Minecraft BlockPos.
@@ -189,12 +191,12 @@ data class PackedBlockPos(
     /**
      * Returns position offset by a Vec3i direction.
      */
-    fun offset(dir: net.minecraft.core.Vec3i): PackedBlockPos = offset(dir.x, dir.y, dir.z)
+    fun offset(dir: Vec3i): PackedBlockPos = offset(dir.x, dir.y, dir.z)
 
     /**
      * Returns position offset by negative direction (subtraction).
      */
-    fun subtract(dir: net.minecraft.core.Vec3i): PackedBlockPos = offset(-dir.x, -dir.y, -dir.z)
+    fun subtract(dir: Vec3i): PackedBlockPos = offset(-dir.x, -dir.y, -dir.z)
 
     /**
      * Alias for distanceSq() for compatibility.
@@ -204,13 +206,13 @@ data class PackedBlockPos(
     /**
      * Returns position offset in the given direction.
      */
-    fun relative(direction: net.minecraft.core.Direction): PackedBlockPos = offset(direction.stepX, direction.stepY, direction.stepZ)
+    fun relative(direction: Direction): PackedBlockPos = offset(direction.stepX, direction.stepY, direction.stepZ)
 
     /**
      * Returns position offset in the given direction by n steps.
      */
     fun relative(
-        direction: net.minecraft.core.Direction,
+        direction: Direction,
         n: Int,
     ): PackedBlockPos = offset(direction.stepX * n, direction.stepY * n, direction.stepZ * n)
 

@@ -27,4 +27,11 @@ public interface IMovement {
     PackedBlockPos getDest();
 
     BlockPos getDirection();
+
+    /**
+     * Get compact debug information for HUD display.
+     *
+     * @return compact debug string (e.g., "dist:0.52 drift:Y"), empty if no debug info
+     */
+    String getDebugInfo();
 }

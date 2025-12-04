@@ -18,15 +18,17 @@ import maestro.pathing.calc.AbstractNodeCostSearch;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
+// TODO: Re-enable after MovementFall, MovementParkour, MovementDiagonal are converted to Kotlin
+// import maestro.pathing.movement.movements.MovementFall;
+// import maestro.pathing.movement.movements.MovementParkour;
+// import maestro.pathing.movement.movements.MovementDiagonal;
 import maestro.pathing.movement.movements.*;
 import maestro.pathing.recovery.FailureReason;
 import maestro.pathing.recovery.PathRecoveryManager;
 import maestro.pathing.recovery.RecoveryAction;
 import maestro.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 /** Behavior to execute a precomputed path */
@@ -161,7 +163,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                                 .addKeyValue("new_position", i)
                                 .log("Skipping forward in path");
                     }
-                    // System.out.println("Double skip sundae");
                     pathPosition = i - 1;
                     onChangeInPathPosition();
                     return false;
@@ -224,7 +225,6 @@ public class PathExecutor implements IPathExecutor, Helper {
         } else {
             ticksAway = 0;
         }
-        // long start = System.nanoTime() / 1000000L;
         BlockStateInterface bsi = behavior.maestro.bsi;
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i < 0 || i >= path.movements().size()) {
@@ -380,7 +380,6 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }
         if (movementStatus == SUCCESS) {
-            // System.out.println("Movement done, next path");
             pathPosition++;
             onChangeInPathPosition();
             return true;
@@ -474,18 +473,20 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (distanceFromPath > leniency) {
             // when we're midair in the middle of a fall, we're very far from both the beginning and
             // the end, but we aren't actually off path
-            if (path.movements().get(pathPosition) instanceof MovementFall) {
-                PackedBlockPos fallDest =
-                        path.positions()
-                                .get(
-                                        pathPosition
-                                                + 1); // .get(pathPosition) is the block we fell off
-                // of
-                return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest.toBlockPos())
-                        >= leniency; // ignore Y by using flat distance
-            } else {
-                return true;
-            }
+            // TODO: Re-enable after MovementFall is converted to Kotlin
+            // if (path.movements().get(pathPosition) instanceof MovementFall) {
+            //     PackedBlockPos fallDest =
+            //             path.positions()
+            //                     .get(
+            //                             pathPosition
+            //                                     + 1); // .get(pathPosition) is the block we fell
+            // off
+            //     // of
+            //     return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest.toBlockPos())
+            //             >= leniency; // ignore Y by using flat distance
+            // } else {
+            return true;
+            // }
         } else {
             return false;
         }
@@ -573,15 +574,17 @@ public class PathExecutor implements IPathExecutor, Helper {
                     // frostwalker only works if you cross the edge of the block on ground so in
                     // some cases we may not overshoot
                     // Since MovementDescend can't know the next movement we have to tell it
-                    if (next instanceof MovementTraverse || next instanceof MovementParkour) {
-                        boolean couldPlaceInstead =
-                                Agent.settings().allowPlace.value
-                                        && behavior.maestro
-                                                .getInventoryBehavior()
-                                                .hasGenericThrowaway()
-                                        && next
-                                                instanceof
-                                                MovementParkour; // traverse doesn't react fast
+                    // TODO: Re-enable after MovementParkour is converted to Kotlin
+                    if (next instanceof MovementTraverse /* || next instanceof MovementParkour */) {
+                        // TODO: Re-enable after MovementParkour is converted to Kotlin
+                        boolean couldPlaceInstead = false;
+                        //         Agent.settings().allowPlace.value
+                        //                 && behavior.maestro
+                        //                         .getInventoryBehavior()
+                        //                         .hasGenericThrowaway()
+                        //                 && next
+                        //                         instanceof
+                        //                         MovementParkour; // traverse doesn't react fast
                         // enough
                         // this is true if the next movement does not ascend or descends and goes
                         // into the same cardinal direction (N-NE-E-SE-S-SW-W-NW) as to descend
@@ -642,9 +645,6 @@ public class PathExecutor implements IPathExecutor, Helper {
 
                     return true;
                 }
-                // logDebug("Turning off sprinting " + movement + " " + next + " " +
-                // movement.getDirection() + " " + next.getDirection().down() + " " +
-                // next.getDirection().down().equals(movement.getDirection()));
             }
         }
         if (current instanceof MovementAscend && pathPosition != 0) {
@@ -672,83 +672,85 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return true;
             }
         }
-        if (current instanceof MovementFall) {
-            Tuple<Vec3, BlockPos> data = overrideFall((MovementFall) current);
-            if (data != null) {
-                PackedBlockPos fallDest = PackedBlockPos.from(data.getB());
-                if (!path.positions().contains(fallDest)) {
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Fall override at %s returned illegal destination %s",
-                                    current.getSrc().toBlockPos(), fallDest));
-                }
-                if (ctx.playerFeet().toBlockPos().equals(fallDest.toBlockPos())) {
-                    pathPosition = path.positions().indexOf(fallDest);
-                    onChangeInPathPosition();
-                    return true;
-                }
-                clearKeys();
-                behavior.maestro
-                        .getLookBehavior()
-                        .updateTarget(
-                                RotationUtils.calcRotationFromVec3d(
-                                        ctx.playerHead(), data.getA(), ctx.playerRotations()),
-                                false);
-                behavior.maestro
-                        .getInputOverrideHandler()
-                        .setInputForceState(Input.MOVE_FORWARD, true);
-                return true;
-            }
-        }
+        // TODO: Re-enable after MovementFall is converted to Kotlin
+        // if (current instanceof MovementFall) {
+        //     Tuple<Vec3, BlockPos> data = overrideFall((MovementFall) current);
+        //     if (data != null) {
+        //         PackedBlockPos fallDest = PackedBlockPos.from(data.getB());
+        //         if (!path.positions().contains(fallDest)) {
+        //             throw new IllegalStateException(
+        //                     String.format(
+        //                             "Fall override at %s returned illegal destination %s",
+        //                             current.getSrc().toBlockPos(), fallDest));
+        //         }
+        //         if (ctx.playerFeet().toBlockPos().equals(fallDest.toBlockPos())) {
+        //             pathPosition = path.positions().indexOf(fallDest);
+        //             onChangeInPathPosition();
+        //             return true;
+        //         }
+        //         clearKeys();
+        //         behavior.maestro
+        //                 .getLookBehavior()
+        //                 .updateTarget(
+        //                         RotationUtils.calcRotationFromVec3d(
+        //                                 ctx.playerHead(), data.getA(), ctx.playerRotations()),
+        //                         false);
+        //         behavior.maestro
+        //                 .getInputOverrideHandler()
+        //                 .setInputForceState(Input.MOVE_FORWARD, true);
+        //         return true;
+        //     }
+        // }
         return false;
     }
 
-    private Tuple<Vec3, BlockPos> overrideFall(MovementFall movement) {
-        Vec3i dir = movement.getDirection();
-        if (dir.getY() < -3) {
-            return null;
-        }
-        if (!movement.toBreakCached.isEmpty()) {
-            return null; // it's breaking
-        }
-        Vec3i flatDir = new Vec3i(dir.getX(), 0, dir.getZ());
-        int i;
-        outer:
-        for (i = pathPosition + 1; i < path.length() - 1 && i < pathPosition + 3; i++) {
-            IMovement next = path.movements().get(i);
-            if (!(next instanceof MovementTraverse)) {
-                break;
-            }
-            if (!flatDir.equals(next.getDirection())) {
-                break;
-            }
-            for (int y = next.getDest().getY(); y <= movement.getSrc().getY() + 1; y++) {
-                BlockPos chk = new BlockPos(next.getDest().getX(), y, next.getDest().getZ());
-                if (!MovementHelper.fullyPassable(ctx, chk)) {
-                    break outer;
-                }
-            }
-            if (!MovementHelper.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
-                break;
-            }
-        }
-        i--;
-        if (i == pathPosition) {
-            return null; // no valid extension exists
-        }
-        double len = i - pathPosition - 0.4;
-        return new Tuple<>(
-                new Vec3(
-                        flatDir.getX() * len + movement.getDest().getX() + 0.5,
-                        movement.getDest().getY(),
-                        flatDir.getZ() * len + movement.getDest().getZ() + 0.5),
-                movement.getDest()
-                        .toBlockPos()
-                        .offset(
-                                flatDir.getX() * (i - pathPosition),
-                                0,
-                                flatDir.getZ() * (i - pathPosition)));
-    }
+    // TODO: Re-enable after MovementFall is converted to Kotlin
+    // private Tuple<Vec3, BlockPos> overrideFall(MovementFall movement) {
+    //     Vec3i dir = movement.getDirection();
+    //     if (dir.getY() < -3) {
+    //         return null;
+    //     }
+    //     if (!movement.toBreakCached.isEmpty()) {
+    //         return null; // it's breaking
+    //     }
+    //     Vec3i flatDir = new Vec3i(dir.getX(), 0, dir.getZ());
+    //     int i;
+    //     outer:
+    //     for (i = pathPosition + 1; i < path.length() - 1 && i < pathPosition + 3; i++) {
+    //         IMovement next = path.movements().get(i);
+    //         if (!(next instanceof MovementTraverse)) {
+    //             break;
+    //         }
+    //         if (!flatDir.equals(next.getDirection())) {
+    //             break;
+    //         }
+    //         for (int y = next.getDest().getY(); y <= movement.getSrc().getY() + 1; y++) {
+    //             BlockPos chk = new BlockPos(next.getDest().getX(), y, next.getDest().getZ());
+    //             if (!MovementHelper.fullyPassable(ctx, chk)) {
+    //                 break outer;
+    //             }
+    //         }
+    //         if (!MovementHelper.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
+    //             break;
+    //         }
+    //     }
+    //     i--;
+    //     if (i == pathPosition) {
+    //         return null; // no valid extension exists
+    //     }
+    //     double len = i - pathPosition - 0.4;
+    //     return new Tuple<>(
+    //             new Vec3(
+    //                     flatDir.getX() * len + movement.getDest().getX() + 0.5,
+    //                     movement.getDest().getY(),
+    //                     flatDir.getZ() * len + movement.getDest().getZ() + 0.5),
+    //             movement.getDest()
+    //                     .toBlockPos()
+    //                     .offset(
+    //                             flatDir.getX() * (i - pathPosition),
+    //                             0,
+    //                             flatDir.getZ() * (i - pathPosition)));
+    // }
 
     private static boolean skipNow(IPlayerContext ctx, IMovement current) {
         double offTarget =
@@ -835,8 +837,10 @@ public class PathExecutor implements IPathExecutor, Helper {
                 && next.getDirection().equals(current.getDirection())) {
             return true;
         }
-        return next instanceof MovementDiagonal
-                && Agent.settings().allowOvershootDiagonalDescend.value;
+        // TODO: Re-enable after MovementDiagonal is converted to Kotlin
+        return false;
+        // return next instanceof MovementDiagonal
+        //         && Agent.settings().allowOvershootDiagonalDescend.value;
     }
 
     private void onChangeInPathPosition() {

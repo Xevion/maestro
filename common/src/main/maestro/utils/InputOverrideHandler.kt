@@ -2,11 +2,19 @@ package maestro.utils
 
 import maestro.Agent
 import maestro.api.MaestroAPI
+import maestro.api.behavior.ILookBehavior
 import maestro.api.event.events.TickEvent
 import maestro.api.utils.IInputOverrideHandler
+import maestro.api.utils.Rotation
+import maestro.api.utils.RotationUtils
+import maestro.api.utils.VecUtils
 import maestro.api.utils.input.Input
 import maestro.behavior.Behavior
 import maestro.gui.MaestroScreen
+import maestro.pathing.movement.ForwardInput
+import maestro.pathing.movement.LookIntent
+import maestro.pathing.movement.MovementSpeed
+import maestro.pathing.movement.StrafeInput
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.DeathScreen
 import net.minecraft.client.gui.screens.Screen
@@ -26,6 +34,20 @@ class InputOverrideHandler(
 
     internal val blockBreakManager = BlockInteractionManager(maestro.playerContext, BlockBreakStrategy())
     internal val blockPlaceManager = BlockInteractionManager(maestro.playerContext, BlockPlaceStrategy())
+
+    // Delta-based intent tracking for efficient input updates
+    private var lastMovementIntent: maestro.pathing.movement.MovementIntent? = null
+    private var lastLookIntent: LookIntent? = null
+    private var lastClickIntent: maestro.pathing.movement.ClickIntent? = null
+
+    // Debug fields for drift correction visualization
+    @Volatile private var lastIntendedYaw: Float = 0f
+
+    @Volatile private var lastCurrentYaw: Float = 0f
+
+    @Volatile private var lastDriftDeviation: Float = 0f
+
+    @Volatile private var lastKeyCombo: String = ""
 
     /**
      * Returns whether we are forcing down the specified [Input].
@@ -181,4 +203,384 @@ class InputOverrideHandler(
                 GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_CONTROL) == GLFW.GLFW_PRESS
         }
     }
+
+    // ===== Intent-Based Movement API =====
+
+    /**
+     * Apply a MovementIntent by translating it to input states.
+     *
+     * This is the primary entry point for intent-based movement control.
+     * Clears all movement inputs first, then applies the new intent.
+     *
+     * @param intent Movement intent to apply
+     * @param ctx Player context for Toward intent angle calculation
+     */
+    override fun applyMovementIntent(
+        intent: maestro.pathing.movement.MovementIntent,
+        ctx: maestro.api.utils.IPlayerContext,
+    ) {
+        clearMovementKeys()
+
+        when (intent) {
+            is maestro.pathing.movement.MovementIntent.Toward -> applyTowardIntent(intent, ctx)
+            is maestro.pathing.movement.MovementIntent.Direct -> applyDirectIntent(intent)
+            is maestro.pathing.movement.MovementIntent.Stop -> {} // Already cleared
+        }
+    }
+
+    /**
+     * Apply a LookIntent by updating LookBehavior rotation target.
+     *
+     * Translates high-level look intents to rotation targets.
+     *
+     * @param intent Look intent to apply
+     * @param lookBehavior LookBehavior instance to update
+     */
+    override fun applyLookIntent(
+        intent: LookIntent,
+        lookBehavior: ILookBehavior,
+    ) {
+        when (intent) {
+            is LookIntent.Block -> {
+                val center =
+                    VecUtils.getBlockPosCenter(intent.pos)
+                val rotation =
+                    RotationUtils.calcRotationFromVec3d(
+                        ctx.playerHead(),
+                        center,
+                        ctx.playerRotations(),
+                    )
+                lookBehavior.updateTarget(rotation, true)
+            }
+
+            is LookIntent.Entity -> {
+                val target = intent.entity.position().add(0.0, intent.entity.eyeHeight.toDouble(), 0.0)
+                val rotation =
+                    RotationUtils.calcRotationFromVec3d(
+                        ctx.playerHead(),
+                        target,
+                        ctx.playerRotations(),
+                    )
+                lookBehavior.updateTarget(rotation, true)
+            }
+
+            is LookIntent.Direction -> {
+                val rotation = Rotation(intent.yaw, intent.pitch)
+                lookBehavior.updateTarget(rotation, true)
+            }
+
+            is LookIntent.Point -> {
+                val rotation =
+                    RotationUtils.calcRotationFromVec3d(
+                        ctx.playerHead(),
+                        intent.vec,
+                        ctx.playerRotations(),
+                    )
+                lookBehavior.updateTarget(rotation, true)
+            }
+
+            is LookIntent.None -> {
+                // No rotation update - maintain current look direction
+            }
+        }
+    }
+
+    /**
+     * Apply Toward intent with drift-aware key calculation.
+     *
+     * Algorithm:
+     * 1. Calculate angle from current position to destination
+     * 2. If start position provided, calculate drift correction
+     * 3. Use player's current rotation to determine keys
+     * 4. Map angle to optimal forward/strafe/sprint combination
+     */
+    private fun applyTowardIntent(
+        intent: maestro.pathing.movement.MovementIntent.Toward,
+        ctx: maestro.api.utils.IPlayerContext,
+    ) {
+        val player = ctx.player()
+        val currentPos =
+            net.minecraft.world.phys
+                .Vec2(player.x.toFloat(), player.z.toFloat())
+
+        // Calculate angle from current position to destination
+        val deltaX = intent.target.x - currentPos.x
+        val deltaY = intent.target.y - currentPos.y
+        val targetYaw = Math.toDegrees(kotlin.math.atan2(deltaY.toDouble(), deltaX.toDouble())).toFloat() - 90f
+
+        // If start position provided, calculate drift correction
+        val correctedYaw =
+            if (intent.startPos != null) {
+                calculateDriftCorrectedYaw(
+                    startPos = intent.startPos,
+                    currentPos = currentPos,
+                    destination = intent.target,
+                    targetYaw = targetYaw,
+                )
+            } else {
+                targetYaw // Fall back to simple angle calculation
+            }
+
+        // Use player's current rotation for key determination
+        val playerYaw = player.yRot
+        val angleDiff = normalizeAngle(correctedYaw - playerYaw)
+
+        // Map angle to keys using simple threshold system
+        val keys = mapAngleToKeys(angleDiff, intent.speed)
+
+        // Apply keys
+        applyKeyInputs(keys)
+        if (intent.jump) setInputForceState(Input.JUMP, true)
+    }
+
+    /**
+     * Calculate drift-corrected yaw based on deviation from intended path.
+     *
+     * Compares the intended angle (start → destination) with the current angle
+     * (current → destination). If deviation exceeds threshold, corrects toward intended angle.
+     */
+    private fun calculateDriftCorrectedYaw(
+        startPos: net.minecraft.world.phys.Vec2,
+        currentPos: net.minecraft.world.phys.Vec2,
+        destination: net.minecraft.world.phys.Vec2,
+        targetYaw: Float,
+    ): Float {
+        // Calculate intended angle (from start to destination)
+        val intendedDeltaX = destination.x - startPos.x
+        val intendedDeltaY = destination.y - startPos.y
+        val intendedYaw = Math.toDegrees(kotlin.math.atan2(intendedDeltaY.toDouble(), intendedDeltaX.toDouble())).toFloat() - 90f
+
+        // Calculate current angle (from current to destination)
+        val currentDeltaX = destination.x - currentPos.x
+        val currentDeltaY = destination.y - currentPos.y
+        val currentYaw = Math.toDegrees(kotlin.math.atan2(currentDeltaY.toDouble(), currentDeltaX.toDouble())).toFloat() - 90f
+
+        // Compute angle deviation
+        val deviation = normalizeAngle(currentYaw - intendedYaw)
+
+        // Store for debug HUD
+        lastDriftDeviation = deviation
+        lastIntendedYaw = intendedYaw
+        lastCurrentYaw = currentYaw
+
+        // Only correct if deviation exceeds threshold
+        val driftCorrectionThreshold = 15f // degrees
+        return if (kotlin.math.abs(deviation) > driftCorrectionThreshold) {
+            // Correct toward intended angle
+            intendedYaw
+        } else {
+            // Use simple angle to destination (no correction needed)
+            targetYaw
+        }
+    }
+
+    /**
+     * Map angle difference to optimal key combination.
+     *
+     * Uses simple thresholds for forward/backward and strafe keys.
+     * Sprint enabled only when moving forward.
+     */
+    private fun mapAngleToKeys(
+        angleDiff: Float,
+        speed: MovementSpeed,
+    ): KeyCombination {
+        // Simple angle-to-keys mapping
+        val forward =
+            when {
+                kotlin.math.abs(angleDiff) < 90f -> ForwardInput.FORWARD
+                else -> ForwardInput.BACKWARD
+            }
+
+        val strafe =
+            when {
+                angleDiff > 22.5f -> StrafeInput.LEFT
+                angleDiff < -22.5f -> StrafeInput.RIGHT
+                else -> StrafeInput.NONE
+            }
+
+        // Sprint enabled if moving generally forward and speed intent is SPRINT
+        val sprint = speed == MovementSpeed.SPRINT && forward == ForwardInput.FORWARD
+
+        return KeyCombination(forward, strafe, sprint)
+    }
+
+    /**
+     * Apply key combination to input state.
+     */
+    private fun applyKeyInputs(keys: KeyCombination) {
+        when (keys.forward) {
+            ForwardInput.FORWARD -> setInputForceState(Input.MOVE_FORWARD, true)
+            ForwardInput.BACKWARD -> setInputForceState(Input.MOVE_BACK, true)
+            ForwardInput.NONE -> {}
+        }
+
+        when (keys.strafe) {
+            StrafeInput.LEFT -> setInputForceState(Input.MOVE_LEFT, true)
+            StrafeInput.RIGHT -> setInputForceState(Input.MOVE_RIGHT, true)
+            StrafeInput.NONE -> {}
+        }
+
+        if (keys.sprint) {
+            setInputForceState(Input.SPRINT, true)
+        }
+
+        // Format for debug display
+        lastKeyCombo =
+            buildString {
+                append(
+                    when (keys.forward) {
+                        ForwardInput.FORWARD -> "W"
+                        ForwardInput.BACKWARD -> "S"
+                        ForwardInput.NONE -> ""
+                    },
+                )
+                append(
+                    when (keys.strafe) {
+                        StrafeInput.LEFT -> "A"
+                        StrafeInput.RIGHT -> "D"
+                        StrafeInput.NONE -> ""
+                    },
+                )
+                if (keys.sprint) append("+Sprint")
+                if (isEmpty()) append("None")
+            }
+    }
+
+    /**
+     * Normalize angle to [-180, 180] range.
+     */
+    private fun normalizeAngle(angle: Float): Float {
+        var normalized = angle % 360f
+        if (normalized > 180f) normalized -= 360f
+        if (normalized < -180f) normalized += 360f
+        return normalized
+    }
+
+    /**
+     * Key combination for movement.
+     */
+    private data class KeyCombination(
+        val forward: ForwardInput,
+        val strafe: StrafeInput,
+        val sprint: Boolean,
+    )
+
+    /**
+     * Apply Direct intent by mapping enum inputs to Minecraft key states.
+     *
+     * Straightforward translation - no calculation needed.
+     */
+    private fun applyDirectIntent(intent: maestro.pathing.movement.MovementIntent.Direct) {
+        when (intent.forward) {
+            ForwardInput.FORWARD -> setInputForceState(Input.MOVE_FORWARD, true)
+            ForwardInput.BACKWARD -> setInputForceState(Input.MOVE_BACK, true)
+            ForwardInput.NONE -> {}
+        }
+
+        when (intent.strafe) {
+            StrafeInput.LEFT -> setInputForceState(Input.MOVE_LEFT, true)
+            StrafeInput.RIGHT -> setInputForceState(Input.MOVE_RIGHT, true)
+            StrafeInput.NONE -> {}
+        }
+
+        applySpeed(intent.speed)
+        if (intent.jump) setInputForceState(Input.JUMP, true)
+    }
+
+    /**
+     * Apply speed modifier to current input state.
+     *
+     * Sprint and sneak are mutually exclusive modifiers.
+     * Walk is the default (no modifier needed).
+     */
+    private fun applySpeed(speed: MovementSpeed) {
+        when (speed) {
+            MovementSpeed.SPRINT -> setInputForceState(Input.SPRINT, true)
+            MovementSpeed.WALK -> {} // Default, no input needed
+            MovementSpeed.SNEAK -> setInputForceState(Input.SNEAK, true)
+        }
+    }
+
+    // ===== Unified Intent Application =====
+
+    /**
+     * Apply unified intent with delta-based input updates.
+     *
+     * Tracks previous intent and only updates changed components, minimizing
+     * unnecessary input state changes. This prevents issues like:
+     * - Flickering inputs when same intent is applied repeatedly
+     * - Unnecessary key clearing and re-application every tick
+     * - Sprint detection reset from double-tap W simulation
+     *
+     * Order of application: Look → Movement → Click
+     * This ensures rotation updates before movement calculation.
+     *
+     * @param intent Unified intent to apply
+     * @param lookBehavior LookBehavior instance for rotation updates
+     * @param ctx Player context for movement calculations
+     */
+    override fun applyIntent(
+        intent: maestro.pathing.movement.Intent,
+        lookBehavior: ILookBehavior,
+        ctx: maestro.api.utils.IPlayerContext,
+    ) {
+        // Apply look first (rotation before movement)
+        if (intent.look != lastLookIntent) {
+            applyLookIntent(intent.look, lookBehavior)
+            lastLookIntent = intent.look
+        }
+
+        // Apply movement (depends on current rotation)
+        if (intent.movement != lastMovementIntent) {
+            applyMovementIntent(intent.movement, ctx)
+            lastMovementIntent = intent.movement
+        }
+
+        // Apply click last
+        if (intent.click != lastClickIntent) {
+            applyClickIntent(intent.click)
+            lastClickIntent = intent.click
+        }
+    }
+
+    /**
+     * Apply click intent by setting click input states.
+     *
+     * Left and right click are mutually exclusive (handled by existing logic in onTick).
+     * This method only sets the new state - clearing is handled by delta comparison.
+     */
+    private fun applyClickIntent(intent: maestro.pathing.movement.ClickIntent) {
+        when (intent) {
+            is maestro.pathing.movement.ClickIntent.LeftClick -> setInputForceState(Input.CLICK_LEFT, true)
+            is maestro.pathing.movement.ClickIntent.RightClick -> setInputForceState(Input.CLICK_RIGHT, true)
+            is maestro.pathing.movement.ClickIntent.None -> {
+                setInputForceState(Input.CLICK_LEFT, false)
+                setInputForceState(Input.CLICK_RIGHT, false)
+            }
+        }
+    }
+
+    /**
+     * Clear intent tracking state.
+     *
+     * Called when movement changes or path execution resets to ensure
+     * delta comparison doesn't incorrectly detect "no change" when actually
+     * switching between movements.
+     */
+    override fun clearIntentTracking() {
+        lastMovementIntent = null
+        lastLookIntent = null
+        lastClickIntent = null
+    }
+
+    // Public accessors for debug HUD
+    fun getLastIntendedYaw(): Float = lastIntendedYaw
+
+    fun getLastCurrentYaw(): Float = lastCurrentYaw
+
+    fun getLastDriftDeviation(): Float = lastDriftDeviation
+
+    fun getLastKeyCombo(): String = lastKeyCombo
+
+    fun hasActiveMovement(): Boolean = lastMovementIntent != null
 }

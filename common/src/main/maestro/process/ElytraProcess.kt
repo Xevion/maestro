@@ -26,7 +26,6 @@ import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.input.Input
 import maestro.pathing.movement.CalculationContext
-import maestro.pathing.movement.movements.MovementFall
 import maestro.process.elytra.ElytraBehavior
 import maestro.process.elytra.NetherPathfinderContext
 import maestro.process.elytra.NullElytraProcess
@@ -230,34 +229,35 @@ class ElytraProcess private constructor(
             }
             val executor = maestro.pathingBehavior.getCurrent()
             if (executor != null && executor.path.goal == this.goal) {
-                val fall =
-                    executor.path
-                        .movements()
-                        .filterIsInstance<MovementFall>()
-                        .firstOrNull()
-
-                if (fall != null) {
-                    val from =
-                        PackedBlockPos(
-                            (fall.src.x + fall.dest.x) / 2,
-                            (fall.src.y + fall.dest.y) / 2,
-                            (fall.src.z + fall.dest.z) / 2,
-                        )
-                    currentBehavior.pathManager
-                        .pathToDestination(from.toBlockPos())
-                        .whenComplete { _, ex ->
-                            if (ex == null) {
-                                this.state = State.GET_TO_JUMP
-                                return@whenComplete
-                            }
-                            onLostControl()
-                        }
-                    this.state = State.PAUSE
-                } else {
-                    onLostControl()
-                    log.atWarn().log("Failed to compute walking path to jump point")
-                    return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
-                }
+                // TODO: Re-enable after MovementFall is converted to Kotlin
+                // val fall =
+                //     executor.path
+                //         .movements()
+                //         .filterIsInstance<MovementFall>()
+                //         .firstOrNull()
+                //
+                // if (fall != null) {
+                //     val from =
+                //         PackedBlockPos(
+                //             (fall.src.x + fall.dest.x) / 2,
+                //             (fall.src.y + fall.dest.y) / 2,
+                //             (fall.src.z + fall.dest.z) / 2,
+                //         )
+                //     currentBehavior.pathManager
+                //         .pathToDestination(from.toBlockPos())
+                //         .whenComplete { _, ex ->
+                //             if (ex == null) {
+                //                 this.state = State.GET_TO_JUMP
+                //                 return@whenComplete
+                //             }
+                //             onLostControl()
+                //         }
+                //     this.state = State.PAUSE
+                // } else {
+                onLostControl()
+                log.atWarn().log("Failed to compute walking path to jump point (MovementFall temporarily disabled)")
+                return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
+                // }
             }
             return PathingCommandContext(
                 this.goal!!,
@@ -275,8 +275,9 @@ class ElytraProcess private constructor(
             val canStartFlying =
                 ctx.player().deltaMovement.y < -0.377 &&
                     !isSafeToCancel &&
-                    executor != null &&
-                    executor.path.movements()[executor.position] is MovementFall
+                    executor != null
+            // TODO: Re-enable after MovementFall is converted to Kotlin
+            // && executor.path.movements()[executor.position] is MovementFall
 
             if (canStartFlying) {
                 this.state = State.START_FLYING
@@ -359,7 +360,7 @@ class ElytraProcess private constructor(
             }
             else -> throw IllegalArgumentException("The goal must be a GoalXZ or GoalBlock")
         }
-        if (y <= 0 || y >= 128) {
+        if (y !in 1..<128) {
             throw IllegalArgumentException("The y of the goal is not between 0 and 128")
         }
         this.pathTo(BlockPos(x, y, z))
@@ -529,7 +530,7 @@ class ElytraProcess private constructor(
 
     private fun findSafeLandingSpot(start: PackedBlockPos): PackedBlockPos? {
         val queue =
-            PriorityQueue<PackedBlockPos>(
+            PriorityQueue(
                 Comparator
                     .comparingInt<PackedBlockPos> { pos ->
                         (pos.x - start.x) * (pos.x - start.x) +
@@ -570,11 +571,6 @@ class ElytraProcess private constructor(
 
         private const val LANDING_COLUMN_HEIGHT = 15
 
-        private const val AUTO_JUMP_FAILURE_MSG =
-            "Failed to compute a walking path to a spot to jump off from. Consider starting from a" +
-                " higher location, near an overhang. Or, you can disable elytraAutoJump and just" +
-                " manually begin gliding."
-
         @JvmStatic
         fun create(maestro: Agent): IElytraProcess =
             if (NetherPathfinderContext.isSupported()) {
@@ -583,7 +579,7 @@ class ElytraProcess private constructor(
                 NullElytraProcess(maestro)
             }
 
-        private fun isInBounds(pos: BlockPos): Boolean = pos.y >= 0 && pos.y < 128
+        private fun isInBounds(pos: BlockPos): Boolean = pos.y in 0..<128
     }
 
     private val badLandingSpots: MutableSet<PackedBlockPos> = mutableSetOf()

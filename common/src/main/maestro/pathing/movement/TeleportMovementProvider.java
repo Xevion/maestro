@@ -1,12 +1,11 @@
 package maestro.pathing.movement;
 
-import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PackedBlockPos;
-import maestro.pathing.movement.movements.MovementTeleport;
+// TODO: Re-enable after MovementTeleport is converted to Kotlin
+// import maestro.pathing.movement.movements.MovementTeleport;
 import org.slf4j.Logger;
 
 /**
@@ -31,18 +30,21 @@ public class TeleportMovementProvider implements IMovementProvider {
             return Stream.empty();
         }
 
+        // TODO: Re-enable after MovementTeleport is converted to Kotlin
         // Find valid destinations (arrival and landing positions)
-        List<TeleportDestinationFinder.TeleportDestination> destinations =
-                TeleportDestinationFinder.findDestinations(context, from);
-
+        // List<TeleportDestinationFinder.TeleportDestination> destinations =
+        //         TeleportDestinationFinder.findDestinations(context, from);
+        //
         // Create movements for each valid destination
-        return destinations.stream()
-                .map(
-                        dest ->
-                                new MovementTeleport(
-                                        context.getMaestro(), from, dest.arrival, dest.landing))
-                .peek(move -> move.override(move.calculateCost(context)))
-                .filter(move -> move.getCost() < ActionCosts.COST_INF)
-                .map(move -> (IMovement) move);
+        // return destinations.stream()
+        //         .map(
+        //                 dest ->
+        //                         new MovementTeleport(
+        //                                 context.getMaestro(), from, dest.arrival, dest.landing))
+        //         .peek(move -> move.override(move.calculateCost(context)))
+        //         .filter(move -> move.getCost() < ActionCosts.COST_INF)
+        //         .map(move -> (IMovement) move);
+
+        return Stream.empty();
     }
 }

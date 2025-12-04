@@ -3,14 +3,15 @@ package maestro.pathing.movement
 import maestro.api.utils.PackedBlockPos
 import maestro.pathing.movement.movements.MovementAscend
 import maestro.pathing.movement.movements.MovementDescend
-import maestro.pathing.movement.movements.MovementDiagonal
 import maestro.pathing.movement.movements.MovementDownward
-import maestro.pathing.movement.movements.MovementFall
-import maestro.pathing.movement.movements.MovementParkour
-import maestro.pathing.movement.movements.MovementPillar
 import maestro.pathing.movement.movements.MovementTraverse
 import maestro.utils.pathing.MutableMoveResult
-import net.minecraft.core.Direction
+
+// TODO: Convert to Kotlin
+// import maestro.pathing.movement.movements.MovementDiagonal
+// import maestro.pathing.movement.movements.MovementFall
+// import maestro.pathing.movement.movements.MovementParkour
+// import maestro.pathing.movement.movements.MovementPillar
 
 /** An enum of all possible movements attached to all possible directions they could be taken in */
 enum class Moves(
@@ -34,19 +35,20 @@ enum class Moves(
         ): Double = MovementDownward.cost(context, x, y, z)
     },
 
-    PILLAR(0, +1, 0) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement = MovementPillar(context.maestro, src, src.above())
-
-        override fun cost(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-        ): Double = MovementPillar.cost(context, x, y, z)
-    },
+    // TODO: Convert MovementPillar to Kotlin
+    // PILLAR(0, +1, 0) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement = MovementPillar(context.maestro, src, src.above())
+    //
+    //     override fun cost(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //     ): Double = MovementPillar.cost(context, x, y, z)
+    // },
 
     TRAVERSE_NORTH(0, 0, -1) {
         override fun apply0(
@@ -180,6 +182,7 @@ enum class Moves(
         ): Double = MovementAscend.cost(context, x, y, z, x - 1, z)
     },
 
+    // NOTE: Only single-block descend enabled. Multi-block falls require MovementFall.kt conversion.
     DESCEND_EAST(+1, -1, 0, dynamicXZ = false, dynamicY = true) {
         override fun apply0(
             context: CalculationContext,
@@ -187,11 +190,11 @@ enum class Moves(
         ): Movement {
             val res = MutableMoveResult()
             apply(context, src.x, src.y, src.z, res)
-            return if (res.y == src.y - 1) {
-                MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
-            } else {
-                MovementFall(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            // Only support single-block descend for now (y == src.y - 1)
+            if (res.y != src.y - 1) {
+                return MovementDescend(context.maestro, src, src) // Invalid movement
             }
+            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(
@@ -212,11 +215,10 @@ enum class Moves(
         ): Movement {
             val res = MutableMoveResult()
             apply(context, src.x, src.y, src.z, res)
-            return if (res.y == src.y - 1) {
-                MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
-            } else {
-                MovementFall(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            if (res.y != src.y - 1) {
+                return MovementDescend(context.maestro, src, src)
             }
+            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(
@@ -237,11 +239,10 @@ enum class Moves(
         ): Movement {
             val res = MutableMoveResult()
             apply(context, src.x, src.y, src.z, res)
-            return if (res.y == src.y - 1) {
-                MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
-            } else {
-                MovementFall(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            if (res.y != src.y - 1) {
+                return MovementDescend(context.maestro, src, src)
             }
+            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(
@@ -262,11 +263,10 @@ enum class Moves(
         ): Movement {
             val res = MutableMoveResult()
             apply(context, src.x, src.y, src.z, res)
-            return if (res.y == src.y - 1) {
-                MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
-            } else {
-                MovementFall(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            if (res.y != src.y - 1) {
+                return MovementDescend(context.maestro, src, src)
             }
+            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(
@@ -280,181 +280,183 @@ enum class Moves(
         }
     },
 
-    DIAGONAL_NORTHEAST(+1, 0, -1, dynamicXZ = false, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement {
-            val res = MutableMoveResult()
-            apply(context, src.x, src.y, src.z, res)
-            return MovementDiagonal(
-                context.maestro,
-                src,
-                Direction.NORTH,
-                Direction.EAST,
-                res.y - src.y,
-            )
-        }
+    // TODO: Convert MovementDiagonal to Kotlin
+    // DIAGONAL_NORTHEAST(+1, 0, -1, dynamicXZ = false, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement {
+    //         val res = MutableMoveResult()
+    //         apply(context, src.x, src.y, src.z, res)
+    //         return MovementDiagonal(
+    //             context.maestro,
+    //             src,
+    //             Direction.NORTH,
+    //             Direction.EAST,
+    //             res.y - src.y,
+    //         )
+    //     }
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //         ) {
+    //         MovementDiagonal.cost(context, x, y, z, x + 1, z - 1, result)
+    //     }
+    // },
+    //
+    // DIAGONAL_NORTHWEST(-1, 0, -1, dynamicXZ = false, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement {
+    //         val res = MutableMoveResult()
+    //         apply(context, src.x, src.y, src.z, res)
+    //         return MovementDiagonal(
+    //             context.maestro,
+    //             src,
+    //             Direction.NORTH,
+    //             Direction.WEST,
+    //             res.y - src.y,
+    //         )
+    //     }
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //     ) {
+    //         MovementDiagonal.cost(context, x, y, z, x - 1, z - 1, result)
+    //     }
+    // },
+    //
+    // DIAGONAL_SOUTHEAST(+1, 0, +1, dynamicXZ = false, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement {
+    //         val res = MutableMoveResult()
+    //         apply(context, src.x, src.y, src.z, res)
+    //         return MovementDiagonal(
+    //             context.maestro,
+    //             src,
+    //             Direction.SOUTH,
+    //             Direction.EAST,
+    //             res.y - src.y,
+    //         )
+    //     }
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //     ) {
+    //         MovementDiagonal.cost(context, x, y, z, x + 1, z + 1, result)
+    //     }
+    // },
+    //
+    // DIAGONAL_SOUTHWEST(-1, 0, +1, dynamicXZ = false, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement {
+    //         val res = MutableMoveResult()
+    //         apply(context, src.x, src.y, src.z, res)
+    //         return MovementDiagonal(
+    //             context.maestro,
+    //             src,
+    //             Direction.SOUTH,
+    //             Direction.WEST,
+    //             res.y - src.y,
+    //         )
+    //     }
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //     ) {
+    //         MovementDiagonal.cost(context, x, y, z, x - 1, z + 1, result)
+    //     }
+    // },
 
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementDiagonal.cost(context, x, y, z, x + 1, z - 1, result)
-        }
-    },
-
-    DIAGONAL_NORTHWEST(-1, 0, -1, dynamicXZ = false, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement {
-            val res = MutableMoveResult()
-            apply(context, src.x, src.y, src.z, res)
-            return MovementDiagonal(
-                context.maestro,
-                src,
-                Direction.NORTH,
-                Direction.WEST,
-                res.y - src.y,
-            )
-        }
-
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementDiagonal.cost(context, x, y, z, x - 1, z - 1, result)
-        }
-    },
-
-    DIAGONAL_SOUTHEAST(+1, 0, +1, dynamicXZ = false, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement {
-            val res = MutableMoveResult()
-            apply(context, src.x, src.y, src.z, res)
-            return MovementDiagonal(
-                context.maestro,
-                src,
-                Direction.SOUTH,
-                Direction.EAST,
-                res.y - src.y,
-            )
-        }
-
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementDiagonal.cost(context, x, y, z, x + 1, z + 1, result)
-        }
-    },
-
-    DIAGONAL_SOUTHWEST(-1, 0, +1, dynamicXZ = false, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement {
-            val res = MutableMoveResult()
-            apply(context, src.x, src.y, src.z, res)
-            return MovementDiagonal(
-                context.maestro,
-                src,
-                Direction.SOUTH,
-                Direction.WEST,
-                res.y - src.y,
-            )
-        }
-
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementDiagonal.cost(context, x, y, z, x - 1, z + 1, result)
-        }
-    },
-
-    PARKOUR_NORTH(0, 0, -4, dynamicXZ = true, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement = MovementParkour.cost(context, src, Direction.NORTH)
-
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementParkour.cost(context, x, y, z, Direction.NORTH, result)
-        }
-    },
-
-    PARKOUR_SOUTH(0, 0, +4, dynamicXZ = true, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement = MovementParkour.cost(context, src, Direction.SOUTH)
-
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementParkour.cost(context, x, y, z, Direction.SOUTH, result)
-        }
-    },
-
-    PARKOUR_EAST(+4, 0, 0, dynamicXZ = true, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement = MovementParkour.cost(context, src, Direction.EAST)
-
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementParkour.cost(context, x, y, z, Direction.EAST, result)
-        }
-    },
-
-    PARKOUR_WEST(-4, 0, 0, dynamicXZ = true, dynamicY = true) {
-        override fun apply0(
-            context: CalculationContext,
-            src: PackedBlockPos,
-        ): Movement = MovementParkour.cost(context, src, Direction.WEST)
-
-        override fun apply(
-            context: CalculationContext,
-            x: Int,
-            y: Int,
-            z: Int,
-            result: MutableMoveResult,
-        ) {
-            MovementParkour.cost(context, x, y, z, Direction.WEST, result)
-        }
-    },
+    // TODO: Convert MovementParkour to Kotlin
+    // PARKOUR_NORTH(0, 0, -4, dynamicXZ = true, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement = MovementParkour.cost(context, src, Direction.NORTH)
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //     ) {
+    //         MovementParkour.cost(context, x, y, z, Direction.NORTH, result)
+    //     }
+    // },
+    //
+    // PARKOUR_SOUTH(0, 0, +4, dynamicXZ = true, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement = MovementParkour.cost(context, src, Direction.SOUTH)
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //     ) {
+    //         MovementParkour.cost(context, x, y, z, Direction.SOUTH, result)
+    //     }
+    // },
+    //
+    // PARKOUR_EAST(+4, 0, 0, dynamicXZ = true, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement = MovementParkour.cost(context, src, Direction.EAST)
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //     ) {
+    //         MovementParkour.cost(context, x, y, z, Direction.EAST, result)
+    //     }
+    // },
+    //
+    // PARKOUR_WEST(-4, 0, 0, dynamicXZ = true, dynamicY = true) {
+    //     override fun apply0(
+    //         context: CalculationContext,
+    //         src: PackedBlockPos,
+    //     ): Movement = MovementParkour.cost(context, src, Direction.WEST)
+    //
+    //     override fun apply(
+    //         context: CalculationContext,
+    //         x: Int,
+    //         y: Int,
+    //         z: Int,
+    //         result: MutableMoveResult,
+    //     ) {
+    //         MovementParkour.cost(context, x, y, z, Direction.WEST, result)
+    //     }
+    // },
     ;
 
     abstract fun apply0(

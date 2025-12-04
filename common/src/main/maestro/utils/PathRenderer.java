@@ -942,25 +942,32 @@ public final class PathRenderer implements IRenderer {
         if (movement == null) {
             return false;
         }
-        return movement instanceof maestro.pathing.movement.movements.MovementSwimHorizontal
-                || movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
+        // TODO: Re-enable after MovementSwimHorizontal and MovementSwimVertical are converted to
+        // Kotlin
+        return false; // Temporarily disabled
+        // return movement instanceof maestro.pathing.movement.movements.MovementSwimHorizontal
+        //         || movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
     }
 
     private static boolean isVerticalSwimming(maestro.api.pathing.movement.IMovement movement) {
         if (movement == null) {
             return false;
         }
-        return movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
+        // TODO: Re-enable after MovementSwimVertical is converted to Kotlin
+        return false; // Temporarily disabled
+        // return movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
     }
 
     private static boolean isAscending(maestro.api.pathing.movement.IMovement movement) {
         if (movement == null) {
             return false;
         }
-        if (movement instanceof maestro.pathing.movement.movements.MovementSwimVertical) {
-            return movement.getDest().getY() > movement.getSrc().getY();
-        }
-        return false;
+        // TODO: Re-enable after MovementSwimVertical is converted to Kotlin
+        return false; // Temporarily disabled
+        // if (movement instanceof maestro.pathing.movement.movements.MovementSwimVertical) {
+        //     return movement.getDest().getY() > movement.getSrc().getY();
+        // }
+        // return false;
     }
 
     private static Color getMovementColor(

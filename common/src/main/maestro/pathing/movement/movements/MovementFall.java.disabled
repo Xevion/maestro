@@ -14,7 +14,6 @@ import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.MovementState;
-import maestro.pathing.movement.MovementState.MovementTarget;
 import maestro.utils.pathing.MutableMoveResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,14 +35,15 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
     public MovementFall(IAgent maestro, PackedBlockPos src, PackedBlockPos dest) {
-        super(maestro, src, dest, MovementFall.buildPositionsToBreak(src, dest));
+        super(maestro, src, dest);
     }
 
     @Override
     public double calculateCost(CalculationContext context) {
         MutableMoveResult result = new MutableMoveResult();
         MovementDescend.cost(
-                context, src.getX(), src.getY(), src.getZ(), dest.getX(), dest.getZ(), result);
+                context, src.getX(), src.getY(), src.getZ(),
+                dest.getX(), dest.getZ(), result);
         if (result.y != dest.getY()) {
             return ActionCosts
                     .COST_INF; // doesn't apply to us, this position is a descent not a fall
@@ -52,7 +52,7 @@ public class MovementFall extends Movement {
     }
 
     @Override
-    protected Set<PackedBlockPos> calculateValidPositions() {
+    public Set<PackedBlockPos> getValidPositions() {
         Set<PackedBlockPos> set = new HashSet<>();
         set.add(src);
         for (int y = src.getY() - dest.getY(); y >= 0; y--) {
@@ -76,9 +76,20 @@ public class MovementFall extends Movement {
                 result);
     }
 
+    // Stub implementations for MovementBehavior interface
     @Override
+    public maestro.pathing.movement.MovementIntent computeMovement(maestro.api.utils.IPlayerContext ctx) {
+        // TODO: Convert to intent-based system (Phase 4)
+        return maestro.pathing.movement.MovementIntent.Stop.INSTANCE;
+    }
+
+    @Override
+    public maestro.pathing.movement.LookIntent computeLook(maestro.api.utils.IPlayerContext ctx) {
+        // TODO: Convert to intent-based system (Phase 4)
+        return maestro.pathing.movement.LookIntent.None.INSTANCE;
+    }
+
     public MovementState updateState(MovementState state) {
-        super.updateState(state);
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
@@ -115,9 +126,9 @@ public class MovementFall extends Movement {
             }
         }
         if (targetRotation != null) {
-            state.setTarget(new MovementTarget(targetRotation, true));
+            state.setTarget(new MovementState.MovementTarget(targetRotation, true));
         } else {
-            state.setTarget(new MovementTarget(toDest, false));
+            state.setTarget(new MovementState.MovementTarget(toDest, false));
         }
         if (playerFeet.equals(dest.toBlockPos())
                 && (ctx.player().position().y - playerFeet.getY() < 0.094
@@ -194,7 +205,7 @@ public class MovementFall extends Movement {
                             destCenter.y,
                             destCenter.z + 0.125 * avoid.getZ());
             state.setTarget(
-                    new MovementTarget(
+                    new MovementState.MovementTarget(
                             RotationUtils.calcRotationFromVec3d(
                                     ctx.playerHead(), destCenterOffset, ctx.playerRotations()),
                             false));

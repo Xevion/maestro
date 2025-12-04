@@ -11,13 +11,15 @@ import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.Movement
 import maestro.pathing.movement.movements.MovementAscend
 import maestro.pathing.movement.movements.MovementDescend
-import maestro.pathing.movement.movements.MovementTeleport
 import maestro.pathing.movement.movements.MovementTraverse
 import maestro.utils.pathing.Favoring
 import org.slf4j.Logger
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+
+// Disabled: MovementTeleport not yet ported to Kotlin
+// import maestro.pathing.movement.movements.MovementTeleport
 
 /**
  * Handles path reconnection when bot deviates from corridor.
@@ -258,7 +260,7 @@ class PathReconnection {
          */
         private val COMMON_MOVEMENT_TYPES: List<Class<out Movement>> =
             listOf(
-                MovementTeleport::class.java,
+//                MovementTeleport::class.java,
                 MovementAscend::class.java,
                 MovementTraverse::class.java,
                 MovementDescend::class.java,

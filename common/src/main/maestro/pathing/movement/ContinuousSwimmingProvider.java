@@ -6,8 +6,11 @@ import java.util.stream.Stream;
 import maestro.Agent;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.PackedBlockPos;
-import maestro.pathing.movement.movements.MovementSwimHorizontal;
-import maestro.pathing.movement.movements.MovementSwimVertical;
+
+// TODO: Re-enable after MovementSwimHorizontal is converted to Kotlin
+// import maestro.pathing.movement.movements.MovementSwimHorizontal;
+// TODO: Re-enable after MovementSwimVertical is converted to Kotlin
+// import maestro.pathing.movement.movements.MovementSwimVertical;
 
 /**
  * Dynamic swimming movement provider with configurable angular precision.
@@ -40,6 +43,8 @@ public class ContinuousSwimmingProvider implements IMovementProvider {
 
         List<IMovement> movements = new ArrayList<>();
 
+        // TODO: Re-enable after MovementSwimHorizontal is converted to Kotlin
+        /*
         // Generate horizontal movements with configurable angles
         double angleStep = (2 * Math.PI) / angularPrecision;
         for (int i = 0; i < angularPrecision; i++) {
@@ -88,7 +93,10 @@ public class ContinuousSwimmingProvider implements IMovementProvider {
             downDiagonal.override(downDiagonal.calculateCost(context));
             movements.add(downDiagonal);
         }
+        */
 
+        // TODO: Re-enable after MovementSwimVertical is converted to Kotlin
+        /*
         // Generate pure vertical movements (UP, DOWN)
         MovementSwimVertical upMovement =
                 new MovementSwimVertical(context.getMaestro(), from, from.above());
@@ -99,6 +107,7 @@ public class ContinuousSwimmingProvider implements IMovementProvider {
                 new MovementSwimVertical(context.getMaestro(), from, from.below());
         downMovement.override(downMovement.calculateCost(context));
         movements.add(downMovement);
+        */
 
         return movements.stream();
     }

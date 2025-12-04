@@ -45,8 +45,10 @@ public class HudDebugRenderer implements IHudDebugRenderer {
     // Cached strings (updated per tick)
     private String calcLine = "";
     private String execLine = "";
+    private String movementDebugLine = "";
     private String goalLine = "";
     private String progressLine = "";
+    private String driftLine = "";
     private long lastUpdateTick = -1;
 
     // Movement type names
@@ -57,7 +59,7 @@ public class HudDebugRenderer implements IHudDebugRenderer {
                     "MovementAscend", "Climbing",
                     "MovementDescend", "Descending",
                     "MovementPillar", "Pillaring",
-                    "MovementDownward", "Ladder",
+                    "MovementDownward", "Downward",
                     "MovementFall", "Falling",
                     "MovementParkour", "Parkour",
                     "MovementSwimHorizontal", "Swimming",
@@ -83,8 +85,14 @@ public class HudDebugRenderer implements IHudDebugRenderer {
         if (!execLine.isEmpty()) {
             lines.add(new LineData(execLine, getExecColor()));
         }
+        if (!movementDebugLine.isEmpty()) {
+            lines.add(new LineData(movementDebugLine, getMovementDebugColor()));
+        }
         if (!goalLine.isEmpty()) {
             lines.add(new LineData(goalLine, getGoalColor()));
+        }
+        if (!driftLine.isEmpty()) {
+            lines.add(new LineData(driftLine, getDriftColor()));
         }
         if (!progressLine.isEmpty()) {
             lines.add(new LineData(progressLine, getProgressColor()));
@@ -137,8 +145,10 @@ public class HudDebugRenderer implements IHudDebugRenderer {
 
         calcLine = buildCalculationLine();
         execLine = buildExecutionLine();
+        movementDebugLine = buildMovementDebugLine();
         goalLine = buildGoalLine();
         progressLine = buildProgressLine();
+        driftLine = buildDriftDebugLine();
     }
 
     private String buildCalculationLine() {
@@ -186,6 +196,30 @@ public class HudDebugRenderer implements IHudDebugRenderer {
         return String.format(
                 "▶ %s → %s • Step %d/%d • %.1fs remaining",
                 currentType, nextType, pos + 1, total, seconds);
+    }
+
+    private String buildMovementDebugLine() {
+        IPathExecutor current = agent.getPathingBehavior().getCurrent();
+        if (current == null) {
+            return ""; // Hide when idle
+        }
+
+        IPath path = current.getPath();
+        int pos = current.getPosition();
+
+        // Bounds check
+        if (pos < 0 || pos >= path.movements().size()) {
+            return ""; // Hide when complete
+        }
+
+        IMovement movement = path.movements().get(pos);
+        String debugInfo = movement.getDebugInfo();
+
+        if (debugInfo == null || debugInfo.isEmpty()) {
+            return ""; // Movement doesn't provide debug info
+        }
+
+        return String.format("  └─ %s", debugInfo);
     }
 
     private String buildGoalLine() {
@@ -236,6 +270,19 @@ public class HudDebugRenderer implements IHudDebugRenderer {
         bar.append(String.format("] %d%%", percent));
 
         return bar.toString();
+    }
+
+    private String buildDriftDebugLine() {
+        if (!agent.getInputOverrideHandler().hasActiveMovement()) {
+            return ""; // Hide when no active movement
+        }
+
+        float intendedYaw = agent.getInputOverrideHandler().getLastIntendedYaw();
+        float currentYaw = agent.getInputOverrideHandler().getLastCurrentYaw();
+        float deviation = agent.getInputOverrideHandler().getLastDriftDeviation();
+        String keys = agent.getInputOverrideHandler().getLastKeyCombo();
+
+        return String.format("⌖ Drift: %.1f° • Keys: %s", deviation, keys);
     }
 
     private String getMovementName(IMovement movement) {
@@ -392,6 +439,25 @@ public class HudDebugRenderer implements IHudDebugRenderer {
             return COLOR_YELLOW;
         } else {
             return COLOR_RED;
+        }
+    }
+
+    private int getMovementDebugColor() {
+        return COLOR_GRAY; // Subdued color for debug details
+    }
+
+    private int getDriftColor() {
+        if (!agent.getInputOverrideHandler().hasActiveMovement()) {
+            return COLOR_TEXT;
+        }
+
+        float deviation = Math.abs(agent.getInputOverrideHandler().getLastDriftDeviation());
+        if (deviation < 5f) {
+            return COLOR_GREEN; // Minimal drift
+        } else if (deviation < 15f) {
+            return COLOR_YELLOW; // Moderate drift
+        } else {
+            return COLOR_RED; // High drift (correction active)
         }
     }
 
