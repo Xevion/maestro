@@ -12,9 +12,11 @@ import maestro.pathing.movement.LookIntent
 import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
+import maestro.pathing.movement.MovementSpeed
 import maestro.utils.BlockStateInterface
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.phys.Vec2
 
 /**
  * Downward movement by one block (breaking the block below if needed).
@@ -22,6 +24,12 @@ import net.minecraft.world.level.block.Blocks
  * This movement type handles:
  * - Descending one block by breaking the block below
  * - Climbing down ladders/vines
+ *
+ * Implementation notes:
+ * - Uses pre-centering to avoid getting stuck on block edges when descending
+ * - Centers horizontally before allowing gravity to pull the player down
+ * - Pre-centering may not always be valid for blocks with non-typical collision boxes
+ *   (e.g., open trapdoors, glass panes, iron bars, end rods)
  */
 class MovementDownward(
     maestro: IAgent,
@@ -59,10 +67,19 @@ class MovementDownward(
         // Check if we need to break the block below
         val needsBreaking = !MovementHelper.canWalkThrough(ctx, dest)
 
+        // Calculate horizontal distance from dest center
+        val centerXZ = Vec2(dest.x + 0.5f, dest.z + 0.5f)
+        val distXZ =
+            kotlin.math.sqrt(
+                (playerPos.x - centerXZ.x) * (playerPos.x - centerXZ.x) +
+                    (playerPos.z - centerXZ.y) * (playerPos.z - centerXZ.y),
+            )
+
         // Debug: Distance and velocity metrics
         val distVertical = kotlin.math.abs(playerPos.y - dest.y)
         val velocity = ctx.player().deltaMovement
         debug.metric("dist", distVertical)
+        debug.metric("distXZ", distXZ)
         debug.metric("vel", kotlin.math.abs(velocity.y))
 
         // Debug: Y position status
@@ -86,9 +103,27 @@ class MovementDownward(
         debug.flag("break", needsBreaking)
         debug.flag("fall", velocity.y < -0.01)
 
+        // Phase 1: Center horizontally before descending to avoid edge-sticking
+        // This prevents getting stuck on block edges when falling
+        if (distXZ > 0.15) {
+            debug.status("phase", "center")
+            return Intent(
+                movement =
+                    MovementIntent.Toward(
+                        target = centerXZ,
+                        speed = MovementSpeed.WALK,
+                        startPos = Vec2(src.x + 0.5f, src.z + 0.5f),
+                    ),
+                look = LookIntent.Block(dest.toBlockPos()),
+                click = if (needsBreaking) ClickIntent.LeftClick else ClickIntent.None,
+            )
+        }
+
+        // Phase 2: Centered - now safe to descend
+        debug.status("phase", "fall")
         return Intent(
             movement = MovementIntent.Stop, // Stay still and let gravity pull us down
-            look = LookIntent.Block(dest.toBlockPos()), // Look at the block we're breaking
+            look = LookIntent.Block(dest.toBlockPos()),
             click = if (needsBreaking) ClickIntent.LeftClick else ClickIntent.None,
         )
     }
