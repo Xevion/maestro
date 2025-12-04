@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import maestro.api.utils.MaestroLogger;
 import maestro.api.utils.PackedBlockPos;
+import maestro.utils.BlockPosExtKt;
+import maestro.utils.Vec3ExtKt;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -205,11 +207,11 @@ public class TeleportDestinationFinder {
      */
     private static boolean hasLineOfSight(CalculationContext context, PackedBlockPos dest) {
         Vec3 srcPos = context.maestro.getPlayerContext().player().position();
-        Vec3 destPos = new Vec3(dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5);
+        Vec3 destCenter = BlockPosExtKt.getCenter(dest.toBlockPos());
 
         // Phase 1: Quick center-point raycast as fast pre-filter
-        Vec3 srcFeet = new Vec3(srcPos.x, srcPos.y, srcPos.z);
-        Vec3 destFeet = new Vec3(dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5);
+        Vec3 srcFeet = srcPos;
+        Vec3 destFeet = destCenter;
 
         HitResult feetResult =
                 context.world.clip(
@@ -227,8 +229,8 @@ public class TeleportDestinationFinder {
 
         // Phase 1.5: Eyes-to-eyes raycast for proper line-of-sight validation
         // Player standing eye height is 1.62 blocks above feet
-        Vec3 srcEyes = new Vec3(srcPos.x, srcPos.y + 1.62, srcPos.z);
-        Vec3 destEyes = new Vec3(dest.getX() + 0.5, dest.getY() + 1.62, dest.getZ() + 0.5);
+        Vec3 srcEyes = Vec3ExtKt.withY(srcPos, srcPos.y + 1.62);
+        Vec3 destEyes = BlockPosExtKt.getCenterWithEyes(dest.toBlockPos());
 
         HitResult eyesResult =
                 context.world.clip(
@@ -247,13 +249,13 @@ public class TeleportDestinationFinder {
         // Phase 2: Swept AABB for comprehensive diagonal coverage
         // Create box encompassing entire movement path with full player width
         // Player dimensions: 0.6 blocks wide (±0.3 from center), 1.8 blocks tall
-        double minX = Math.min(srcPos.x - 0.3, destPos.x - 0.3);
-        double minY = Math.min(srcPos.y, destPos.y);
-        double minZ = Math.min(srcPos.z - 0.3, destPos.z - 0.3);
+        double minX = Math.min(srcPos.x - 0.3, destCenter.x - 0.3);
+        double minY = Math.min(srcPos.y, destCenter.y);
+        double minZ = Math.min(srcPos.z - 0.3, destCenter.z - 0.3);
 
-        double maxX = Math.max(srcPos.x + 0.3, destPos.x + 0.3);
-        double maxY = Math.max(srcPos.y + 1.8, destPos.y + 1.8);
-        double maxZ = Math.max(srcPos.z + 0.3, destPos.z + 0.3);
+        double maxX = Math.max(srcPos.x + 0.3, destCenter.x + 0.3);
+        double maxY = Math.max(srcPos.y + 1.8, destCenter.y + 1.8);
+        double maxZ = Math.max(srcPos.z + 0.3, destCenter.z + 0.3);
 
         AABB sweptBox = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
         VoxelShape sweptShape = Shapes.create(sweptBox);
@@ -277,11 +279,16 @@ public class TeleportDestinationFinder {
     private static boolean isCollisionFree(CalculationContext context, PackedBlockPos dest) {
         // Create player bounding box at destination
         // Player dimensions: 0.6 width × 1.8 height (standing)
-        double x = dest.getX() + 0.5;
-        double y = dest.getY();
-        double z = dest.getZ() + 0.5;
+        Vec3 center = BlockPosExtKt.getCenter(dest.toBlockPos());
 
-        AABB playerBox = new AABB(x - 0.3, y, z - 0.3, x + 0.3, y + 1.8, z + 0.3);
+        AABB playerBox =
+                new AABB(
+                        center.x - 0.3,
+                        center.y,
+                        center.z - 0.3,
+                        center.x + 0.3,
+                        center.y + 1.8,
+                        center.z + 0.3);
 
         // Convert AABB to VoxelShape for collision testing
         VoxelShape playerShape = Shapes.create(playerBox);

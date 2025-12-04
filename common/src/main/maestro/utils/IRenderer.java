@@ -80,14 +80,12 @@ public interface IRenderer {
             double x2,
             double y2,
             double z2) {
-        final double dx = x2 - x1;
-        final double dy = y2 - y1;
-        final double dz = z2 - z1;
+        Vec3 delta = new Vec3(x2 - x1, y2 - y1, z2 - z1);
+        Vec3 normalized = Vec3ExtKt.normalized(delta);
 
-        final double invMag = 1.0 / Math.sqrt(dx * dx + dy * dy + dz * dz);
-        final float nx = (float) (dx * invMag);
-        final float ny = (float) (dy * invMag);
-        final float nz = (float) (dz * invMag);
+        final float nx = (float) normalized.x;
+        final float ny = (float) normalized.y;
+        final float nz = (float) normalized.z;
 
         emitLine(bufferBuilder, stack, x1, y1, z1, x2, y2, z2, nx, ny, nz);
     }

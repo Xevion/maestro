@@ -9,7 +9,6 @@ import maestro.api.event.events.BlockChangeEvent;
 import maestro.api.event.events.ChatEvent;
 import maestro.api.event.events.ChunkEvent;
 import maestro.api.event.events.type.EventState;
-import maestro.api.utils.Pair;
 import maestro.cache.CachedChunk;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
@@ -130,17 +129,17 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
             return;
         }
 
-        List<Pair<BlockPos, BlockState>> changes = new ArrayList<>();
+        List<kotlin.Pair<BlockPos, BlockState>> changes = new ArrayList<>();
         packetIn.runUpdates(
                 (mutPos, state) -> {
-                    changes.add(new Pair<>(mutPos.immutable(), state));
+                    changes.add(new kotlin.Pair<>(mutPos.immutable(), state));
                 });
         if (changes.isEmpty()) {
             return;
         }
         maestro.getGameEventHandler()
                 .onBlockChange(
-                        new BlockChangeEvent(new ChunkPos(changes.getFirst().first()), changes));
+                        new BlockChangeEvent(new ChunkPos(changes.getFirst().getFirst()), changes));
     }
 
     @Inject(

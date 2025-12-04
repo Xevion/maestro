@@ -6,6 +6,9 @@ import maestro.api.pathing.movement.MovementStatus
 import maestro.api.utils.IPlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
+import maestro.api.utils.center
+import maestro.api.utils.centerWithY
+import maestro.api.utils.centerXZ
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
@@ -15,13 +18,16 @@ import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.utils.BlockStateInterface
+import maestro.utils.distanceSquaredTo
+import maestro.utils.lerp
+import maestro.utils.minus
 import maestro.utils.pathing.MutableMoveResult
+import maestro.utils.plus
+import maestro.utils.toVec3XZ
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.FallingBlock
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.phys.Vec2
-import net.minecraft.world.phys.Vec3
 import kotlin.math.max
 
 /**
@@ -153,7 +159,7 @@ class MovementDescend(
 
     override fun computeIntent(ctx: IPlayerContext): Intent {
         val playerPos = ctx.player().position()
-        val destCenter = Vec3(dest.x + 0.5, dest.y.toDouble(), dest.z + 0.5)
+        val destCenter = dest.center
 
         // Debug: Show player position to destination line
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
@@ -194,7 +200,7 @@ class MovementDescend(
             RotationUtils
                 .calcRotationFromVec3d(
                     ctx.playerHead(),
-                    Vec3(dest.x + 0.5, ctx.player().eyeY, dest.z + 0.5),
+                    dest.centerWithY(ctx.player().eyeY),
                     ctx.playerRotations(),
                 ).yaw
 
@@ -213,7 +219,7 @@ class MovementDescend(
                     .offset(dest.toBlockPos())
             debug.point(
                 "into-pos",
-                Vec3(into.x + 0.5, into.y.toDouble(), into.z + 0.5),
+                into.center,
                 java.awt.Color.RED,
                 0.2f,
             )
@@ -224,9 +230,8 @@ class MovementDescend(
         // Safe mode: reduce overshoot to 83% of distance when there are obstacles
         if (isSafeMode) {
             // Aim at 83% of the way from src to dest (weighted: 17% src + 83% dest)
-            val targetX = (src.x + 0.5) * 0.17 + (dest.x + 0.5) * 0.83
-            val targetZ = (src.z + 0.5) * 0.17 + (dest.z + 0.5) * 0.83
-            val safeDest = Vec3(targetX, dest.y.toDouble(), targetZ)
+            val safeTarget = src.centerXZ.lerp(dest.centerXZ, 0.83f)
+            val safeDest = safeTarget.toVec3XZ(dest.y.toDouble())
 
             // Debug: Safe mode targeting
             debug.line("player-target", playerPos, safeDest, java.awt.Color.ORANGE)
@@ -235,9 +240,9 @@ class MovementDescend(
             return Intent(
                 movement =
                     MovementIntent.Toward(
-                        target = Vec2(targetX.toFloat(), targetZ.toFloat()),
+                        target = safeTarget,
                         speed = MovementSpeed.WALK,
-                        startPos = Vec2(src.x + 0.5f, src.z + 0.5f),
+                        startPos = src.centerXZ,
                     ),
                 look =
                     LookIntent.Direction(
@@ -248,17 +253,13 @@ class MovementDescend(
             )
         }
 
-        val distFromStart =
-            ctx.player().distanceToSqr(
-                src.x + 0.5,
-                src.y.toDouble(),
-                src.z + 0.5,
-            )
+        val srcCenter = src.center
+        val distFromStart = playerPos.distanceSquaredTo(srcCenter)
 
         // Debug: Momentum phase visualization
         val momentumPhase = numTicks < 20 || distFromStart < 1.25 * 1.25
         debug.metric("dist", kotlin.math.sqrt(distFromStart))
-        debug.metric("tick", numTicks.toDouble(), "%.0f")
+        debug.metric("tick", numTicks)
         debug.status("mom", if (momentumPhase) "BILD" else "done")
 
         // For first 20 ticks OR if we haven't traveled far, aim beyond destination for momentum
@@ -266,17 +267,15 @@ class MovementDescend(
         val target =
             if (numTicks++ < 20 || distFromStart < 1.25 * 1.25) {
                 // Calculate "fakeDest" - overshoot to ensure we walk off the edge
-                Vec2(
-                    (dest.x * 2 - src.x + 0.5f),
-                    (dest.z * 2 - src.z + 0.5f),
-                )
+                val fakeDest = dest.centerXZ + dest.centerXZ - src.centerXZ
+                fakeDest
             } else {
                 // After building momentum, aim at actual destination
-                Vec2(dest.x + 0.5f, dest.z + 0.5f)
+                dest.centerXZ
             }
 
         // Debug: Target aiming line
-        val targetCenter = Vec3(target.x.toDouble(), dest.y.toDouble(), target.y.toDouble())
+        val targetCenter = target.toVec3XZ(dest.y.toDouble())
         debug.line("player-target", playerPos, targetCenter, java.awt.Color.CYAN)
         debug.point("edge-target", targetCenter, java.awt.Color.YELLOW, 0.15f)
 
@@ -285,7 +284,7 @@ class MovementDescend(
                 MovementIntent.Toward(
                     target = target,
                     speed = MovementSpeed.WALK,
-                    startPos = Vec2(src.x + 0.5f, src.z + 0.5f),
+                    startPos = src.centerXZ,
                 ),
             look =
                 LookIntent.Direction(

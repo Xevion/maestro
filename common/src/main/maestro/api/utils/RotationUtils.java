@@ -2,6 +2,9 @@ package maestro.api.utils;
 
 import java.util.Optional;
 import maestro.api.MaestroAPI;
+import maestro.utils.BlockPosExtKt;
+import maestro.utils.Vec2ExtKt;
+import maestro.utils.Vec3ExtKt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -89,10 +92,10 @@ public final class RotationUtils {
      * @return The rotation from the origin to the destination
      */
     private static Rotation calcRotationFromVec3d(Vec3 orig, Vec3 dest) {
-        double[] delta = {orig.x - dest.x, orig.y - dest.y, orig.z - dest.z};
-        double yaw = Mth.atan2(delta[0], -delta[2]);
-        double dist = Math.sqrt(delta[0] * delta[0] + delta[2] * delta[2]);
-        double pitch = Mth.atan2(delta[1], dist);
+        Vec3 delta = Vec3ExtKt.minus(orig, dest);
+        double yaw = Mth.atan2(delta.x, -delta.z);
+        double dist = Vec2ExtKt.getXz(delta).length();
+        double pitch = Mth.atan2(delta.y, dist);
         return new Rotation((float) (yaw * RAD_TO_DEG), (float) (pitch * RAD_TO_DEG));
     }
 
@@ -268,7 +271,7 @@ public final class RotationUtils {
         return reachableOffset(
                 ctx,
                 pos,
-                VecUtils.calculateBlockCenter(ctx.world(), pos),
+                BlockPosExtKt.getBlockCenter(ctx.world(), pos),
                 blockReachDistance,
                 wouldSneak);
     }

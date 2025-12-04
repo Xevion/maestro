@@ -14,6 +14,7 @@ import maestro.api.utils.Rotation;
 import maestro.api.utils.input.Input;
 import maestro.pathing.movement.MovementState.MovementTarget;
 import maestro.pathing.precompute.Ternary;
+import maestro.utils.BlockPosExtKt;
 import maestro.utils.BlockStateInterface;
 import maestro.utils.ToolSet;
 import net.minecraft.core.BlockPos;
@@ -697,7 +698,7 @@ public interface MovementHelper extends Helper {
                 new MovementTarget(
                         RotationUtils.calcRotationFromVec3d(
                                         ctx.playerHead(),
-                                        VecUtils.getBlockPosCenter(pos),
+                                        BlockPosExtKt.getCenter(pos),
                                         ctx.playerRotations())
                                 .withPitch(ctx.playerRotations().getPitch()),
                         false));

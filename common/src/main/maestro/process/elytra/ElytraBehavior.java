@@ -4,6 +4,7 @@ import static maestro.utils.MaestroMathKt.fastCeil;
 import static maestro.utils.MaestroMathKt.fastFloor;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
 import java.awt.*;
@@ -25,6 +26,8 @@ import maestro.process.ElytraProcess;
 import maestro.utils.BlockStateInterface;
 import maestro.utils.IRenderer;
 import maestro.utils.PathRenderer;
+import maestro.utils.Vec2ExtKt;
+import maestro.utils.Vec3ExtKt;
 import maestro.utils.accessor.IFireworkRocketEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -46,6 +49,7 @@ import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -569,7 +573,7 @@ public final class ElytraBehavior {
                             settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.clearLines) {
                 IRenderer.emitLine(
-                        bufferBuilder, event.modelViewStack, line.first(), line.second());
+                        bufferBuilder, event.modelViewStack, line.getFirst(), line.getSecond());
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
@@ -581,7 +585,7 @@ public final class ElytraBehavior {
                             settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.blockedLines) {
                 IRenderer.emitLine(
-                        bufferBuilder, event.modelViewStack, line.first(), line.second());
+                        bufferBuilder, event.modelViewStack, line.getFirst(), line.getSecond());
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
@@ -877,8 +881,9 @@ public final class ElytraBehavior {
                 }
 
                 for (final Pair<Vec3, Integer> candidate : candidates) {
-                    final Integer augment = candidate.second();
-                    Vec3 dest = candidate.first().add(0, augment, 0);
+                    final Integer augment = candidate.getSecond();
+                    Vec3 dest =
+                            Vec3ExtKt.withY(candidate.getFirst(), candidate.getFirst().y + augment);
                     if (landingMode) {
                         dest = dest.add(0.5, 0.5, 0.5);
                     }
@@ -890,7 +895,9 @@ public final class ElytraBehavior {
                         if (start.distanceTo(dest) < 40) {
                             if (!this.clearView(
                                             dest,
-                                            path.getVec(i + lookahead).add(0, augment, 0),
+                                            Vec3ExtKt.withY(
+                                                    path.getVec(i + lookahead),
+                                                    path.getVec(i + lookahead).y + augment),
                                             false)
                                     || !this.clearView(dest, path.getVec(i + lookahead), false)) {
                                 // aka: don't go upwards if doing so would prevent us from being
@@ -936,10 +943,10 @@ public final class ElytraBehavior {
                         // A solution was found with yaw AND pitch, so just immediately return it.
                         return new Solution(
                                 context,
-                                new Rotation(yaw, pitch.first()),
+                                new Rotation(yaw, pitch.getFirst()),
                                 dest,
                                 true,
-                                pitch.second());
+                                pitch.getSecond());
                     }
                 }
             }
@@ -1556,9 +1563,8 @@ public final class ElytraBehavior {
         double motionZ = motion.z;
 
         float pitchRadians = pitch * RotationUtils.DEG_TO_RAD_F;
-        double pitchBase2 =
-                Math.sqrt(lookDirection.x * lookDirection.x + lookDirection.z * lookDirection.z);
-        double flatMotion = Math.sqrt(motionX * motionX + motionZ * motionZ);
+        double pitchBase2 = Vec2ExtKt.getXz(lookDirection).length();
+        double flatMotion = new Vec2((float) motionX, (float) motionZ).length();
         double thisIsAlwaysOne = lookDirection.length();
         float pitchBase3 = Mth.cos(pitchRadians);
         // System.out.println("always the same lol " + -pitchBase + " " + pitchBase3);

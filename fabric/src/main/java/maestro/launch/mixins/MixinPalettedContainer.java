@@ -6,7 +6,6 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import maestro.utils.accessor.IPalettedContainer;
-import maestro.utils.accessor.IPalettedContainer.IData;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.chunk.Palette;
 import net.minecraft.world.level.chunk.PalettedContainer;

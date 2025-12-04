@@ -85,9 +85,9 @@ public final class NetherPathfinderContext {
                     if (ptr == 0) return; // this shouldn't ever happen
                     event.blocks.forEach(
                             pair -> {
-                                BlockPos pos = pair.first();
+                                BlockPos pos = pair.getFirst();
                                 if (pos.getY() >= 128) return;
-                                boolean isSolid = pair.second() != AIR_BLOCK_STATE;
+                                boolean isSolid = pair.getSecond() != AIR_BLOCK_STATE;
                                 Octree.setBlock(
                                         ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
                             });

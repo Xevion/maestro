@@ -47,10 +47,6 @@ sealed class EntityCategory(
      */
     abstract fun matchesEntity(entity: Entity): Boolean
 
-    // ========================
-    // Behavior-based categories
-    // ========================
-
     /** Entities that attack players unprovoked */
     data object Hostile : EntityCategory("hostile") {
         private val members: Set<EntityType<*>> by lazy {
@@ -123,10 +119,6 @@ sealed class EntityCategory(
         override fun resolve(): Set<EntityType<*>> = members
     }
 
-    // ========================
-    // Type-based categories
-    // ========================
-
     /** All animal entities (cows, pigs, etc.) */
     data object Animals : EntityCategory("animals") {
         private val members: Set<EntityType<*>> by lazy {
@@ -168,10 +160,6 @@ sealed class EntityCategory(
 
         override fun resolve(): Set<EntityType<*>> = members
     }
-
-    // ========================
-    // Practical categories
-    // ========================
 
     /** Common farm animals (cow, pig, sheep, chicken, etc.) */
     data object FarmAnimals : EntityCategory("farm_animals") {

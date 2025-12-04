@@ -5,6 +5,9 @@ import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.utils.IPlayerContext
 import maestro.api.utils.PackedBlockPos
+import maestro.api.utils.center
+import maestro.api.utils.centerXZ
+import maestro.api.utils.normalizedDirectionTo
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
@@ -14,12 +17,23 @@ import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.utils.BlockStateInterface
+import maestro.utils.distanceTo
+import maestro.utils.dot
+import maestro.utils.horizontalDistanceTo
+import maestro.utils.horizontalLength
+import maestro.utils.length
+import maestro.utils.minus
+import maestro.utils.perpendicularDistanceTo
+import maestro.utils.plus
+import maestro.utils.projectOnto
+import maestro.utils.times
+import maestro.utils.toVec3XZ
+import maestro.utils.xz
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.FallingBlock
 import net.minecraft.world.phys.Vec2
 import kotlin.math.abs
-import kotlin.math.sqrt
 
 /**
  * Jumping up one block vertically while moving forward horizontally.
@@ -90,25 +104,15 @@ class MovementAscend(
         cachedTarget = calculateVelocityBasedTarget(ctx)
 
         val playerPos = ctx.player().position()
-        val playerXZ = Vec2(playerPos.x.toFloat(), playerPos.z.toFloat())
-        cachedDistToTarget =
-            sqrt(
-                (
-                    (cachedTarget!!.x - playerXZ.x) * (cachedTarget!!.x - playerXZ.x) +
-                        (cachedTarget!!.y - playerXZ.y) * (cachedTarget!!.y - playerXZ.y)
-                ).toDouble(),
-            )
+        val playerXZ = playerPos.xz
+        cachedDistToTarget = playerXZ.distanceTo(cachedTarget!!)
 
         // Debug: Show player position to destination line
-        val destCenter =
-            net.minecraft.world.phys
-                .Vec3(dest.x + 0.5, dest.y.toDouble(), dest.z + 0.5)
+        val destCenter = dest.center
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
 
         // Debug: Show edge target point and velocity-compensated aim point
-        val edgeTargetPos =
-            net.minecraft.world.phys
-                .Vec3(cachedTarget!!.x.toDouble(), dest.y.toDouble(), cachedTarget!!.y.toDouble())
+        val edgeTargetPos = cachedTarget!!.toVec3XZ(dest.y.toDouble())
         debug.point("edge-target", edgeTargetPos, java.awt.Color.YELLOW, 0.15f)
         debug.line("target-approach", playerPos, edgeTargetPos, java.awt.Color.CYAN)
 
@@ -144,9 +148,9 @@ class MovementAscend(
         val driftState = checkDrift(ctx)
 
         // Debug: Drift visualization (perpendicular distance from ideal path)
-        val srcCenter = Vec2(src.x + 0.5f, src.z + 0.5f)
-        val destCenter2D = Vec2(dest.x + 0.5f, dest.z + 0.5f)
-        val driftDist = calculatePerpendicularDistance(playerXZ, srcCenter, destCenter2D)
+        val srcCenter = src.centerXZ
+        val destCenter2D = dest.centerXZ
+        val driftDist = playerXZ.perpendicularDistanceTo(srcCenter, destCenter2D)
         if (driftDist > 0.1) {
             val driftColor =
                 when (driftState) {
@@ -154,8 +158,9 @@ class MovementAscend(
                     DriftState.MODERATE -> java.awt.Color.ORANGE
                     DriftState.ALIGNED -> java.awt.Color.GREEN
                 }
-            // Calculate closest point on path line for drift visualization
-            val closestPoint = calculateClosestPointOnPath(playerPos, srcCenter, destCenter2D)
+            // Calculate the closest point on path line for drift visualization
+            val closestXZ = playerXZ.projectOnto(srcCenter, destCenter2D)
+            val closestPoint = closestXZ.toVec3XZ(playerPos.y)
             debug.line("drift", playerPos, closestPoint, driftColor)
         }
 
@@ -169,17 +174,12 @@ class MovementAscend(
                     click = ClickIntent.None,
                 )
             }
+
             DriftState.MODERATE -> {
                 // Return to source to recenter
                 isRecentering = true
-                val srcCenterVec3 =
-                    net.minecraft.world.phys
-                        .Vec3(srcCenter.x.toDouble(), src.y.toDouble(), srcCenter.y.toDouble())
-                val distToSrc =
-                    sqrt(
-                        (playerPos.x - srcCenter.x) * (playerPos.x - srcCenter.x) +
-                            (playerPos.z - srcCenter.y) * (playerPos.z - srcCenter.y),
-                    )
+                val srcCenterVec3 = srcCenter.toVec3XZ(src.y.toDouble())
+                val distToSrc = playerPos.horizontalDistanceTo(srcCenter)
 
                 // Debug: Show recentering path
                 debug.line("recenter", playerPos, srcCenterVec3, java.awt.Color.ORANGE)
@@ -201,6 +201,7 @@ class MovementAscend(
                     click = ClickIntent.None,
                 )
             }
+
             DriftState.ALIGNED -> {
                 // Normal ascent behavior
                 isRecentering = false
@@ -219,7 +220,7 @@ class MovementAscend(
 
         // Debug: GUI metrics
         val velocity = ctx.player().deltaMovement
-        val velocityXZ = sqrt(velocity.x * velocity.x + velocity.z * velocity.z)
+        val velocityXZ = velocity.horizontalLength
         debug.metric("dist", cachedDistToTarget)
         debug.metric("vel", velocityXZ)
         debug.status(
@@ -249,7 +250,7 @@ class MovementAscend(
                     target = cachedTarget!!,
                     speed = MovementSpeed.SPRINT,
                     jump = shouldJump(ctx),
-                    startPos = Vec2(src.x + 0.5f, src.z + 0.5f),
+                    startPos = src.centerXZ,
                 ),
             look = LookIntent.Block(dest.toBlockPos()),
             click = ClickIntent.None,
@@ -276,92 +277,29 @@ class MovementAscend(
         val playerY = ctx.player().blockPosition().y
 
         // Check Y-axis drift (vertical deviation)
-        // Allow for jump height difference (src.y to dest.y = 1 block)
-        // But if player falls below src or goes too far above dest, it's severe drift
         val yDrift =
-            when {
-                playerY < src.y -> abs(playerY - src.y).toDouble() // Fell below source
-                playerY > dest.y -> abs(playerY - dest.y).toDouble() // Jumped too high
-                else -> 0.0 // Within expected range [src.y, dest.y]
+            if (playerY in src.y..dest.y) {
+                0.0
+            } else {
+                // Either fell below the source, or jumped too high
+                val bound = if (playerY < src.y) src.y else dest.y
+                // Distance from the closest range boundary
+                abs(bound - playerY).toDouble()
             }
 
+        // Allow for jump height difference (src.y to dest.y = 1 block)
         if (yDrift > 0.95) {
             return DriftState.SEVERE
         }
 
-        // Calculate XZ drift from intended path (line from source to destination)
-        val srcCenter = Vec2(src.x + 0.5f, src.z + 0.5f)
-        val destCenter = Vec2(dest.x + 0.5f, dest.z + 0.5f)
-        val playerXZ = Vec2(playerPos.x.toFloat(), playerPos.z.toFloat())
-
         // Calculate perpendicular distance from player to line segment (src -> dest)
-        val xzDrift = calculatePerpendicularDistance(playerXZ, srcCenter, destCenter)
+        val xzDrift = playerPos.xz.perpendicularDistanceTo(this.src.centerXZ, this.dest.centerXZ)
 
         return when {
             xzDrift > 2.5 -> DriftState.SEVERE
             xzDrift > 0.5 -> DriftState.MODERATE
             else -> DriftState.ALIGNED
         }
-    }
-
-    /**
-     * Calculate perpendicular distance from point to line segment.
-     *
-     * Uses the formula: |((x2-x1)(y1-y0) - (x1-x0)(y2-y1))| / sqrt((x2-x1)^2 + (y2-y1)^2)
-     * where (x0,y0) is the point and (x1,y1)-(x2,y2) is the line segment.
-     */
-    private fun calculatePerpendicularDistance(
-        point: Vec2,
-        lineStart: Vec2,
-        lineEnd: Vec2,
-    ): Double {
-        val dx = lineEnd.x - lineStart.x
-        val dy = lineEnd.y - lineStart.y
-        val lineLengthSquared = dx * dx + dy * dy
-
-        if (lineLengthSquared < 0.0001) {
-            // Line segment is essentially a point
-            val dpx = point.x - lineStart.x
-            val dpy = point.y - lineStart.y
-            return sqrt((dpx * dpx + dpy * dpy).toDouble())
-        }
-
-        // Calculate cross product magnitude
-        val cross = abs(dx * (lineStart.y - point.y) - (lineStart.x - point.x) * dy)
-        return cross / sqrt(lineLengthSquared.toDouble())
-    }
-
-    /**
-     * Calculate closest point on path line for drift visualization.
-     *
-     * Projects player position onto the line from source to destination.
-     */
-    private fun calculateClosestPointOnPath(
-        playerPos: net.minecraft.world.phys.Vec3,
-        srcCenter: Vec2,
-        destCenter: Vec2,
-    ): net.minecraft.world.phys.Vec3 {
-        // Calculate projection onto line segment
-        val dx = destCenter.x - srcCenter.x
-        val dz = destCenter.y - srcCenter.y
-        val lineLengthSquared = dx * dx + dz * dz
-
-        if (lineLengthSquared < 0.0001) {
-            // Line is essentially a point
-            return net.minecraft.world.phys
-                .Vec3(srcCenter.x.toDouble(), playerPos.y, srcCenter.y.toDouble())
-        }
-
-        // Calculate t parameter (0 to 1) along line segment
-        val t = ((playerPos.x - srcCenter.x) * dx + (playerPos.z - srcCenter.y) * dz) / lineLengthSquared
-        val clampedT = t.toFloat().coerceIn(0.0f, 1.0f)
-
-        // Calculate closest point
-        val closestX = srcCenter.x + dx * clampedT
-        val closestZ = srcCenter.y + dz * clampedT
-
-        return net.minecraft.world.phys
-            .Vec3(closestX.toDouble(), playerPos.y, closestZ.toDouble())
     }
 
     /**
@@ -382,44 +320,32 @@ class MovementAscend(
         val velocity = ctx.player().deltaMovement
 
         // Calculate distance to destination center
-        val destCenter = Vec2(dest.x + 0.5f, dest.z + 0.5f)
-        val distToDest =
-            sqrt(
-                (playerPos.x - destCenter.x) * (playerPos.x - destCenter.x) +
-                    (playerPos.z - destCenter.y) * (playerPos.z - destCenter.y),
-            )
+        val destCenter = dest.centerXZ
+        val distToDest = playerPos.horizontalDistanceTo(destCenter)
 
-        // Calculate direction from source to destination
-        val dirX = dest.x - src.x
-        val dirZ = dest.z - src.z
-        val dirLength = sqrt((dirX * dirX + dirZ * dirZ).toDouble())
-        val normalizedDirX = if (dirLength > 0.0001) dirX / dirLength else 0.0
-        val normalizedDirZ = if (dirLength > 0.0001) dirZ / dirLength else 0.0
+        // Calculate normalized direction from source to destination
+        val normalizedDir = src.normalizedDirectionTo(dest)
 
         // When close to destination, target the block edge facing the source
         if (distToDest < 1.5) {
             // Calculate edge point (0.3 blocks from block center in source direction)
-            val edgeOffset = 0.3 // Distance from center to edge target
-            val edgeX = destCenter.x - (normalizedDirX * edgeOffset).toFloat()
-            val edgeZ = destCenter.y - (normalizedDirZ * edgeOffset).toFloat()
+            val edgeOffset = 0.3f
+            val edge = destCenter - normalizedDir * edgeOffset
 
             // Compensate for velocity to ensure we land on target
             // Sprint-jumping: ~0.356 blocks/tick, but we'll use actual velocity
             // Jump takes ~6 ticks to reach peak, ~12 ticks total
             // Compensate for roughly half the jump duration (peak to landing)
-            val ticksToLanding = 6.0 // Approximate ticks from jump peak to landing
+            val ticksToLanding = 6.0f
+            val velocityXZ = velocity.xz
 
-            return Vec2(
-                (edgeX + velocity.x.toFloat() * ticksToLanding).toFloat(),
-                (edgeZ + velocity.z.toFloat() * ticksToLanding).toFloat(),
-            )
+            return edge + velocityXZ * ticksToLanding
         } else {
             // Far away: target center with slight velocity lead
-            val ticksToApproach = 3.0 // Look ahead a few ticks
-            return Vec2(
-                (destCenter.x + velocity.x.toFloat() * ticksToApproach).toFloat(),
-                (destCenter.y + velocity.z.toFloat() * ticksToApproach).toFloat(),
-            )
+            val ticksToApproach = 3.0f
+            val velocityXZ = velocity.xz
+
+            return destCenter + velocityXZ * ticksToApproach
         }
     }
 
@@ -449,29 +375,27 @@ class MovementAscend(
 
         // Check velocity: Don't jump if moving away from target
         val velocity = player.deltaMovement
-        val playerXZ = Vec2(player.x.toFloat(), player.z.toFloat())
+        val playerXZ = player.position().xz
 
         // Use cached target (actual target, not dest center)
-        val target = cachedTarget ?: Vec2(dest.x + 0.5f, dest.z + 0.5f) // Fallback to center
+        val target = cachedTarget ?: dest.centerXZ // Fallback to center
 
         // Calculate if velocity is toward target
-        val toTargetX = target.x - playerXZ.x
-        val toTargetZ = target.y - playerXZ.y
-        val dotProduct = velocity.x * toTargetX + velocity.z * toTargetZ
+        val toTarget = target - playerXZ
+        val velocityXZ = velocity.xz
+        val dotProduct = velocityXZ dot toTarget
 
         // If moving away from target (negative dot product), don't jump yet
         if (dotProduct < 0.0 && velocity.horizontalDistanceSqr() > 0.01) {
             return false
         }
 
-        val velocityXZ = sqrt(velocity.x * velocity.x + velocity.z * velocity.z)
-
         // Jump timing strategy:
         // - If far (>0.4 blocks): require good velocity (0.2+) to use jump arc efficiently
         // - If close (<0.4 blocks): allow jump even with lower velocity to avoid hitting wall
         return if (cachedDistToTarget > 0.52) {
             // Far enough to benefit from velocity - require sprint/walk speed
-            velocityXZ > 0.2 && cachedDistToTarget < 0.8
+            velocityXZ.length() > 0.2 && cachedDistToTarget < 0.8
         } else {
             // Very close - jump even if slowing down to avoid wall collision
             cachedDistToTarget <= 0.53

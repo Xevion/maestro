@@ -49,8 +49,6 @@ abstract class Container : GuiWidget(0, 0) {
         cells.remove(cell)
     }
 
-    // ===== TWO-PHASE LAYOUT =====
-
     /**
      * Phase 1: Calculate container size (bottom-up).
      *
@@ -99,8 +97,6 @@ abstract class Container : GuiWidget(0, 0) {
      * Cell.alignWidget() will position the widget within bounds.
      */
     protected abstract fun onCalculateWidgetPositions()
-
-    // ===== LAYOUT HELPERS =====
 
     /**
      * Calculates total width needed for cells in a row with spacing.
@@ -152,8 +148,6 @@ abstract class Container : GuiWidget(0, 0) {
         }
     }
 
-    // ===== RENDERING =====
-
     override fun render(
         graphics: GuiGraphics,
         mouseX: Int,
@@ -173,8 +167,6 @@ abstract class Container : GuiWidget(0, 0) {
      * Override for custom culling (e.g., scissor clipping).
      */
     protected open fun isWidgetVisible(widget: GuiWidget): Boolean = true
-
-    // ===== EVENT PROPAGATION =====
 
     override fun handleClick(
         mouseX: Int,
@@ -254,8 +246,6 @@ abstract class Container : GuiWidget(0, 0) {
         }
         return false
     }
-
-    // ===== TOOLTIP COLLECTION =====
 
     /**
      * Collects tooltip lines from all child widgets.

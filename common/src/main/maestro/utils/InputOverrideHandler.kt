@@ -7,7 +7,6 @@ import maestro.api.event.events.TickEvent
 import maestro.api.utils.IInputOverrideHandler
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
-import maestro.api.utils.VecUtils
 import maestro.api.utils.input.Input
 import maestro.behavior.Behavior
 import maestro.gui.MaestroScreen
@@ -204,8 +203,6 @@ class InputOverrideHandler(
         }
     }
 
-    // ===== Intent-Based Movement API =====
-
     /**
      * Apply a MovementIntent by translating it to input states.
      *
@@ -242,8 +239,7 @@ class InputOverrideHandler(
     ) {
         when (intent) {
             is LookIntent.Block -> {
-                val center =
-                    VecUtils.getBlockPosCenter(intent.pos)
+                val center = intent.pos.center
                 val rotation =
                     RotationUtils.calcRotationFromVec3d(
                         ctx.playerHead(),
@@ -500,8 +496,6 @@ class InputOverrideHandler(
             MovementSpeed.SNEAK -> setInputForceState(Input.SNEAK, true)
         }
     }
-
-    // ===== Unified Intent Application =====
 
     /**
      * Apply unified intent with delta-based input updates.

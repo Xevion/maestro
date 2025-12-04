@@ -5,6 +5,8 @@ import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.utils.IPlayerContext
 import maestro.api.utils.PackedBlockPos
+import maestro.api.utils.center
+import maestro.api.utils.centerXZ
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
@@ -14,9 +16,9 @@ import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.utils.BlockStateInterface
+import maestro.utils.horizontalDistanceTo
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.phys.Vec2
 
 /**
  * Downward movement by one block (breaking the block below if needed).
@@ -56,9 +58,7 @@ class MovementDownward(
 
     override fun computeIntent(ctx: IPlayerContext): Intent {
         val playerPos = ctx.player().position()
-        val destCenter =
-            net.minecraft.world.phys
-                .Vec3(dest.x + 0.5, dest.y.toDouble(), dest.z + 0.5)
+        val destCenter = dest.center
 
         // Debug: Show player position to destination line
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
@@ -68,12 +68,8 @@ class MovementDownward(
         val needsBreaking = !MovementHelper.canWalkThrough(ctx, dest)
 
         // Calculate horizontal distance from dest center
-        val centerXZ = Vec2(dest.x + 0.5f, dest.z + 0.5f)
-        val distXZ =
-            kotlin.math.sqrt(
-                (playerPos.x - centerXZ.x) * (playerPos.x - centerXZ.x) +
-                    (playerPos.z - centerXZ.y) * (playerPos.z - centerXZ.y),
-            )
+        val centerXZ = dest.centerXZ
+        val distXZ = playerPos.horizontalDistanceTo(centerXZ)
 
         // Debug: Distance and velocity metrics
         val distVertical = kotlin.math.abs(playerPos.y - dest.y)
@@ -112,7 +108,7 @@ class MovementDownward(
                     MovementIntent.Toward(
                         target = centerXZ,
                         speed = MovementSpeed.WALK,
-                        startPos = Vec2(src.x + 0.5f, src.z + 0.5f),
+                        startPos = src.centerXZ,
                     ),
                 look = LookIntent.Block(dest.toBlockPos()),
                 click = if (needsBreaking) ClickIntent.LeftClick else ClickIntent.None,

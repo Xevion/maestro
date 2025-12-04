@@ -54,8 +54,6 @@ class Cell<T : GuiWidget>(
     var expandY: Boolean = false
         private set
 
-    // ===== COMPUTED PROPERTIES =====
-
     /**
      * Total width including padding (padding.left + widget.width + padding.right).
      *
@@ -91,9 +89,7 @@ class Cell<T : GuiWidget>(
             (height - padding.top - padding.bottom).coerceAtLeast(0),
         )
 
-    // ===== ALIGNMENT FLUENT API =====
-
-    fun left() =
+    fun left(): Cell<T> =
         apply {
             alignX = AlignmentX.LEFT
         }
@@ -132,8 +128,6 @@ class Cell<T : GuiWidget>(
             centerX()
             centerY()
         }
-
-    // ===== PADDING FLUENT API =====
 
     /**
      * Sets uniform padding on all sides.
@@ -213,8 +207,6 @@ class Cell<T : GuiWidget>(
             padding = padding.copy(left = amount)
         }
 
-    // ===== EXPANSION FLUENT API =====
-
     /**
      * Widget expands horizontally to fill available space.
      */
@@ -239,8 +231,6 @@ class Cell<T : GuiWidget>(
             expandX()
             expandY()
         }
-
-    // ===== LAYOUT =====
 
     /**
      * Positions widget within cell bounds.

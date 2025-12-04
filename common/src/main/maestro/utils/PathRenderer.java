@@ -28,6 +28,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -602,14 +604,8 @@ public final class PathRenderer implements IRenderer {
             IRenderer.glColor(arrowColor, 0.6f);
 
             // Emit arrow at movement source position
-            emitChevronArrow(
-                    arrowBuffer,
-                    stack,
-                    pos.getX() + 0.5,
-                    pos.getY() + 0.5,
-                    pos.getZ() + 0.5,
-                    direction,
-                    0.4);
+            Vec3 center = BlockPosExtKt.getCenter(pos.toBlockPos());
+            emitChevronArrow(arrowBuffer, stack, center.x, center.y, center.z, direction, 0.4);
 
             lastArrowIndex = i;
         }
@@ -1046,25 +1042,26 @@ public final class PathRenderer implements IRenderer {
             maestro.api.pathing.movement.IMovement previous,
             maestro.api.pathing.movement.IMovement current) {
         // Calculate horizontal direction vectors (ignore Y)
-        double prevDx = previous.getDest().getX() - previous.getSrc().getX();
-        double prevDz = previous.getDest().getZ() - previous.getSrc().getZ();
-        double currDx = current.getDest().getX() - current.getSrc().getX();
-        double currDz = current.getDest().getZ() - current.getSrc().getZ();
+        Vec2 prevDir =
+                new Vec2(
+                        (float) (previous.getDest().getX() - previous.getSrc().getX()),
+                        (float) (previous.getDest().getZ() - previous.getSrc().getZ()));
+        Vec2 currDir =
+                new Vec2(
+                        (float) (current.getDest().getX() - current.getSrc().getX()),
+                        (float) (current.getDest().getZ() - current.getSrc().getZ()));
 
         // Normalize
-        double prevLen = Math.sqrt(prevDx * prevDx + prevDz * prevDz);
-        double currLen = Math.sqrt(currDx * currDx + currDz * currDz);
-        if (prevLen == 0 || currLen == 0) {
+        Vec2 prevNorm = Vec2ExtKt.normalized(prevDir);
+        Vec2 currNorm = Vec2ExtKt.normalized(currDir);
+
+        // Check if either vector is essentially zero
+        if (prevDir.lengthSquared() == 0 || currDir.lengthSquared() == 0) {
             return false;
         }
 
-        prevDx /= prevLen;
-        prevDz /= prevLen;
-        currDx /= currLen;
-        currDz /= currLen;
-
         // Dot product: cos(45°) ≈ 0.707
-        double dot = prevDx * currDx + prevDz * currDz;
+        double dot = Vec2ExtKt.dot(prevNorm, currNorm);
         return dot < 0.707; // Angle > 45°
     }
 

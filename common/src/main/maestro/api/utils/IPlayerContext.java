@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import maestro.api.cache.IWorldData;
+import maestro.utils.Vec3ExtKt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -71,14 +72,12 @@ public interface IPlayerContext {
     }
 
     default Vec3 playerFeetAsVec() {
-        return new Vec3(player().position().x, player().position().y, player().position().z);
+        return player().position();
     }
 
     default Vec3 playerHead() {
-        return new Vec3(
-                player().position().x,
-                player().position().y + player().getEyeHeight(),
-                player().position().z);
+        return Vec3ExtKt.withY(
+                player().position(), player().position().y + player().getEyeHeight());
     }
 
     default Vec3 playerMotion() {

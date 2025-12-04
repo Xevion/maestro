@@ -26,6 +26,7 @@ import maestro.pathing.movement.movements.*;
 import maestro.pathing.recovery.FailureReason;
 import maestro.pathing.recovery.PathRecoveryManager;
 import maestro.pathing.recovery.RecoveryAction;
+import maestro.utils.BlockPosExtKt;
 import maestro.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Tuple;
@@ -422,7 +423,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         BlockPos bestPos = null;
         for (IMovement movement : path.movements()) {
             for (PackedBlockPos pos : ((Movement) movement).getValidPositions()) {
-                double dist = VecUtils.entityDistanceToCenter(ctx.player(), pos.toBlockPos());
+                double dist = BlockPosExtKt.distanceTo(ctx.player(), pos.toBlockPos());
                 if (dist < best || best == -1) {
                     best = dist;
                     bestPos = pos.toBlockPos();
@@ -753,17 +754,12 @@ public class PathExecutor implements IPathExecutor, Helper {
     // }
 
     private static boolean skipNow(IPlayerContext ctx, IMovement current) {
+        var srcCenter = BlockPosExtKt.getCenterXZ(current.getSrc().toBlockPos());
         double offTarget =
-                Math.abs(
-                                current.getDirection().getX()
-                                        * (current.getSrc().getZ()
-                                                + 0.5D
-                                                - ctx.player().position().z))
+                Math.abs(current.getDirection().getX() * (srcCenter.y - ctx.player().position().z))
                         + Math.abs(
                                 current.getDirection().getZ()
-                                        * (current.getSrc().getX()
-                                                + 0.5D
-                                                - ctx.player().position().x));
+                                        * (srcCenter.x - ctx.player().position().x));
         if (offTarget > 0.1) {
             return false;
         }
@@ -773,13 +769,14 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
         // wait 0.3
+        var headBonkCenter = BlockPosExtKt.getCenterXZ(headBonk);
         double flatDist =
                 Math.abs(
                                 current.getDirection().getX()
-                                        * (headBonk.getX() + 0.5D - ctx.player().position().x))
+                                        * (headBonkCenter.y - ctx.player().position().z))
                         + Math.abs(
                                 current.getDirection().getZ()
-                                        * (headBonk.getZ() + 0.5 - ctx.player().position().z));
+                                        * (headBonkCenter.x - ctx.player().position().x));
         return flatDist > 0.8;
     }
 

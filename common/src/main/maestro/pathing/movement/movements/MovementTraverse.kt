@@ -6,6 +6,9 @@ import maestro.api.pathing.movement.MovementStatus
 import maestro.api.utils.IPlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
+import maestro.api.utils.center
+import maestro.api.utils.centerWithY
+import maestro.api.utils.centerXZ
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
@@ -15,9 +18,9 @@ import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.utils.BlockStateInterface
+import maestro.utils.distanceSquaredTo
+import maestro.utils.horizontalLength
 import net.minecraft.core.BlockPos
-import net.minecraft.world.phys.Vec2
-import net.minecraft.world.phys.Vec3
 
 /**
  * Horizontal movement to an adjacent block on the same Y level.
@@ -72,7 +75,7 @@ class MovementTraverse(
 
     override fun computeIntent(ctx: IPlayerContext): Intent {
         val playerPos = ctx.player().position()
-        val destCenter = Vec3(dest.x + 0.5, dest.y.toDouble(), dest.z + 0.5)
+        val destCenter = dest.center
 
         // Debug: Show player position to destination line
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
@@ -99,14 +102,11 @@ class MovementTraverse(
         }
 
         // Calculate distance to destination center
-        val centerX = dest.x + 0.5
-        val centerY = dest.y.toDouble()
-        val centerZ = dest.z + 0.5
-        val distToDest = ctx.player().distanceToSqr(centerX, centerY, centerZ)
+        val distToDest = ctx.player().position().distanceSquaredTo(destCenter)
 
         // Debug: Distance and velocity metrics
         val velocity = ctx.player().deltaMovement
-        val velocityXZ = kotlin.math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z)
+        val velocityXZ = velocity.horizontalLength
         debug.metric("dist", kotlin.math.sqrt(distToDest))
         debug.metric("vel", velocityXZ)
         debug.status("mine", "none")
@@ -127,7 +127,7 @@ class MovementTraverse(
             RotationUtils
                 .calcRotationFromVec3d(
                     ctx.playerHead(),
-                    Vec3(dest.x + 0.5, ctx.player().eyeY, dest.z + 0.5),
+                    dest.centerWithY(ctx.player().eyeY),
                     ctx.playerRotations(),
                 ).yaw
 
@@ -140,7 +140,7 @@ class MovementTraverse(
             debug.block("bridge-support", dest.below().toBlockPos(), java.awt.Color.LIGHT_GRAY, 0.4f)
             debug.point(
                 "bridge-place",
-                Vec3(dest.x + 0.5, dest.y - 1.0, dest.z + 0.5),
+                dest.below().center,
                 java.awt.Color.ORANGE,
                 0.2f,
             )
@@ -150,9 +150,9 @@ class MovementTraverse(
         return Intent(
             movement =
                 MovementIntent.Toward(
-                    target = Vec2(dest.x + 0.5f, dest.z + 0.5f),
+                    target = dest.centerXZ,
                     speed = MovementSpeed.SPRINT,
-                    startPos = Vec2(src.x + 0.5f, src.z + 0.5f),
+                    startPos = src.centerXZ,
                 ),
             look =
                 LookIntent.Direction(

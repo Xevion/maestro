@@ -1,6 +1,7 @@
 package maestro.pathing.movement
 
 import com.mojang.blaze3d.vertex.PoseStack
+import maestro.utils.IRenderer
 import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.Vec3
 import java.awt.Color
@@ -15,8 +16,6 @@ import java.awt.Color
  * between actual computation and debug visualization.
  */
 sealed class MovementDebugContext {
-    // 3D Rendering Primitives
-
     /**
      * Render a 3D line between two points.
      *
@@ -25,7 +24,7 @@ sealed class MovementDebugContext {
      * @param to End position in world coordinates
      * @param color Line color (default: white)
      */
-    inline fun line(
+    fun line(
         key: String,
         from: Vec3,
         to: Vec3,
@@ -42,7 +41,7 @@ sealed class MovementDebugContext {
      * @param color Point color (default: yellow)
      * @param size Point radius in blocks (default: 0.1)
      */
-    inline fun point(
+    fun point(
         key: String,
         pos: Vec3,
         color: Color = Color.YELLOW,
@@ -59,7 +58,7 @@ sealed class MovementDebugContext {
      * @param color Block color (default: cyan)
      * @param alpha Transparency 0.0-1.0 (default: 0.5)
      */
-    inline fun block(
+    fun block(
         key: String,
         pos: BlockPos,
         color: Color = Color.CYAN,
@@ -75,16 +74,18 @@ sealed class MovementDebugContext {
      *
      * Rendered as "key:formatted_value" (e.g., "dist:0.52")
      *
+     * Automatically formats based on type:
+     * - Float/Double: 1 decimal place (e.g., "3.1")
+     * - Int/Long: No decimal places (e.g., "42")
+     *
      * @param key Metric name (should be short, 3-5 chars)
-     * @param value Numeric value
-     * @param format Printf-style format string (default: "%.2f")
+     * @param value Numeric value (Int, Long, Float, or Double)
      */
-    inline fun metric(
+    fun metric(
         key: String,
-        value: Double,
-        format: String = "%.2f",
+        value: Number,
     ) {
-        if (isEnabled()) metricImpl(key, value, format)
+        if (isEnabled()) metricImpl(key, value)
     }
 
     /**
@@ -95,7 +96,7 @@ sealed class MovementDebugContext {
      * @param key Flag name (should be short)
      * @param enabled Flag state
      */
-    inline fun flag(
+    fun flag(
         key: String,
         enabled: Boolean,
     ) {
@@ -110,7 +111,7 @@ sealed class MovementDebugContext {
      * @param key Status name (should be short)
      * @param value Status text (should be short, 2-8 chars)
      */
-    inline fun status(
+    fun status(
         key: String,
         value: String,
     ) {
@@ -152,7 +153,6 @@ sealed class MovementDebugContext {
     abstract fun clear()
 
     // Public implementation methods (overridden by Active, no-ops in Disabled)
-    // Must be public for inline function access
     abstract fun lineImpl(
         key: String,
         from: Vec3,
@@ -176,8 +176,7 @@ sealed class MovementDebugContext {
 
     abstract fun metricImpl(
         key: String,
-        value: Double,
-        format: String,
+        value: Number,
     )
 
     abstract fun flagImpl(
@@ -235,27 +234,27 @@ class ActiveDebugContext : MovementDebugContext() {
         if (lines.isEmpty() && points.isEmpty() && blocks.isEmpty()) return
 
         val vpX =
-            maestro.utils.IRenderer.renderManager
+            IRenderer.renderManager
                 .renderPosX()
         val vpY =
-            maestro.utils.IRenderer.renderManager
+            IRenderer.renderManager
                 .renderPosY()
         val vpZ =
-            maestro.utils.IRenderer.renderManager
+            IRenderer.renderManager
                 .renderPosZ()
 
         // Render lines
         if (lines.isNotEmpty()) {
             val bufferBuilder =
-                maestro.utils.IRenderer.startLines(
-                    java.awt.Color.WHITE,
+                IRenderer.startLines(
+                    Color.WHITE,
                     2.0f,
                     true,
                 )
 
             lines.values.forEach { line ->
-                maestro.utils.IRenderer.glColor(line.color, 1.0f)
-                maestro.utils.IRenderer.emitLine(
+                IRenderer.glColor(line.color, 1.0f)
+                IRenderer.emitLine(
                     bufferBuilder,
                     stack,
                     line.from.x - vpX,
@@ -267,20 +266,20 @@ class ActiveDebugContext : MovementDebugContext() {
                 )
             }
 
-            maestro.utils.IRenderer.endLines(bufferBuilder, true)
+            IRenderer.endLines(bufferBuilder, true)
         }
 
         // Render points (as small boxes)
         if (points.isNotEmpty()) {
             val bufferBuilder =
-                maestro.utils.IRenderer.startLines(
-                    java.awt.Color.WHITE,
+                IRenderer.startLines(
+                    Color.WHITE,
                     2.0f,
                     true,
                 )
 
             points.values.forEach { point ->
-                maestro.utils.IRenderer.glColor(point.color, 1.0f)
+                IRenderer.glColor(point.color, 1.0f)
                 val halfSize = point.size.toDouble()
                 // Don't subtract camera position - emitAABB does that for us
                 val minX = point.pos.x - halfSize
@@ -294,10 +293,10 @@ class ActiveDebugContext : MovementDebugContext() {
                 val aabb =
                     net.minecraft.world.phys
                         .AABB(minX, minY, minZ, maxX, maxY, maxZ)
-                maestro.utils.IRenderer.emitAABB(bufferBuilder, stack, aabb, 0.0)
+                IRenderer.emitAABB(bufferBuilder, stack, aabb, 0.0)
             }
 
-            maestro.utils.IRenderer.endLines(bufferBuilder, true)
+            IRenderer.endLines(bufferBuilder, true)
         }
 
         // Render blocks using BlockHighlightRenderer
@@ -349,10 +348,14 @@ class ActiveDebugContext : MovementDebugContext() {
 
     override fun metricImpl(
         key: String,
-        value: Double,
-        format: String,
+        value: Number,
     ) {
-        hudData[key] = String.format(format, value)
+        hudData[key] =
+            when (value) {
+                is Float, is Double -> String.format("%.1f", value.toDouble())
+                is Int, is Long -> value.toString()
+                else -> String.format("%.1f", value.toDouble())
+            }
     }
 
     override fun flagImpl(
@@ -390,7 +393,8 @@ object DisabledDebugContext : MovementDebugContext() {
     override fun render3D(
         stack: PoseStack,
         partialTicks: Float,
-    ) {}
+    ) {
+    }
 
     override fun clear() {}
 
@@ -399,35 +403,40 @@ object DisabledDebugContext : MovementDebugContext() {
         from: Vec3,
         to: Vec3,
         color: Color,
-    ) {}
+    ) {
+    }
 
     override fun pointImpl(
         key: String,
         pos: Vec3,
         color: Color,
         size: Float,
-    ) {}
+    ) {
+    }
 
     override fun blockImpl(
         key: String,
         pos: BlockPos,
         color: Color,
         alpha: Float,
-    ) {}
+    ) {
+    }
 
     override fun metricImpl(
         key: String,
-        value: Double,
-        format: String,
-    ) {}
+        value: Number,
+    ) {
+    }
 
     override fun flagImpl(
         key: String,
         enabled: Boolean,
-    ) {}
+    ) {
+    }
 
     override fun statusImpl(
         key: String,
         value: String,
-    ) {}
+    ) {
+    }
 }
