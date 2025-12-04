@@ -2,11 +2,13 @@ package maestro.behavior
 
 import maestro.Agent
 import maestro.api.event.events.ChunkOcclusionEvent
+import maestro.api.event.events.RenderEvent
 import maestro.api.event.events.TickEvent
 import maestro.api.pathing.goals.GoalGetToBlock
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
 import maestro.utils.InputOverrideHandler
+import net.minecraft.Util
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.HitResult
@@ -32,10 +34,13 @@ class FreecamBehavior(
     private var sinPitch = 0.0
     private var cosPitch = 0.0
 
+    // Real-time tracking for tickrate-independent movement
+    private var lastUpdateTimeMs = 0L
+
     // Click tracking for teleport and pathfinding
     private var wasLeftClickPressed = false
     private var wasRightClickPressed = false
-    private var rightClickHoldTicks = 0
+    private var rightClickStartTimeMs = 0L
     private var rightClickPathQueued = false
 
     override fun onTick(event: TickEvent) {
@@ -45,7 +50,14 @@ class FreecamBehavior(
 
         // Update follow target position snapshots for smooth interpolation
         maestro.updateFollowTarget()
+    }
 
+    override fun onRenderPass(event: RenderEvent) {
+        if (!maestro.isFreecamActive) {
+            return
+        }
+
+        // Handle input every frame for instant response regardless of tickrate
         updateFreecamPosition()
         handleFreecamInput()
     }
@@ -62,6 +74,16 @@ class FreecamBehavior(
             return
         }
 
+        // Calculate real-time delta for tickrate-independent movement
+        val currentTimeMs = Util.getMillis()
+        val deltaTimeSeconds =
+            if (lastUpdateTimeMs == 0L) {
+                0.05 // First update: assume 50ms (1 tick at 20 TPS)
+            } else {
+                (currentTimeMs - lastUpdateTimeMs) / 1000.0
+            }
+        lastUpdateTimeMs = currentTimeMs
+
         val window = ctx.minecraft().window.window
 
         // Read WASD/Space/Shift keys
@@ -72,7 +94,8 @@ class FreecamBehavior(
         val up = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_SPACE) == GLFW.GLFW_PRESS
         val down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
 
-        val movement = calculateMovement(forward, back, left, right, up, down, isSprintKeyPressed())
+        val movement =
+            calculateMovement(forward, back, left, right, up, down, isSprintKeyPressed(), deltaTimeSeconds)
 
         // In FOLLOW mode, update offset; in STATIC mode, update position
         if (maestro.freecamMode == FreecamMode.FOLLOW) {
@@ -116,6 +139,7 @@ class FreecamBehavior(
         up: Boolean,
         down: Boolean,
         sprint: Boolean,
+        deltaTimeSeconds: Double,
     ): Vec3 {
         updateTrigCache()
 
@@ -123,9 +147,10 @@ class FreecamBehavior(
         var moveY = 0.0
         var moveZ = 0.0
 
-        // Calculate effective speed with sprint modifier
-        val speedMultiplier = if (sprint) 2.0 else 1.0
-        val effectiveSpeed = MOVEMENT_SPEED * speedMultiplier
+        // Calculate effective speed: blocks/second (independent of tickrate)
+        val speedMultiplier = if (sprint) SPRINT_MULTIPLIER else 1.0
+        val velocityPerSecond = MOVEMENT_VELOCITY_PER_SECOND * speedMultiplier
+        val effectiveSpeed = velocityPerSecond * deltaTimeSeconds
 
         // Forward/back relative to camera pitch and yaw (3D movement)
         if (forward) {
@@ -182,16 +207,19 @@ class FreecamBehavior(
             handleTeleport()
         }
 
-        // Right click hold: Pathfinding
+        // Right click hold: Pathfinding (real-time based)
         if (rightClick) {
-            rightClickHoldTicks++
-            val requiredTicks = Agent.settings().freecamPathfindHoldDuration.value
-            if (rightClickHoldTicks >= requiredTicks && !rightClickPathQueued) {
+            if (rightClickStartTimeMs == 0L) {
+                rightClickStartTimeMs = Util.getMillis()
+            }
+
+            val holdDurationMs = Util.getMillis() - rightClickStartTimeMs
+            if (holdDurationMs >= PATHFIND_HOLD_DURATION_MS && !rightClickPathQueued) {
                 handlePathfinding()
                 rightClickPathQueued = true
             }
         } else {
-            rightClickHoldTicks = 0
+            rightClickStartTimeMs = 0L
             rightClickPathQueued = false
         }
 
@@ -299,8 +327,13 @@ class FreecamBehavior(
     }
 
     companion object {
-        private const val MOVEMENT_SPEED = 0.85
+        // Movement velocity in blocks per second (0.85 blocks/tick * 20 ticks/second = 17 blocks/second)
+        private const val MOVEMENT_VELOCITY_PER_SECOND = 17.0
+
         private const val SPRINT_MULTIPLIER = 2.0
         private const val DEG_TO_RAD = Math.PI / 180.0
+
+        // Pathfinding hold duration: 350ms (70% of original 500ms = 10 ticks at 20 TPS)
+        private const val PATHFIND_HOLD_DURATION_MS = 350L
     }
 }
