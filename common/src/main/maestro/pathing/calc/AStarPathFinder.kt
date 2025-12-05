@@ -325,7 +325,7 @@ class AStarPathFinder
         }
 
         companion object {
-            private val log: Logger = Loggers.get("path")
+            private val log: Logger = Loggers.Path.get()
 
             /** Creates the default movement provider with all movement types. */
             fun createDefaultProvider(): IMovementProvider =

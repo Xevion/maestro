@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 
 public class CommandManager {
 
-    private static final Logger log = Loggers.get("cmd");
+    private static final Logger log = Loggers.Cmd.get();
     private final Registry<ICommand> registry = new Registry<>();
     private final Agent maestro;
 

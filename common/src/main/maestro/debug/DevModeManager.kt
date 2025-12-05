@@ -186,6 +186,6 @@ class DevModeManager(
     private fun shouldAutoStartCoordinator(): Boolean = "true".equals(System.getenv("AUTOSTART_COORDINATOR"), ignoreCase = true)
 
     companion object {
-        private val log: Logger = Loggers.get("dev")
+        private val log: Logger = Loggers.Dev.get()
     }
 }

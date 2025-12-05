@@ -38,7 +38,7 @@ public abstract class Command implements ICommand {
         this.names = Stream.of(names).map(s -> s.toLowerCase(Locale.US)).toList();
         this.maestro = maestro;
         this.ctx = maestro.getPlayerContext();
-        this.log = Loggers.get("cmd");
+        this.log = Loggers.Cmd.get();
     }
 
     @Override

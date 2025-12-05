@@ -235,7 +235,7 @@ class MovementFailureMemory(
     fun totalRecords(): Int = failures.values.sumOf { it.size }
 
     companion object {
-        private val log: Logger = Loggers.get("path")
+        private val log: Logger = Loggers.Path.get()
         private const val MAX_RECORDS_PER_MOVEMENT = 10
     }
 }

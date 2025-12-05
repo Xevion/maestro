@@ -22,7 +22,7 @@ class CoordinationClient(
     private val workerId: String,
     private val workerName: String,
 ) {
-    private val log: Logger = Loggers.get("coord")
+    private val log: Logger = Loggers.Coord.get()
 
     private var channel: ManagedChannel? = null
     private var stub: CoordinationGrpc.CoordinationBlockingStub? = null

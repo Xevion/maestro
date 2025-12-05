@@ -56,7 +56,7 @@ import org.slf4j.Logger;
 
 public final class ElytraBehavior {
 
-    private static final Logger log = Loggers.get("path");
+    private static final Logger log = Loggers.Path.get();
 
     private final Agent maestro;
     private final PlayerContext ctx;

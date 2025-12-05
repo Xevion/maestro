@@ -304,7 +304,7 @@ class ExploreTask(
     }
 
     companion object {
-        private val log: Logger = Loggers.get("path")
+        private val log: Logger = Loggers.Path.get()
 
         private fun createGoal(
             x: Int,

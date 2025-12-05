@@ -209,6 +209,6 @@ class GuiClick :
     }
 
     companion object {
-        private val log: Logger = Loggers.get("event")
+        private val log: Logger = Loggers.Event.get()
     }
 }

@@ -243,7 +243,7 @@ abstract class AbstractNodeCostSearch(
     protected fun mapSize(): Int = map.size
 
     companion object {
-        private val log: Logger = Loggers.get("path")
+        private val log: Logger = Loggers.Path.get()
 
         /**
          * This is really complicated and hard to explain. I wrote a comment in the old version of

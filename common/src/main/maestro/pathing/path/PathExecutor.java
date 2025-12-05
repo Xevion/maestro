@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 
 /** Behavior to execute a precomputed path */
 public class PathExecutor implements IPathExecutor, Helper {
-    private static final Logger log = Loggers.get("path");
+    private static final Logger log = Loggers.Path.get();
 
     private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;

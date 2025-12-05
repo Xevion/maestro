@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 
 public final class SpongeSchematic extends StaticSchematic {
 
-    private static final Logger log = Loggers.get("build");
+    private static final Logger log = Loggers.Build.get();
 
     public SpongeSchematic(CompoundTag nbt) {
         this.x = nbt.getInt("Width");

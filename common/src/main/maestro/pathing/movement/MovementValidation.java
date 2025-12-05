@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 
 /** Static helpers for cost calculation */
 public interface MovementValidation extends Helper {
-    Logger log = Loggers.get("move");
+    Logger log = Loggers.Move.get();
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, z)) {

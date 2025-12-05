@@ -177,7 +177,7 @@ public interface Helper {
         }
     }
 
-    Logger NOTIFICATION_LOG = Loggers.get("event");
+    Logger NOTIFICATION_LOG = Loggers.Event.get();
 
     @SuppressWarnings("MutablePublicArray") // Intentional holder for tray icon state
     TrayIcon[] TRAY_ICON_HOLDER = new TrayIcon[1];

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 
 public class ExploreFilterCommand extends Command {
 
-    private static final Logger log = Loggers.get("cmd");
+    private static final Logger log = Loggers.Cmd.get();
 
     public ExploreFilterCommand(Agent maestro) {
         super(maestro, "explorefilter");

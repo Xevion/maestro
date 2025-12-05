@@ -378,7 +378,7 @@ public class Agent {
             this.followTargetPrev = playerPos;
             this.followTargetCurrent = playerPos;
 
-            Loggers.get("dev").atDebug().addKeyValue("mode", "FOLLOW").log("Freecam mode switched");
+            Loggers.Dev.get().atDebug().addKeyValue("mode", "FOLLOW").log("Freecam mode switched");
         } else if (newMode == FreecamMode.STATIC
                 && this.mc.player != null
                 && freecamFollowOffset != null) {
@@ -391,9 +391,9 @@ public class Agent {
             this.freecamPosition = staticPos;
             this.prevFreecamPosition = staticPos;
 
-            Loggers.get("dev").atDebug().addKeyValue("mode", "STATIC").log("Freecam mode switched");
+            Loggers.Dev.get().atDebug().addKeyValue("mode", "STATIC").log("Freecam mode switched");
         } else {
-            Loggers.get("dev").atDebug().addKeyValue("mode", newMode).log("Freecam mode switched");
+            Loggers.Dev.get().atDebug().addKeyValue("mode", newMode).log("Freecam mode switched");
         }
     }
 

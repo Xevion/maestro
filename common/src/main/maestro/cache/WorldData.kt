@@ -7,7 +7,7 @@ import maestro.cache.WorldData
 import net.minecraft.world.level.dimension.DimensionType
 import java.nio.file.Path
 
-private val log = Loggers.get("cache")
+private val log = Loggers.Cache.get()
 
 /**
  * Data about a world, from maestro's point of view. Includes cached chunks, waypoints, and map

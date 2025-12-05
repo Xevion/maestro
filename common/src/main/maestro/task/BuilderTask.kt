@@ -1223,7 +1223,7 @@ class BuilderTask(
     }
 
     companion object {
-        private val log: Logger = Loggers.get("build")
+        private val log: Logger = Loggers.Build.get()
 
         private val ORIENTATION_PROPS: Set<Property<*>> =
             ImmutableSet.of(

@@ -17,7 +17,7 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 
-private val log = Loggers.get("cache")
+private val log = Loggers.Cache.get()
 
 /** Waypoints for a world */
 class WaypointCollection internal constructor(

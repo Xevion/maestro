@@ -19,7 +19,7 @@ import net.minecraft.world.level.chunk.SingleValuePalette
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-private val log = Loggers.get("cache")
+private val log = Loggers.Cache.get()
 
 object WorldScanner {
     private val PALETTE_REGISTRY_SENTINEL = emptyArray<BlockState>()

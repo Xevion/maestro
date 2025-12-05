@@ -21,7 +21,7 @@ import org.slf4j.Logger;
  * then validates each for safety and accessibility.
  */
 public class TeleportDestinationFinder {
-    private static final Logger log = Loggers.get("path");
+    private static final Logger log = Loggers.Path.get();
 
     private static final double GOLDEN_RATIO = (1.0 + Math.sqrt(5.0)) / 2.0;
 

@@ -11,49 +11,39 @@ public class LoggersTest {
 
     @Test
     public void testGetValidCategory() {
-        Logger log = Loggers.get("path");
+        Logger log = Loggers.Path.get();
         assertNotNull(log);
         assertEquals("path", log.getName());
     }
 
     @Test
     public void testAllCategoriesExist() {
-        String[] categories = {
-            "path",
-            "swim",
-            "combat",
-            "mine",
-            "farm",
-            "build",
-            "cache",
-            "move",
-            "rotation",
-            "event",
-            "cmd",
-            "api"
+        Loggers[] allLoggers = {
+            Loggers.Path,
+            Loggers.Swim,
+            Loggers.Combat,
+            Loggers.Mine,
+            Loggers.Farm,
+            Loggers.Build,
+            Loggers.Cache,
+            Loggers.Move,
+            Loggers.Rotation,
+            Loggers.Event,
+            Loggers.Cmd,
+            Loggers.Api
         };
 
-        for (String category : categories) {
-            Logger log = Loggers.get(category);
-            assertNotNull(log, "Logger for category " + category + " should not be null");
-            assertEquals(category, log.getName());
+        for (Loggers loggerEnum : allLoggers) {
+            Logger log = loggerEnum.get();
+            assertNotNull(log, "Logger for " + loggerEnum + " should not be null");
         }
     }
 
     @Test
-    public void testInvalidCategoryThrows() {
-        assertThrows(IllegalArgumentException.class, () -> Loggers.get("invalid"));
-    }
-
-    @Test
-    public void testInvalidCategoryMessage() {
-        try {
-            Loggers.get("invalid");
-            fail("Should have thrown IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Unknown logger category"));
-            assertTrue(e.getMessage().contains("invalid"));
-        }
+    public void testFromCategory() {
+        assertEquals(Loggers.Path, Loggers.fromCategory("path"));
+        assertEquals(Loggers.Mine, Loggers.fromCategory("mine"));
+        assertNull(Loggers.fromCategory("invalid"));
     }
 
     @Test
@@ -66,15 +56,15 @@ public class LoggersTest {
 
     @Test
     public void testSameLoggerInstance() {
-        Logger log1 = Loggers.get("path");
-        Logger log2 = Loggers.get("path");
+        Logger log1 = Loggers.Path.get();
+        Logger log2 = Loggers.Path.get();
         assertSame(log1, log2, "Should return same logger instance for same category");
     }
 
     @Test
     public void testDifferentCategories() {
-        Logger pathLog = Loggers.get("path");
-        Logger mineLog = Loggers.get("mine");
+        Logger pathLog = Loggers.Path.get();
+        Logger mineLog = Loggers.Mine.get();
         assertNotSame(pathLog, mineLog, "Different categories should have different loggers");
     }
 }

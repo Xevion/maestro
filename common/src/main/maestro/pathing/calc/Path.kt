@@ -159,6 +159,6 @@ internal class Path(
     }
 
     companion object {
-        private val log: Logger = Loggers.get("path")
+        private val log: Logger = Loggers.Path.get()
     }
 }

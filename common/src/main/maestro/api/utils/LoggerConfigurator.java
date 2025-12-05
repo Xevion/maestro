@@ -8,7 +8,7 @@ import ch.qos.logback.core.Appender;
 import org.slf4j.LoggerFactory;
 
 /**
- * Programmatically configures Maestro logger categories from Loggers.CATEGORIES.
+ * Programmatically configures Maestro logger categories from Loggers enum.
  *
  * <p>This eliminates the need to manually maintain logger entries in logback.xml. Categories are
  * configured automatically during Loggers class initialization with:

@@ -25,7 +25,7 @@ class RangedCombatTask(
     maestro: Agent,
 ) : TaskHelper(maestro),
     AbstractGameEventListener {
-    private val log: Logger = Loggers.get("combat")
+    private val log: Logger = Loggers.Combat.get()
 
     companion object {
         private const val MIN_RANGE = 8.0

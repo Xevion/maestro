@@ -17,7 +17,7 @@ import net.minecraft.world.level.dimension.BuiltinDimensionTypes
 import net.minecraft.world.level.dimension.DimensionType
 import java.util.BitSet
 
-private val log = Loggers.get("cache")
+private val log = Loggers.Cache.get()
 
 object ChunkPacker {
     @JvmStatic

@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 
 public class ReloadAllCommand extends Command {
 
-    private static final Logger log = Loggers.get("cmd");
+    private static final Logger log = Loggers.Cmd.get();
 
     public ReloadAllCommand(Agent maestro) {
         super(maestro, "reloadall");

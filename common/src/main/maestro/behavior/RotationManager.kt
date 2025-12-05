@@ -124,6 +124,6 @@ class RotationManager(
     }
 
     companion object {
-        private val log: Logger = Loggers.get("rotation")
+        private val log: Logger = Loggers.Rotation.get()
     }
 }

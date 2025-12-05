@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 
 public final class NetherPathfinderContext {
 
-    private static final Logger log = Loggers.get("path");
+    private static final Logger log = Loggers.Path.get();
 
     private static final BlockState AIR_BLOCK_STATE = Blocks.AIR.defaultBlockState();
     // This lock must be held while there are active pointers to chunks in java,

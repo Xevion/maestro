@@ -32,6 +32,6 @@ class WaypointBehavior(
     }
 
     companion object {
-        private val log: Logger = Loggers.get("waypoint")
+        private val log: Logger = Loggers.Waypoint.get()
     }
 }

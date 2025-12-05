@@ -17,7 +17,7 @@ import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 
 public class SettingsUtil {
-    private static final Logger log = Loggers.get("api");
+    private static final Logger log = Loggers.Api.get();
 
     public static final String SETTINGS_DEFAULT_NAME = "settings.txt";
     private static final Pattern SETTING_PATTERN =

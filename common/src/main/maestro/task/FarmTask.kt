@@ -448,7 +448,7 @@ class FarmTask(
     override fun displayName0(): String = "Farming"
 
     companion object {
-        private val log: Logger = Loggers.get("farm")
+        private val log: Logger = Loggers.Farm.get()
 
         private val FARMLAND_PLANTABLE: List<Item> =
             listOf(

@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 
 public class ArgConsumer implements IArgConsumer {
 
-    private static final Logger log = Loggers.get("cmd");
+    private static final Logger log = Loggers.Cmd.get();
 
     /**
      * The parent {@link CommandManager} for this {@link IArgConsumer}}. Used by {@link #context}.

@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 
 public final class GameEventHandler implements IEventBus {
 
-    private static final Logger log = Loggers.get("event");
+    private static final Logger log = Loggers.Event.get();
 
     private final Agent maestro;
 

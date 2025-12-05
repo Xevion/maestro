@@ -249,7 +249,7 @@ class PathReconnection {
     }
 
     companion object {
-        private val log: Logger = Loggers.get("path")
+        private val log: Logger = Loggers.Path.get()
 
         /**
          * Common movement types to sample for failure memory penalties.

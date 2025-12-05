@@ -656,7 +656,7 @@ class MineTask(
     fun getKnownOreLocations(): List<BlockPos> = knownOreLocations.toList()
 
     companion object {
-        private val log: Logger = Loggers.get("mine")
+        private val log: Logger = Loggers.Mine.get()
 
         fun searchWorld(
             ctx: CalculationContext,

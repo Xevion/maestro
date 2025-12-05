@@ -44,7 +44,7 @@ data class WorkerProgress(
 )
 
 class CoordinationServer {
-    private val log: Logger = Loggers.get("coord")
+    private val log: Logger = Loggers.Coord.get()
 
     private var server: Server? = null
     private val claims = ConcurrentHashMap<String, AreaClaim>()

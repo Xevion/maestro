@@ -50,7 +50,7 @@ sealed class CommandException(
         }
 
         companion object {
-            private val log: Logger = Loggers.get("cmd")
+            private val log: Logger = Loggers.Cmd.get()
         }
     }
 
@@ -158,7 +158,7 @@ sealed class CommandException(
         }
 
         companion object {
-            private val log: Logger = Loggers.get("cmd")
+            private val log: Logger = Loggers.Cmd.get()
         }
     }
 

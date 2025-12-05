@@ -565,7 +565,7 @@ class ElytraTask private constructor(
     }
 
     companion object {
-        private val log: Logger = Loggers.get("path")
+        private val log: Logger = Loggers.Path.get()
 
         private const val LANDING_COLUMN_HEIGHT = 15
 

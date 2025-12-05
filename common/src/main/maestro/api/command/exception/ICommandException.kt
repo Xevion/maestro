@@ -55,6 +55,6 @@ interface ICommandException {
 
     companion object {
         @JvmField
-        val log: Logger = Loggers.get("cmd")
+        val log: Logger = Loggers.Cmd.get()
     }
 }

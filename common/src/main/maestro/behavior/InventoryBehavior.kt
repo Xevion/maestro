@@ -281,6 +281,6 @@ class InventoryBehavior(
     }
 
     companion object {
-        private val log: Logger = Loggers.get("inventory")
+        private val log: Logger = Loggers.Inventory.get()
     }
 }

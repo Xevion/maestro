@@ -180,7 +180,7 @@ class BackfillTask(
     override fun priority(): Double = 5.0
 
     companion object {
-        private val log: Logger = Loggers.get("move")
+        private val log: Logger = Loggers.Move.get()
         private val DIRT_STATE: BlockState = Blocks.DIRT.defaultBlockState()
     }
 }

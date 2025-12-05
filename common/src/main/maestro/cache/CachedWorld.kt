@@ -29,7 +29,7 @@ import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-private val log = Loggers.get("cache")
+private val log = Loggers.Cache.get()
 
 class CachedWorld internal constructor(
     directory: Path,

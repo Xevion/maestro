@@ -15,7 +15,7 @@ import org.slf4j.Logger;
  * avoid overwhelming the pathfinding algorithm with too many options.
  */
 public class TeleportMovementProvider implements IMovementProvider {
-    private static final Logger log = Loggers.get("path");
+    private static final Logger log = Loggers.Path.get();
 
     @Override
     public Stream<IMovement> generateMovements(CalculationContext context, PackedBlockPos from) {

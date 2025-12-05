@@ -21,7 +21,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.exists
 
-private val log = Loggers.get("cache")
+private val log = Loggers.Cache.get()
 
 class CachedRegion(
     /** The region x coordinate */

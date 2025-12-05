@@ -8,7 +8,7 @@ import maestro.pathing.movement.CalculationContext
 import org.slf4j.Logger
 
 class PreferredPaths {
-    private val log: Logger = Loggers.get("path")
+    private val log: Logger = Loggers.Path.get()
     private val areas: Long2DoubleOpenHashMap = Long2DoubleOpenHashMap()
 
     constructor(ctx: PlayerContext, previous: IPath?, context: CalculationContext) : this(previous, context) {
