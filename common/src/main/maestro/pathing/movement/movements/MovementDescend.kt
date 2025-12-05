@@ -5,9 +5,7 @@ import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.RotationUtils
 import maestro.api.utils.center
-import maestro.api.utils.centerWithY
 import maestro.api.utils.centerXZ
 import maestro.pathing.BlockStateInterface
 import maestro.pathing.MutableMoveResult
@@ -196,13 +194,11 @@ class MovementDescend(
         debug.status("mine", "none")
 
         // Calculate look direction
+        val direction = dest.centerXZ - src.centerXZ
         val targetYaw =
-            RotationUtils
-                .calcRotationFromVec3d(
-                    ctx.playerHead(),
-                    dest.centerWithY(ctx.player().eyeY),
-                    ctx.playerRotations(),
-                ).yaw
+            Math
+                .toDegrees(kotlin.math.atan2(-direction.x.toDouble(), direction.y.toDouble()))
+                .toFloat()
 
         // Check safe mode and skipToAscend
         val isSafeMode = safeMode()
