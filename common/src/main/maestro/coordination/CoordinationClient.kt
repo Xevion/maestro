@@ -3,7 +3,7 @@ package maestro.coordination
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusRuntimeException
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.format
 import maestro.coordination.proto.ClaimAreaRequest
 import maestro.coordination.proto.ConnectRequest
@@ -22,7 +22,7 @@ class CoordinationClient(
     private val workerId: String,
     private val workerName: String,
 ) {
-    private val log: Logger = MaestroLogger.get("coord")
+    private val log: Logger = Loggers.get("coord")
 
     private var channel: ManagedChannel? = null
     private var stub: CoordinationGrpc.CoordinationBlockingStub? = null

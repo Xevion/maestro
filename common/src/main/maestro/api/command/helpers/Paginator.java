@@ -3,7 +3,7 @@ package maestro.api.command.helpers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 import net.minecraft.ChatFormatting;
@@ -111,8 +111,7 @@ public class Paginator<E> {
         prefixed.append(" ");
         prefixed.append(component);
 
-        Minecraft.getInstance()
-                .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+        Minecraft.getInstance().execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
     }
 
     public void display(Function<E, Component> transform) {

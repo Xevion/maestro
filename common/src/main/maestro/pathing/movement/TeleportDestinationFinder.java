@@ -2,7 +2,7 @@ package maestro.pathing.movement;
 
 import java.util.ArrayList;
 import java.util.List;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import maestro.api.utils.PackedBlockPos;
 import maestro.utils.BlockPosExtKt;
 import maestro.utils.Vec3ExtKt;
@@ -21,7 +21,7 @@ import org.slf4j.Logger;
  * then validates each for safety and accessibility.
  */
 public class TeleportDestinationFinder {
-    private static final Logger log = MaestroLogger.get("path");
+    private static final Logger log = Loggers.get("path");
 
     private static final double GOLDEN_RATIO = (1.0 + Math.sqrt(5.0)) / 2.0;
 
@@ -134,10 +134,10 @@ public class TeleportDestinationFinder {
         }
 
         // Early exit: 2x1 open space (feet and head)
-        if (!MovementHelper.fullyPassable(context, pos.getX(), pos.getY(), pos.getZ())) {
+        if (!MovementValidation.fullyPassable(context, pos.getX(), pos.getY(), pos.getZ())) {
             return new ValidationResult(false, -1);
         }
-        if (!MovementHelper.fullyPassable(context, pos.getX(), pos.getY() + 1, pos.getZ())) {
+        if (!MovementValidation.fullyPassable(context, pos.getX(), pos.getY() + 1, pos.getZ())) {
             return new ValidationResult(false, -1);
         }
 
@@ -154,21 +154,21 @@ public class TeleportDestinationFinder {
 
             var state = context.get(pos.getX(), checkY, pos.getZ());
 
-            if (MovementHelper.canWalkThrough(context, pos.getX(), checkY, pos.getZ(), state)) {
+            if (MovementValidation.canWalkThrough(context, pos.getX(), checkY, pos.getZ(), state)) {
                 // Passable block - check if it's dangerous (fire, lava, etc.)
-                if (MovementHelper.avoidWalkingInto(state)) {
+                if (MovementValidation.avoidWalkingInto(state)) {
                     return new ValidationResult(false, -1); // Dangerous passable block in air gap
                 }
                 continue; // Safe passable block, keep checking deeper
             }
 
             // Hit non-passable block - verify it's walkable
-            if (!MovementHelper.canWalkOn(context, pos.getX(), checkY, pos.getZ(), state)) {
+            if (!MovementValidation.canWalkOn(context, pos.getX(), checkY, pos.getZ(), state)) {
                 return new ValidationResult(false, -1); // Non-walkable solid block
             }
 
             // Found valid ground within 5 blocks - verify it's safe
-            if (MovementHelper.avoidWalkingInto(state)) {
+            if (MovementValidation.avoidWalkingInto(state)) {
                 return new ValidationResult(false, -1); // Dangerous landing block
             }
 

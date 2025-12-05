@@ -1,6 +1,6 @@
 package maestro.combat
 
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ArrowItem
 import net.minecraft.world.item.BowItem
@@ -9,7 +9,7 @@ import net.minecraft.world.item.BowItem
  * Manages bow charging, releasing, and inventory selection for ranged combat.
  */
 class BowController(
-    private val ctx: IPlayerContext,
+    private val ctx: PlayerContext,
 ) {
     private var chargingStartTick: Int = -1
     private var currentBowSlot: Int = -1

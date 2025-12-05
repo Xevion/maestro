@@ -3,29 +3,29 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.behavior.IPathingBehavior;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.pathing.calc.IPathingControlManager;
-import maestro.api.process.IMaestroProcess;
+import maestro.api.task.ITask;
+import maestro.behavior.PathingBehavior;
+import maestro.pathing.TaskCoordinator;
 
 public class ETACommand extends Command {
 
-    public ETACommand(IAgent maestro) {
+    public ETACommand(Agent maestro) {
         super(maestro, "eta");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        IPathingControlManager pathingControlManager = maestro.getPathingControlManager();
-        IMaestroProcess process = pathingControlManager.mostRecentInControl().orElse(null);
+        TaskCoordinator pathingControlManager = maestro.getPathingControlManager();
+        ITask process = pathingControlManager.mostRecentInControl().orElse(null);
         if (process == null) {
             throw new CommandException.InvalidState("No process in control");
         }
-        IPathingBehavior pathingBehavior = maestro.getPathingBehavior();
+        PathingBehavior pathingBehavior = maestro.getPathingBehavior();
 
         double ticksRemainingInSegment =
                 pathingBehavior.ticksRemainingInSegment().orElse(Double.NaN);

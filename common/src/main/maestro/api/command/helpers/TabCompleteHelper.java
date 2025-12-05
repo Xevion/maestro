@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.Setting;
 import maestro.api.Settings;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.IDatatype;
-import maestro.api.command.manager.ICommandManager;
 import maestro.api.event.events.TabCompleteEvent;
 import maestro.api.utils.SettingsUtil;
+import maestro.command.manager.CommandManager;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -29,8 +29,7 @@ import net.minecraft.resources.ResourceLocation;
  *       prefix using {@link #filterPrefix(String)}
  *   <li>Get the stream using {@link #stream()}
  *   <li>Pass it up to whatever's calling your tab complete function (i.e. {@link
- *       ICommandManager#tabComplete(String)} or {@link
- *       IArgConsumer#tabCompleteDatatype(IDatatype)})
+ *       CommandManager#tabComplete(String)} or {@link IArgConsumer#tabCompleteDatatype(IDatatype)})
  * </ul>
  *
  * <p>For advanced users: if you're intercepting {@link TabCompleteEvent}s directly, use {@link
@@ -257,13 +256,13 @@ public class TabCompleteHelper {
     }
 
     /**
-     * Appends every command in the specified {@link ICommandManager} to this {@link
+     * Appends every command in the specified {@link CommandManager} to this {@link
      * TabCompleteHelper}
      *
      * @param manager A command manager
      * @return This {@link TabCompleteHelper}
      */
-    public TabCompleteHelper addCommands(ICommandManager manager) {
+    public TabCompleteHelper addCommands(CommandManager manager) {
         return append(
                 manager.getRegistry()
                         .descendingStream()
@@ -278,7 +277,7 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addSettings() {
         return append(
-                MaestroAPI.getSettings().allSettings.stream()
+                AgentAPI.getSettings().allSettings.stream()
                         .filter(s -> !s.isJavaOnly())
                         .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
@@ -291,7 +290,7 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addModifiedSettings() {
         return append(
-                SettingsUtil.modifiedSettings(MaestroAPI.getSettings()).stream()
+                SettingsUtil.modifiedSettings(AgentAPI.getSettings()).stream()
                         .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
     }
@@ -304,7 +303,7 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addToggleableSettings() {
         return append(
-                MaestroAPI.getSettings().getAllValuesByType(Boolean.class).stream()
+                AgentAPI.getSettings().getAllValuesByType(Boolean.class).stream()
                         .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
     }

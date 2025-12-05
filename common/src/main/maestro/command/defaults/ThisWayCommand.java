@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -13,7 +12,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class ThisWayCommand extends Command {
 
-    public ThisWayCommand(IAgent maestro) {
+    public ThisWayCommand(Agent maestro) {
         super(maestro, "thisway", "forward");
     }
 
@@ -35,7 +34,7 @@ public class ThisWayCommand extends Command {
         }
 
         GoalXZ goal = GoalXZ.fromDirection(origin, yaw, args.getAs(Double.class));
-        maestro.getCustomGoalProcess().setGoal(goal);
+        maestro.getCustomGoalTask().setGoal(goal);
         log.atInfo().addKeyValue("goal", goal).log("Goal set");
     }
 

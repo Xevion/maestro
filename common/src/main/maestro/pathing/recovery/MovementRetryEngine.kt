@@ -2,7 +2,7 @@ package maestro.pathing.recovery
 
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.IMovement
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.behavior.PathingBehavior
 import maestro.pathing.movement.Movement
@@ -106,6 +106,6 @@ class MovementRetryEngine(
     )
 
     companion object {
-        private val log: Logger = MaestroLogger.get("path")
+        private val log: Logger = Loggers.get("path")
     }
 }

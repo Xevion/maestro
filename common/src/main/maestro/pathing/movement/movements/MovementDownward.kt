@@ -1,9 +1,9 @@
 package maestro.pathing.movement.movements
 
-import maestro.api.IAgent
+import maestro.Agent
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.center
 import maestro.api.utils.centerXZ
@@ -13,9 +13,9 @@ import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
 import maestro.pathing.movement.LookIntent
 import maestro.pathing.movement.Movement
-import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
+import maestro.pathing.movement.MovementValidation
 import maestro.utils.horizontalDistanceTo
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
@@ -34,13 +34,13 @@ import net.minecraft.world.level.block.Blocks
  *   (e.g., open trapdoors, glass panes, iron bars, end rods)
  */
 class MovementDownward(
-    maestro: IAgent,
+    maestro: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
 ) : Movement(maestro, src, dest) {
     override fun toBreak(bsi: BlockStateInterface): List<BlockPos> {
         // Break the block below our feet (dest position) if it's not already passable
-        if (MovementHelper.canWalkThrough(ctx, dest)) {
+        if (MovementValidation.canWalkThrough(ctx, dest)) {
             return emptyList()
         }
         return listOf(dest.toBlockPos())
@@ -56,7 +56,7 @@ class MovementDownward(
         }
     }
 
-    override fun computeIntent(ctx: IPlayerContext): Intent {
+    override fun computeIntent(ctx: PlayerContext): Intent {
         val playerPos = ctx.player().position()
         val destCenter = dest.center
 
@@ -65,7 +65,7 @@ class MovementDownward(
         debug.point("dest-center", destCenter, java.awt.Color.YELLOW, 0.15f)
 
         // Check if we need to break the block below
-        val needsBreaking = !MovementHelper.canWalkThrough(ctx, dest)
+        val needsBreaking = !MovementValidation.canWalkThrough(ctx, dest)
 
         // Calculate horizontal distance from dest center
         val centerXZ = dest.centerXZ
@@ -140,7 +140,7 @@ class MovementDownward(
             if (!context.allowDownward) {
                 return ActionCosts.COST_INF
             }
-            if (!MovementHelper.canWalkOn(context, x, y - 2, z)) {
+            if (!MovementValidation.canWalkOn(context, x, y - 2, z)) {
                 return ActionCosts.COST_INF
             }
             val down = context[x, y - 1, z]
@@ -150,7 +150,7 @@ class MovementDownward(
             } else {
                 // Standing on block that might be falling, but will be air by the time we get here
                 ActionCosts.FALL_N_BLOCKS_COST[1] +
-                    MovementHelper.getMiningDurationTicks(context, x, y - 1, z, down, false)
+                    MovementValidation.getMiningDurationTicks(context, x, y - 1, z, down, false)
             }
         }
     }

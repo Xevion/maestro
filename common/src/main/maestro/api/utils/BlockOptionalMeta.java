@@ -59,7 +59,7 @@ public final class BlockOptionalMeta {
     private static final Pattern PATTERN =
             Pattern.compile("^(?<id>.+?)(?:\\[(?<properties>.+?)?\\])?$");
 
-    private static final Logger log = MaestroLogger.get("api");
+    private static final Logger log = Loggers.get("api");
 
     private final Block block;
     private final String

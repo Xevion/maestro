@@ -3,18 +3,18 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import org.slf4j.Logger;
 
 public class SaveAllCommand extends Command {
 
-    private static final Logger log = MaestroLogger.get("cmd");
+    private static final Logger log = Loggers.get("cmd");
 
-    public SaveAllCommand(IAgent maestro) {
+    public SaveAllCommand(Agent maestro) {
         super(maestro, "saveall");
     }
 

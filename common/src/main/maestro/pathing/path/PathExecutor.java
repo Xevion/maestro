@@ -11,14 +11,15 @@ import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.pathing.path.IPathExecutor;
+import maestro.api.player.PlayerContext;
 import maestro.api.utils.*;
-import maestro.api.utils.input.Input;
 import maestro.behavior.PathingBehavior;
+import maestro.input.Input;
 import maestro.pathing.BlockStateInterface;
 import maestro.pathing.calc.AbstractNodeCostSearch;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
-import maestro.pathing.movement.MovementHelper;
+import maestro.pathing.movement.MovementValidation;
 // TODO: Re-enable after MovementFall, MovementParkour, MovementDiagonal are converted to Kotlin
 // import maestro.pathing.movement.movements.MovementFall;
 // import maestro.pathing.movement.movements.MovementParkour;
@@ -34,7 +35,7 @@ import org.slf4j.Logger;
 
 /** Behavior to execute a precomputed path */
 public class PathExecutor implements IPathExecutor, Helper {
-    private static final Logger log = MaestroLogger.get("path");
+    private static final Logger log = Loggers.get("path");
 
     private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;
@@ -76,7 +77,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     private int maxCollectionSize = 0; // Track high water mark for shrinking
 
     private final PathingBehavior behavior;
-    private final IPlayerContext ctx;
+    private final PlayerContext ctx;
 
     private final PathRecoveryManager recoveryManager;
 
@@ -428,19 +429,19 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean shouldPause() {
-        Optional<AbstractNodeCostSearch> current = behavior.getInProgress();
+        Optional<? extends AbstractNodeCostSearch> current = behavior.getInProgress();
         if (current.isEmpty()) {
             return false;
         }
         if (!ctx.player().onGround()) {
             return false;
         }
-        if (!MovementHelper.canWalkOn(ctx, ctx.playerFeet().below())) {
+        if (!MovementValidation.canWalkOn(ctx, ctx.playerFeet().below())) {
             // we're in some kind of sketchy situation, maybe parkouring
             return false;
         }
-        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet())
-                || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().above())) {
+        if (!MovementValidation.canWalkThrough(ctx, ctx.playerFeet())
+                || !MovementValidation.canWalkThrough(ctx, ctx.playerFeet().above())) {
             // suffocating?
             return false;
         }
@@ -565,7 +566,8 @@ public class PathExecutor implements IPathExecutor, Helper {
                 // keep this out of onTick, even if that means a tick of delay before it has an
                 // effect
                 IMovement next = path.movements().get(pathPosition + 1);
-                if (MovementHelper.canUseFrostWalker(ctx, next.getDest().below().toBlockPos())) {
+                if (MovementValidation.canUseFrostWalker(
+                        ctx, next.getDest().below().toBlockPos())) {
                     // frostwalker only works if you cross the edge of the block on ground so in
                     // some cases we may not overshoot
                     // Since MovementDescend can't know the next movement we have to tell it
@@ -721,11 +723,11 @@ public class PathExecutor implements IPathExecutor, Helper {
     //         }
     //         for (int y = next.getDest().getY(); y <= movement.getSrc().getY() + 1; y++) {
     //             BlockPos chk = new BlockPos(next.getDest().getX(), y, next.getDest().getZ());
-    //             if (!MovementHelper.fullyPassable(ctx, chk)) {
+    //             if (!MovementValidation.fullyPassable(ctx, chk)) {
     //                 break outer;
     //             }
     //         }
-    //         if (!MovementHelper.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
+    //         if (!MovementValidation.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
     //             break;
     //         }
     //     }
@@ -747,7 +749,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     //                             flatDir.getZ() * (i - pathPosition)));
     // }
 
-    private static boolean skipNow(IPlayerContext ctx, IMovement current) {
+    private static boolean skipNow(PlayerContext ctx, IMovement current) {
         var srcCenter = BlockPosExtKt.getCenterXZ(current.getSrc().toBlockPos());
         double offTarget =
                 Math.abs(current.getDirection().getX() * (srcCenter.y - ctx.player().position().z))
@@ -759,7 +761,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         // we are centered
         BlockPos headBonk = current.getSrc().toBlockPos().subtract(current.getDirection()).above(2);
-        if (MovementHelper.fullyPassable(ctx, headBonk)) {
+        if (MovementValidation.fullyPassable(ctx, headBonk)) {
             return true;
         }
         // wait 0.3
@@ -775,7 +777,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private static boolean sprintableAscend(
-            IPlayerContext ctx, MovementTraverse current, MovementAscend next, IMovement nextnext) {
+            PlayerContext ctx, MovementTraverse current, MovementAscend next, IMovement nextnext) {
         if (!Agent.settings().sprintAscends.value) {
             return false;
         }
@@ -786,10 +788,10 @@ public class PathExecutor implements IPathExecutor, Helper {
                 || nextnext.getDirection().getZ() != next.getDirection().getZ()) {
             return false;
         }
-        if (!MovementHelper.canWalkOn(ctx, current.getDest().below().toBlockPos())) {
+        if (!MovementValidation.canWalkOn(ctx, current.getDest().below().toBlockPos())) {
             return false;
         }
-        if (!MovementHelper.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
+        if (!MovementValidation.canWalkOn(ctx, next.getDest().below().toBlockPos())) {
             return false;
         }
         if (!next.toBreakCached.isEmpty()) {
@@ -801,26 +803,26 @@ public class PathExecutor implements IPathExecutor, Helper {
                 if (x == 1) {
                     chk = chk.offset(current.getDirection());
                 }
-                if (!MovementHelper.fullyPassable(ctx, chk)) {
+                if (!MovementValidation.fullyPassable(ctx, chk)) {
                     return false;
                 }
             }
         }
-        if (MovementHelper.avoidWalkingInto(
+        if (MovementValidation.avoidWalkingInto(
                 ctx.world().getBlockState(current.getSrc().toBlockPos().above(3)))) {
             return false;
         }
-        return !MovementHelper.avoidWalkingInto(
+        return !MovementValidation.avoidWalkingInto(
                 ctx.world()
                         .getBlockState(next.getDest().toBlockPos().above(2))); // codacy smh my head
     }
 
     private static boolean canSprintFromDescendInto(
-            IPlayerContext ctx, IMovement current, IMovement next) {
+            PlayerContext ctx, IMovement current, IMovement next) {
         if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
             return true;
         }
-        if (!MovementHelper.canWalkOn(
+        if (!MovementValidation.canWalkOn(
                 ctx, current.getDest().toBlockPos().offset(current.getDirection()))) {
             return false;
         }

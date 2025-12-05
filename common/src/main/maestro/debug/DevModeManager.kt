@@ -4,7 +4,7 @@ package maestro.debug
 import maestro.Agent
 import maestro.api.event.events.TickEvent
 import maestro.api.event.events.TickEvent.Type
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.coordination.CoordinationServer
 import net.minecraft.world.level.GameType
 import org.slf4j.Logger
@@ -186,6 +186,6 @@ class DevModeManager(
     private fun shouldAutoStartCoordinator(): Boolean = "true".equals(System.getenv("AUTOSTART_COORDINATOR"), ignoreCase = true)
 
     companion object {
-        private val log: Logger = MaestroLogger.get("dev")
+        private val log: Logger = Loggers.get("dev")
     }
 }

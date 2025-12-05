@@ -10,14 +10,14 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.Setting;
 import maestro.api.Settings;
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 
 public class SettingsUtil {
-    private static final Logger log = MaestroLogger.get("api");
+    private static final Logger log = Loggers.get("api");
 
     public static final String SETTINGS_DEFAULT_NAME = "settings.txt";
     private static final Pattern SETTING_PATTERN =
@@ -144,7 +144,7 @@ public class SettingsUtil {
     }
 
     public static String maybeCensor(int coord) {
-        if (MaestroAPI.getSettings().censorCoordinates.value) {
+        if (AgentAPI.getSettings().censorCoordinates.value) {
             return "<censored>";
         }
 

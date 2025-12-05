@@ -3,10 +3,10 @@ package maestro.debug
 import maestro.Agent
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.goals.GoalComposite
-import maestro.api.utils.IPlayerContext
-import maestro.api.utils.interfaces.IGoalRenderPos
+import maestro.api.player.PlayerContext
 import maestro.pathing.path.PathExecutor
-import maestro.process.MineProcess
+import maestro.rendering.IGoalRenderPos
+import maestro.task.MineTask
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
@@ -50,15 +50,15 @@ object BlockPriorityClassifier {
      *
      * @param goal Current pathfinding goal
      * @param executor Current path executor
-     * @param mineProcess Mining process (for ore locations)
+     * @param mineTask Mining process (for ore locations)
      * @param ctx Player context
      * @return Map of block positions to priority blocks
      */
     fun classifyBlocks(
         goal: Goal?,
         executor: PathExecutor?,
-        mineProcess: MineProcess?,
-        ctx: IPlayerContext,
+        mineTask: MineTask?,
+        ctx: PlayerContext,
     ): Map<BlockPos, PriorityBlock> {
         val settings = Agent.settings()
         val classified = mutableMapOf<BlockPos, PriorityBlock>()
@@ -198,13 +198,13 @@ object BlockPriorityClassifier {
         }
 
         // Priority 5: Discovered ores (NOT in goals)
-        if (mineProcess != null && settings.highlightOpacityDiscoveredOres.value > 0.0f) {
+        if (mineTask != null && settings.highlightOpacityDiscoveredOres.value > 0.0f) {
             val allSides = SideHighlights.all()
 
             // Cache desaturated colors for all ore types
             val oreColorCache = mutableMapOf<Block, Color>()
 
-            mineProcess
+            mineTask
                 .getKnownOreLocations()
                 .filter { it !in classified && it !in goalPositions }
                 .forEach { pos ->

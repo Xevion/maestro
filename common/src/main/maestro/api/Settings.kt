@@ -1,8 +1,8 @@
 package maestro.api
 
 import maestro.api.utils.Helper
-import maestro.api.utils.gui.MaestroToast
 import maestro.behavior.FreecamMode
+import maestro.gui.Toast
 import net.minecraft.client.Minecraft
 import net.minecraft.core.Vec3i
 import net.minecraft.network.chat.Component
@@ -1092,7 +1092,7 @@ class Settings {
         }
 
     /**
-     * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up,
+     * When GetToBlockTask or MineProcess fails to calculate a path, instead of just giving up,
      * mark the closest instance of that block as "unreachable" and go towards the next closest.
      * GetToBlock expands this search to the whole "vein"; MineProcess does not. This is because
      * MineProcess finds individual impossible blocks (like one block in a vein that has gravel on
@@ -2211,7 +2211,7 @@ class Settings {
         }
 
     /**
-     * Allow standing above a block while mining it, in BuilderProcess
+     * Allow standing above a block while mining it, in BuilderTask
      *
      * Experimental
      */
@@ -3117,7 +3117,7 @@ class Settings {
     val toaster: Setting<BiConsumer<Component, Component>> =
         Setting<BiConsumer<Component, Component>>(
             BiConsumer { title, message ->
-                MaestroToast.addOrUpdate(title, message)
+                Toast.addOrUpdate(title, message)
             },
         ) {
             javaOnly = true
@@ -3166,8 +3166,11 @@ class Settings {
             throw IllegalStateException(e)
         }
 
+        @Suppress("UNCHECKED_CAST")
         byLowerName = Collections.unmodifiableMap(tmpByName) as Map<String, Setting<*>>
+        @Suppress("UNCHECKED_CAST")
         allSettings = Collections.unmodifiableList(tmpAll) as List<Setting<*>>
+        @Suppress("UNCHECKED_CAST")
         settingTypes = Collections.unmodifiableMap(tmpSettingTypes) as Map<Setting<*>, Type>
     }
 

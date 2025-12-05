@@ -8,33 +8,31 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.Settings;
 import maestro.api.behavior.IBehavior;
-import maestro.api.event.listener.IEventBus;
-import maestro.api.player.MaestroPlayerContext;
-import maestro.api.process.IElytraProcess;
-import maestro.api.process.IMaestroProcess;
-import maestro.api.utils.IPlayerContext;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.player.PlayerContext;
+import maestro.api.task.ITask;
+import maestro.api.utils.Loggers;
 import maestro.behavior.*;
 import maestro.cache.WorldProvider;
 import maestro.command.manager.CommandManager;
+import maestro.coordination.CoordinationClient;
+import maestro.coordination.CoordinationServer;
+import maestro.debug.DebugRenderer;
 import maestro.debug.DevModeManager;
-import maestro.debug.MaestroDebugRenderer;
 import maestro.event.GameEventHandler;
 import maestro.gui.GuiClick;
-import maestro.input.InputOverrideHandler;
+import maestro.input.InputController;
 import maestro.pathing.BlockStateInterface;
-import maestro.pathing.PathingControlManager;
-import maestro.process.*;
+import maestro.pathing.TaskCoordinator;
 import maestro.selection.SelectionManager;
+import maestro.task.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 
-public class Agent implements IAgent {
+public class Agent {
 
     private static final ThreadPoolExecutor threadPool;
 
@@ -73,35 +71,35 @@ public class Agent implements IAgent {
     private final PathingBehavior pathingBehavior;
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
-    private final InputOverrideHandler inputOverrideHandler;
+    private final InputController inputController;
     private final SwimmingBehavior swimmingBehavior;
     private final RotationManager rotationManager;
 
-    private final FollowProcess followProcess;
-    private final MineProcess mineProcess;
-    private final GetToBlockProcess getToBlockProcess;
-    private final CustomGoalProcess customGoalProcess;
-    private final BuilderProcess builderProcess;
-    private final ExploreProcess exploreProcess;
-    private final FarmProcess farmProcess;
-    private final InventoryPauserProcess inventoryPauserProcess;
-    private final IElytraProcess elytraProcess;
-    private final AttackProcess attackProcess;
-    private final RangedCombatProcess rangedCombatProcess;
+    private final FollowTask followProcess;
+    private final MineTask mineTask;
+    private final GetToBlockTask getToBlockTask;
+    private final CustomGoalTask customGoalTask;
+    private final BuilderTask builderTask;
+    private final ExploreTask exploreTask;
+    private final FarmTask farmProcess;
+    private final InventoryPauserTask inventoryPauserTask;
+    private final ITask elytraTask;
+    private final AttackTask attackTask;
+    private final RangedCombatTask rangedCombatTask;
 
-    private final PathingControlManager pathingControlManager;
+    private final TaskCoordinator taskCoordinator;
     private final SelectionManager selectionManager;
     private final CommandManager commandManager;
-    private final MaestroDebugRenderer debugRenderer;
+    private final DebugRenderer debugRenderer;
 
-    private final IPlayerContext playerContext;
+    private final PlayerContext playerContext;
     private final WorldProvider worldProvider;
 
     public BlockStateInterface bsi;
 
     // Multi-agent coordination
-    private maestro.coordination.CoordinationServer coordinationServer;
-    private maestro.coordination.CoordinationClient coordinationClient;
+    private CoordinationServer coordinationServer;
+    private CoordinationClient coordinationClient;
 
     // Development mode manager
     private final DevModeManager devModeManager;
@@ -145,35 +143,35 @@ public class Agent implements IAgent {
 
         // Define this before behaviors try and get it, or else it will be null and the builds will
         // fail!
-        this.playerContext = new MaestroPlayerContext(this, mc);
+        this.playerContext = new PlayerContext(this, mc);
 
         {
             this.lookBehavior = this.registerBehavior(LookBehavior::new);
             this.pathingBehavior = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior = this.registerBehavior(InventoryBehavior::new);
-            this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
+            this.inputController = this.registerBehavior(InputController::new);
             this.swimmingBehavior = this.registerBehavior(SwimmingBehavior::new);
             this.rotationManager = this.registerBehavior(RotationManager::new);
             this.registerBehavior(WaypointBehavior::new);
             this.registerBehavior(FreecamBehavior::new);
         }
 
-        this.pathingControlManager = new PathingControlManager(this);
+        this.taskCoordinator = new TaskCoordinator(this);
         {
-            this.followProcess = this.registerProcess(FollowProcess::new);
-            this.mineProcess = this.registerProcess(MineProcess::new);
-            this.customGoalProcess = this.registerProcess(CustomGoalProcess::new); // very high iq
-            this.getToBlockProcess = this.registerProcess(GetToBlockProcess::new);
-            this.builderProcess = this.registerProcess(BuilderProcess::new);
-            this.exploreProcess = this.registerProcess(ExploreProcess::new);
-            this.farmProcess = this.registerProcess(FarmProcess::new);
-            this.inventoryPauserProcess = this.registerProcess(InventoryPauserProcess::new);
-            this.elytraProcess = this.registerProcess(ElytraProcess::create);
-            this.attackProcess = this.registerProcess(AttackProcess::new);
-            this.rangedCombatProcess = this.registerProcess(RangedCombatProcess::new);
+            this.followProcess = this.registerTask(FollowTask::new);
+            this.mineTask = this.registerTask(MineTask::new);
+            this.customGoalTask = this.registerTask(CustomGoalTask::new); // very high iq
+            this.getToBlockTask = this.registerTask(GetToBlockTask::new);
+            this.builderTask = this.registerTask(BuilderTask::new);
+            this.exploreTask = this.registerTask(ExploreTask::new);
+            this.farmProcess = this.registerTask(FarmTask::new);
+            this.inventoryPauserTask = this.registerTask(InventoryPauserTask::new);
+            this.elytraTask = this.registerTask(ElytraTask::create);
+            this.attackTask = this.registerTask(AttackTask::new);
+            this.rangedCombatTask = this.registerTask(RangedCombatTask::new);
             // Register ranged combat process for render events
-            this.gameEventHandler.registerEventListener(this.rangedCombatProcess);
-            this.registerProcess(BackfillProcess::new);
+            this.gameEventHandler.registerEventListener(this.rangedCombatTask);
+            this.registerTask(BackfillTask::new);
         }
 
         this.worldProvider = new WorldProvider(this);
@@ -181,7 +179,7 @@ public class Agent implements IAgent {
         this.commandManager = new CommandManager(this);
 
         // Register debug renderer
-        this.debugRenderer = new MaestroDebugRenderer(this);
+        this.debugRenderer = new DebugRenderer(this);
         this.gameEventHandler.registerEventListener(this.debugRenderer);
     }
 
@@ -195,52 +193,44 @@ public class Agent implements IAgent {
         return behavior;
     }
 
-    public <T extends IMaestroProcess> T registerProcess(Function<Agent, T> constructor) {
+    public <T extends ITask> T registerTask(Function<Agent, T> constructor) {
         final T behavior = constructor.apply(this);
-        this.pathingControlManager.registerProcess(behavior);
+        this.taskCoordinator.registerTask(behavior);
         return behavior;
     }
 
-    @Override
-    public PathingControlManager getPathingControlManager() {
-        return this.pathingControlManager;
+    public TaskCoordinator getPathingControlManager() {
+        return this.taskCoordinator;
     }
 
-    @Override
-    public InputOverrideHandler getInputOverrideHandler() {
-        return this.inputOverrideHandler;
+    public InputController getInputOverrideHandler() {
+        return this.inputController;
     }
 
-    @Override
-    public CustomGoalProcess getCustomGoalProcess() {
-        return this.customGoalProcess;
+    public CustomGoalTask getCustomGoalTask() {
+        return this.customGoalTask;
     }
 
-    @Override
-    public GetToBlockProcess getGetToBlockProcess() {
-        return this.getToBlockProcess;
+    public GetToBlockTask getGetToBlockTask() {
+        return this.getToBlockTask;
     }
 
-    @Override
-    public IPlayerContext getPlayerContext() {
+    public PlayerContext getPlayerContext() {
         return this.playerContext;
     }
 
-    @Override
-    public FollowProcess getFollowProcess() {
+    public FollowTask getFollowTask() {
         return this.followProcess;
     }
 
-    @Override
-    public BuilderProcess getBuilderProcess() {
-        return this.builderProcess;
+    public BuilderTask getBuilderTask() {
+        return this.builderTask;
     }
 
     public InventoryBehavior getInventoryBehavior() {
         return this.inventoryBehavior;
     }
 
-    @Override
     public LookBehavior getLookBehavior() {
         return this.lookBehavior;
     }
@@ -371,10 +361,7 @@ public class Agent implements IAgent {
             this.followTargetPrev = playerPos;
             this.followTargetCurrent = playerPos;
 
-            MaestroLogger.get("dev")
-                    .atDebug()
-                    .addKeyValue("mode", "FOLLOW")
-                    .log("Freecam mode switched");
+            Loggers.get("dev").atDebug().addKeyValue("mode", "FOLLOW").log("Freecam mode switched");
         } else if (newMode == FreecamMode.STATIC
                 && this.mc.player != null
                 && freecamFollowOffset != null) {
@@ -387,15 +374,9 @@ public class Agent implements IAgent {
             this.freecamPosition = staticPos;
             this.prevFreecamPosition = staticPos;
 
-            MaestroLogger.get("dev")
-                    .atDebug()
-                    .addKeyValue("mode", "STATIC")
-                    .log("Freecam mode switched");
+            Loggers.get("dev").atDebug().addKeyValue("mode", "STATIC").log("Freecam mode switched");
         } else {
-            MaestroLogger.get("dev")
-                    .atDebug()
-                    .addKeyValue("mode", newMode)
-                    .log("Freecam mode switched");
+            Loggers.get("dev").atDebug().addKeyValue("mode", newMode).log("Freecam mode switched");
         }
     }
 
@@ -595,48 +576,43 @@ public class Agent implements IAgent {
         }
     }
 
-    @Override
-    public ExploreProcess getExploreProcess() {
-        return this.exploreProcess;
+    public ExploreTask getExploreTask() {
+        return this.exploreTask;
     }
 
-    @Override
-    public MineProcess getMineProcess() {
-        return this.mineProcess;
+    public MineTask getMineTask() {
+        return this.mineTask;
     }
 
-    @Override
-    public FarmProcess getFarmProcess() {
+    public FarmTask getFarmTask() {
         return this.farmProcess;
     }
 
-    @Override
-    public AttackProcess getAttackProcess() {
-        return this.attackProcess;
+    public AttackTask getAttackTask() {
+        return this.attackTask;
     }
 
-    @Override
-    public RangedCombatProcess getRangedCombatProcess() {
-        return this.rangedCombatProcess;
+    public RangedCombatTask getRangedCombatTask() {
+        return this.rangedCombatTask;
     }
 
-    public InventoryPauserProcess getInventoryPauserProcess() {
-        return this.inventoryPauserProcess;
+    public InventoryPauserTask getInventoryPauserTask() {
+        return this.inventoryPauserTask;
     }
 
-    public maestro.coordination.CoordinationServer getCoordinationServer() {
+    public CoordinationServer getCoordinationServer() {
         return this.coordinationServer;
     }
 
-    public void setCoordinationServer(maestro.coordination.CoordinationServer server) {
+    public void setCoordinationServer(CoordinationServer server) {
         this.coordinationServer = server;
     }
 
-    public maestro.coordination.CoordinationClient getCoordinationClient() {
+    public CoordinationClient getCoordinationClient() {
         return this.coordinationClient;
     }
 
-    public void setCoordinationClient(maestro.coordination.CoordinationClient client) {
+    public void setCoordinationClient(CoordinationClient client) {
         this.coordinationClient = client;
     }
 
@@ -644,42 +620,34 @@ public class Agent implements IAgent {
         return this.devModeManager;
     }
 
-    @Override
     public PathingBehavior getPathingBehavior() {
         return this.pathingBehavior;
     }
 
-    @Override
     public SelectionManager getSelectionManager() {
         return selectionManager;
     }
 
-    @Override
     public WorldProvider getWorldProvider() {
         return this.worldProvider;
     }
 
-    @Override
-    public IEventBus getGameEventHandler() {
+    public GameEventHandler getGameEventHandler() {
         return this.gameEventHandler;
     }
 
-    @Override
     public CommandManager getCommandManager() {
         return this.commandManager;
     }
 
-    @Override
-    public MaestroDebugRenderer getDebugRenderer() {
+    public DebugRenderer getDebugRenderer() {
         return this.debugRenderer;
     }
 
-    @Override
-    public IElytraProcess getElytraProcess() {
-        return this.elytraProcess;
+    public ElytraTask getElytraTask() {
+        return (ElytraTask) this.elytraTask;
     }
 
-    @Override
     public void openClick() {
         new Thread(
                         () -> {
@@ -698,7 +666,7 @@ public class Agent implements IAgent {
     }
 
     public static Settings settings() {
-        return MaestroAPI.getSettings();
+        return AgentAPI.getSettings();
     }
 
     public static Executor getExecutor() {

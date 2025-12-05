@@ -8,10 +8,10 @@ import ch.qos.logback.core.Appender;
 import org.slf4j.LoggerFactory;
 
 /**
- * Programmatically configures Maestro logger categories from MaestroLogger.CATEGORIES.
+ * Programmatically configures Maestro logger categories from Loggers.CATEGORIES.
  *
  * <p>This eliminates the need to manually maintain logger entries in logback.xml. Categories are
- * configured automatically during MaestroLogger class initialization with:
+ * configured automatically during Loggers class initialization with:
  *
  * <ul>
  *   <li>Level: DEBUG
@@ -19,11 +19,10 @@ import org.slf4j.LoggerFactory;
  *   <li>Additivity: false (no propagation to root logger)
  * </ul>
  */
-public final class LoggerConfigurator {
+public enum LoggerConfigurator {
+    ;
 
     private static boolean configured = false;
-
-    private LoggerConfigurator() {}
 
     /**
      * Configure all Maestro logger categories programmatically.
@@ -62,7 +61,7 @@ public final class LoggerConfigurator {
 
             // Configure each category
             int categoryCount = 0;
-            for (String category : MaestroLogger.getAllCategories()) {
+            for (String category : Loggers.getAllCategories()) {
                 Logger logger = context.getLogger(category);
                 logger.setLevel(Level.DEBUG);
                 logger.setAdditive(false);
@@ -104,7 +103,7 @@ public final class LoggerConfigurator {
         if (detach && configured) {
             try {
                 LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-                for (String category : MaestroLogger.getAllCategories()) {
+                for (String category : Loggers.getAllCategories()) {
                     Logger logger = context.getLogger(category);
                     logger.detachAndStopAllAppenders();
                     logger.setLevel(null); // Reset to inherit from root

@@ -1,14 +1,14 @@
 package maestro.input
 
 import maestro.Agent
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.HitResult
 
 class BlockPlaceStrategy : BlockInteractionStrategy {
-    override fun interact(ctx: IPlayerContext): Int? {
+    override fun interact(ctx: PlayerContext): Int? {
         val mouseOver = ctx.objectMouseOver()
         val player = ctx.player() ?: return null
 

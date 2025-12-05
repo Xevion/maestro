@@ -3,7 +3,7 @@ package maestro.api.utils;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Calendar;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.Settings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GuiMessageTag;
@@ -35,7 +35,7 @@ public interface Helper {
                 Component.literal(
                         xd
                                 ? "Maestro"
-                                : MaestroAPI.getSettings().shortMaestroPrefix.value
+                                : AgentAPI.getSettings().shortMaestroPrefix.value
                                         ? "M"
                                         : "Maestro");
         maestro.setStyle(maestro.getStyle().withColor(ChatFormatting.LIGHT_PURPLE));
@@ -58,7 +58,7 @@ public interface Helper {
      */
     default void logToast(Component title, Component message) {
         Minecraft.getInstance()
-                .execute(() -> MaestroAPI.getSettings().toaster.value.accept(title, message));
+                .execute(() -> AgentAPI.getSettings().toaster.value.accept(title, message));
     }
 
     /**
@@ -96,7 +96,7 @@ public interface Helper {
      * @param error Whether to log as an error
      */
     default void logNotification(String message, boolean error) {
-        if (MaestroAPI.getSettings().desktopNotifications.value) {
+        if (AgentAPI.getSettings().desktopNotifications.value) {
             logNotificationDirect(message, error);
         }
     }
@@ -120,7 +120,7 @@ public interface Helper {
      */
     default void logNotificationDirect(String message, boolean error) {
         Minecraft.getInstance()
-                .execute(() -> MaestroAPI.getSettings().notifier.value.accept(message, error));
+                .execute(() -> AgentAPI.getSettings().notifier.value.accept(message, error));
     }
 
     /**
@@ -129,7 +129,7 @@ public interface Helper {
      * @param message The message to display in chat
      */
     default void logDebug(String message) {
-        if (!MaestroAPI.getSettings().chatDebug.value) {
+        if (!AgentAPI.getSettings().chatDebug.value) {
             return;
         }
         // Send directly to chat without toast
@@ -137,14 +137,13 @@ public interface Helper {
         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
 
         MutableComponent prefixed = Component.literal("");
-        if (!MaestroAPI.getSettings().useMessageTag.value) {
+        if (!AgentAPI.getSettings().useMessageTag.value) {
             prefixed.append(getPrefix());
             prefixed.append(Component.literal(" "));
         }
         prefixed.append(component);
 
-        Minecraft.getInstance()
-                .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+        Minecraft.getInstance().execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
     }
 
     /**
@@ -165,7 +164,7 @@ public interface Helper {
         }
     }
 
-    Logger NOTIFICATION_LOG = MaestroLogger.get("event");
+    Logger NOTIFICATION_LOG = Loggers.get("event");
 
     @SuppressWarnings("MutablePublicArray") // Intentional holder for tray icon state
     TrayIcon[] TRAY_ICON_HOLDER = new TrayIcon[1];

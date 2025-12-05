@@ -1,14 +1,13 @@
 package maestro.cache
 
 import maestro.Agent
-import maestro.api.cache.ICachedWorld
-import maestro.api.cache.IWaypointCollection
 import maestro.api.cache.IWorldData
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
+import maestro.cache.WorldData
 import net.minecraft.world.level.dimension.DimensionType
 import java.nio.file.Path
 
-private val log = MaestroLogger.get("cache")
+private val log = Loggers.get("cache")
 
 /**
  * Data about a world, from maestro's point of view. Includes cached chunks, waypoints, and map
@@ -28,7 +27,7 @@ class WorldData internal constructor(
         }
     }
 
-    override fun getCachedWorld(): ICachedWorld = cache
+    override fun getCachedWorld(): CachedWorld = cache
 
-    override fun getWaypoints(): IWaypointCollection = waypoints
+    override fun getWaypoints(): WaypointCollection = waypoints
 }

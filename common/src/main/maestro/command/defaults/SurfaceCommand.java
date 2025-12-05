@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.pathing.goals.Goal;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.AirBlock;
 
 public class SurfaceCommand extends Command {
 
-    protected SurfaceCommand(IAgent maestro) {
+    protected SurfaceCommand(Agent maestro) {
         super(maestro, "surface", "top");
     }
 
@@ -45,7 +45,7 @@ public class SurfaceCommand extends Command {
                     && newPos.getY() > playerPos.getY()) {
                 Goal goal = new GoalBlock(newPos.toBlockPos().above());
                 log.atInfo().addKeyValue("goal", goal).log("Goal set");
-                maestro.getCustomGoalProcess().setGoalAndPath(goal);
+                maestro.getCustomGoalTask().setGoalAndPath(goal);
                 return;
             }
         }

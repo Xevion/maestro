@@ -1,7 +1,7 @@
 package maestro.gui.panel
 
 import maestro.Agent
-import maestro.gui.MaestroScreen
+import maestro.gui.ControlScreen
 import maestro.gui.container.VBox
 import maestro.gui.widget.ButtonWidget
 import maestro.gui.widget.LabelWidget
@@ -16,7 +16,7 @@ import maestro.gui.widget.SeparatorWidget
  * - Demo feature buttons (placeholders)
  */
 class MainMenuPanel(
-    private val screen: MaestroScreen,
+    private val screen: ControlScreen,
 ) : VBox(spacing = 5) {
     init {
         add(ButtonWidget("Toggle Debug", Runnable { toggleDebug() }, 150))

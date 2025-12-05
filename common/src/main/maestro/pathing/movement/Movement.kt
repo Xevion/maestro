@@ -2,12 +2,11 @@ package maestro.pathing.movement
 
 import com.google.common.collect.ImmutableList
 import maestro.Agent
-import maestro.api.IAgent
 import maestro.api.pathing.movement.IMovement
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.pathing.movement.MovementStatus.PREPPING
 import maestro.api.pathing.movement.MovementStatus.SUCCESS
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.pathing.BlockStateInterface
 import net.minecraft.core.BlockPos
@@ -27,13 +26,13 @@ import net.minecraft.core.Direction
  * - computeLook: Dynamic look intent (called every tick)
  */
 abstract class Movement(
-    maestro: IAgent,
+    maestro: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
 ) : IMovement,
     MovementBehavior {
     @JvmField
-    val maestro: IAgent = maestro
+    val maestro: Agent = maestro
 
     @JvmField
     val src: PackedBlockPos = src
@@ -42,7 +41,7 @@ abstract class Movement(
     val dest: PackedBlockPos = dest
 
     @JvmField
-    val ctx: IPlayerContext = maestro.playerContext
+    val ctx: PlayerContext = maestro.playerContext
     val state = MovementState()
 
     private var cost: Double? = null
@@ -167,5 +166,5 @@ abstract class Movement(
     open fun toWalkInto(bsi: BlockStateInterface): List<BlockPos> = emptyList()
 
     // MovementBehavior interface - subclasses must implement
-    abstract override fun computeIntent(ctx: IPlayerContext): Intent
+    abstract override fun computeIntent(ctx: PlayerContext): Intent
 }

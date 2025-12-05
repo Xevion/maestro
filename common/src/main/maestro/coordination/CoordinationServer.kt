@@ -3,7 +3,7 @@ package maestro.coordination
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.stub.StreamObserver
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.format
 import maestro.coordination.proto.Claim
@@ -44,7 +44,7 @@ data class WorkerProgress(
 )
 
 class CoordinationServer {
-    private val log: Logger = MaestroLogger.get("coord")
+    private val log: Logger = Loggers.get("coord")
 
     private var server: Server? = null
     private val claims = ConcurrentHashMap<String, AreaClaim>()

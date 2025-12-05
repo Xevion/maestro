@@ -3,7 +3,7 @@ package maestro.pathing.calc
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.IMovement
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.pathing.PathBase
 import maestro.pathing.movement.CalculationContext
@@ -159,6 +159,6 @@ internal class Path(
     }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("path")
+        private val log: Logger = Loggers.get("path")
     }
 }

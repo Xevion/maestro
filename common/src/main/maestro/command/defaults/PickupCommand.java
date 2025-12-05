@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ItemById;
@@ -16,7 +16,7 @@ import net.minecraft.world.item.Item;
 
 public class PickupCommand extends Command {
 
-    public PickupCommand(IAgent maestro) {
+    public PickupCommand(Agent maestro) {
         super(maestro, "pickup");
     }
 
@@ -28,10 +28,10 @@ public class PickupCommand extends Command {
             collecting.add(item);
         }
         if (collecting.isEmpty()) {
-            maestro.getFollowProcess().pickup(stack -> true);
+            maestro.getFollowTask().pickup(stack -> true);
             log.atInfo().log("Picking up all items");
         } else {
-            maestro.getFollowProcess().pickup(stack -> collecting.contains(stack.getItem()));
+            maestro.getFollowTask().pickup(stack -> collecting.contains(stack.getItem()));
             log.atInfo()
                     .addKeyValue("item_count", collecting.size())
                     .log("Picking up specified items");

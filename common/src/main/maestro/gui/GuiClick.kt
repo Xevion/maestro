@@ -4,10 +4,10 @@ package maestro.gui
 import com.mojang.blaze3d.vertex.BufferBuilder
 import com.mojang.blaze3d.vertex.PoseStack
 import maestro.Agent
-import maestro.api.MaestroAPI
+import maestro.api.AgentAPI
 import maestro.api.pathing.goals.GoalBlock
 import maestro.api.utils.Helper
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.gui.chat.ChatMessage
 import maestro.rendering.IRenderer
@@ -57,10 +57,10 @@ class GuiClick :
         if (near != null && far != null) {
             val viewerPos = Vec3(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ())
             val player =
-                MaestroAPI
+                AgentAPI
                     .getProvider()
                     .primaryAgent
-                    .getPlayerContext()
+                    .playerContext
                     .player()
 
             val result =
@@ -86,20 +86,20 @@ class GuiClick :
         mouseButton: Int,
     ): Boolean {
         currentMouseOver?.let { mouseOver ->
-            val agent = MaestroAPI.getProvider().primaryAgent
+            val agent = AgentAPI.getProvider().primaryAgent
 
             when (mouseButton) {
                 0 -> {
                     val start = clickStart
                     if (start != null && start != mouseOver) {
-                        agent.getSelectionManager().removeAllSelections()
+                        agent.selectionManager.removeAllSelections()
 
                         val from = PackedBlockPos(start)
                         val to = PackedBlockPos(mouseOver)
 
-                        agent.getSelectionManager().addSelection(from, to)
+                        agent.selectionManager.addSelection(from, to)
 
-                        ChatMessage.Companion
+                        ChatMessage
                             .info(log, "event")
                             .message("Selection made")
                             .key("from", from)
@@ -111,12 +111,12 @@ class GuiClick :
 
                         clickStart = null
                     } else {
-                        agent.getCustomGoalProcess().setGoalAndPath(GoalBlock(mouseOver))
+                        agent.customGoalTask.setGoalAndPath(GoalBlock(mouseOver))
                     }
                 }
 
                 1 -> {
-                    agent.getCustomGoalProcess().setGoalAndPath(GoalBlock(mouseOver.above()))
+                    agent.customGoalTask.setGoalAndPath(GoalBlock(mouseOver.above()))
                 }
             }
         }
@@ -211,6 +211,6 @@ class GuiClick :
     }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("event")
+        private val log: Logger = Loggers.get("event")
     }
 }

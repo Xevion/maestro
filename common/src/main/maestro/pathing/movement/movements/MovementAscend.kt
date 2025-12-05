@@ -1,9 +1,9 @@
 package maestro.pathing.movement.movements
 
-import maestro.api.IAgent
+import maestro.Agent
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.center
 import maestro.api.utils.centerXZ
@@ -14,9 +14,9 @@ import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
 import maestro.pathing.movement.LookIntent
 import maestro.pathing.movement.Movement
-import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
+import maestro.pathing.movement.MovementValidation
 import maestro.utils.distanceTo
 import maestro.utils.dot
 import maestro.utils.horizontalDistanceTo
@@ -44,7 +44,7 @@ import kotlin.math.abs
  * ```
  */
 class MovementAscend(
-    maestro: IAgent,
+    maestro: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
 ) : Movement(maestro, src, dest) {
@@ -67,13 +67,13 @@ class MovementAscend(
         val blocks = mutableListOf<BlockPos>()
 
         // Top-to-bottom order
-        if (!MovementHelper.canWalkThrough(ctx, dest.above())) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above())) {
             blocks.add(dest.above().toBlockPos())
         }
-        if (!MovementHelper.canWalkThrough(ctx, src.above(2))) {
+        if (!MovementValidation.canWalkThrough(ctx, src.above(2))) {
             blocks.add(src.above(2).toBlockPos())
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest)) {
+        if (!MovementValidation.canWalkThrough(ctx, dest)) {
             blocks.add(dest.toBlockPos())
         }
 
@@ -98,7 +98,7 @@ class MovementAscend(
         }
     }
 
-    override fun computeIntent(ctx: IPlayerContext): Intent {
+    override fun computeIntent(ctx: PlayerContext): Intent {
         // Calculate target once per tick and cache for shouldJump()
         cachedTarget = calculateVelocityBasedTarget(ctx)
 
@@ -121,21 +121,21 @@ class MovementAscend(
         val blockAtDest = dest.toBlockPos()
 
         // Mine blocks in order
-        if (!MovementHelper.canWalkThrough(ctx, dest.above())) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above())) {
             return Intent(
                 movement = MovementIntent.Stop,
                 look = LookIntent.Block(blockAboveDest),
                 click = ClickIntent.LeftClick,
             )
         }
-        if (!MovementHelper.canWalkThrough(ctx, src.above(2))) {
+        if (!MovementValidation.canWalkThrough(ctx, src.above(2))) {
             return Intent(
                 movement = MovementIntent.Stop,
                 look = LookIntent.Block(blockTwoAbove),
                 click = ClickIntent.LeftClick,
             )
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest)) {
+        if (!MovementValidation.canWalkThrough(ctx, dest)) {
             return Intent(
                 movement = MovementIntent.Stop,
                 look = LookIntent.Block(blockAtDest),
@@ -235,9 +235,9 @@ class MovementAscend(
         debug.flag("jump", shouldJump(ctx))
         val mining =
             when {
-                !MovementHelper.canWalkThrough(ctx, dest.above()) -> "+1Y"
-                !MovementHelper.canWalkThrough(ctx, src.above(2)) -> "+2Y"
-                !MovementHelper.canWalkThrough(ctx, dest) -> "dest"
+                !MovementValidation.canWalkThrough(ctx, dest.above()) -> "+1Y"
+                !MovementValidation.canWalkThrough(ctx, src.above(2)) -> "+2Y"
+                !MovementValidation.canWalkThrough(ctx, dest) -> "dest"
                 else -> "none"
             }
         debug.status("mine", mining)
@@ -271,7 +271,7 @@ class MovementAscend(
      * Uses XZ-plane distance for horizontal drift and Y-axis for vertical drift.
      * Note: Y-drift detection excludes the jump itself (0 to 1 block difference is expected).
      */
-    private fun checkDrift(ctx: IPlayerContext): DriftState {
+    private fun checkDrift(ctx: PlayerContext): DriftState {
         val playerPos = ctx.player().position()
         val playerY = ctx.player().blockPosition().y
 
@@ -314,7 +314,7 @@ class MovementAscend(
      * TODO: Consider blocks with unusual hitboxes (End Rods, Glass Panes, Iron Bars).
      *       Currently assumes 1x1x1 hitbox for all blocks.
      */
-    private fun calculateVelocityBasedTarget(ctx: IPlayerContext): Vec2 {
+    private fun calculateVelocityBasedTarget(ctx: PlayerContext): Vec2 {
         val playerPos = ctx.player().position()
         val velocity = ctx.player().deltaMovement
 
@@ -348,7 +348,7 @@ class MovementAscend(
         }
     }
 
-    private fun shouldJump(ctx: IPlayerContext): Boolean {
+    private fun shouldJump(ctx: PlayerContext): Boolean {
         val player = ctx.player()
         val playerY = player.blockPosition().y
 
@@ -447,13 +447,13 @@ internal object MovementAscendHelper {
         var additionalPlacementCost = 0.0
 
         // Check if we need to place a block
-        if (!MovementHelper.canWalkOn(context, destX, y, destZ, toPlace)) {
+        if (!MovementValidation.canWalkOn(context, destX, y, destZ, toPlace)) {
             additionalPlacementCost = context.costOfPlacingAt(destX, y, destZ, toPlace)
             if (additionalPlacementCost >= ActionCosts.COST_INF) {
                 return ActionCosts.COST_INF
             }
 
-            if (!MovementHelper.isReplaceable(destX, y, destZ, toPlace, context.bsi)) {
+            if (!MovementValidation.isReplaceable(destX, y, destZ, toPlace, context.bsi)) {
                 return ActionCosts.COST_INF
             }
 
@@ -469,7 +469,7 @@ internal object MovementAscendHelper {
                     continue // backplace - will be broken
                 }
 
-                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+                if (MovementValidation.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
                     foundPlaceOption = true
                     break
                 }
@@ -483,7 +483,7 @@ internal object MovementAscendHelper {
         // Check for falling blocks that would suffocate us
         val srcUp2 = context[x, y + 2, z]
         if (context[x, y + 3, z].block is FallingBlock &&
-            (MovementHelper.canWalkThrough(context, x, y + 1, z) || srcUp2.block !is FallingBlock)
+            (MovementValidation.canWalkThrough(context, x, y + 1, z) || srcUp2.block !is FallingBlock)
         ) {
             return ActionCosts.COST_INF
         }
@@ -495,8 +495,8 @@ internal object MovementAscendHelper {
         }
 
         // Handle slab-to-slab jumps
-        val jumpingFromBottomSlab = MovementHelper.isBottomSlab(srcDown)
-        val jumpingToBottomSlab = MovementHelper.isBottomSlab(toPlace)
+        val jumpingFromBottomSlab = MovementValidation.isBottomSlab(srcDown)
+        val jumpingToBottomSlab = MovementValidation.isBottomSlab(toPlace)
 
         if (jumpingFromBottomSlab && !jumpingToBottomSlab) {
             return ActionCosts.COST_INF
@@ -522,17 +522,17 @@ internal object MovementAscendHelper {
         var totalCost = walk + additionalPlacementCost
 
         // Add block breaking costs
-        totalCost += MovementHelper.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false)
+        totalCost += MovementValidation.getMiningDurationTicks(context, x, y + 2, z, srcUp2, false)
         if (totalCost >= ActionCosts.COST_INF) {
             return ActionCosts.COST_INF
         }
 
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, false)
+        totalCost += MovementValidation.getMiningDurationTicks(context, destX, y + 1, destZ, false)
         if (totalCost >= ActionCosts.COST_INF) {
             return ActionCosts.COST_INF
         }
 
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 2, destZ, true)
+        totalCost += MovementValidation.getMiningDurationTicks(context, destX, y + 2, destZ, true)
         return totalCost
     }
 }

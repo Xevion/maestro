@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -11,7 +11,7 @@ import maestro.api.utils.PackedBlockPos;
 
 public class RenderCommand extends Command {
 
-    public RenderCommand(IAgent maestro) {
+    public RenderCommand(Agent maestro) {
         super(maestro, "render");
     }
 

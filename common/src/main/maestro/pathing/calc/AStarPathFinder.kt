@@ -4,21 +4,21 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.ActionCosts
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.format
 import maestro.api.utils.pack
 import maestro.pathing.BetterWorldBorder
-import maestro.pathing.Favoring
 import maestro.pathing.MutableMoveResult
+import maestro.pathing.PreferredPaths
 import maestro.pathing.calc.openset.BinaryHeapOpenSet
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.CompositeMovementProvider
-import maestro.pathing.movement.ContinuousSwimmingProvider
-import maestro.pathing.movement.EnumMovementProvider
 import maestro.pathing.movement.IMovementProvider
 import maestro.pathing.movement.Movement
+import maestro.pathing.movement.StandardMovementProvider
+import maestro.pathing.movement.SwimmingProvider
 import maestro.pathing.movement.TeleportMovementProvider
 import org.slf4j.Logger
 import java.util.Optional
@@ -32,7 +32,7 @@ class AStarPathFinder
         startY: Int,
         startZ: Int,
         goal: Goal,
-        private val favoring: Favoring,
+        private val preferredPaths: PreferredPaths,
         private val calcContext: CalculationContext,
         private val movementProvider: IMovementProvider = createDefaultProvider(),
     ) : AbstractNodeCostSearch(realStart, startX, startY, startZ, goal, calcContext) {
@@ -88,7 +88,7 @@ class AStarPathFinder
             var numNodes = 0
             var numMovementsConsidered = 0
             var numEmptyChunk = 0
-            val isFavoring = !favoring.isEmpty
+            val isFavoring = !preferredPaths.isEmpty
             val timeCheckInterval = 1 shl 6
 
             // Grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
@@ -261,7 +261,7 @@ class AStarPathFinder
                     val hashCode = pack(newX, newY, newZ).packed
                     if (isFavoring) {
                         // see issue #18
-                        actionCost *= favoring.calculate(hashCode)
+                        actionCost *= preferredPaths.calculate(hashCode)
                     }
 
                     val neighbor = getNodeAtPosition(newX, newY, newZ, hashCode)
@@ -325,13 +325,13 @@ class AStarPathFinder
         }
 
         companion object {
-            private val log: Logger = MaestroLogger.get("path")
+            private val log: Logger = Loggers.get("path")
 
             /** Creates the default movement provider with all movement types. */
             fun createDefaultProvider(): IMovementProvider =
                 CompositeMovementProvider(
-                    EnumMovementProvider(), // Standard terrestrial movements
-                    ContinuousSwimmingProvider(), // Swimming movements
+                    StandardMovementProvider(), // Standard terrestrial movements
+                    SwimmingProvider(), // Swimming movements
                     TeleportMovementProvider(), // Teleport movements (self-filters via settings)
                 )
         }

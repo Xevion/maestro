@@ -3,8 +3,8 @@ package maestro.gui.panel
 import maestro.Agent
 import maestro.api.Setting
 import maestro.api.SettingCategory
+import maestro.gui.ControlScreen
 import maestro.gui.GuiColors
-import maestro.gui.MaestroScreen
 import maestro.gui.container.ScrollableContainer
 import maestro.gui.container.VBox
 import maestro.gui.container.scrollable
@@ -29,7 +29,7 @@ import maestro.gui.widget.TextInputWidget
  * - Dynamic content updates based on tab/search
  */
 class SettingsPanel(
-    private val screen: MaestroScreen,
+    private val screen: ControlScreen,
 ) : VBox(spacing = 4) {
     private val settings = Agent.settings()
 

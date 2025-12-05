@@ -1,7 +1,8 @@
 package maestro.api.utils;
 
 import java.util.Optional;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
+import maestro.api.player.PlayerContext;
 import maestro.utils.BlockPosExtKt;
 import maestro.utils.Vec2ExtKt;
 import maestro.utils.Vec3ExtKt;
@@ -117,14 +118,14 @@ public final class RotationUtils {
      * @param ctx Context for the viewing entity
      * @param pos The target block position
      * @return The optional rotation
-     * @see #reachable(IPlayerContext, BlockPos, double)
+     * @see #reachable(PlayerContext, BlockPos, double)
      */
-    public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos) {
+    public static Optional<Rotation> reachable(PlayerContext ctx, BlockPos pos) {
         return reachable(ctx, pos, false);
     }
 
     public static Optional<Rotation> reachable(
-            IPlayerContext ctx, BlockPos pos, boolean wouldSneak) {
+            PlayerContext ctx, BlockPos pos, boolean wouldSneak) {
         return reachable(ctx, pos, ctx.playerController().getBlockReachDistance(), wouldSneak);
     }
 
@@ -141,14 +142,13 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachable(
-            IPlayerContext ctx, BlockPos pos, double blockReachDistance) {
+            PlayerContext ctx, BlockPos pos, double blockReachDistance) {
         return reachable(ctx, pos, blockReachDistance, false);
     }
 
     public static Optional<Rotation> reachable(
-            IPlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
-        if (MaestroAPI.getSettings().remainWithExistingLookDirection.value
-                && ctx.isLookingAt(pos)) {
+            PlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+        if (AgentAPI.getSettings().remainWithExistingLookDirection.value && ctx.isLookingAt(pos)) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch
@@ -225,7 +225,7 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableOffset(
-            IPlayerContext ctx,
+            PlayerContext ctx,
             BlockPos pos,
             Vec3 offsetPos,
             double blockReachDistance,
@@ -236,7 +236,7 @@ public final class RotationUtils {
                         : ctx.player().getEyePosition(1.0F);
         Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, ctx.playerRotations());
         Rotation actualRotation =
-                MaestroAPI.getProvider()
+                AgentAPI.getProvider()
                         .getMaestroForPlayer(ctx.player())
                         .getLookBehavior()
                         .getAimProcessor()
@@ -267,7 +267,7 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableCenter(
-            IPlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+            PlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
         return reachableOffset(
                 ctx,
                 pos,

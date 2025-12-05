@@ -2,8 +2,8 @@ package maestro.launch.mixins;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import maestro.api.event.events.PacketEvent;
 import maestro.api.event.events.type.EventState;
 import net.minecraft.network.Connection;
@@ -34,7 +34,7 @@ public class MixinNetworkManager {
             return;
         }
 
-        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (Agent maestro : AgentAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {
@@ -56,7 +56,7 @@ public class MixinNetworkManager {
             return;
         }
 
-        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (Agent maestro : AgentAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {
@@ -80,7 +80,7 @@ public class MixinNetworkManager {
         if (this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
-        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (Agent maestro : AgentAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {
@@ -98,7 +98,7 @@ public class MixinNetworkManager {
         if (!this.channel.isOpen() || this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
-        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (Agent maestro : AgentAPI.getProvider().getAllMaestros()) {
             if (maestro.getPlayerContext().player() != null
                     && maestro.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {

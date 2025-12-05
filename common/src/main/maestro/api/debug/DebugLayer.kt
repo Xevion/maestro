@@ -13,15 +13,15 @@ enum class DebugLayer(
     val description: String,
 ) {
     /**
-     * Process and behavior state visualization.
+     * Task and behavior state visualization.
      *
      * Shows:
-     * - Current process (e.g., MineProcess, FarmProcess)
+     * - Current task (e.g., MineTask, FarmTask)
      * - Active goals and their status
      * - Decision reasoning and state transitions
      * - Process queue and priorities
      */
-    PROCESS_STATE("Process", "Process and behavior state"),
+    TASK_STATE("Task", "Task and behavior state"),
 
     /**
      * Combat system visualization (future implementation).

@@ -1,8 +1,9 @@
 package maestro.api.pathing.goals
 
+import maestro.api.AgentAPI
 import maestro.api.utils.SettingsUtil
-import maestro.api.utils.interfaces.IGoalRenderPos
 import maestro.api.utils.pack
+import maestro.rendering.IGoalRenderPos
 import net.minecraft.core.BlockPos
 import kotlin.math.abs
 import kotlin.math.min
@@ -61,7 +62,7 @@ open class GoalBlock(
             val verticalHeuristic = GoalYLevel.calculate(0, yDiff)
             val swimmingVerticalHeuristic =
                 abs(yDiff) * 3.5 *
-                    maestro.api.MaestroAPI
+                    AgentAPI
                         .getSettings()
                         .costHeuristic.value
             heuristic += min(verticalHeuristic, swimmingVerticalHeuristic)

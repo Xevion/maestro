@@ -1,13 +1,13 @@
 package maestro.command.defaults;
 
-import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
+import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.IArgConsumer;
@@ -24,7 +24,7 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class HelpCommand extends Command {
 
-    public HelpCommand(IAgent maestro) {
+    public HelpCommand(Agent maestro) {
         super(maestro, "help", "?");
     }
 
@@ -84,11 +84,7 @@ public class HelpCommand extends Command {
 
                         Minecraft.getInstance()
                                 .execute(
-                                        () ->
-                                                MaestroAPI.getSettings()
-                                                        .logger
-                                                        .value
-                                                        .accept(prefixed));
+                                        () -> AgentAPI.getSettings().logger.value.accept(prefixed));
 
                         return component;
                     },
@@ -123,7 +119,7 @@ public class HelpCommand extends Command {
             prefixed.append(returnComponent);
 
             Minecraft.getInstance()
-                    .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+                    .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
         }
     }
 

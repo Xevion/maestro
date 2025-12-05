@@ -2,8 +2,8 @@
 package maestro.pathing
 
 import maestro.api.pathing.goals.Goal
-import maestro.api.process.PathingCommand
-import maestro.api.process.PathingCommandType
+import maestro.api.task.PathingCommand
+import maestro.api.task.PathingCommandType
 import maestro.pathing.movement.CalculationContext
 
 /**

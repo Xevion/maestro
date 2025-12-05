@@ -1,21 +1,22 @@
 package maestro.cache
 
 import maestro.Agent
-import maestro.api.cache.IWorldProvider
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
+import maestro.cache.WorldData
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.storage.LevelResource
 import org.apache.commons.lang3.SystemUtils
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.util.function.Consumer
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 
 class WorldProvider(
     private val maestro: Agent,
-) : IWorldProvider {
-    private val ctx: IPlayerContext = maestro.playerContext
+) {
+    private val ctx: PlayerContext = maestro.playerContext
 
     /**
      * This lets us detect a broken load/unload hook.
@@ -23,11 +24,18 @@ class WorldProvider(
      * @see detectAndHandleBrokenLoading
      */
     private var mcWorld: Level? = null
-    private var currentWorld: WorldData? = null
+    internal var currentWorld: WorldData? = null
 
-    override fun getCurrentWorld(): WorldData? {
+    fun getCurrentWorld(): WorldData? {
         detectAndHandleBrokenLoading()
         return currentWorld
+    }
+
+    fun ifWorldLoaded(callback: Consumer<WorldData>) {
+        val currentWorld = getCurrentWorld()
+        if (currentWorld != null) {
+            callback.accept(currentWorld)
+        }
     }
 
     /**

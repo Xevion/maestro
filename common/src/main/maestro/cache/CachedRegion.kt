@@ -3,9 +3,8 @@ package maestro.cache
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import maestro.Agent
-import maestro.api.cache.ICachedRegion
 import maestro.api.utils.BlockUtils
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.dimension.DimensionType
@@ -22,15 +21,15 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.exists
 
-private val log = MaestroLogger.get("cache")
+private val log = Loggers.get("cache")
 
 class CachedRegion(
     /** The region x coordinate */
-    private val x: Int,
+    internal val x: Int,
     /** The region z coordinate */
-    private val z: Int,
+    internal val z: Int,
     private val dimension: DimensionType,
-) : ICachedRegion {
+) {
     /** All the chunks in this region: A 32x32 array of them. */
     private val chunks: Array<Array<CachedChunk?>> = Array(32) { arrayOfNulls(32) }
 
@@ -40,7 +39,7 @@ class CachedRegion(
 
     private val saveMutex = Mutex()
 
-    override fun getBlock(
+    fun getBlock(
         x: Int,
         y: Int,
         z: Int,
@@ -50,7 +49,7 @@ class CachedRegion(
         return chunk?.getBlock(x and 15, adjY, z and 15, dimension)
     }
 
-    override fun isCached(
+    fun isCached(
         x: Int,
         z: Int,
     ): Boolean = chunks[x shr 4][z shr 4] != null
@@ -372,9 +371,9 @@ class CachedRegion(
         return recent
     }
 
-    override fun getX(): Int = x
+    fun getX(): Int = x
 
-    override fun getZ(): Int = z
+    fun getZ(): Int = z
 
     companion object {
         private const val CHUNK_NOT_PRESENT: Byte = 0

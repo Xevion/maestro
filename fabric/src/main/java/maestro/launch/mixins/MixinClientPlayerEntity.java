@@ -3,8 +3,8 @@ package maestro.launch.mixins;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import maestro.api.event.events.PlayerUpdateEvent;
 import maestro.api.event.events.SprintStateEvent;
 import maestro.api.event.events.type.EventState;
@@ -46,7 +46,7 @@ public class MixinClientPlayerEntity {
                             target = "net/minecraft/client/player/AbstractClientPlayer.tick()V",
                             shift = At.Shift.AFTER))
     private void onPreUpdate(CallbackInfo ci) {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        Agent maestro = AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro != null) {
             maestro.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
         }
@@ -61,7 +61,7 @@ public class MixinClientPlayerEntity {
                             opcode = Opcodes.GETFIELD))
     @Group(name = "mayFly", min = 1, max = 1)
     private boolean isAllowFlying(Abilities capabilities) {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        Agent maestro = AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro == null) {
             return capabilities.mayfly;
         }
@@ -76,7 +76,7 @@ public class MixinClientPlayerEntity {
                             target = "Lnet/minecraft/client/player/LocalPlayer;mayFly()Z"))
     @Group(name = "mayFly", min = 1, max = 1)
     private boolean onMayFlyNeoforge(LocalPlayer instance) throws Throwable {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        Agent maestro = AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro == null) {
             return (boolean) MAY_FLY.invokeExact(instance);
         }
@@ -87,7 +87,7 @@ public class MixinClientPlayerEntity {
             method = "aiStep",
             at = @At(value = "INVOKE", target = "net/minecraft/client/KeyMapping.isDown()Z"))
     private boolean isKeyDown(KeyMapping keyBinding) {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        Agent maestro = AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro == null) {
             return keyBinding.isDown();
         }
@@ -96,7 +96,7 @@ public class MixinClientPlayerEntity {
         if (event.state != null) {
             return event.state;
         }
-        if (maestro != MaestroAPI.getProvider().getPrimaryAgent()) {
+        if (maestro != AgentAPI.getProvider().getPrimaryAgent()) {
             // hitting control shouldn't make all bots sprint
             return false;
         }
@@ -105,7 +105,7 @@ public class MixinClientPlayerEntity {
 
     @Inject(method = "rideTick", at = @At(value = "HEAD"))
     private void updateRidden(CallbackInfo cb) {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
+        Agent maestro = AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this);
         if (maestro != null) {
             ((LookBehavior) maestro.getLookBehavior()).pig();
         }
@@ -119,7 +119,7 @@ public class MixinClientPlayerEntity {
                             target =
                                     "Lnet/minecraft/client/player/LocalPlayer;tryToStartFallFlying()Z"))
     private boolean tryToStartFallFlying(final LocalPlayer instance) {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer(instance);
+        Agent maestro = AgentAPI.getProvider().getMaestroForPlayer(instance);
         if (maestro != null && maestro.getPathingBehavior().isPathing()) {
             return false;
         }

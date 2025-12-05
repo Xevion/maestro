@@ -3,8 +3,8 @@ package maestro.behavior
 import maestro.Agent
 import maestro.api.event.events.TickEvent
 import maestro.api.utils.Helper
-import maestro.api.utils.MaestroLogger
-import maestro.process.ToolSet.Companion.calculateSpeedVsBlock
+import maestro.api.utils.Loggers
+import maestro.task.ToolSet.Companion.calculateSpeedVsBlock
 import net.minecraft.core.Direction
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.inventory.ClickType
@@ -116,7 +116,7 @@ class InventoryBehavior(
         }
 
         if (Agent.settings().inventoryMoveOnlyIfStationary.value &&
-            !maestro.inventoryPauserProcess.stationaryForInventoryMove()
+            !maestro.inventoryPauserTask.stationaryForInventoryMove()
         ) {
             log.atDebug().log("Inventory move deferred until stationary")
             return false
@@ -185,7 +185,7 @@ class InventoryBehavior(
         y: Int,
         z: Int,
     ): Boolean {
-        val maybe = maestro.builderProcess.placeAt(x, y, z, maestro.bsi.get0(x, y, z)) ?: return false
+        val maybe = maestro.builderTask.placeAt(x, y, z, maestro.bsi.get0(x, y, z)) ?: return false
 
         // Try exact state match first
         if (throwaway(select, { stack ->
@@ -281,6 +281,6 @@ class InventoryBehavior(
     }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("inventory")
+        private val log: Logger = Loggers.get("inventory")
     }
 }

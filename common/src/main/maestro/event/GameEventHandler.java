@@ -7,7 +7,7 @@ import maestro.api.event.events.*;
 import maestro.api.event.events.type.EventState;
 import maestro.api.event.listener.IEventBus;
 import maestro.api.event.listener.IGameEventListener;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import maestro.cache.CachedChunk;
 import maestro.cache.WorldProvider;
 import maestro.pathing.BlockStateInterface;
@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 
 public final class GameEventHandler implements IEventBus {
 
-    private static final Logger log = MaestroLogger.get("event");
+    private static final Logger log = Loggers.get("event");
 
     private final Agent maestro;
 

@@ -3,7 +3,7 @@ package maestro.behavior
 import maestro.Agent
 import maestro.api.event.events.PlayerUpdateEvent
 import maestro.api.event.events.TickEvent
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.Rotation
 import org.slf4j.Logger
 import java.util.PriorityQueue
@@ -124,6 +124,6 @@ class RotationManager(
     }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("rotation")
+        private val log: Logger = Loggers.get("rotation")
     }
 }

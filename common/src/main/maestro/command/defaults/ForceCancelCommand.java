@@ -3,22 +3,22 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.behavior.IPathingBehavior;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
+import maestro.behavior.PathingBehavior;
 
 public class ForceCancelCommand extends Command {
 
-    public ForceCancelCommand(IAgent maestro) {
+    public ForceCancelCommand(Agent maestro) {
         super(maestro, "forcecancel");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        IPathingBehavior pathingBehavior = maestro.getPathingBehavior();
+        PathingBehavior pathingBehavior = maestro.getPathingBehavior();
         pathingBehavior.cancelEverything();
         pathingBehavior.forceCancel();
         log.atInfo().log("Pathing force canceled");

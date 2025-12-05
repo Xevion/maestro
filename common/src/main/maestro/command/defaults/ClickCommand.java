@@ -3,14 +3,14 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 
 public class ClickCommand extends Command {
 
-    public ClickCommand(IAgent maestro) {
+    public ClickCommand(Agent maestro) {
         super(maestro, "click");
     }
 

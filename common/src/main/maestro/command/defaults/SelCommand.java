@@ -9,7 +9,6 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForAxis;
@@ -23,14 +22,14 @@ import maestro.api.event.listener.AbstractGameEventListener;
 import maestro.api.schematic.*;
 import maestro.api.schematic.mask.shape.CylinderMask;
 import maestro.api.schematic.mask.shape.SphereMask;
-import maestro.api.selection.ISelection;
-import maestro.api.selection.ISelectionManager;
 import maestro.api.utils.BlockOptionalMeta;
 import maestro.api.utils.BlockOptionalMetaLookup;
 import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.BlockStateInterface;
-import maestro.process.schematic.StaticSchematic;
 import maestro.rendering.IRenderer;
+import maestro.selection.Selection;
+import maestro.selection.SelectionManager;
+import maestro.task.schematic.StaticSchematic;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Blocks;
@@ -39,12 +38,12 @@ import net.minecraft.world.phys.AABB;
 
 public class SelCommand extends Command {
 
-    private ISelectionManager manager = maestro.getSelectionManager();
+    private SelectionManager manager = maestro.getSelectionManager();
     private PackedBlockPos pos1 = null;
     private ISchematic clipboard = null;
     private Vec3i clipboardOffset = null;
 
-    public SelCommand(IAgent maestro) {
+    public SelCommand(Agent maestro) {
         super(maestro, "sel", "selection", "s");
         maestro.getGameEventHandler()
                 .registerEventListener(
@@ -107,7 +106,7 @@ public class SelCommand extends Command {
                 pos1 = null;
                 log.atInfo().log("Undid pos1");
             } else {
-                ISelection[] selections = manager.getSelections();
+                Selection[] selections = manager.getSelections();
                 if (selections.length < 1) {
                     throw new CommandException.InvalidState("Nothing to undo!");
                 } else {
@@ -144,13 +143,13 @@ public class SelCommand extends Command {
                 replaces = null;
                 alignment = null;
             }
-            ISelection[] selections = manager.getSelections();
+            Selection[] selections = manager.getSelections();
             if (selections.length == 0) {
                 throw new CommandException.InvalidState("No selections");
             }
             PackedBlockPos origin = selections[0].min();
             CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
-            for (ISelection selection : selections) {
+            for (Selection selection : selections) {
                 PackedBlockPos min = selection.min();
                 origin =
                         new PackedBlockPos(
@@ -158,7 +157,7 @@ public class SelCommand extends Command {
                                 Math.min(origin.getY(), min.getY()),
                                 Math.min(origin.getZ(), min.getZ()));
             }
-            for (ISelection selection : selections) {
+            for (Selection selection : selections) {
                 Vec3i size = selection.size();
                 PackedBlockPos min = selection.min();
 
@@ -204,7 +203,7 @@ public class SelCommand extends Command {
                         min.getY() - origin.getY(),
                         min.getZ() - origin.getZ());
             }
-            maestro.getBuilderProcess().build("Fill", composite, origin.toBlockPos());
+            maestro.getBuilderTask().build("Fill", composite, origin.toBlockPos());
             log.atInfo().log("Filling now");
         } else if (action == Action.COPY) {
             PackedBlockPos playerPos = ctx.viewerPos();
@@ -213,14 +212,14 @@ public class SelCommand extends Command {
                             ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos)
                             : playerPos;
             args.requireMax(0);
-            ISelection[] selections = manager.getSelections();
+            Selection[] selections = manager.getSelections();
             if (selections.length < 1) {
                 throw new CommandException.InvalidState("No selections");
             }
             BlockStateInterface bsi = new BlockStateInterface(ctx);
             PackedBlockPos origin = selections[0].min();
             CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
-            for (ISelection selection : selections) {
+            for (Selection selection : selections) {
                 PackedBlockPos min = selection.min();
                 origin =
                         new PackedBlockPos(
@@ -228,7 +227,7 @@ public class SelCommand extends Command {
                                 Math.min(origin.getY(), min.getY()),
                                 Math.min(origin.getZ(), min.getZ()));
             }
-            for (ISelection selection : selections) {
+            for (Selection selection : selections) {
                 Vec3i size = selection.size();
                 PackedBlockPos min = selection.min();
                 BlockState[][][] blockstates =
@@ -261,7 +260,7 @@ public class SelCommand extends Command {
             if (clipboard == null) {
                 throw new CommandException.InvalidState("You need to copy a selection first");
             }
-            maestro.getBuilderProcess()
+            maestro.getBuilderTask()
                     .build("Fill", clipboard, pos.offset(clipboardOffset).toBlockPos());
             log.atInfo().log("Building now");
         } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
@@ -272,12 +271,12 @@ public class SelCommand extends Command {
             }
             Direction direction = args.getDatatypeFor(ForDirection.INSTANCE);
             int blocks = args.getAs(Integer.class);
-            ISelection[] selections = manager.getSelections();
+            Selection[] selections = manager.getSelections();
             if (selections.length < 1) {
                 throw new CommandException.InvalidState("No selections found");
             }
             selections = transformTarget.transform(selections);
-            for (ISelection selection : selections) {
+            for (Selection selection : selections) {
                 if (action == Action.EXPAND) {
                     manager.expand(selection, direction, blocks);
                 } else if (action == Action.CONTRACT) {
@@ -446,17 +445,17 @@ public class SelCommand extends Command {
     @SuppressWarnings("ImmutableEnumChecker")
     enum TransformTarget {
         ALL(sels -> sels, "all", "a"),
-        NEWEST(sels -> new ISelection[] {sels[sels.length - 1]}, "newest", "n"),
-        OLDEST(sels -> new ISelection[] {sels[0]}, "oldest", "o");
-        private final Function<ISelection[], ISelection[]> transform;
+        NEWEST(sels -> new Selection[] {sels[sels.length - 1]}, "newest", "n"),
+        OLDEST(sels -> new Selection[] {sels[0]}, "oldest", "o");
+        private final Function<Selection[], Selection[]> transform;
         private final ImmutableList<String> names;
 
-        TransformTarget(Function<ISelection[], ISelection[]> transform, String... names) {
+        TransformTarget(Function<Selection[], Selection[]> transform, String... names) {
             this.transform = transform;
             this.names = ImmutableList.copyOf(names);
         }
 
-        public ISelection[] transform(ISelection[] selections) {
+        public Selection[] transform(Selection[] selections) {
             return transform.apply(selections);
         }
 

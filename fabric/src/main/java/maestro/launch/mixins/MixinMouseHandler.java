@@ -1,7 +1,7 @@
 package maestro.launch.mixins;
 
 import maestro.Agent;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -48,7 +48,7 @@ public class MixinMouseHandler {
             return; // No player or screen is open (including MaestroScreen)
         }
 
-        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
         if (agent == null) {
             return;
         }

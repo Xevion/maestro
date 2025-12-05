@@ -1,13 +1,13 @@
 package maestro.input
 
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 
 /**
  * Manages block interaction timing and delegates to strategies for breaking/placing.
  * Consolidates timer logic previously duplicated in BlockBreakHelper and BlockPlaceHelper.
  */
 class BlockInteractionManager(
-    private val ctx: IPlayerContext,
+    private val ctx: PlayerContext,
     private val strategy: BlockInteractionStrategy,
 ) {
     private var timer = 0

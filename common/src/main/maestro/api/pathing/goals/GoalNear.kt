@@ -2,8 +2,8 @@ package maestro.api.pathing.goals
 
 import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet
 import maestro.api.utils.SettingsUtil
-import maestro.api.utils.interfaces.IGoalRenderPos
 import maestro.api.utils.pack
+import maestro.rendering.IGoalRenderPos
 import net.minecraft.core.BlockPos
 import kotlin.math.ceil
 import kotlin.math.sqrt

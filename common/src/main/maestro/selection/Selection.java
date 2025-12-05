@@ -1,12 +1,11 @@
 package maestro.selection;
 
-import maestro.api.selection.ISelection;
 import maestro.api.utils.PackedBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 
-public class Selection implements ISelection {
+public class Selection {
 
     private final PackedBlockPos pos1;
     private final PackedBlockPos pos2;
@@ -47,32 +46,26 @@ public class Selection implements ISelection {
                         max.getZ() + 1);
     }
 
-    @Override
     public PackedBlockPos pos1() {
         return pos1;
     }
 
-    @Override
     public PackedBlockPos pos2() {
         return pos2;
     }
 
-    @Override
     public PackedBlockPos min() {
         return min;
     }
 
-    @Override
     public PackedBlockPos max() {
         return max;
     }
 
-    @Override
     public Vec3i size() {
         return size;
     }
 
-    @Override
     public AABB aabb() {
         return aabb;
     }
@@ -108,8 +101,7 @@ public class Selection implements ISelection {
         };
     }
 
-    @Override
-    public ISelection expand(Direction direction, int blocks) {
+    public Selection expand(Direction direction, int blocks) {
         if (isPos2(direction)) {
             return new Selection(pos1, pos2.relative(direction, blocks));
         } else {
@@ -117,8 +109,7 @@ public class Selection implements ISelection {
         }
     }
 
-    @Override
-    public ISelection contract(Direction direction, int blocks) {
+    public Selection contract(Direction direction, int blocks) {
         if (isPos2(direction)) {
             return new Selection(pos1.relative(direction, blocks), pos2);
         } else {
@@ -126,8 +117,7 @@ public class Selection implements ISelection {
         }
     }
 
-    @Override
-    public ISelection shift(Direction direction, int blocks) {
+    public Selection shift(Direction direction, int blocks) {
         return new Selection(pos1.relative(direction, blocks), pos2.relative(direction, blocks));
     }
 }

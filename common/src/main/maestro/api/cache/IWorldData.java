@@ -1,5 +1,8 @@
 package maestro.api.cache;
 
+import maestro.cache.CachedWorld;
+import maestro.cache.WaypointCollection;
+
 public interface IWorldData {
 
     /**
@@ -9,10 +12,10 @@ public interface IWorldData {
      *
      * @return The cached world for this world
      */
-    ICachedWorld getCachedWorld();
+    CachedWorld getCachedWorld();
 
     /**
      * @return The waypoint collection for this world
      */
-    IWaypointCollection getWaypoints();
+    WaypointCollection getWaypoints();
 }

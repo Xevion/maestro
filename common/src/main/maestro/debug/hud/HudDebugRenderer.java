@@ -5,11 +5,11 @@ import java.util.Optional;
 import maestro.Agent;
 import maestro.api.debug.IHudDebugRenderer;
 import maestro.api.pathing.calc.IPath;
-import maestro.api.pathing.calc.IPathFinder;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.path.IPathExecutor;
 import maestro.api.utils.PackedBlockPos;
+import maestro.pathing.calc.AStarPathFinder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 
@@ -152,7 +152,7 @@ public class HudDebugRenderer implements IHudDebugRenderer {
     }
 
     private String buildCalculationLine() {
-        Optional<? extends IPathFinder> inProgress = agent.getPathingBehavior().getInProgress();
+        Optional<? extends AStarPathFinder> inProgress = agent.getPathingBehavior().getInProgress();
 
         if (inProgress.isPresent()) {
             // Live calculation - show progress indicator
@@ -396,7 +396,7 @@ public class HudDebugRenderer implements IHudDebugRenderer {
     }
 
     private int getCalcColor() {
-        Optional<? extends IPathFinder> inProgress = agent.getPathingBehavior().getInProgress();
+        Optional<? extends AStarPathFinder> inProgress = agent.getPathingBehavior().getInProgress();
 
         if (inProgress.isEmpty()) {
             // Has cached path?

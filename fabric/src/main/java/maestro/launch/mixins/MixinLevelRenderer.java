@@ -3,8 +3,7 @@ package maestro.launch.mixins;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import maestro.Agent;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.event.events.RenderEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -33,7 +32,7 @@ public class MixinLevelRenderer {
                                     "Lnet/minecraft/client/renderer/SectionOcclusionGraph;update(ZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;Ljava/util/List;Lit/unimi/dsi/fastutil/longs/LongOpenHashSet;)V"),
             index = 0)
     private boolean maestro$disableSmartCullDuringFreecam(boolean smartCull) {
-        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
         if (agent != null && agent.isFreecamActive()) {
             return false;
         }
@@ -50,7 +49,7 @@ public class MixinLevelRenderer {
             final Matrix4f matrix4f,
             final Matrix4f matrix4f2,
             final CallbackInfo ci) {
-        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (Agent maestro : AgentAPI.getProvider().getAllMaestros()) {
             PoseStack poseStack = new PoseStack();
             poseStack.mulPose(matrix4f);
             maestro.getGameEventHandler()

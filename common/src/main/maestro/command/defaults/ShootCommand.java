@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForEntitySelector;
@@ -16,7 +16,7 @@ import maestro.api.selector.entity.EntitySelectorLookup;
 
 public class ShootCommand extends Command {
 
-    public ShootCommand(IAgent maestro) {
+    public ShootCommand(Agent maestro) {
         super(maestro, "shoot");
     }
 
@@ -29,7 +29,7 @@ public class ShootCommand extends Command {
             String arg = args.peekString();
             if (arg.equalsIgnoreCase("stop")) {
                 args.getString(); // consume
-                maestro.getRangedCombatProcess().cancel();
+                maestro.getRangedCombatTask().cancel();
                 log.atInfo().log("Shooting stopped");
                 return;
             }
@@ -67,7 +67,7 @@ public class ShootCommand extends Command {
             throw new NoMatchesException();
         }
 
-        maestro.getRangedCombatProcess().shoot(lookup.toPredicate());
+        maestro.getRangedCombatTask().shoot(lookup.toPredicate());
 
         log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Shooting started");
     }

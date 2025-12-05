@@ -4,14 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 
 public class FullbrightCommand extends Command {
 
-    public FullbrightCommand(IAgent maestro) {
+    public FullbrightCommand(Agent maestro) {
         super(maestro, "fullbright", "gamma");
     }
 

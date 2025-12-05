@@ -1,7 +1,7 @@
 package maestro.launch.mixins;
 
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,8 +23,8 @@ public class MixinGui {
         float tickDelta = deltaTracker.getGameTimeDeltaTicks();
 
         // Render debug HUD for all agents
-        if (MaestroAPI.getSettings().debugEnabled.value) {
-            for (IAgent agent : MaestroAPI.getProvider().getAllMaestros()) {
+        if (AgentAPI.getSettings().debugEnabled.value) {
+            for (Agent agent : AgentAPI.getProvider().getAllMaestros()) {
                 agent.getDebugRenderer().getHudRenderer().render(graphics, tickDelta);
             }
         }

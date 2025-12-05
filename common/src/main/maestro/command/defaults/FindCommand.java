@@ -1,13 +1,13 @@
 package maestro.command.defaults;
 
-import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
+import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.BlockById;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.Block;
 
 public class FindCommand extends Command {
 
-    public FindCommand(IAgent maestro) {
+    public FindCommand(Agent maestro) {
         super(maestro, "find");
     }
 
@@ -67,7 +67,7 @@ public class FindCommand extends Command {
                 prefixed.append(component);
 
                 net.minecraft.client.Minecraft.getInstance()
-                        .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+                        .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
             }
         } else {
             log.atInfo().log("No cached positions found for requested blocks");

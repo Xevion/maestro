@@ -3,8 +3,8 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.cache.IWaypoint;
+import maestro.Agent;
+import maestro.api.cache.Waypoint;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForWaypoints;
@@ -13,7 +13,7 @@ import maestro.api.utils.PackedBlockPos;
 
 public class FarmCommand extends Command {
 
-    public FarmCommand(IAgent maestro) {
+    public FarmCommand(Agent maestro) {
         super(maestro, "farm");
     }
 
@@ -28,8 +28,8 @@ public class FarmCommand extends Command {
         }
         // waypoint
         if (args.has(1)) {
-            IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
-            IWaypoint waypoint =
+            Waypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
+            Waypoint waypoint =
                     switch (waypoints.length) {
                         case 0 -> throw new CommandException.InvalidState("No waypoints found");
                         case 1 -> waypoints[0];
@@ -40,7 +40,7 @@ public class FarmCommand extends Command {
             origin = waypoint.getLocation();
         }
 
-        maestro.getFarmProcess().farm(range, origin != null ? origin.toBlockPos() : null);
+        maestro.getFarmTask().farm(range, origin != null ? origin.toBlockPos() : null);
         log.atInfo().log("Farming started");
     }
 

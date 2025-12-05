@@ -11,25 +11,26 @@ import maestro.api.event.events.type.EventState
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.goals.GoalXZ
-import maestro.api.process.PathingCommand
-import maestro.api.utils.MaestroLogger
+import maestro.api.task.PathingCommand
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
 import maestro.api.utils.format
-import maestro.api.utils.interfaces.IGoalRenderPos
-import maestro.pathing.Favoring
+import maestro.behavior.PathingBehavior
 import maestro.pathing.PathingCommandContext
+import maestro.pathing.PreferredPaths
 import maestro.pathing.calc.AStarPathFinder
 import maestro.pathing.calc.AbstractNodeCostSearch
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.CompositeMovementProvider
-import maestro.pathing.movement.ContinuousSwimmingProvider
-import maestro.pathing.movement.EnumMovementProvider
 import maestro.pathing.movement.IMovementProvider
-import maestro.pathing.movement.MovementHelper
+import maestro.pathing.movement.MovementValidation
+import maestro.pathing.movement.StandardMovementProvider
+import maestro.pathing.movement.SwimmingProvider
 import maestro.pathing.movement.TeleportMovementProvider
 import maestro.pathing.path.PathExecutor
 import maestro.pathing.recovery.MovementFailureMemory
+import maestro.rendering.IGoalRenderPos
 import maestro.rendering.PathRenderer
 import net.minecraft.core.BlockPos
 import org.slf4j.Logger
@@ -52,8 +53,8 @@ class PathingBehavior(
     private var context: CalculationContext? = null
 
     /**
-     * Movement provider for pathfinding. Combines ContinuousSwimmingProvider (dynamic 3D swimming)
-     * with EnumMovementProvider (terrestrial movements).
+     * Movement provider for pathfinding. Combines SwimmingProvider (dynamic 3D swimming)
+     * with StandardMovementProvider (terrestrial movements).
      */
     @JvmField
     val movementProvider: IMovementProvider
@@ -97,12 +98,12 @@ class PathingBehavior(
      * @return Configured movement provider
      */
     private fun createMovementProvider(): IMovementProvider {
-        // Swimming uses ContinuousSwimmingProvider exclusively (configurable precision)
-        // Terrestrial movements use EnumMovementProvider (Walk, Parkour, etc.)
+        // Swimming uses SwimmingProvider exclusively (configurable precision)
+        // Terrestrial movements use StandardMovementProvider (Walk, Parkour, etc.)
         // Teleportation uses TeleportMovementProvider (packet-based exploit)
         return CompositeMovementProvider(
-            ContinuousSwimmingProvider(),
-            EnumMovementProvider(),
+            SwimmingProvider(),
+            StandardMovementProvider(),
             TeleportMovementProvider(),
         )
     }
@@ -209,15 +210,15 @@ class PathingBehavior(
             if (current == null) {
                 return
             }
-            safeToCancel = current!!.onTick()
-            if (current!!.failed() || current!!.finished()) {
+            safeToCancel = (current ?: return@synchronized).onTick()
+            if ((current ?: return@synchronized).failed() || (current ?: return@synchronized).finished()) {
                 current = null
                 if (goal == null || goal!!.isInGoal(ctx.playerFeet().toBlockPos())) {
                     log.atDebug().addKeyValue("goal", goal).log("All done")
                     queuePathEvent(PathEvent.AT_GOAL)
                     next = null
                     // Deactivate swimming mode when goal reached
-                    (maestro as Agent).swimmingBehavior.deactivateSwimming()
+                    maestro.swimmingBehavior.deactivateSwimming()
                     if (Agent.settings().disconnectOnArrival.value) {
                         ctx.world().disconnect()
                     }
@@ -377,15 +378,15 @@ class PathingBehavior(
 
     override fun getNext(): PathExecutor? = next
 
-    override fun getInProgress(): Optional<AbstractNodeCostSearch?> {
+    override fun getInProgress(): Optional<out AStarPathFinder?> {
         @Suppress("UNCHECKED_CAST")
-        return Optional.ofNullable(inProgress) as Optional<AbstractNodeCostSearch?>
+        return Optional.ofNullable(inProgress) as Optional<out AStarPathFinder?>
     }
 
     fun isSafeToCancel(): Boolean {
         if (current == null) {
-            return !maestro.elytraProcess.isActive() ||
-                maestro.elytraProcess.isSafeToCancel()
+            return !maestro.elytraTask.isActive() ||
+                maestro.elytraTask.isSafeToCancel()
         }
         return safeToCancel
     }
@@ -509,7 +510,7 @@ class PathingBehavior(
      */
     fun pathStart(): PackedBlockPos? { // TODO move to a helper or util class
         val feet = ctx.playerFeet()
-        if (!MovementHelper.canWalkOn(ctx, feet.below())) {
+        if (!MovementValidation.canWalkOn(ctx, feet.below())) {
             if (ctx.player().onGround()) {
                 val playerX = ctx.player().position().x
                 val playerZ = ctx.player().position().z
@@ -538,9 +539,9 @@ class PathingBehavior(
                         // can't possibly be sneaking off of this one, we're too far away
                         continue
                     }
-                    if (MovementHelper.canWalkOn(ctx, possibleSupport.below()) &&
-                        MovementHelper.canWalkThrough(ctx, possibleSupport) &&
-                        MovementHelper.canWalkThrough(ctx, possibleSupport.above())
+                    if (MovementValidation.canWalkOn(ctx, possibleSupport.below()) &&
+                        MovementValidation.canWalkThrough(ctx, possibleSupport) &&
+                        MovementValidation.canWalkThrough(ctx, possibleSupport.above())
                     ) {
                         // this is plausible
                         // logDebug("Faking path start assuming player is standing off the edge of a
@@ -551,7 +552,7 @@ class PathingBehavior(
             } else {
                 // !onGround
                 // we're in the middle of a jump
-                if (MovementHelper.canWalkOn(ctx, feet.below().below())) {
+                if (MovementValidation.canWalkOn(ctx, feet.below().below())) {
                     // logDebug("Faking path start assuming player is midair and falling");
                     return feet.below()
                 }
@@ -744,8 +745,8 @@ class PathingBehavior(
                 transformed = GoalXZ(pos.x, pos.z)
             }
         }
-        val favoring =
-            Favoring(context.getMaestro().getPlayerContext(), previous, context)
+        val preferredPaths =
+            PreferredPaths(context.getMaestro().getPlayerContext(), previous, context)
         val feet = ctx.playerFeet()
         var realStart = PackedBlockPos(start)
         val sub = feet.subtract(realStart.toBlockPos())
@@ -758,7 +759,7 @@ class PathingBehavior(
             start.y,
             start.z,
             transformed,
-            favoring,
+            preferredPaths,
             context,
             movementProvider,
         )
@@ -769,6 +770,6 @@ class PathingBehavior(
     }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("path")
+        private val log: Logger = Loggers.get("path")
     }
 }

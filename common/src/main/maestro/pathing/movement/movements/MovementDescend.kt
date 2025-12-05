@@ -1,9 +1,9 @@
 package maestro.pathing.movement.movements
 
-import maestro.api.IAgent
+import maestro.Agent
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.center
@@ -16,9 +16,9 @@ import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
 import maestro.pathing.movement.LookIntent
 import maestro.pathing.movement.Movement
-import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
+import maestro.pathing.movement.MovementValidation
 import maestro.utils.distanceSquaredTo
 import maestro.utils.lerp
 import maestro.utils.minus
@@ -40,7 +40,7 @@ import kotlin.math.max
  * ```
  */
 class MovementDescend(
-    maestro: IAgent,
+    maestro: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
 ) : Movement(maestro, src, dest) {
@@ -56,13 +56,13 @@ class MovementDescend(
     override fun toBreak(bsi: BlockStateInterface): List<BlockPos> {
         val blocks = mutableListOf<BlockPos>()
 
-        if (!MovementHelper.canWalkThrough(ctx, dest.above(2))) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above(2))) {
             blocks.add(dest.above(2).toBlockPos())
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest.above())) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above())) {
             blocks.add(dest.above().toBlockPos())
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest)) {
+        if (!MovementValidation.canWalkThrough(ctx, dest)) {
             blocks.add(dest.toBlockPos())
         }
 
@@ -104,7 +104,7 @@ class MovementDescend(
         for (y in 0..2) {
             val checkPos = into.above(y)
             val state = ctx.world().getBlockState(checkPos)
-            if (MovementHelper.avoidWalkingInto(state)) {
+            if (MovementValidation.avoidWalkingInto(state)) {
                 return true
             }
         }
@@ -131,9 +131,9 @@ class MovementDescend(
 
         // Return true if: into is solid, but the 2 blocks above are walkable
         // This is the glitch case we want to avoid by using safe mode
-        return !MovementHelper.canWalkThrough(ctx, intoPacked) &&
-            MovementHelper.canWalkThrough(ctx, intoPacked.above()) &&
-            MovementHelper.canWalkThrough(ctx, intoPacked.above(2))
+        return !MovementValidation.canWalkThrough(ctx, intoPacked) &&
+            MovementValidation.canWalkThrough(ctx, intoPacked.above()) &&
+            MovementValidation.canWalkThrough(ctx, intoPacked.above(2))
     }
 
     override fun calculateCost(context: CalculationContext): Double {
@@ -149,7 +149,7 @@ class MovementDescend(
         val playerFeet = ctx.playerFeetBlockPos()
         if (playerFeet == dest.toBlockPos() &&
             (
-                MovementHelper.isLiquid(ctx, dest.toBlockPos()) ||
+                MovementValidation.isLiquid(ctx, dest.toBlockPos()) ||
                     ctx.player().position().y - dest.y < 0.5
             )
         ) {
@@ -157,7 +157,7 @@ class MovementDescend(
         }
     }
 
-    override fun computeIntent(ctx: IPlayerContext): Intent {
+    override fun computeIntent(ctx: PlayerContext): Intent {
         val playerPos = ctx.player().position()
         val destCenter = dest.center
 
@@ -165,7 +165,7 @@ class MovementDescend(
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
 
         // Mine blocks in order (top to bottom)
-        if (!MovementHelper.canWalkThrough(ctx, dest.above(2))) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above(2))) {
             debug.block("dest-top-2", dest.above(2).toBlockPos(), java.awt.Color.RED, 0.6f)
             debug.status("mine", "+2Y")
             return Intent(
@@ -174,7 +174,7 @@ class MovementDescend(
                 click = ClickIntent.LeftClick,
             )
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest.above())) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above())) {
             debug.block("dest-top", dest.above().toBlockPos(), java.awt.Color.ORANGE, 0.5f)
             debug.status("mine", "+1Y")
             return Intent(
@@ -183,7 +183,7 @@ class MovementDescend(
                 click = ClickIntent.LeftClick,
             )
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest)) {
+        if (!MovementValidation.canWalkThrough(ctx, dest)) {
             debug.block("dest-bottom", dest.toBlockPos(), java.awt.Color.ORANGE, 0.7f)
             debug.status("mine", "dest")
             return Intent(
@@ -355,17 +355,17 @@ internal object MovementDescendHelper {
 
         // Calculate mining costs for blocks in the way
         val destDown = context[destX, y - 1, destZ]
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false)
+        totalCost += MovementValidation.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false)
         if (totalCost >= ActionCosts.COST_INF) {
             return
         }
 
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y, destZ, false)
+        totalCost += MovementValidation.getMiningDurationTicks(context, destX, y, destZ, false)
         if (totalCost >= ActionCosts.COST_INF) {
             return
         }
 
-        totalCost += MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, true)
+        totalCost += MovementValidation.getMiningDurationTicks(context, destX, y + 1, destZ, true)
         if (totalCost >= ActionCosts.COST_INF) {
             return
         }
@@ -378,7 +378,7 @@ internal object MovementDescendHelper {
 
         // Check the block two below destination
         val below = context[destX, y - 2, destZ]
-        if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
+        if (!MovementValidation.canWalkOn(context, destX, y - 2, destZ, below)) {
             // This might be a longer fall
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res)
             return
@@ -390,7 +390,7 @@ internal object MovementDescendHelper {
         }
 
         // Check for frost walker
-        if (MovementHelper.canUseFrostWalker(context, destDown)) {
+        if (MovementValidation.canUseFrostWalker(context, destDown)) {
             return
         }
 
@@ -428,7 +428,7 @@ internal object MovementDescendHelper {
             return false
         }
 
-        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below)) {
+        if (!MovementValidation.canWalkThrough(context, destX, y - 2, destZ, below)) {
             return false
         }
 
@@ -451,17 +451,17 @@ internal object MovementDescendHelper {
                     frontBreak + costSoFar
 
             // Check for water landing
-            if (reachedMinimum && MovementHelper.isWater(ontoBlock)) {
-                if (!MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
+            if (reachedMinimum && MovementValidation.isWater(ontoBlock)) {
+                if (!MovementValidation.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                     return false
                 }
                 if (context.assumeWalkOnWater) {
                     return false
                 }
-                if (MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
+                if (MovementValidation.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
                     return false
                 }
-                if (!MovementHelper.canWalkOn(context, destX, newY - 1, destZ)) {
+                if (!MovementValidation.canWalkOn(context, destX, newY - 1, destZ)) {
                     return false
                 }
 
@@ -473,7 +473,7 @@ internal object MovementDescendHelper {
             }
 
             // Check for lava landing
-            if (reachedMinimum && context.allowFallIntoLava && MovementHelper.isLava(ontoBlock)) {
+            if (reachedMinimum && context.allowFallIntoLava && MovementValidation.isLava(ontoBlock)) {
                 res.x = destX
                 res.y = newY
                 res.z = destZ
@@ -491,15 +491,15 @@ internal object MovementDescendHelper {
                 continue
             }
 
-            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
+            if (MovementValidation.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                 continue
             }
 
-            if (!MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
+            if (!MovementValidation.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                 return false
             }
 
-            if (MovementHelper.isBottomSlab(ontoBlock)) {
+            if (MovementValidation.isBottomSlab(ontoBlock)) {
                 return false
             }
 

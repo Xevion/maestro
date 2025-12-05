@@ -3,8 +3,7 @@ package maestro.launch.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import java.util.function.BiFunction;
 import maestro.Agent;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.event.events.PlayerUpdateEvent;
 import maestro.api.event.events.TickEvent;
 import maestro.api.event.events.WorldEvent;
@@ -36,7 +35,7 @@ public class MixinMinecraft {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void postInit(CallbackInfo ci) {
-        MaestroAPI.getProvider().getPrimaryAgent();
+        AgentAPI.getProvider().getPrimaryAgent();
         DebugKeybindings.init();
     }
 
@@ -60,7 +59,7 @@ public class MixinMinecraft {
     private void runTick(CallbackInfo ci) {
         this.tickProvider = TickEvent.createNextProvider();
 
-        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (Agent maestro : AgentAPI.getProvider().getAllMaestros()) {
             TickEvent.Type type =
                     maestro.getPlayerContext().player() != null
                                     && maestro.getPlayerContext().world() != null
@@ -76,7 +75,7 @@ public class MixinMinecraft {
             return;
         }
 
-        for (IAgent maestro : MaestroAPI.getProvider().getAllMaestros()) {
+        for (Agent maestro : AgentAPI.getProvider().getAllMaestros()) {
             TickEvent.Type type =
                     maestro.getPlayerContext().player() != null
                                     && maestro.getPlayerContext().world() != null
@@ -100,7 +99,7 @@ public class MixinMinecraft {
                             target = "net/minecraft/client/multiplayer/ClientLevel.tickEntities()V",
                             shift = At.Shift.AFTER))
     private void postUpdateEntities(CallbackInfo ci) {
-        IAgent maestro = MaestroAPI.getProvider().getMaestroForPlayer(this.player);
+        Agent maestro = AgentAPI.getProvider().getMaestroForPlayer(this.player);
         if (maestro != null) {
             // Intentionally call this after all entities have been updated. That way, any
             // modification to rotations
@@ -119,7 +118,7 @@ public class MixinMinecraft {
 
         // mc.world changing is only the primary maestro
 
-        MaestroAPI.getProvider()
+        AgentAPI.getProvider()
                 .getPrimaryAgent()
                 .getGameEventHandler()
                 .onWorldEvent(new WorldEvent(world, EventState.PRE));
@@ -131,7 +130,7 @@ public class MixinMinecraft {
         // still fire event for both null, as that means we've just finished exiting a world
 
         // mc.world changing is only the primary maestro
-        MaestroAPI.getProvider()
+        AgentAPI.getProvider()
                 .getPrimaryAgent()
                 .getGameEventHandler()
                 .onWorldEvent(new WorldEvent(world, EventState.POST));
@@ -155,7 +154,7 @@ public class MixinMinecraft {
                             to = @At(value = "CONSTANT", args = "stringValue=Keybindings")))
     private Screen passEvents(Minecraft instance) {
         // allow user input is only the primary maestro
-        if (MaestroAPI.getProvider().getPrimaryAgent().getPathingBehavior().isPathing()
+        if (AgentAPI.getProvider().getPrimaryAgent().getPathingBehavior().isPathing()
                 && player != null) {
             return null;
         }
@@ -174,7 +173,7 @@ public class MixinMinecraft {
     @SuppressWarnings("ReferenceEquality") // Intentional: checking for same entity instance
     @ModifyReturnValue(method = "shouldEntityAppearGlowing", at = @At("RETURN"))
     private boolean onShouldEntityAppearGlowing(boolean original, Entity entity) {
-        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
         if (agent != null && agent.isFreecamActive()) {
             Minecraft mc = (Minecraft) (Object) this;
             if (mc.player != null && entity == mc.player) {

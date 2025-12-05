@@ -1,14 +1,14 @@
 package maestro.command.defaults;
 
 import java.util.*;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.ICommand;
 
 public final class DefaultCommands {
 
     private DefaultCommands() {}
 
-    public static List<ICommand> createAll(IAgent maestro) {
+    public static List<ICommand> createAll(Agent maestro) {
         Objects.requireNonNull(maestro);
         List<ICommand> commands =
                 new ArrayList<>(

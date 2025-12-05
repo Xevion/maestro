@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForBlockOptionalMeta;
@@ -16,7 +16,7 @@ import maestro.api.utils.PackedBlockPos;
 
 public class GotoCommand extends Command {
 
-    protected GotoCommand(IAgent maestro) {
+    protected GotoCommand(Agent maestro) {
         super(maestro, "goto");
     }
 
@@ -30,12 +30,12 @@ public class GotoCommand extends Command {
             PackedBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             log.atInfo().addKeyValue("goal", goal).log("Goal set");
-            maestro.getCustomGoalProcess().setGoalAndPath(goal);
+            maestro.getCustomGoalTask().setGoalAndPath(goal);
             return;
         }
         args.requireMax(1);
         BlockOptionalMeta destination = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
-        maestro.getGetToBlockProcess().getToBlock(destination);
+        maestro.getGetToBlockTask().getToBlock(destination);
     }
 
     @Override

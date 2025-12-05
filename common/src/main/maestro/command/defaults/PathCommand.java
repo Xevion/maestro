@@ -3,24 +3,24 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.process.ICustomGoalProcess;
+import maestro.task.CustomGoalTask;
 
 public class PathCommand extends Command {
 
-    public PathCommand(IAgent maestro) {
+    public PathCommand(Agent maestro) {
         super(maestro, "path");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        ICustomGoalProcess customGoalProcess = maestro.getCustomGoalProcess();
+        CustomGoalTask customGoalProcess = maestro.getCustomGoalTask();
         args.requireMax(0);
-        MaestroAPI.getProvider().getWorldScanner().repack(ctx);
+        AgentAPI.getProvider().getWorldScanner().repack(ctx);
         customGoalProcess.path();
         log.atInfo().log("Pathing started");
     }

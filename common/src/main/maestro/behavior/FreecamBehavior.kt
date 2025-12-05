@@ -7,7 +7,7 @@ import maestro.api.event.events.TickEvent
 import maestro.api.pathing.goals.GoalGetToBlock
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
-import maestro.input.InputOverrideHandler
+import maestro.input.InputController
 import maestro.utils.clampLength
 import maestro.utils.forward
 import maestro.utils.strafe
@@ -140,7 +140,7 @@ class FreecamBehavior(
     )
 
     private fun readInputState(): InputState {
-        if (!InputOverrideHandler.canUseBotKeys()) {
+        if (!InputController.canUseBotKeys()) {
             return InputState(
                 forward = false,
                 back = false,
@@ -203,7 +203,7 @@ class FreecamBehavior(
     )
 
     private fun readMouseState(): MouseState {
-        if (!InputOverrideHandler.canUseBotKeys()) {
+        if (!InputController.canUseBotKeys()) {
             return MouseState(leftClick = false, rightClick = false)
         }
 
@@ -301,7 +301,7 @@ class FreecamBehavior(
         if (hitResult.type == HitResult.Type.BLOCK) {
             val targetBlock = (hitResult as BlockHitResult).blockPos
             val goal = GoalGetToBlock(targetBlock)
-            maestro.customGoalProcess.setGoalAndPath(goal)
+            maestro.customGoalTask.setGoalAndPath(goal)
         }
     }
 }

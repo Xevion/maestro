@@ -1,21 +1,20 @@
 package maestro.command.defaults;
 
-import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
+import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
-import maestro.api.process.ICustomGoalProcess;
-import maestro.api.process.IElytraProcess;
 import maestro.gui.chat.ChatMessage;
+import maestro.task.CustomGoalTask;
+import maestro.task.ElytraTask;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.ClickEvent;
@@ -26,14 +25,14 @@ import net.minecraft.world.level.Level;
 
 public class ElytraCommand extends Command {
 
-    public ElytraCommand(IAgent maestro) {
+    public ElytraCommand(Agent maestro) {
         super(maestro, "elytra");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        final ICustomGoalProcess customGoalProcess = maestro.getCustomGoalProcess();
-        final IElytraProcess elytra = maestro.getElytraProcess();
+        final CustomGoalTask customGoalProcess = maestro.getCustomGoalTask();
+        final ElytraTask elytra = maestro.getElytraTask();
         if (args.hasExactlyOne() && args.peekString().equals("supported")) {
             log.atInfo().log(elytra.isLoaded() ? "yes" : unsupportedSystemMessage());
             return;
@@ -101,7 +100,7 @@ public class ElytraCommand extends Command {
                 prefixed1.append(" ");
                 prefixed1.append(msg1);
                 net.minecraft.client.Minecraft.getInstance()
-                        .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed1));
+                        .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed1));
 
                 Component msg2 = suggest2b2tSeeds();
                 MutableComponent prefixed2 = Component.literal("");
@@ -109,7 +108,7 @@ public class ElytraCommand extends Command {
                 prefixed2.append(" ");
                 prefixed2.append(msg2);
                 net.minecraft.client.Minecraft.getInstance()
-                        .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed2));
+                        .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed2));
             }
         }
     }
@@ -287,7 +286,7 @@ public class ElytraCommand extends Command {
         prefixed.append(" ");
         prefixed.append(gatekeep);
         net.minecraft.client.Minecraft.getInstance()
-                .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+                .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
     }
 
     private boolean detectOn2b2t() {

@@ -4,9 +4,9 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.GoalBlock
 import maestro.api.pathing.movement.ActionCosts
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
-import maestro.pathing.Favoring
+import maestro.pathing.PreferredPaths
 import maestro.pathing.calc.AStarPathFinder
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.Movement
@@ -128,7 +128,7 @@ class PathReconnection {
                 from.y,
                 from.z,
                 reconnectionGoal,
-                Favoring(null, context), // No previous path for favoring
+                PreferredPaths(null, context), // No previous path for favoring
                 context,
             )
 
@@ -249,7 +249,7 @@ class PathReconnection {
     }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("path")
+        private val log: Logger = Loggers.get("path")
 
         /**
          * Common movement types to sample for failure memory penalties.

@@ -1,14 +1,14 @@
 package maestro.pathing.movement.movements;
 
 import java.util.Set;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import maestro.api.utils.PackedBlockPos;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
-import maestro.pathing.movement.MovementHelper;
+import maestro.pathing.movement.MovementValidation;
 import maestro.pathing.movement.MovementState;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class MovementTeleport extends Movement {
     private final PackedBlockPos teleportArrival;
 
     public MovementTeleport(
-            IAgent maestro, PackedBlockPos src, PackedBlockPos arrival, PackedBlockPos landing) {
+            Agent maestro, PackedBlockPos src, PackedBlockPos arrival, PackedBlockPos landing) {
         super(maestro, src, landing, EMPTY); // dest is the landing position for pathfinding
         this.teleportArrival = arrival;
     }

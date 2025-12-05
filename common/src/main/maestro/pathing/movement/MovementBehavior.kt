@@ -1,6 +1,6 @@
 package maestro.pathing.movement
 
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 
 /**
  * Interface for stateless movement computation.
@@ -31,5 +31,5 @@ interface MovementBehavior {
      * @param ctx Player context with position, velocity, world access, etc.
      * @return Intent describing all desired inputs this tick
      */
-    fun computeIntent(ctx: IPlayerContext): Intent
+    fun computeIntent(ctx: PlayerContext): Intent
 }

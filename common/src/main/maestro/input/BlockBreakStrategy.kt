@@ -1,7 +1,7 @@
 package maestro.input
 
-import maestro.api.MaestroAPI
-import maestro.api.utils.IPlayerContext
+import maestro.api.AgentAPI
+import maestro.api.player.PlayerContext
 import maestro.utils.accessor.IPlayerControllerMP
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.phys.BlockHitResult
@@ -10,7 +10,7 @@ import net.minecraft.world.phys.HitResult
 class BlockBreakStrategy : BlockInteractionStrategy {
     private var wasHitting = false
 
-    override fun interact(ctx: IPlayerContext): Int? {
+    override fun interact(ctx: PlayerContext): Int? {
         val trace = ctx.objectMouseOver()
         val isBlockTrace = trace != null && trace.type == HitResult.Type.BLOCK
 
@@ -31,7 +31,7 @@ class BlockBreakStrategy : BlockInteractionStrategy {
             if (ctx.playerController().hasBrokenBlock()) {
                 // Block broken this tick
                 // Break delay timer only applies for multi-tick block breaks like vanilla
-                val delay = MaestroAPI.getSettings().blockBreakSpeed.value - BASE_BREAK_DELAY
+                val delay = AgentAPI.getSettings().blockBreakSpeed.value - BASE_BREAK_DELAY
                 // Must reset controllers destroy delay to prevent the client from delaying itself unnecessarily
                 (ctx.minecraft().gameMode as IPlayerControllerMP).setDestroyDelay(0)
 
@@ -51,7 +51,7 @@ class BlockBreakStrategy : BlockInteractionStrategy {
         return null
     }
 
-    override fun stop(ctx: IPlayerContext) {
+    override fun stop(ctx: PlayerContext) {
         ctx.player()?.let {
             if (wasHitting) {
                 ctx.playerController().setHittingBlock(false)

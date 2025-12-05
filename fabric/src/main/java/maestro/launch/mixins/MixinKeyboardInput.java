@@ -1,7 +1,7 @@
 package maestro.launch.mixins;
 
 import maestro.Agent;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.KeyboardInput;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +24,7 @@ public class MixinKeyboardInput {
             return;
         }
 
-        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
         if (agent == null) {
             return;
         }

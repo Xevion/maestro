@@ -6,21 +6,20 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeBlockPos;
 import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
 import maestro.api.utils.PackedBlockPos;
-import maestro.process.schematic.SchematicSystem;
+import maestro.task.schematic.SchematicSystem;
 import org.apache.commons.io.FilenameUtils;
 
 public class BuildCommand extends Command {
 
     private final File schematicsDir;
 
-    public BuildCommand(IAgent maestro) {
+    public BuildCommand(Agent maestro) {
         super(maestro, "build");
         this.schematicsDir =
                 new File(maestro.getPlayerContext().minecraft().gameDirectory, "schematics");
@@ -67,7 +66,7 @@ public class BuildCommand extends Command {
             buildOrigin = origin;
         }
         boolean success =
-                maestro.getBuilderProcess().build(file.getName(), file, buildOrigin.toBlockPos());
+                maestro.getBuilderTask().build(file.getName(), file, buildOrigin.toBlockPos());
         if (!success) {
             throw new CommandException.InvalidState(
                     "Couldn't load the schematic. Either your schematic is corrupt or this is a"

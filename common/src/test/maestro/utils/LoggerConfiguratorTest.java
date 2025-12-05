@@ -193,7 +193,7 @@ public class LoggerConfiguratorTest {
     public void testAllCategoriesConfigured() {
         LoggerConfigurator.configure();
 
-        // Verify all categories from MaestroLogger are configured
+        // Verify all categories from Loggers are configured
         String[] allCategories = {
             "path", "swim", "combat", "mine", "farm", "build",
             "cache", "move", "rotation", "event", "cmd", "api",

@@ -1,9 +1,9 @@
 package maestro.api.behavior
 
 import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.calc.IPathFinder
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.path.IPathExecutor
+import maestro.pathing.calc.AStarPathFinder
 import java.util.Optional
 
 interface IPathingBehavior : IBehavior {
@@ -83,7 +83,7 @@ interface IPathingBehavior : IBehavior {
     fun getPath(): Optional<IPath> = Optional.ofNullable(getCurrent()).map { it.path }
 
     /** @return The current pathfinder being executed */
-    fun getInProgress(): Optional<out IPathFinder?>
+    fun getInProgress(): Optional<out AStarPathFinder?>
 
     /** @return The current path executor */
     fun getCurrent(): IPathExecutor?

@@ -1,143 +1,64 @@
 package maestro.cache
 
-import maestro.api.cache.IWorldScanner
+import io.netty.buffer.Unpooled
+import maestro.api.player.PlayerContext
 import maestro.api.utils.BlockOptionalMetaLookup
-import maestro.api.utils.IPlayerContext
-import net.minecraft.client.multiplayer.ClientChunkCache
+import maestro.api.utils.Loggers
+import maestro.utils.accessor.IPalettedContainer
 import net.minecraft.core.BlockPos
+import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.chunk.GlobalPalette
 import net.minecraft.world.level.chunk.LevelChunk
-import net.minecraft.world.level.chunk.status.ChunkStatus
-import java.util.stream.IntStream
-import kotlin.math.abs
+import net.minecraft.world.level.chunk.LevelChunkSection
+import net.minecraft.world.level.chunk.Palette
+import net.minecraft.world.level.chunk.PalettedContainer
+import net.minecraft.world.level.chunk.SingleValuePalette
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
-object WorldScanner : IWorldScanner {
-    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-    override fun scanChunkRadius(
-        ctx: IPlayerContext,
+private val log = Loggers.get("cache")
+
+object WorldScanner {
+    private val PALETTE_REGISTRY_SENTINEL = emptyArray<BlockState>()
+
+    fun scanChunkRadius(
+        ctx: PlayerContext,
         filter: BlockOptionalMetaLookup,
         max: Int,
         yLevelThreshold: Int,
         maxSearchRadius: Int,
     ): List<BlockPos> {
-        val res = ArrayList<BlockPos>()
+        require(maxSearchRadius >= 0) { "chunkRange must be >= 0" }
 
-        if (filter.blocks().isEmpty()) {
-            return res
-        }
-
-        val chunkProvider = ctx.world().chunkSource as ClientChunkCache
-        val maxSearchRadiusSq = maxSearchRadius * maxSearchRadius
-        val playerChunkX = ctx.playerFeet().x shr 4
-        val playerChunkZ = ctx.playerFeet().z shr 4
-        val playerY = ctx.playerFeet().y - ctx.world().dimensionType().minY()
-
-        val playerYBlockStateContainerIndex = playerY shr 4
-        val coordinateIterationOrder =
-            IntStream
-                .range(0, ctx.world().dimensionType().height() / 16)
-                .boxed()
-                .sorted(
-                    compareBy { y -> abs(y - playerYBlockStateContainerIndex) },
-                ).mapToInt { it }
-                .toArray()
-
-        var searchRadiusSq = 0
-        var foundWithinY = false
-
-        while (true) {
-            var allUnloaded = true
-            var foundChunks = false
-
-            for (xoff in -searchRadiusSq..searchRadiusSq) {
-                for (zoff in -searchRadiusSq..searchRadiusSq) {
-                    val distance = xoff * xoff + zoff * zoff
-                    if (distance != searchRadiusSq) {
-                        continue
-                    }
-
-                    foundChunks = true
-                    val chunkX = xoff + playerChunkX
-                    val chunkZ = zoff + playerChunkZ
-                    val chunk = chunkProvider.getChunk(chunkX, chunkZ, null as ChunkStatus?, false) ?: continue
-
-                    allUnloaded = false
-                    if (
-                        scanChunkInto(
-                            chunkX shl 4,
-                            chunkZ shl 4,
-                            ctx.world().dimensionType().minY(),
-                            chunk,
-                            filter,
-                            res,
-                            max,
-                            yLevelThreshold,
-                            playerY,
-                            coordinateIterationOrder,
-                        )
-                    ) {
-                        foundWithinY = true
-                    }
-                }
-            }
-
-            if ((allUnloaded && foundChunks) ||
-                (
-                    res.size >= max &&
-                        (
-                            searchRadiusSq > maxSearchRadiusSq ||
-                                (searchRadiusSq > 1 && foundWithinY)
-                        )
-                )
-            ) {
-                return res
-            }
-
-            searchRadiusSq++
-        }
+        return scanChunksInternal(
+            ctx,
+            filter,
+            getChunkRange(ctx.playerFeet().x shr 4, ctx.playerFeet().z shr 4, maxSearchRadius),
+            max,
+        )
     }
 
-    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-    override fun scanChunk(
-        ctx: IPlayerContext,
+    fun scanChunk(
+        ctx: PlayerContext,
         filter: BlockOptionalMetaLookup,
         pos: ChunkPos,
         max: Int,
         yLevelThreshold: Int,
     ): List<BlockPos> {
-        if (filter.blocks().isEmpty()) {
-            return emptyList()
+        var stream = scanChunkInternal(ctx, filter, pos)
+        if (max >= 0) {
+            stream = stream.limit(max.toLong())
         }
-
-        val chunkProvider = ctx.world().chunkSource as ClientChunkCache
-        val chunk = chunkProvider.getChunk(pos.x, pos.z, null as ChunkStatus?, false)
-        val playerY = ctx.playerFeet().y
-
-        if (chunk == null || chunk.isEmpty) {
-            return emptyList()
-        }
-
-        val res = ArrayList<BlockPos>()
-        scanChunkInto(
-            pos.x shl 4,
-            pos.z shl 4,
-            ctx.world().dimensionType().minY(),
-            chunk,
-            filter,
-            res,
-            max,
-            yLevelThreshold,
-            playerY,
-            IntStream.range(0, ctx.world().dimensionType().height() / 16).toArray(),
-        )
-        return res
+        return stream.collect(Collectors.toList())
     }
 
-    override fun repack(ctx: IPlayerContext): Int = repack(ctx, 40)
+    fun repack(ctx: PlayerContext): Int = repack(ctx, 40)
 
-    override fun repack(
-        ctx: IPlayerContext,
+    fun repack(
+        ctx: PlayerContext,
         range: Int,
     ): Int {
         val chunkProvider = ctx.world().chunkSource
@@ -166,58 +87,261 @@ object WorldScanner : IWorldScanner {
         return queued
     }
 
-    private fun scanChunkInto(
-        chunkX: Int,
-        chunkZ: Int,
-        minY: Int,
-        chunk: LevelChunk,
-        filter: BlockOptionalMetaLookup,
-        result: MutableCollection<BlockPos>,
-        max: Int,
-        yLevelThreshold: Int,
-        playerY: Int,
-        coordinateIterationOrder: IntArray,
-    ): Boolean {
-        val chunkInternalStorageArray = chunk.sections
-        var foundWithinY = false
+    /** Generates chunks in spiral order, closest first */
+    fun getChunkRange(
+        centerX: Int,
+        centerZ: Int,
+        chunkRadius: Int,
+    ): List<ChunkPos> {
+        val chunks = ArrayList<ChunkPos>()
 
-        for (y0 in coordinateIterationOrder) {
-            val section = chunkInternalStorageArray[y0]
-            if (section == null || section.hasOnlyAir()) {
-                continue
-            }
-
-            val yReal = y0 shl 4
-            val bsc = section.states
-
-            for (yy in 0..<16) {
-                for (z in 0..<16) {
-                    for (x in 0..<16) {
-                        val state: BlockState = bsc.get(x, yy, z)
-                        if (filter.has(state)) {
-                            val y = yReal or yy
-
-                            if (result.size >= max) {
-                                if (abs(y - playerY) < yLevelThreshold) {
-                                    foundWithinY = true
-                                } else {
-                                    if (foundWithinY) {
-                                        // have found within Y in this chunk, so don't need to
-                                        // consider outside Y
-                                        // TODO continue iteration to one more sorted Y coordinate
-                                        // block
-                                        return true
-                                    }
-                                }
-                            }
-
-                            result.add(BlockPos(chunkX or x, y + minY, chunkZ or z))
-                        }
+        // spiral out
+        chunks.add(ChunkPos(centerX, centerZ))
+        for (i in 1..<chunkRadius) {
+            for (j in 0..i) {
+                chunks.add(ChunkPos(centerX - j, centerZ - i))
+                if (j != 0) {
+                    chunks.add(ChunkPos(centerX + j, centerZ - i))
+                    chunks.add(ChunkPos(centerX - j, centerZ + i))
+                }
+                chunks.add(ChunkPos(centerX + j, centerZ + i))
+                if (j != i) {
+                    chunks.add(ChunkPos(centerX - i, centerZ - j))
+                    chunks.add(ChunkPos(centerX + i, centerZ - j))
+                    if (j != 0) {
+                        chunks.add(ChunkPos(centerX - i, centerZ + j))
+                        chunks.add(ChunkPos(centerX + i, centerZ + j))
                     }
                 }
             }
         }
 
-        return foundWithinY
+        return chunks
+    }
+
+    private fun scanChunksInternal(
+        ctx: PlayerContext,
+        lookup: BlockOptionalMetaLookup,
+        chunkPositions: List<ChunkPos>,
+        maxBlocks: Int,
+    ): List<BlockPos> {
+        try {
+            var posStream: Stream<BlockPos> =
+                chunkPositions.parallelStream().flatMap { p -> scanChunkInternal(ctx, lookup, p) }
+
+            if (maxBlocks >= 0) {
+                // WARNING: this can be expensive if maxBlocks is large...
+                // see limit's javadoc
+                posStream = posStream.limit(maxBlocks.toLong())
+            }
+
+            return posStream.collect(Collectors.toList())
+        } catch (e: Exception) {
+            log
+                .atError()
+                .setCause(e)
+                .addKeyValue("chunk_count", chunkPositions.size)
+                .log("Failed to scan chunks")
+            throw e
+        }
+    }
+
+    private fun scanChunkInternal(
+        ctx: PlayerContext,
+        lookup: BlockOptionalMetaLookup,
+        pos: ChunkPos,
+    ): Stream<BlockPos> {
+        val chunkProvider = ctx.world().chunkSource
+
+        // if chunk is not loaded, return empty stream
+        if (!chunkProvider.hasChunk(pos.x, pos.z)) {
+            return Stream.empty()
+        }
+
+        val chunk = chunkProvider.getChunk(pos.x, pos.z, false) ?: return Stream.empty()
+
+        val chunkX = pos.x.toLong() shl 4
+        val chunkZ = pos.z.toLong() shl 4
+        val playerSectionY = (ctx.playerFeet().y - ctx.world().minY) shr 4
+
+        return collectChunkSections(
+            lookup,
+            chunk,
+            chunkX,
+            chunkZ,
+            playerSectionY,
+        ).stream()
+    }
+
+    private fun collectChunkSections(
+        lookup: BlockOptionalMetaLookup,
+        chunk: LevelChunk,
+        chunkX: Long,
+        chunkZ: Long,
+        playerSection: Int,
+    ): List<BlockPos> {
+        // iterate over sections relative to player
+        val blocks = ArrayList<BlockPos>()
+        val chunkY = chunk.minY
+        val sections = chunk.sections
+        val l = sections.size
+
+        var i = playerSection - 1
+        var j = playerSection
+
+        while (i >= 0 || j < l) {
+            if (j < l) {
+                visitSection(lookup, sections[j], blocks, chunkX, chunkY + j * 16, chunkZ)
+            }
+            if (i >= 0) {
+                visitSection(lookup, sections[i], blocks, chunkX, chunkY + i * 16, chunkZ)
+            }
+            j++
+            i--
+        }
+
+        return blocks
+    }
+
+    private fun visitSection(
+        lookup: BlockOptionalMetaLookup,
+        section: LevelChunkSection?,
+        blocks: MutableList<BlockPos>,
+        chunkX: Long,
+        sectionY: Int,
+        chunkZ: Long,
+    ) {
+        if (section == null || section.hasOnlyAir()) {
+            return
+        }
+
+        val sectionContainer: PalettedContainer<BlockState> = section.states
+
+        // this won't work if the PaletteStorage is of the type EmptyPaletteStorage
+        @Suppress("UNCHECKED_CAST")
+        if ((sectionContainer as IPalettedContainer<BlockState>).storage == null) {
+            return
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val palette: Palette<BlockState> = (sectionContainer as IPalettedContainer<BlockState>).palette
+
+        if (palette is SingleValuePalette) {
+            // single value palette doesn't have any data
+            if (lookup.has(palette.valueFor(0))) {
+                // TODO this is 4k hits, maybe don't return all of them?
+                for (x in 0..<16) {
+                    for (y in 0..<16) {
+                        for (z in 0..<16) {
+                            blocks.add(BlockPos(chunkX.toInt() + x, sectionY + y, chunkZ.toInt() + z))
+                        }
+                    }
+                }
+            }
+            return
+        }
+
+        val isInFilter = getIncludedFilterIndices(lookup, palette)
+        if (isInFilter.isEmpty()) {
+            return
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val array = (section.states as IPalettedContainer<BlockState>).storage
+        val longArray = array.raw
+        val arraySize = array.size
+        val bitsPerEntry = array.bits
+        val maxEntryValue = (1L shl bitsPerEntry) - 1L
+
+        var i = 0
+        var idx = 0
+
+        while (i < longArray.size && idx < arraySize) {
+            val l = longArray[i]
+            var offset = 0
+
+            while (offset <= 64 - bitsPerEntry && idx < arraySize) {
+                val value = ((l shr offset) and maxEntryValue).toInt()
+                if (isInFilter[value]) {
+                    blocks.add(
+                        BlockPos(
+                            chunkX.toInt() + ((idx and 255) and 15),
+                            sectionY + (idx shr 8),
+                            chunkZ.toInt() + ((idx and 255) shr 4),
+                        ),
+                    )
+                }
+
+                offset += bitsPerEntry
+                idx++
+            }
+
+            i++
+        }
+    }
+
+    private fun getIncludedFilterIndices(
+        lookup: BlockOptionalMetaLookup,
+        palette: Palette<BlockState>,
+    ): BooleanArray {
+        var commonBlockFound = false
+        val paletteMap = getPalette(palette)
+
+        if (paletteMap === PALETTE_REGISTRY_SENTINEL) {
+            return getIncludedFilterIndicesFromRegistry(lookup)
+        }
+
+        val size = paletteMap.size
+        val isInFilter = BooleanArray(size)
+
+        for (i in 0..<size) {
+            val state = paletteMap[i]
+            if (lookup.has(state)) {
+                isInFilter[i] = true
+                commonBlockFound = true
+            } else {
+                isInFilter[i] = false
+            }
+        }
+
+        if (!commonBlockFound) {
+            return BooleanArray(0)
+        }
+
+        return isInFilter
+    }
+
+    private fun getIncludedFilterIndicesFromRegistry(lookup: BlockOptionalMetaLookup): BooleanArray {
+        val isInFilter = BooleanArray(Block.BLOCK_STATE_REGISTRY.size())
+
+        for (bom in lookup.blocks()) {
+            for (state in bom.allBlockStates) {
+                isInFilter[Block.BLOCK_STATE_REGISTRY.getId(state)] = true
+            }
+        }
+
+        return isInFilter
+    }
+
+    /** Cheats to get the actual map of id -> blockstate from the various palette implementations */
+    private fun getPalette(palette: Palette<BlockState>): Array<BlockState> {
+        if (palette is GlobalPalette) {
+            // copying the entire registry is not nice so we treat it as a special case
+            return PALETTE_REGISTRY_SENTINEL
+        }
+
+        val buf = FriendlyByteBuf(Unpooled.buffer())
+        palette.write(buf)
+        val size = buf.readVarInt()
+        val states = arrayOfNulls<BlockState>(size)
+
+        for (i in 0..<size) {
+            val state = Block.BLOCK_STATE_REGISTRY.byId(buf.readVarInt())
+            checkNotNull(state) { "BlockState is null at index $i" }
+            states[i] = state
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return states as Array<BlockState>
     }
 }

@@ -3,7 +3,7 @@ package maestro.behavior
 import maestro.Agent
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
-import maestro.api.utils.input.Input
+import maestro.input.Input
 import maestro.pathing.movement.MovementState
 import net.minecraft.world.phys.Vec3
 

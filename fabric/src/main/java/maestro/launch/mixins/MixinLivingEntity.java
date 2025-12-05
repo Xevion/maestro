@@ -1,8 +1,8 @@
 package maestro.launch.mixins;
 
 import java.util.Optional;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import maestro.api.event.events.RotationMoveEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -53,7 +53,7 @@ public abstract class MixinLivingEntity extends Entity {
                             target = "net/minecraft/world/entity/LivingEntity.getYRot()F"))
     private float overrideYaw(LivingEntity self) {
         if (self instanceof LocalPlayer
-                && MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this)
+                && AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this)
                         != null) {
             return this.jumpRotationEvent.getYaw();
         }
@@ -103,11 +103,11 @@ public abstract class MixinLivingEntity extends Entity {
     @SuppressWarnings(
             "IsInstanceIncompatibleType") // Mixin: 'this' is LivingEntity, checking if it's a
     // LocalPlayer at runtime
-    private Optional<IAgent> getMaestro() {
+    private Optional<Agent> getMaestro() {
         // noinspection ConstantConditions
         if (LocalPlayer.class.isInstance(this)) {
             return Optional.ofNullable(
-                    MaestroAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this));
+                    AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this));
         } else {
             return Optional.empty();
         }

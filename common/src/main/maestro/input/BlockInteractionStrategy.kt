@@ -1,6 +1,6 @@
 package maestro.input
 
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 
 /**
  * Strategy interface for block interactions (breaking or placing).
@@ -13,10 +13,10 @@ interface BlockInteractionStrategy {
      * @param ctx Player context for world access
      * @return Delay ticks until next interaction, or null if no interaction occurred
      */
-    fun interact(ctx: IPlayerContext): Int?
+    fun interact(ctx: PlayerContext): Int?
 
     /**
      * Called when interaction should be stopped or cleaned up.
      */
-    fun stop(ctx: IPlayerContext) {}
+    fun stop(ctx: PlayerContext) {}
 }

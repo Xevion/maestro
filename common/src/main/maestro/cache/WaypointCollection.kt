@@ -2,10 +2,8 @@ package maestro.cache
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import maestro.api.cache.IWaypoint
-import maestro.api.cache.IWaypointCollection
 import maestro.api.cache.Waypoint
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -19,14 +17,14 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 
-private val log = MaestroLogger.get("cache")
+private val log = Loggers.get("cache")
 
 /** Waypoints for a world */
 class WaypointCollection internal constructor(
     private val directory: Path,
-) : IWaypointCollection {
+) {
     /** Magic value to detect invalid waypoint files */
-    private val waypoints: MutableMap<IWaypoint.Tag, MutableSet<IWaypoint>> = mutableMapOf()
+    private val waypoints: MutableMap<Waypoint.Tag, MutableSet<Waypoint>> = mutableMapOf()
     private val saveMutex = Mutex()
 
     init {
@@ -41,12 +39,12 @@ class WaypointCollection internal constructor(
     }
 
     private fun load() {
-        for (tag in IWaypoint.Tag.entries) {
+        for (tag in Waypoint.Tag.entries) {
             load(tag)
         }
     }
 
-    private fun load(tag: IWaypoint.Tag) {
+    private fun load(tag: Waypoint.Tag) {
         // Use runBlocking with mutex for Java interop
         kotlinx.coroutines.runBlocking {
             saveMutex.withLock {
@@ -55,7 +53,7 @@ class WaypointCollection internal constructor(
         }
     }
 
-    private fun loadInternal(tag: IWaypoint.Tag) {
+    private fun loadInternal(tag: Waypoint.Tag) {
         waypoints[tag] = mutableSetOf()
 
         val fileName = directory.resolve(tag.name.lowercase() + ".mp4")
@@ -98,7 +96,7 @@ class WaypointCollection internal constructor(
         }
     }
 
-    private fun save(tag: IWaypoint.Tag) {
+    private fun save(tag: Waypoint.Tag) {
         // Use runBlocking with mutex for Java interop
         kotlinx.coroutines.runBlocking {
             saveMutex.withLock {
@@ -107,7 +105,7 @@ class WaypointCollection internal constructor(
         }
     }
 
-    private fun saveInternal(tag: IWaypoint.Tag) {
+    private fun saveInternal(tag: Waypoint.Tag) {
         val fileName = directory.resolve(tag.name.lowercase() + ".mp4")
 
         try {
@@ -136,28 +134,28 @@ class WaypointCollection internal constructor(
         }
     }
 
-    override fun addWaypoint(waypoint: IWaypoint) {
+    fun addWaypoint(waypoint: Waypoint) {
         // no need to check for duplicate, because it's a Set not a List
         if (waypoints[waypoint.getTag()]?.add(waypoint) == true) {
             save(waypoint.getTag())
         }
     }
 
-    override fun removeWaypoint(waypoint: IWaypoint) {
+    fun removeWaypoint(waypoint: Waypoint) {
         if (waypoints[waypoint.getTag()]?.remove(waypoint) == true) {
             save(waypoint.getTag())
         }
     }
 
-    override fun getMostRecentByTag(tag: IWaypoint.Tag): IWaypoint? =
+    fun getMostRecentByTag(tag: Waypoint.Tag): Waypoint? =
         // Find a waypoint of the given tag which has the greatest timestamp value, indicating the
         // most recent
         waypoints[tag]
             ?.minByOrNull { -it.getCreationTimestamp() }
 
-    override fun getByTag(tag: IWaypoint.Tag): Set<IWaypoint> = waypoints[tag]?.toSet() ?: emptySet()
+    fun getByTag(tag: Waypoint.Tag): Set<Waypoint> = waypoints[tag]?.toSet() ?: emptySet()
 
-    override fun getAllWaypoints(): Set<IWaypoint> = waypoints.values.flatten().toSet()
+    fun getAllWaypoints(): Set<Waypoint> = waypoints.values.flatten().toSet()
 
     companion object {
         private const val WAYPOINT_MAGIC_VALUE = 121977993584L // good value

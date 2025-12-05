@@ -1,8 +1,8 @@
 package maestro.api.pathing.goals
 
 import maestro.api.utils.SettingsUtil
-import maestro.api.utils.interfaces.IGoalRenderPos
 import maestro.api.utils.pack
+import maestro.rendering.IGoalRenderPos
 import net.minecraft.core.BlockPos
 
 /**

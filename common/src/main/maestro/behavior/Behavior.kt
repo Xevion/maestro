@@ -2,10 +2,10 @@ package maestro.behavior
 
 import maestro.Agent
 import maestro.api.behavior.IBehavior
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 
 /**
- * Base behavior class that provides [Agent] and [IPlayerContext] to subclasses.
+ * Base behavior class that provides [Agent] and [PlayerContext] to subclasses.
  *
  * All behaviors have access to the agent instance and player context through protected fields.
  */
@@ -13,5 +13,5 @@ abstract class Behavior protected constructor(
     @JvmField val maestro: Agent,
 ) : IBehavior {
     @JvmField
-    val ctx: IPlayerContext = maestro.playerContext
+    val ctx: PlayerContext = maestro.playerContext
 }

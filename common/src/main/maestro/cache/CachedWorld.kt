@@ -17,9 +17,8 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import maestro.Agent
-import maestro.api.MaestroAPI
-import maestro.api.cache.ICachedWorld
-import maestro.api.utils.MaestroLogger
+import maestro.api.AgentAPI
+import maestro.api.utils.Loggers
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.chunk.LevelChunk
@@ -31,12 +30,12 @@ import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-private val log = MaestroLogger.get("cache")
+private val log = Loggers.get("cache")
 
 class CachedWorld internal constructor(
     directory: Path,
     private val dimension: DimensionType,
-) : ICachedWorld {
+) {
     private val scope =
         CoroutineScope(
             SupervisorJob() +
@@ -123,13 +122,13 @@ class CachedWorld internal constructor(
         }
     }
 
-    override fun queueForPacking(chunk: LevelChunk) {
+    fun queueForPacking(chunk: LevelChunk) {
         if (toPackMap.put(chunk.pos, chunk) == null) {
             packingChannel.trySend(chunk.pos)
         }
     }
 
-    override fun isCached(
+    fun isCached(
         blockX: Int,
         blockZ: Int,
     ): Boolean {
@@ -142,7 +141,7 @@ class CachedWorld internal constructor(
         blockZ: Int,
     ): Boolean = getRegion(blockX shr 9, blockZ shr 9) != null
 
-    override fun getLocationsOf(
+    fun getLocationsOf(
         block: String,
         maximum: Int,
         centerX: Int,
@@ -182,7 +181,7 @@ class CachedWorld internal constructor(
         region?.updateCachedChunk(chunk.x and 31, chunk.z and 31, chunk)
     }
 
-    override fun save() {
+    fun save() {
         if (!Agent.settings().chunkCaching.value) {
             allRegions().forEach { region ->
                 region.removeExpired()
@@ -228,9 +227,9 @@ class CachedWorld internal constructor(
     }
 
     private fun guessPosition(): BlockPos {
-        for (maestro in MaestroAPI.getProvider().allMaestros) {
+        for (maestro in AgentAPI.getProvider().allMaestros) {
             val data = maestro.worldProvider.currentWorld
-            if (data?.cachedWorld == this && maestro.playerContext.player() != null) {
+            if (data?.getCachedWorld() == this && maestro.playerContext.player() != null) {
                 return maestro.playerContext.playerFeet().toBlockPos()
             }
         }
@@ -252,7 +251,7 @@ class CachedWorld internal constructor(
 
     private fun allRegions(): List<CachedRegion> = cachedRegions.values.toList()
 
-    override fun reloadAllFromDisk() {
+    fun reloadAllFromDisk() {
         System.nanoTime() / 1000000L
         allRegions().forEach { region ->
             region.load(directory)
@@ -260,7 +259,7 @@ class CachedWorld internal constructor(
         System.nanoTime() / 1000000L
     }
 
-    override fun getRegion(
+    fun getRegion(
         regionX: Int,
         regionZ: Int,
     ): CachedRegion? = cachedRegions[getRegionID(regionX, regionZ)]

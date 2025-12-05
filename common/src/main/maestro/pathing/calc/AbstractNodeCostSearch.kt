@@ -3,9 +3,8 @@ package maestro.pathing.calc
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import maestro.Agent
 import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.calc.IPathFinder
 import maestro.api.pathing.goals.Goal
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
 import maestro.api.utils.format
@@ -24,7 +23,7 @@ abstract class AbstractNodeCostSearch(
     protected val startZ: Int,
     @JvmField protected val goal: Goal,
     private val context: CalculationContext,
-) : IPathFinder {
+) {
     /**
      * @see [Issue #107](https://github.com/cabaletta/baritone/issues/107)
      */
@@ -48,7 +47,7 @@ abstract class AbstractNodeCostSearch(
     }
 
     @Synchronized
-    override fun calculate(
+    fun calculate(
         primaryTimeout: Long,
         failureTimeout: Long,
     ): PathCalculationResult {
@@ -147,12 +146,12 @@ abstract class AbstractNodeCostSearch(
         return node
     }
 
-    override fun pathToMostRecentNodeConsidered(): Optional<IPath> =
+    fun pathToMostRecentNodeConsidered(): Optional<IPath> =
         Optional
             .ofNullable(mostRecentConsidered)
             .map { node -> Path(realStart, startNode!!, node, 0, goal, context) }
 
-    override fun bestPathSoFar(): Optional<IPath> = bestSoFar(false, 0, 0, null, null)
+    fun bestPathSoFar(): Optional<IPath> = bestSoFar(false, 0, 0, null, null)
 
     protected fun bestSoFar(
         logInfo: Boolean,
@@ -235,16 +234,16 @@ abstract class AbstractNodeCostSearch(
         return Optional.empty()
     }
 
-    final override fun isFinished(): Boolean = isFinished
+    final fun isFinished(): Boolean = isFinished
 
-    override fun getGoal(): Goal = goal
+    fun getGoal(): Goal = goal
 
     fun getStart(): PackedBlockPos = PackedBlockPos(startX, startY, startZ)
 
     protected fun mapSize(): Int = map.size
 
     companion object {
-        private val log: Logger = MaestroLogger.get("path")
+        private val log: Logger = Loggers.get("path")
 
         /**
          * This is really complicated and hard to explain. I wrote a comment in the old version of

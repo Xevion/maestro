@@ -3,23 +3,23 @@ package maestro.gui.chat;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
 /**
- * Custom Logback appender that routes MaestroLogger events to Minecraft chat.
+ * Custom Logback appender that routes Loggers events to Minecraft chat.
  *
  * <p>This appender:
  *
  * <ul>
  *   <li>Filters by level: INFO, WARN, ERROR only (no DEBUG)
- *   <li>Filters by category: Only MaestroLogger categories
+ *   <li>Filters by category: Only Loggers categories
  *   <li>Routes to ChatMessage for formatting
  *   <li>Sends to chat via ChatMessage on Minecraft main thread
  * </ul>
  *
- * <p>Configured in logback.xml to attach to all MaestroLogger categories.
+ * <p>Configured in logback.xml to attach to all Loggers categories.
  */
 public class ChatAppender extends AppenderBase<ILoggingEvent> {
 
@@ -30,9 +30,9 @@ public class ChatAppender extends AppenderBase<ILoggingEvent> {
             return;
         }
 
-        // Filter: MaestroLogger categories only
+        // Filter: Loggers categories only
         String loggerName = event.getLoggerName();
-        if (!MaestroLogger.hasCategory(loggerName)) {
+        if (!Loggers.hasCategory(loggerName)) {
             return;
         }
 

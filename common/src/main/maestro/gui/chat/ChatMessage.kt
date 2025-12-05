@@ -2,7 +2,7 @@ package maestro.gui.chat
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
-import maestro.api.MaestroAPI
+import maestro.api.AgentAPI
 import maestro.api.Settings
 import maestro.api.utils.Helper
 import net.minecraft.ChatFormatting
@@ -306,7 +306,7 @@ class ChatMessage private constructor(
          */
         @JvmStatic
         fun sendToChat(message: Component) {
-            val settings: Settings = MaestroAPI.getSettings()
+            val settings: Settings = AgentAPI.getSettings()
 
             if (settings.logAsToast.value) {
                 // Send as toast notification

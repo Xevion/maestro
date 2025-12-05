@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.event.events.TabCompleteEvent;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
@@ -47,7 +47,7 @@ public class MixinCommandSuggestionHelper {
                                         this.input.getCursorPosition()));
 
         TabCompleteEvent event = new TabCompleteEvent(prefix);
-        MaestroAPI.getProvider().getPrimaryAgent().getGameEventHandler().onPreTabComplete(event);
+        AgentAPI.getProvider().getPrimaryAgent().getGameEventHandler().onPreTabComplete(event);
 
         if (event.isCancelled()) {
             ci.cancel();

@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -11,14 +11,14 @@ import maestro.api.pathing.goals.GoalBlock;
 
 public class ComeCommand extends Command {
 
-    public ComeCommand(IAgent maestro) {
+    public ComeCommand(Agent maestro) {
         super(maestro, "come");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        maestro.getCustomGoalProcess().setGoalAndPath(new GoalBlock(ctx.viewerPos().toBlockPos()));
+        maestro.getCustomGoalTask().setGoalAndPath(new GoalBlock(ctx.viewerPos().toBlockPos()));
         log.atInfo().log("Pathing to camera position");
     }
 

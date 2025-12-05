@@ -4,25 +4,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.exception.ICommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
-import maestro.api.command.manager.ICommandManager;
 import maestro.api.command.registry.Registry;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import maestro.command.argument.ArgConsumer;
 import maestro.command.argument.CommandArguments;
 import maestro.command.defaults.DefaultCommands;
 import net.minecraft.util.Tuple;
 import org.slf4j.Logger;
 
-/** The default, internal implementation of {@link ICommandManager} */
-public class CommandManager implements ICommandManager {
+public class CommandManager {
 
-    private static final Logger log = MaestroLogger.get("cmd");
+    private static final Logger log = Loggers.get("cmd");
     private final Registry<ICommand> registry = new Registry<>();
     private final Agent maestro;
 
@@ -31,17 +28,14 @@ public class CommandManager implements ICommandManager {
         DefaultCommands.createAll(maestro).forEach(this.registry::register);
     }
 
-    @Override
-    public IAgent getMaestro() {
+    public Agent getMaestro() {
         return this.maestro;
     }
 
-    @Override
     public Registry<ICommand> getRegistry() {
         return this.registry;
     }
 
-    @Override
     public ICommand getCommand(String name) {
         for (ICommand command : this.registry.entries) {
             if (command.getNames().contains(name.toLowerCase(Locale.US))) {
@@ -51,12 +45,10 @@ public class CommandManager implements ICommandManager {
         return null;
     }
 
-    @Override
     public boolean execute(String string) {
         return this.execute(expand(string));
     }
 
-    @Override
     public boolean execute(Tuple<String, List<ICommandArgument>> expanded) {
         ExecutionWrapper execution = this.from(expanded);
         if (execution != null) {
@@ -65,13 +57,11 @@ public class CommandManager implements ICommandManager {
         return execution != null;
     }
 
-    @Override
     public Stream<String> tabComplete(Tuple<String, List<ICommandArgument>> expanded) {
         ExecutionWrapper execution = this.from(expanded);
         return execution == null ? Stream.empty() : execution.tabComplete();
     }
 
-    @Override
     public Stream<String> tabComplete(String prefix) {
         Tuple<String, List<ICommandArgument>> pair = expand(prefix, true);
         String label = pair.getA();
@@ -126,7 +116,11 @@ public class CommandManager implements ICommandManager {
                                 ? (ICommandException) t
                                 : new CommandException.Unhandled(t);
 
-                exception.handle(command, args.getArgs());
+                exception.handle(
+                        command instanceof maestro.api.command.Command
+                                ? (maestro.api.command.Command) command
+                                : null,
+                        args.getArgs());
             }
         }
 

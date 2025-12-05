@@ -1,8 +1,8 @@
 package maestro.launch.mixins;
 
 import maestro.Agent;
-import maestro.api.MaestroAPI;
-import maestro.input.InputOverrideHandler;
+import maestro.api.AgentAPI;
+import maestro.input.InputController;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,30 +22,24 @@ public class MixinMinecraftAttack {
 
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     private void maestro$preventAttackDuringFreecam(CallbackInfoReturnable<Boolean> cir) {
-        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
-        if (agent != null
-                && agent.isFreecamActive()
-                && InputOverrideHandler.Companion.canUseBotKeys()) {
+        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        if (agent != null && agent.isFreecamActive() && InputController.Companion.canUseBotKeys()) {
             cir.setReturnValue(false);
         }
     }
 
     @Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
     private void maestro$preventContinueAttackDuringFreecam(CallbackInfo ci) {
-        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
-        if (agent != null
-                && agent.isFreecamActive()
-                && InputOverrideHandler.Companion.canUseBotKeys()) {
+        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        if (agent != null && agent.isFreecamActive() && InputController.Companion.canUseBotKeys()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
     private void maestro$preventUseItemDuringFreecam(CallbackInfo ci) {
-        Agent agent = (Agent) MaestroAPI.getProvider().getPrimaryAgent();
-        if (agent != null
-                && agent.isFreecamActive()
-                && InputOverrideHandler.Companion.canUseBotKeys()) {
+        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        if (agent != null && agent.isFreecamActive() && InputController.Companion.canUseBotKeys()) {
             ci.cancel();
         }
     }

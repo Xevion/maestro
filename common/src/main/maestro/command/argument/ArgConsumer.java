@@ -6,7 +6,6 @@ import java.util.Deque;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.argument.ICommandArgument;
 import maestro.api.command.datatypes.IDatatype;
@@ -14,18 +13,18 @@ import maestro.api.command.datatypes.IDatatypeContext;
 import maestro.api.command.datatypes.IDatatypeFor;
 import maestro.api.command.datatypes.IDatatypePost;
 import maestro.api.command.exception.CommandException;
-import maestro.api.command.manager.ICommandManager;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
+import maestro.command.manager.CommandManager;
 import org.slf4j.Logger;
 
 public class ArgConsumer implements IArgConsumer {
 
-    private static final Logger log = MaestroLogger.get("cmd");
+    private static final Logger log = Loggers.get("cmd");
 
     /**
-     * The parent {@link ICommandManager} for this {@link IArgConsumer}}. Used by {@link #context}.
+     * The parent {@link CommandManager} for this {@link IArgConsumer}}. Used by {@link #context}.
      */
-    private final ICommandManager manager;
+    private final CommandManager manager;
 
     /**
      * The {@link IDatatypeContext} instance for this {@link IArgConsumer}}, passed to datatypes
@@ -46,7 +45,7 @@ public class ArgConsumer implements IArgConsumer {
     private final Deque<ICommandArgument> consumed;
 
     private ArgConsumer(
-            ICommandManager manager,
+            CommandManager manager,
             Deque<ICommandArgument> args,
             Deque<ICommandArgument> consumed) {
         this.manager = manager;
@@ -55,7 +54,7 @@ public class ArgConsumer implements IArgConsumer {
         this.consumed = new ArrayDeque<>(consumed);
     }
 
-    public ArgConsumer(ICommandManager manager, List<ICommandArgument> args) {
+    public ArgConsumer(CommandManager manager, List<ICommandArgument> args) {
         this(manager, new ArrayDeque<>(args), new ArrayDeque<>());
     }
 
@@ -435,7 +434,7 @@ public class ArgConsumer implements IArgConsumer {
     private final class Context implements IDatatypeContext {
 
         @Override
-        public IAgent getMaestro() {
+        public Agent getMaestro() {
             return ArgConsumer.this.manager.getMaestro();
         }
 

@@ -2,7 +2,7 @@
 package maestro.pathing
 
 import maestro.Agent
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.cache.CachedRegion
 import maestro.cache.WorldData
 import maestro.utils.accessor.IClientChunkProvider
@@ -20,7 +20,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus
 class BlockStateInterface
     @JvmOverloads
     constructor(
-        ctx: IPlayerContext,
+        ctx: PlayerContext,
         copyLoadedChunks: Boolean = false,
     ) {
         private val provider: ClientChunkCache
@@ -153,7 +153,7 @@ class BlockStateInterface
 
             @JvmStatic
             fun getBlock(
-                ctx: IPlayerContext,
+                ctx: PlayerContext,
                 pos: BlockPos,
             ): Block {
                 // Won't be called from the pathing thread because the pathing thread doesn't make a single blockpos pog
@@ -162,7 +162,7 @@ class BlockStateInterface
 
             @JvmStatic
             fun get(
-                ctx: IPlayerContext,
+                ctx: PlayerContext,
                 pos: BlockPos,
             ): BlockState {
                 // Immense iq

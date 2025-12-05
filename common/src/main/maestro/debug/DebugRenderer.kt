@@ -1,0 +1,46 @@
+package maestro.debug
+
+import maestro.Agent
+import maestro.api.debug.IDebugRenderer
+import maestro.api.debug.IHudDebugRenderer
+import maestro.api.event.events.RenderEvent
+import maestro.api.event.listener.AbstractGameEventListener
+import maestro.debug.hud.HudDebugRenderer
+
+/**
+ * Main coordinator for debug rendering system.
+ *
+ * Manages both 2D HUD overlays and 3D world annotations, delegating to specialized renderers based
+ * on the current debug mode and active layers.
+ *
+ * Registered as an [AbstractGameEventListener] to receive render events each frame.
+ */
+class DebugRenderer(
+    private val agent: Agent,
+) : IDebugRenderer,
+    AbstractGameEventListener {
+    private val hudRenderer = HudDebugRenderer(agent)
+
+    override fun onRenderPass(event: RenderEvent) {
+        if (!Agent.settings().debugEnabled.value) return
+
+        // Render 3D debug visualization for current movement
+        val pathExecutor = agent.pathingBehavior.getCurrent()
+        if (pathExecutor != null) {
+            val path = pathExecutor.path
+            val pos = pathExecutor.position
+
+            // Render debug info for current movement
+            if (pos >= 0 && pos < path.movements().size) {
+                val movement = path.movements()[pos]
+
+                // Cast to Movement to access debug context
+                if (movement is maestro.pathing.movement.Movement) {
+                    movement.debug.render3D(event.modelViewStack, event.partialTicks)
+                }
+            }
+        }
+    }
+
+    override fun getHudRenderer(): IHudDebugRenderer = hudRenderer
+}

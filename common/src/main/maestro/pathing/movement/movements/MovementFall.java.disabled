@@ -2,17 +2,17 @@ package maestro.pathing.movement.movements;
 
 import java.util.HashSet;
 import java.util.Set;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
-import maestro.api.utils.input.Input;
+import maestro.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
-import maestro.pathing.movement.MovementHelper;
+import maestro.pathing.movement.MovementValidation;
 import maestro.pathing.movement.MovementState;
 import maestro.pathing.MutableMoveResult;
 import net.minecraft.core.BlockPos;
@@ -34,7 +34,7 @@ public class MovementFall extends Movement {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
     private static final ItemStack STACK_BUCKET_EMPTY = new ItemStack(Items.BUCKET);
 
-    public MovementFall(IAgent maestro, PackedBlockPos src, PackedBlockPos dest) {
+    public MovementFall(Agent maestro, PackedBlockPos src, PackedBlockPos dest) {
         super(maestro, src, dest);
     }
 
@@ -78,13 +78,13 @@ public class MovementFall extends Movement {
 
     // Stub implementations for MovementBehavior interface
     @Override
-    public maestro.pathing.movement.MovementIntent computeMovement(maestro.api.utils.IPlayerContext ctx) {
+    public maestro.pathing.movement.MovementIntent computeMovement(maestro.api.utils.PlayerContext ctx) {
         // TODO: Convert to intent-based system (Phase 4)
         return maestro.pathing.movement.MovementIntent.Stop.INSTANCE;
     }
 
     @Override
-    public maestro.pathing.movement.LookIntent computeLook(maestro.api.utils.IPlayerContext ctx) {
+    public maestro.pathing.movement.LookIntent computeLook(maestro.api.utils.PlayerContext ctx) {
         // TODO: Convert to intent-based system (Phase 4)
         return maestro.pathing.movement.LookIntent.None.INSTANCE;
     }

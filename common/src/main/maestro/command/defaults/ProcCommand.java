@@ -3,25 +3,25 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.pathing.calc.IPathingControlManager;
-import maestro.api.process.IMaestroProcess;
-import maestro.api.process.PathingCommand;
+import maestro.api.task.ITask;
+import maestro.api.task.PathingCommand;
+import maestro.pathing.TaskCoordinator;
 
 public class ProcCommand extends Command {
 
-    public ProcCommand(IAgent maestro) {
+    public ProcCommand(Agent maestro) {
         super(maestro, "proc");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        IPathingControlManager pathingControlManager = maestro.getPathingControlManager();
-        IMaestroProcess process = pathingControlManager.mostRecentInControl().orElse(null);
+        TaskCoordinator pathingControlManager = maestro.getPathingControlManager();
+        ITask process = pathingControlManager.mostRecentInControl().orElse(null);
         if (process == null) {
             throw new CommandException.InvalidState("No process in control");
         }

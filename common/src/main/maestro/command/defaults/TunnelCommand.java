@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -14,7 +14,7 @@ import net.minecraft.core.Direction;
 
 public class TunnelCommand extends Command {
 
-    public TunnelCommand(IAgent maestro) {
+    public TunnelCommand(Agent maestro) {
         super(maestro, "tunnel");
     }
 
@@ -98,13 +98,13 @@ public class TunnelCommand extends Command {
                         .addKeyValue("width", width + 1)
                         .addKeyValue("depth", depth)
                         .log("Creating tunnel");
-                maestro.getBuilderProcess().clearArea(corner1, corner2);
+                maestro.getBuilderTask().clearArea(corner1, corner2);
             }
         } else {
             Goal goal =
                     new GoalStrictDirection(
                             ctx.playerFeet().toBlockPos(), ctx.player().getDirection());
-            maestro.getCustomGoalProcess().setGoalAndPath(goal);
+            maestro.getCustomGoalTask().setGoalAndPath(goal);
             log.atInfo().addKeyValue("goal", goal).log("Goal set");
         }
     }

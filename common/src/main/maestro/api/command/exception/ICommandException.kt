@@ -1,9 +1,9 @@
 package maestro.api.command.exception
 
-import maestro.api.MaestroAPI
-import maestro.api.command.ICommand
+import maestro.api.AgentAPI
+import maestro.api.command.Command
 import maestro.api.command.argument.ICommandArgument
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -30,7 +30,7 @@ interface ICommandException {
      * @param args The arguments the command was called with.
      */
     fun handle(
-        command: ICommand?,
+        command: Command?,
         args: List<ICommandArgument>?,
     ) {
         // Log error
@@ -45,7 +45,7 @@ interface ICommandException {
         errorMsg.append(messageComponent)
 
         Minecraft.getInstance().execute {
-            MaestroAPI
+            AgentAPI
                 .getSettings()
                 .logger.value
                 .accept(errorMsg)
@@ -54,6 +54,6 @@ interface ICommandException {
 
     companion object {
         @JvmField
-        val log: Logger = MaestroLogger.get("cmd")
+        val log: Logger = Loggers.get("cmd")
     }
 }

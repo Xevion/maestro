@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.EntityClassById;
@@ -20,7 +20,7 @@ import net.minecraft.world.entity.player.Player;
 
 public class FollowCommand extends Command {
 
-    public FollowCommand(IAgent maestro) {
+    public FollowCommand(Agent maestro) {
         super(maestro, "follow");
     }
 
@@ -32,7 +32,7 @@ public class FollowCommand extends Command {
         List<Entity> entities = new ArrayList<>();
         List<EntityType> classes = new ArrayList<>();
         if (args.hasExactlyOne()) {
-            maestro.getFollowProcess().follow((group = args.getEnum(FollowGroup.class)).filter);
+            maestro.getFollowTask().follow((group = args.getEnum(FollowGroup.class)).filter);
         } else {
             args.requireMin(2);
             group = null;
@@ -46,7 +46,7 @@ public class FollowCommand extends Command {
                 }
             }
 
-            maestro.getFollowProcess()
+            maestro.getFollowTask()
                     .follow(
                             classes.isEmpty()
                                     ? entities::contains

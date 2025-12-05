@@ -3,24 +3,24 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.pathing.goals.GoalInverted;
-import maestro.api.process.ICustomGoalProcess;
+import maestro.task.CustomGoalTask;
 
 public class InvertCommand extends Command {
 
-    public InvertCommand(IAgent maestro) {
+    public InvertCommand(Agent maestro) {
         super(maestro, "invert");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        ICustomGoalProcess customGoalProcess = maestro.getCustomGoalProcess();
+        CustomGoalTask customGoalProcess = maestro.getCustomGoalTask();
         Goal goal;
         if ((goal = customGoalProcess.getGoal()) == null) {
             throw new CommandException.InvalidState("No goal");

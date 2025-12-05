@@ -1,9 +1,8 @@
 package maestro.behavior
 
 import maestro.Agent
-import maestro.api.cache.IWaypoint
 import maestro.api.cache.Waypoint
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.gui.chat.ChatMessage.Companion.info
 import org.slf4j.Logger
 
@@ -20,7 +19,7 @@ class WaypointBehavior(
         if (!Agent.settings().doDeathWaypoints.value) return
 
         val world = maestro.worldProvider.getCurrentWorld() ?: return
-        val deathWaypoint = Waypoint("death", IWaypoint.Tag.DEATH, ctx.playerFeet())
+        val deathWaypoint = Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet())
         world.getWaypoints().addWaypoint(deathWaypoint)
 
         val pos = ctx.playerFeet()
@@ -33,6 +32,6 @@ class WaypointBehavior(
     }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("waypoint")
+        private val log: Logger = Loggers.get("waypoint")
     }
 }

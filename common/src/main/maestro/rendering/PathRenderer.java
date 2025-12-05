@@ -12,12 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.pathing.goals.*;
-import maestro.api.utils.IPlayerContext;
+import maestro.api.player.PlayerContext;
 import maestro.api.utils.PackedBlockPos;
-import maestro.api.utils.interfaces.IGoalRenderPos;
 import maestro.behavior.PathingBehavior;
 import maestro.gui.GuiClick;
 import maestro.pathing.BlockStateInterface;
@@ -57,7 +56,7 @@ public final class PathRenderer implements IRenderer {
     }
 
     public static void render(RenderEvent event, PathingBehavior behavior) {
-        final IPlayerContext ctx = behavior.ctx;
+        final PlayerContext ctx = behavior.ctx;
         if (ctx.world() == null) {
             return;
         }
@@ -71,11 +70,7 @@ public final class PathRenderer implements IRenderer {
 
         final DimensionType thisPlayerDimension = ctx.world().dimensionType();
         final DimensionType currentRenderViewDimension =
-                MaestroAPI.getProvider()
-                        .getPrimaryAgent()
-                        .getPlayerContext()
-                        .world()
-                        .dimensionType();
+                AgentAPI.getProvider().getPrimaryAgent().getPlayerContext().world().dimensionType();
 
         if (!Objects.equals(thisPlayerDimension, currentRenderViewDimension)) {
             // this is a path for a bot in a different dimension, don't render it
@@ -88,13 +83,12 @@ public final class PathRenderer implements IRenderer {
         // Priority-based highlight rendering (unified system)
         if (settings.renderPriorityBasedHighlight.value && settings.renderGoalHighlight.value) {
             // Collect all necessary state
-            maestro.process.MineProcess mineProcess =
-                    (maestro.process.MineProcess) behavior.maestro.getMineProcess();
+            maestro.task.MineTask mineTask = (maestro.task.MineTask) behavior.maestro.getMineTask();
 
             // Classify all blocks into priority tiers
             Map<BlockPos, maestro.debug.PriorityBlock> classified =
                     maestro.debug.BlockPriorityClassifier.INSTANCE.classifyBlocks(
-                            goal, current, mineProcess, ctx);
+                            goal, current, mineTask, ctx);
 
             // Group blocks by render parameters for batching
             Map<RenderKey, List<BlockPos>> grouped = groupByRenderKey(classified);
@@ -270,10 +264,10 @@ public final class PathRenderer implements IRenderer {
 
             // Render mining blocks if enabled
             if (settings.renderMiningBlocks.value) {
-                maestro.process.MineProcess mineProcess =
-                        (maestro.process.MineProcess) behavior.maestro.getMineProcess();
-                if (mineProcess != null) {
-                    List<BlockPos> miningBlocks = mineProcess.getKnownOreLocations();
+                maestro.task.MineTask mineTask =
+                        (maestro.task.MineTask) behavior.maestro.getMineTask();
+                if (mineTask != null) {
+                    List<BlockPos> miningBlocks = mineTask.getKnownOreLocations();
                     if (!miningBlocks.isEmpty()) {
                         maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
                                 event.modelViewStack,
@@ -684,7 +678,7 @@ public final class PathRenderer implements IRenderer {
         // BlockPos blockpos = movingObjectPositionIn.getBlockPos();
         BlockStateInterface bsi =
                 new BlockStateInterface(
-                        MaestroAPI.getProvider()
+                        AgentAPI.getProvider()
                                 .getPrimaryAgent()
                                 .getPlayerContext()); // TODO this assumes same dimension between
         // primary maestro and render view? is this
@@ -703,14 +697,14 @@ public final class PathRenderer implements IRenderer {
     }
 
     public static void drawGoal(
-            PoseStack stack, IPlayerContext ctx, Goal goal, float partialTicks, Color color) {
+            PoseStack stack, PlayerContext ctx, Goal goal, float partialTicks, Color color) {
         drawGoal(null, stack, ctx, goal, partialTicks, color, true);
     }
 
     private static void drawGoal(
             @Nullable BufferBuilder bufferBuilder,
             PoseStack stack,
-            IPlayerContext ctx,
+            PlayerContext ctx,
             Goal goal,
             float partialTicks,
             Color color,
@@ -1150,7 +1144,7 @@ public final class PathRenderer implements IRenderer {
      * @param goal The goal to extract positions from
      * @return List of block positions to render
      */
-    private static List<BlockPos> extractGoalPositions(IPlayerContext ctx, Goal goal) {
+    private static List<BlockPos> extractGoalPositions(PlayerContext ctx, Goal goal) {
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
             return Collections.singletonList(goalPos);

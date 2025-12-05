@@ -3,13 +3,13 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.process.IMaestroProcess;
-import maestro.api.process.PathingCommand;
-import maestro.api.process.PathingCommandType;
+import maestro.api.task.ITask;
+import maestro.api.task.PathingCommand;
+import maestro.api.task.PathingCommandType;
 
 /**
  * Contains the pause, resume, and paused commands.
@@ -25,12 +25,12 @@ public class ExecutionControlCommands {
     Command pausedCommand;
     Command cancelCommand;
 
-    public ExecutionControlCommands(IAgent maestro) {
+    public ExecutionControlCommands(Agent maestro) {
         // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
         maestro.getPathingControlManager()
-                .registerProcess(
-                        new IMaestroProcess() {
+                .registerTask(
+                        new ITask() {
                             @Override
                             public boolean isActive() {
                                 return paused[0];
@@ -102,7 +102,7 @@ public class ExecutionControlCommands {
                     @Override
                     public void execute(String label, IArgConsumer args) throws CommandException {
                         args.requireMax(0);
-                        maestro.getBuilderProcess().resume();
+                        maestro.getBuilderTask().resume();
                         if (!paused[0]) {
                             throw new CommandException.InvalidState("Not paused");
                         }

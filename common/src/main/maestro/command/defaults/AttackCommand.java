@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForEntitySelector;
@@ -17,7 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 public class AttackCommand extends Command {
 
-    public AttackCommand(IAgent maestro) {
+    public AttackCommand(Agent maestro) {
         super(maestro, "attack");
     }
 
@@ -30,7 +30,7 @@ public class AttackCommand extends Command {
             String arg = args.peekString();
             if (arg.equalsIgnoreCase("entities")) {
                 args.getString(); // consume the argument
-                maestro.getAttackProcess().attack(LivingEntity.class::isInstance);
+                maestro.getAttackTask().attack(LivingEntity.class::isInstance);
                 log.atInfo().log("Attacking all entities");
                 return;
             }
@@ -68,7 +68,7 @@ public class AttackCommand extends Command {
             throw new NoMatchesException();
         }
 
-        maestro.getAttackProcess().attack(lookup.toPredicate());
+        maestro.getAttackTask().attack(lookup.toPredicate());
 
         log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Attacking started");
     }

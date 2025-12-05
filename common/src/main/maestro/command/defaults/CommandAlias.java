@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 
@@ -12,13 +12,13 @@ public class CommandAlias extends Command {
     private final String shortDesc;
     public final String target;
 
-    public CommandAlias(IAgent maestro, List<String> names, String shortDesc, String target) {
+    public CommandAlias(Agent maestro, List<String> names, String shortDesc, String target) {
         super(maestro, names.toArray(new String[0]));
         this.shortDesc = shortDesc;
         this.target = target;
     }
 
-    public CommandAlias(IAgent maestro, String name, String shortDesc, String target) {
+    public CommandAlias(Agent maestro, String name, String shortDesc, String target) {
         super(maestro, name);
         this.shortDesc = shortDesc;
         this.target = target;

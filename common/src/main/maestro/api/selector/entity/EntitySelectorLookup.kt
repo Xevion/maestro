@@ -33,7 +33,7 @@ class EntitySelectorLookup(
 
     /**
      * Creates a predicate for filtering entities.
-     * This is compatible with AttackProcess.attack().
+     * This is compatible with AttackTask.attack().
      */
     fun toPredicate(): Predicate<Entity> =
         Predicate { entity ->

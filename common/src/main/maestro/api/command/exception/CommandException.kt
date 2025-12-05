@@ -1,9 +1,9 @@
 package maestro.api.command.exception
 
-import maestro.api.MaestroAPI
+import maestro.api.AgentAPI
 import maestro.api.command.ICommand
 import maestro.api.command.argument.ICommandArgument
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -25,7 +25,7 @@ sealed class CommandException(
     ) : CommandException(
             "Command not found: $command",
         ) {
-        override fun handle(
+        fun handle(
             command: ICommand?,
             args: List<ICommandArgument>?,
         ) {
@@ -41,7 +41,7 @@ sealed class CommandException(
             errorMsg.append(messageComponent)
 
             Minecraft.getInstance().execute {
-                MaestroAPI
+                AgentAPI
                     .getSettings()
                     .logger.value
                     .accept(errorMsg)
@@ -49,7 +49,7 @@ sealed class CommandException(
         }
 
         companion object {
-            private val log: Logger = MaestroLogger.get("cmd")
+            private val log: Logger = Loggers.get("cmd")
         }
     }
 
@@ -118,7 +118,6 @@ sealed class CommandException(
     }
 
     // Special cases with custom behavior
-
     open class Unhandled :
         RuntimeException,
         ICommandException {
@@ -126,7 +125,7 @@ sealed class CommandException(
 
         constructor(cause: Throwable?) : super(cause)
 
-        override fun handle(
+        fun handle(
             command: ICommand?,
             args: List<ICommandArgument>?,
         ) {
@@ -146,7 +145,7 @@ sealed class CommandException(
             errorMsg.append(messageComponent)
 
             Minecraft.getInstance().execute {
-                MaestroAPI
+                AgentAPI
                     .getSettings()
                     .logger.value
                     .accept(errorMsg)
@@ -157,7 +156,7 @@ sealed class CommandException(
         }
 
         companion object {
-            private val log: Logger = MaestroLogger.get("cmd")
+            private val log: Logger = Loggers.get("cmd")
         }
     }
 

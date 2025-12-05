@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -12,7 +12,7 @@ import maestro.api.pathing.goals.GoalAxis;
 
 public class AxisCommand extends Command {
 
-    public AxisCommand(IAgent maestro) {
+    public AxisCommand(Agent maestro) {
         super(maestro, "axis", "highway");
     }
 
@@ -20,7 +20,7 @@ public class AxisCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         Goal goal = new GoalAxis();
-        maestro.getCustomGoalProcess().setGoal(goal);
+        maestro.getCustomGoalTask().setGoal(goal);
         log.atInfo().addKeyValue("goal", goal).log("Goal set");
     }
 

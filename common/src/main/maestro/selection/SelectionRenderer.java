@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import maestro.Agent;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.event.listener.AbstractGameEventListener;
-import maestro.api.selection.ISelection;
 import maestro.rendering.IRenderer;
 import net.minecraft.world.phys.AABB;
 
@@ -20,7 +19,7 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
         maestro.getGameEventHandler().registerEventListener(this);
     }
 
-    public static void renderSelections(PoseStack stack, ISelection[] selections) {
+    public static void renderSelections(PoseStack stack, Selection[] selections) {
         float opacity = settings.selectionOpacity.value;
         boolean ignoreDepth = settings.renderSelectionIgnoreDepth.value;
         float lineWidth = settings.selectionLineWidth.value;
@@ -33,20 +32,20 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
                 IRenderer.startLines(
                         settings.colorSelection.value, opacity, lineWidth, ignoreDepth);
 
-        for (ISelection selection : selections) {
+        for (Selection selection : selections) {
             IRenderer.emitAABB(bufferBuilder, stack, selection.aabb(), SELECTION_BOX_EXPANSION);
         }
 
         if (settings.renderSelectionCorners.value) {
             IRenderer.glColor(settings.colorSelectionPos1.value, opacity);
 
-            for (ISelection selection : selections) {
+            for (Selection selection : selections) {
                 IRenderer.emitAABB(bufferBuilder, stack, new AABB(selection.pos1().toBlockPos()));
             }
 
             IRenderer.glColor(settings.colorSelectionPos2.value, opacity);
 
-            for (ISelection selection : selections) {
+            for (Selection selection : selections) {
                 IRenderer.emitAABB(bufferBuilder, stack, new AABB(selection.pos2().toBlockPos()));
             }
         }

@@ -30,7 +30,7 @@
         - Appenders: CONSOLE + CHAT
         - Additivity: false (no propagation to root logger)
 
-        Adding a new category only requires updating MaestroLogger.CATEGORIES.
+        Adding a new category only requires updating Loggers.CATEGORIES.
     -->
 
     <!-- Suppress noisy Minecraft loggers -->

@@ -2,7 +2,7 @@ package maestro.pathing.movement;
 
 import java.util.stream.Stream;
 import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import maestro.api.utils.PackedBlockPos;
 // TODO: Re-enable after MovementTeleport is converted to Kotlin
 // import maestro.pathing.movement.movements.MovementTeleport;
@@ -15,7 +15,7 @@ import org.slf4j.Logger;
  * avoid overwhelming the pathfinding algorithm with too many options.
  */
 public class TeleportMovementProvider implements IMovementProvider {
-    private static final Logger log = MaestroLogger.get("path");
+    private static final Logger log = Loggers.get("path");
 
     @Override
     public Stream<IMovement> generateMovements(CalculationContext context, PackedBlockPos from) {

@@ -1,13 +1,12 @@
 package maestro.input;
 
-import maestro.api.utils.input.Input;
 import net.minecraft.client.player.ClientInput;
 
 public class PlayerMovementInput extends ClientInput {
 
-    private final InputOverrideHandler handler;
+    private final InputController handler;
 
-    PlayerMovementInput(InputOverrideHandler handler) {
+    PlayerMovementInput(InputController handler) {
         this.handler = handler;
     }
 

@@ -2,23 +2,22 @@ package maestro.command.defaults;
 
 import com.google.gson.JsonSyntaxException;
 import java.io.File;
-import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import org.slf4j.Logger;
 
 public class ExploreFilterCommand extends Command {
 
-    private static final Logger log = MaestroLogger.get("cmd");
+    private static final Logger log = Loggers.get("cmd");
 
-    public ExploreFilterCommand(IAgent maestro) {
+    public ExploreFilterCommand(Agent maestro) {
         super(maestro, "explorefilter");
     }
 
@@ -39,9 +38,7 @@ public class ExploreFilterCommand extends Command {
             }
         }
         try {
-            maestro.getExploreProcess().applyJsonFilter(file.toPath().toAbsolutePath(), invert);
-        } catch (NoSuchFileException e) {
-            throw new CommandException.InvalidState("File not found");
+            maestro.getExploreTask().applyJsonFilter(file.toPath().toAbsolutePath(), invert);
         } catch (JsonSyntaxException e) {
             throw new CommandException.InvalidState("Invalid JSON syntax");
         } catch (Exception e) {

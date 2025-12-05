@@ -4,7 +4,7 @@ import static maestro.pathing.precompute.Ternary.MAYBE;
 import static maestro.pathing.precompute.Ternary.YES;
 
 import maestro.pathing.BlockStateInterface;
-import maestro.pathing.movement.MovementHelper;
+import maestro.pathing.movement.MovementValidation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -23,7 +23,7 @@ public class PrecomputedData {
     private int fillData(int id, BlockState state) {
         int blockData = 0;
 
-        Ternary canWalkOnState = MovementHelper.canWalkOnBlockState(state);
+        Ternary canWalkOnState = MovementValidation.canWalkOnBlockState(state);
         if (canWalkOnState == YES) {
             blockData |= CAN_WALK_ON_MASK;
         }
@@ -31,7 +31,7 @@ public class PrecomputedData {
             blockData |= CAN_WALK_ON_SPECIAL_MASK;
         }
 
-        Ternary canWalkThroughState = MovementHelper.canWalkThroughBlockState(state);
+        Ternary canWalkThroughState = MovementValidation.canWalkThroughBlockState(state);
         if (canWalkThroughState == YES) {
             blockData |= CAN_WALK_THROUGH_MASK;
         }
@@ -39,7 +39,7 @@ public class PrecomputedData {
             blockData |= CAN_WALK_THROUGH_SPECIAL_MASK;
         }
 
-        Ternary fullyPassableState = MovementHelper.fullyPassableBlockState(state);
+        Ternary fullyPassableState = MovementValidation.fullyPassableBlockState(state);
         if (fullyPassableState == YES) {
             blockData |= FULLY_PASSABLE_MASK;
         }
@@ -64,7 +64,7 @@ public class PrecomputedData {
         }
 
         if ((blockData & CAN_WALK_ON_SPECIAL_MASK) != 0) {
-            return MovementHelper.canWalkOnPosition(bsi, x, y, z, state);
+            return MovementValidation.canWalkOnPosition(bsi, x, y, z, state);
         } else {
             return (blockData & CAN_WALK_ON_MASK) != 0;
         }
@@ -79,7 +79,7 @@ public class PrecomputedData {
         }
 
         if ((blockData & CAN_WALK_THROUGH_SPECIAL_MASK) != 0) {
-            return MovementHelper.canWalkThroughPosition(bsi, x, y, z, state);
+            return MovementValidation.canWalkThroughPosition(bsi, x, y, z, state);
         } else {
             return (blockData & CAN_WALK_THROUGH_MASK) != 0;
         }
@@ -94,7 +94,7 @@ public class PrecomputedData {
         }
 
         if ((blockData & FULLY_PASSABLE_SPECIAL_MASK) != 0) {
-            return MovementHelper.fullyPassablePosition(bsi, x, y, z, state);
+            return MovementValidation.fullyPassablePosition(bsi, x, y, z, state);
         } else {
             return (blockData & FULLY_PASSABLE_MASK) != 0;
         }

@@ -3,14 +3,14 @@ package maestro.api.command;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.utils.IPlayerContext;
-import maestro.api.utils.MaestroLogger;
+import maestro.Agent;
+import maestro.api.player.PlayerContext;
+import maestro.api.utils.Loggers;
 import org.slf4j.Logger;
 
 /**
  * A default implementation of {@link ICommand} which provides easy access to the command's bound
- * {@link IAgent} instance, {@link IPlayerContext} and an easy way to provide multiple valid command
+ * {@link Agent} instance, {@link PlayerContext} and an easy way to provide multiple valid command
  * execution names through the default constructor.
  *
  * <p>So basically, you should use it because it provides a small amount of boilerplate, but you're
@@ -20,8 +20,8 @@ import org.slf4j.Logger;
  */
 public abstract class Command implements ICommand {
 
-    protected IAgent maestro;
-    protected IPlayerContext ctx;
+    protected Agent maestro;
+    protected PlayerContext ctx;
 
     /** Logger for command execution messages. Uses the "cmd" category. */
     protected final Logger log;
@@ -34,11 +34,11 @@ public abstract class Command implements ICommand {
      *
      * @param names The names of this command. This is what you put after the command prefix.
      */
-    protected Command(IAgent maestro, String... names) {
+    protected Command(Agent maestro, String... names) {
         this.names = Stream.of(names).map(s -> s.toLowerCase(Locale.US)).toList();
         this.maestro = maestro;
         this.ctx = maestro.getPlayerContext();
-        this.log = MaestroLogger.get("cmd");
+        this.log = Loggers.get("cmd");
     }
 
     @Override

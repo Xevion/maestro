@@ -1,7 +1,7 @@
 package maestro.pathing.recovery
 
 import maestro.Agent
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.pathing.movement.Movement
 import org.slf4j.Logger
@@ -235,7 +235,7 @@ class MovementFailureMemory(
     fun totalRecords(): Int = failures.values.sumOf { it.size }
 
     companion object {
-        private val log: Logger = MaestroLogger.get("path")
+        private val log: Logger = Loggers.get("path")
         private const val MAX_RECORDS_PER_MOVEMENT = 10
     }
 }

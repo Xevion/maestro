@@ -2,7 +2,7 @@ package maestro.pathing
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import maestro.Agent
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.api.utils.pack
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Mob
@@ -102,7 +102,7 @@ class Avoidance {
          * @return List of avoidance zones
          */
         @JvmStatic
-        fun create(ctx: IPlayerContext): List<Avoidance> {
+        fun create(ctx: PlayerContext): List<Avoidance> {
             if (!Agent.settings().avoidance.value) {
                 return emptyList()
             }

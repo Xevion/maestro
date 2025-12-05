@@ -1,9 +1,9 @@
 package maestro.pathing.movement.movements
 
-import maestro.api.IAgent
+import maestro.Agent
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.center
@@ -15,9 +15,9 @@ import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
 import maestro.pathing.movement.LookIntent
 import maestro.pathing.movement.Movement
-import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
+import maestro.pathing.movement.MovementValidation
 import maestro.utils.distanceSquaredTo
 import maestro.utils.horizontalLength
 import net.minecraft.core.BlockPos
@@ -32,7 +32,7 @@ import net.minecraft.core.BlockPos
  * - Opening doors/gates
  */
 class MovementTraverse(
-    maestro: IAgent,
+    maestro: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
 ) : Movement(maestro, src, dest) {
@@ -47,10 +47,10 @@ class MovementTraverse(
     override fun toBreak(bsi: BlockStateInterface): List<BlockPos> {
         val blocks = mutableListOf<BlockPos>()
 
-        if (!MovementHelper.canWalkThrough(ctx, dest.above())) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above())) {
             blocks.add(dest.above().toBlockPos())
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest)) {
+        if (!MovementValidation.canWalkThrough(ctx, dest)) {
             blocks.add(dest.toBlockPos())
         }
 
@@ -73,7 +73,7 @@ class MovementTraverse(
         }
     }
 
-    override fun computeIntent(ctx: IPlayerContext): Intent {
+    override fun computeIntent(ctx: PlayerContext): Intent {
         val playerPos = ctx.player().position()
         val destCenter = dest.center
 
@@ -82,7 +82,7 @@ class MovementTraverse(
         debug.point("dest-center", destCenter, java.awt.Color.YELLOW, 0.15f)
 
         // Mine blocks in order (top first, then bottom)
-        if (!MovementHelper.canWalkThrough(ctx, dest.above())) {
+        if (!MovementValidation.canWalkThrough(ctx, dest.above())) {
             debug.block("dest-top", dest.above().toBlockPos(), java.awt.Color.RED, 0.7f)
             debug.status("mine", "top")
             return Intent(
@@ -91,7 +91,7 @@ class MovementTraverse(
                 click = ClickIntent.LeftClick,
             )
         }
-        if (!MovementHelper.canWalkThrough(ctx, dest)) {
+        if (!MovementValidation.canWalkThrough(ctx, dest)) {
             debug.block("dest-bottom", dest.toBlockPos(), java.awt.Color.ORANGE, 0.7f)
             debug.status("mine", "dest")
             return Intent(
@@ -166,7 +166,7 @@ class MovementTraverse(
     override fun safeToCancel(): Boolean {
         // Safe to cancel if we're not running, or if the bridge block exists
         return state.getStatus() != MovementStatus.RUNNING ||
-            MovementHelper.canWalkOn(ctx, dest.below().toBlockPos())
+            MovementValidation.canWalkOn(ctx, dest.below().toBlockPos())
     }
 
     override val validPositions: Set<PackedBlockPos>
@@ -210,14 +210,14 @@ internal object MovementTraverseHelper {
         val srcDown = context[x, y - 1, z]
         val srcDownBlock = srcDown.block
 
-        val standingOnABlock = MovementHelper.mustBeSolidToWalkOn(context, x, y - 1, z, srcDown)
+        val standingOnABlock = MovementValidation.mustBeSolidToWalkOn(context, x, y - 1, z, srcDown)
         val frostWalker =
             standingOnABlock &&
                 !context.assumeWalkOnWater &&
-                MovementHelper.canUseFrostWalker(context, destOn)
+                MovementValidation.canUseFrostWalker(context, destOn)
 
         // Check if this is a walk (not a bridge)
-        if (frostWalker || MovementHelper.canWalkOn(context, destX, y - 1, destZ, destOn)) {
+        if (frostWalker || MovementValidation.canWalkOn(context, destX, y - 1, destZ, destOn)) {
             return calculateWalkCost(context, x, y, z, destX, destZ, pb0, pb1, destOn, srcDownBlock, frostWalker)
         } else {
             // This is a bridge - need to place a block
@@ -241,7 +241,7 @@ internal object MovementTraverseHelper {
         var walkCost = ActionCosts.WALK_ONE_BLOCK_COST
         var water = false
 
-        if (MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1)) {
+        if (MovementValidation.isWater(pb0) || MovementValidation.isWater(pb1)) {
             walkCost = context.waterWalkSpeed
             water = true
         } else {
@@ -256,12 +256,12 @@ internal object MovementTraverseHelper {
             }
         }
 
-        val hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false)
+        val hardness1 = MovementValidation.getMiningDurationTicks(context, destX, y, destZ, pb1, false)
         if (hardness1 >= ActionCosts.COST_INF) {
             return ActionCosts.COST_INF
         }
 
-        val hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true)
+        val hardness2 = MovementValidation.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true)
 
         if (hardness1 == 0.0 && hardness2 == 0.0) {
             if (!water && context.canSprint) {
@@ -300,12 +300,12 @@ internal object MovementTraverseHelper {
             return ActionCosts.COST_INF
         }
 
-        if (!MovementHelper.isReplaceable(destX, y - 1, destZ, destOn, context.bsi)) {
+        if (!MovementValidation.isReplaceable(destX, y - 1, destZ, destOn, context.bsi)) {
             return ActionCosts.COST_INF
         }
 
-        val throughWater = MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1)
-        if (MovementHelper.isWater(destOn) && throughWater) {
+        val throughWater = MovementValidation.isWater(pb0) || MovementValidation.isWater(pb1)
+        if (MovementValidation.isWater(destOn) && throughWater) {
             return ActionCosts.COST_INF
         }
 
@@ -314,12 +314,12 @@ internal object MovementTraverseHelper {
             return ActionCosts.COST_INF
         }
 
-        val hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false)
+        val hardness1 = MovementValidation.getMiningDurationTicks(context, destX, y, destZ, pb1, false)
         if (hardness1 >= ActionCosts.COST_INF) {
             return ActionCosts.COST_INF
         }
 
-        val hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true)
+        val hardness2 = MovementValidation.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true)
         val walkCost = if (throughWater) context.waterWalkSpeed else ActionCosts.WALK_ONE_BLOCK_COST
 
         // Check for side place option
@@ -333,7 +333,7 @@ internal object MovementTraverseHelper {
                 continue // backplace
             }
 
-            if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+            if (MovementValidation.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
                 return walkCost + placeCost + hardness1 + hardness2
             }
         }

@@ -3,7 +3,7 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.RelativeCoordinate;
@@ -11,18 +11,18 @@ import maestro.api.command.datatypes.RelativeGoal;
 import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
-import maestro.api.process.ICustomGoalProcess;
 import maestro.api.utils.PackedBlockPos;
+import maestro.task.CustomGoalTask;
 
 public class GoalCommand extends Command {
 
-    public GoalCommand(IAgent maestro) {
+    public GoalCommand(Agent maestro) {
         super(maestro, "goal");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        ICustomGoalProcess goalProcess = maestro.getCustomGoalProcess();
+        CustomGoalTask goalProcess = maestro.getCustomGoalTask();
         if (args.hasAny() && Arrays.asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
             if (goalProcess.getGoal() != null) {

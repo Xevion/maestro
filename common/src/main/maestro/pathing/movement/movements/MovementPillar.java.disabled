@@ -3,18 +3,18 @@ package maestro.pathing.movement.movements;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import maestro.Agent;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
-import maestro.api.utils.input.Input;
+import maestro.input.Input;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
-import maestro.pathing.movement.MovementHelper;
+import maestro.pathing.movement.MovementValidation;
 import maestro.pathing.movement.MovementState;
 import maestro.pathing.BlockStateInterface;
 import net.minecraft.core.BlockPos;
@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 public class MovementPillar extends Movement {
     private static final Logger log = MaestroLogger.get("move");
 
-    public MovementPillar(IAgent maestro, PackedBlockPos start, PackedBlockPos end) {
+    public MovementPillar(Agent maestro, PackedBlockPos start, PackedBlockPos end) {
         super(maestro, start, end, new PackedBlockPos[] {start.above(2)}, start);
     }
 

@@ -6,19 +6,19 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import java.util.Set;
 import maestro.Agent;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.MaestroLogger;
+import maestro.api.utils.Loggers;
 import maestro.api.utils.PackedBlockPos;
 import maestro.api.utils.Rotation;
 import maestro.api.utils.RotationUtils;
 import maestro.api.utils.VecUtils;
-import maestro.api.utils.input.Input;
+import maestro.input.Input;
 import maestro.behavior.RotationManager;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
-import maestro.pathing.movement.MovementHelper;
+import maestro.pathing.movement.MovementValidation;
 import maestro.pathing.movement.MovementState;
 import maestro.pathing.BlockStateInterface;
 import net.minecraft.core.BlockPos;
@@ -50,7 +50,7 @@ public class MovementSwimVertical extends Movement {
 
     private final boolean ascending;
 
-    public MovementSwimVertical(IAgent maestro, PackedBlockPos from, PackedBlockPos to) {
+    public MovementSwimVertical(Agent maestro, PackedBlockPos from, PackedBlockPos to) {
         super(maestro, from, to, new PackedBlockPos[] {to});
         this.ascending = to.getY() > from.getY();
     }

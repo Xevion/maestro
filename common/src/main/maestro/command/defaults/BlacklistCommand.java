@@ -3,24 +3,24 @@ package maestro.command.defaults;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
-import maestro.api.process.IGetToBlockProcess;
+import maestro.task.GetToBlockTask;
 
 public class BlacklistCommand extends Command {
 
-    public BlacklistCommand(IAgent maestro) {
+    public BlacklistCommand(Agent maestro) {
         super(maestro, "blacklist");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        IGetToBlockProcess proc = maestro.getGetToBlockProcess();
+        GetToBlockTask proc = maestro.getGetToBlockTask();
         if (!proc.isActive()) {
-            throw new CommandException.InvalidState("GetToBlockProcess is not currently active");
+            throw new CommandException.InvalidState("GetToBlockTask is not currently active");
         }
         if (proc.blacklistClosest()) {
             log.atInfo().log("Blacklisted closest block instances");

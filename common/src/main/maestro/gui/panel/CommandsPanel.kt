@@ -1,6 +1,6 @@
 package maestro.gui.panel
 
-import maestro.gui.MaestroScreen
+import maestro.gui.ControlScreen
 import maestro.gui.container.VBox
 import maestro.gui.widget.ButtonWidget
 import maestro.gui.widget.LabelWidget
@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component
  * Demonstrates sub-menu navigation with a back button.
  */
 class CommandsPanel(
-    private val screen: MaestroScreen,
+    private val screen: ControlScreen,
 ) : VBox(spacing = 5) {
     init {
         add(ButtonWidget("← Back", Runnable { screen.popPanel() }, 150))

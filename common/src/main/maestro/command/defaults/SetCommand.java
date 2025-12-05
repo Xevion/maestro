@@ -1,6 +1,6 @@
 package maestro.command.defaults;
 
-import static maestro.api.command.IMaestroChatControl.FORCE_COMMAND_PREFIX;
+import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
 import static maestro.api.utils.SettingsUtil.*;
 
 import java.util.Arrays;
@@ -9,8 +9,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.api.AgentAPI;
 import maestro.api.Setting;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -30,7 +29,7 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class SetCommand extends Command {
 
-    public SetCommand(IAgent maestro) {
+    public SetCommand(Agent maestro) {
         super(maestro, "set", "setting", "settings");
     }
 
@@ -136,11 +135,7 @@ public class SetCommand extends Command {
 
                         Minecraft.getInstance()
                                 .execute(
-                                        () ->
-                                                MaestroAPI.getSettings()
-                                                        .logger
-                                                        .value
-                                                        .accept(prefixed));
+                                        () -> AgentAPI.getSettings().logger.value.accept(prefixed));
 
                         return component;
                     },
@@ -250,7 +245,7 @@ public class SetCommand extends Command {
             prefixed.append(oldValueComponent);
 
             Minecraft.getInstance()
-                    .execute(() -> MaestroAPI.getSettings().logger.value.accept(prefixed));
+                    .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
 
             if (((setting.getName().equals("chatControl")
                             && !(Boolean) setting.value

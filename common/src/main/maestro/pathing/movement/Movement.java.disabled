@@ -3,11 +3,11 @@ package maestro.pathing.movement;
 import com.google.common.collect.ImmutableList;
 import java.util.*;
 import maestro.Agent;
-import maestro.api.IAgent;
+import maestro.Agent;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.*;
-import maestro.api.utils.input.Input;
+import maestro.input.Input;
 import maestro.behavior.PathingBehavior;
 import maestro.pathing.BlockStateInterface;
 import net.minecraft.core.BlockPos;
@@ -26,8 +26,8 @@ public abstract class Movement implements IMovement, MovementHelper {
                             Direction.WEST,
                             Direction.DOWN);
 
-    protected final IAgent maestro;
-    protected final IPlayerContext ctx;
+    protected final Agent maestro;
+    protected final PlayerContext ctx;
 
     private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
 
@@ -52,7 +52,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     private Boolean calculatedWhileLoaded;
 
     protected Movement(
-            IAgent maestro,
+            Agent maestro,
             PackedBlockPos src,
             PackedBlockPos dest,
             PackedBlockPos[] toBreak,
@@ -66,7 +66,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     protected Movement(
-            IAgent maestro, PackedBlockPos src, PackedBlockPos dest, PackedBlockPos[] toBreak) {
+            Agent maestro, PackedBlockPos src, PackedBlockPos dest, PackedBlockPos[] toBreak) {
         this(maestro, src, dest, toBreak, null);
     }
 

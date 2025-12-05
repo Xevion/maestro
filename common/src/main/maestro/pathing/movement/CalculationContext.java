@@ -3,14 +3,13 @@ package maestro.pathing.movement;
 import java.util.ArrayList;
 import java.util.List;
 import maestro.Agent;
-import maestro.api.IAgent;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.cache.WorldData;
 import maestro.pathing.BetterWorldBorder;
 import maestro.pathing.BlockStateInterface;
 import maestro.pathing.precompute.PrecomputedData;
 import maestro.pathing.recovery.MovementFailureMemory;
-import maestro.process.ToolSet;
+import maestro.task.ToolSet;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -30,7 +29,7 @@ public class CalculationContext {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
     public final boolean safeForThreadedUse;
-    public final IAgent maestro;
+    public final Agent maestro;
     public final Level world;
     public final WorldData worldData;
     public final BlockStateInterface bsi;
@@ -72,11 +71,11 @@ public class CalculationContext {
 
     public final PrecomputedData precomputedData;
 
-    public CalculationContext(IAgent maestro) {
+    public CalculationContext(Agent maestro) {
         this(maestro, false);
     }
 
-    public CalculationContext(IAgent maestro, boolean forUseOnAnotherThread) {
+    public CalculationContext(Agent maestro, boolean forUseOnAnotherThread) {
         this.precomputedData = new PrecomputedData();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.maestro = maestro;
@@ -165,7 +164,7 @@ public class CalculationContext {
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
     }
 
-    public final IAgent getMaestro() {
+    public final Agent getMaestro() {
         return maestro;
     }
 

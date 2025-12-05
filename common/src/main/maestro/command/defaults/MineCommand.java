@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.IAgent;
-import maestro.api.MaestroAPI;
+import maestro.Agent;
+import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForBlockSelector;
@@ -16,7 +16,7 @@ import maestro.api.selector.block.BlockSelectorLookup;
 
 public class MineCommand extends Command {
 
-    public MineCommand(IAgent maestro) {
+    public MineCommand(Agent maestro) {
         super(maestro, "mine");
     }
 
@@ -57,9 +57,9 @@ public class MineCommand extends Command {
             throw new NoMatchesException();
         }
 
-        MaestroAPI.getProvider().getWorldScanner().repack(ctx);
+        AgentAPI.getProvider().getWorldScanner().repack(ctx);
         log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Mining started");
-        maestro.getMineProcess().mine(quantity, lookup.toBlockOptionalMetaLookup());
+        maestro.getMineTask().mine(quantity, lookup.toBlockOptionalMetaLookup());
     }
 
     @Override

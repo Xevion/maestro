@@ -11,7 +11,7 @@ import maestro.api.event.events.RotationMoveEvent
 import maestro.api.event.events.TickEvent
 import maestro.api.event.events.WorldEvent
 import maestro.api.event.events.type.EventState
-import maestro.api.utils.IPlayerContext
+import maestro.api.player.PlayerContext
 import maestro.api.utils.Rotation
 import maestro.behavior.look.ForkableRandom
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket
@@ -39,7 +39,7 @@ class LookBehavior(
 
     /**
      * The rotation known to the server. Returned by [effectiveRotation] for use in
-     * [IPlayerContext].
+     * [PlayerContext].
      */
     private var serverRotation: Rotation? = null
 
@@ -175,18 +175,18 @@ class LookBehavior(
     }
 
     private class AimProcessor(
-        ctx: IPlayerContext,
+        ctx: PlayerContext,
     ) : AbstractAimProcessor(ctx) {
         override fun getPrevRotation(): Rotation = ctx.playerRotations()
     }
 
     private abstract class AbstractAimProcessor : ITickableAimProcessor {
-        protected val ctx: IPlayerContext
+        protected val ctx: PlayerContext
         private val rand: ForkableRandom
         private var randomYawOffset = 0.0
         private var randomPitchOffset = 0.0
 
-        constructor(ctx: IPlayerContext) {
+        constructor(ctx: PlayerContext) {
             this.ctx = ctx
             this.rand = ForkableRandom()
         }
@@ -309,7 +309,7 @@ class LookBehavior(
 
             companion object {
                 fun resolve(
-                    ctx: IPlayerContext,
+                    ctx: PlayerContext,
                     blockInteract: Boolean,
                 ): Mode {
                     val settings = Agent.settings()

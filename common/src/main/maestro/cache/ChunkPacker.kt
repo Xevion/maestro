@@ -1,10 +1,10 @@
 package maestro.cache
 
 import maestro.api.utils.BlockUtils
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.pathing.BlockStateInterface
 import maestro.pathing.PathingBlockType
-import maestro.pathing.movement.MovementHelper
+import maestro.pathing.movement.MovementValidation
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.AirBlock
 import net.minecraft.world.level.block.Blocks
@@ -17,7 +17,7 @@ import net.minecraft.world.level.dimension.BuiltinDimensionTypes
 import net.minecraft.world.level.dimension.DimensionType
 import java.util.BitSet
 
-private val log = MaestroLogger.get("cache")
+private val log = Loggers.get("cache")
 
 object ChunkPacker {
     @JvmStatic
@@ -98,16 +98,16 @@ object ChunkPacker {
         z: Int,
     ): PathingBlockType {
         val block = state.block
-        if (MovementHelper.isWater(state)) {
-            if (MovementHelper.possiblyFlowing(state)) {
+        if (MovementValidation.isWater(state)) {
+            if (MovementValidation.possiblyFlowing(state)) {
                 return PathingBlockType.AVOID
             }
 
             val adjY = y - chunk.level.dimensionType().minY()
-            if ((x != 15 && MovementHelper.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x + 1, adjY, z))) ||
-                (x != 0 && MovementHelper.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x - 1, adjY, z))) ||
-                (z != 15 && MovementHelper.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x, adjY, z + 1))) ||
-                (z != 0 && MovementHelper.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x, adjY, z - 1)))
+            if ((x != 15 && MovementValidation.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x + 1, adjY, z))) ||
+                (x != 0 && MovementValidation.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x - 1, adjY, z))) ||
+                (z != 15 && MovementValidation.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x, adjY, z + 1))) ||
+                (z != 0 && MovementValidation.possiblyFlowing(BlockStateInterface.getFromChunk(chunk, x, adjY, z - 1)))
             ) {
                 return PathingBlockType.AVOID
             }
@@ -132,7 +132,7 @@ object ChunkPacker {
             return PathingBlockType.WATER
         }
 
-        if (MovementHelper.avoidWalkingInto(state) || MovementHelper.isBottomSlab(state)) {
+        if (MovementValidation.avoidWalkingInto(state) || MovementValidation.isBottomSlab(state)) {
             return PathingBlockType.AVOID
         }
 

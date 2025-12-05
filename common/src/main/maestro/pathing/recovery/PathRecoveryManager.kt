@@ -4,7 +4,7 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.GoalBlock
 import maestro.api.pathing.movement.MovementStatus
-import maestro.api.utils.MaestroLogger
+import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.behavior.PathingBehavior
 import maestro.pathing.movement.CalculationContext
@@ -216,6 +216,6 @@ class PathRecoveryManager(
     fun resetRetryBudget() = retryBudget.reset()
 
     companion object {
-        private val log: Logger = MaestroLogger.get("path")
+        private val log: Logger = Loggers.get("path")
     }
 }
