@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack
 import maestro.Agent
 import maestro.api.combat.TrajectoryResult
 import maestro.api.event.events.RenderEvent
-import maestro.utils.IRenderer
+import maestro.rendering.IRenderer
 import net.minecraft.world.phys.Vec3
 
 /**

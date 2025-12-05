@@ -1,6 +1,7 @@
 package maestro.pathing.path;
 
 import static maestro.api.pathing.movement.MovementStatus.*;
+import static maestro.api.utils.LoggingExtKt.format;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,9 +12,9 @@ import maestro.api.pathing.movement.IMovement;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.pathing.path.IPathExecutor;
 import maestro.api.utils.*;
-import maestro.api.utils.LoggingUtils;
 import maestro.api.utils.input.Input;
 import maestro.behavior.PathingBehavior;
+import maestro.pathing.BlockStateInterface;
 import maestro.pathing.calc.AbstractNodeCostSearch;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
@@ -27,7 +28,6 @@ import maestro.pathing.recovery.FailureReason;
 import maestro.pathing.recovery.PathRecoveryManager;
 import maestro.pathing.recovery.RecoveryAction;
 import maestro.utils.BlockPosExtKt;
-import maestro.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Tuple;
 import org.slf4j.Logger;
@@ -175,7 +175,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
             if (distToPath > MAX_MAX_DIST_FROM_PATH) {
                 log.atDebug()
-                        .addKeyValue("distance", LoggingUtils.formatFloat(distToPath))
+                        .addKeyValue("distance", format(distToPath))
                         .addKeyValue("max_distance", MAX_MAX_DIST_FROM_PATH)
                         .log("Too far from path, cancelling");
                 cancel();
@@ -199,7 +199,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                                     ((RecoveryAction.Reconnect) action).getPathIndex());
                             ticksAway = 0;
                             log.atInfo()
-                                    .addKeyValue("distance", LoggingUtils.formatFloat(distToPath))
+                                    .addKeyValue("distance", format(distToPath))
                                     .addKeyValue("ticks_away", ticksAway)
                                     .log("Successfully reconnected to path");
                             return false;
@@ -278,8 +278,9 @@ public class PathExecutor implements IPathExecutor, Helper {
                 log.atDebug()
                         .addKeyValue(
                                 "dest",
-                                LoggingUtils.formatCoords(
-                                        next.getDest().getX(), 0, next.getDest().getZ()))
+                                format(
+                                        new PackedBlockPos(
+                                                next.getDest().getX(), 0, next.getDest().getZ())))
                         .log("Pausing - destination at edge of loaded chunks");
                 stopMovement();
                 return true;
@@ -302,9 +303,9 @@ public class PathExecutor implements IPathExecutor, Helper {
                     log.atDebug()
                             .addKeyValue("movement_index", i)
                             .addKeyValue("movement_type", futureMove.getClass().getSimpleName())
-                            .addKeyValue("src", LoggingUtils.formatPos(futureMove.getSrc()))
-                            .addKeyValue("dest", LoggingUtils.formatPos(futureMove.getDest()))
-                            .addKeyValue("cost", LoggingUtils.formatFloat(futureCost))
+                            .addKeyValue("src", format(futureMove.getSrc()))
+                            .addKeyValue("dest", format(futureMove.getDest()))
+                            .addKeyValue("cost", format(futureCost))
                             .log("Future movement became impossible, cancelling path");
                     behavior.failureMemory.recordFailure(futureMove, FailureReason.BLOCKED);
                     cancel();
@@ -317,12 +318,10 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (currentCost >= ActionCosts.COST_INF && canCancel) {
             log.atDebug()
                     .addKeyValue("movement_type", movement.getClass().getSimpleName())
-                    .addKeyValue("src", LoggingUtils.formatPos(movement.getSrc()))
-                    .addKeyValue("dest", LoggingUtils.formatPos(movement.getDest()))
-                    .addKeyValue("current_cost", LoggingUtils.formatFloat(currentCost))
-                    .addKeyValue(
-                            "original_cost",
-                            LoggingUtils.formatFloat(currentMovementOriginalCostEstimate))
+                    .addKeyValue("src", format(movement.getSrc()))
+                    .addKeyValue("dest", format(movement.getDest()))
+                    .addKeyValue("current_cost", format(currentCost))
+                    .addKeyValue("original_cost", format(currentMovementOriginalCostEstimate))
                     .log("Current movement became impossible, cancelling path");
             behavior.failureMemory.recordFailure(movement, FailureReason.WORLD_CHANGED);
             cancel();
@@ -336,14 +335,11 @@ public class PathExecutor implements IPathExecutor, Helper {
             // that means that this isn't a cache error, it's just part of the path interfering with
             // a later part
             log.atDebug()
-                    .addKeyValue(
-                            "original_cost",
-                            LoggingUtils.formatFloat(currentMovementOriginalCostEstimate))
-                    .addKeyValue("current_cost", LoggingUtils.formatFloat(currentCost))
+                    .addKeyValue("original_cost", format(currentMovementOriginalCostEstimate))
+                    .addKeyValue("current_cost", format(currentCost))
                     .addKeyValue(
                             "cost_increase",
-                            LoggingUtils.formatFloat(
-                                    currentCost - currentMovementOriginalCostEstimate))
+                            format(currentCost - currentMovementOriginalCostEstimate))
                     .log("Movement cost increased too much, cancelling");
             behavior.failureMemory.recordFailure(movement, FailureReason.WORLD_CHANGED);
             cancel();
@@ -404,9 +400,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 // comparison every tick
                 log.atDebug()
                         .addKeyValue("ticks_taken", ticksOnCurrent)
-                        .addKeyValue(
-                                "expected_ticks",
-                                LoggingUtils.formatFloat(currentMovementOriginalCostEstimate))
+                        .addKeyValue("expected_ticks", format(currentMovementOriginalCostEstimate))
                         .addKeyValue("timeout", Agent.settings().movementTimeoutTicks.value)
                         .log("Movement timeout exceeded, cancelling");
                 behavior.failureMemory.recordFailure(movement, FailureReason.TIMEOUT);
@@ -914,7 +908,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         log.atDebug()
                 .addKeyValue("position", pathPosition)
                 .addKeyValue("new_movement", newMovement.getClass().getSimpleName())
-                .addKeyValue("cost", LoggingUtils.formatFloat(newMovement.getCost()))
+                .addKeyValue("cost", format(newMovement.getCost()))
                 .log("Replaced current movement with alternative");
     }
 

@@ -1,37 +1,18 @@
 .DS_Store
-**/*.swp
-
 **/*-logs.jsonl
 
 docs/
 run/
+*/run/
 autotest/
 dist/
-volderyarn/
 
 # Gradle
-build/
-.gradle/
-.kotlin/
+build
+.gradle
+.kotlin
 classes/
 *.class
-
-# Architectury build outputs
-common/build/
-fabric/build/
-neoforge/build/
-
-# Loom caches
-common/.gradle/
-fabric/.gradle/
-neoforge/.gradle/
-
-# Run directories
-fabric/run/
-neoforge/run/
-
-# Generated sources
-common/build/generated/
 
 /out
 
@@ -46,18 +27,8 @@ common/build/generated/
 .classpath
 .project
 .settings/
-baritone_Client.launch
-
-# Copyright Files
-!/.idea/copyright/Baritone.xml
-!/.idea/copyright/profiles_settings.xml
 
 .vscode/
 .vscode/launch.json
 .architectury-transformer
-
-
 mapping
-
-libs/lwjgl-platform-2.9.4-nightly-20150209-natives-osx.jar
-libs/java-objc-bridge-1.1.jar

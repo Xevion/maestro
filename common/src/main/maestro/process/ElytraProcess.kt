@@ -25,12 +25,11 @@ import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.input.Input
+import maestro.pathing.PathingCommandContext
 import maestro.pathing.movement.CalculationContext
 import maestro.process.elytra.ElytraBehavior
 import maestro.process.elytra.NetherPathfinderContext
 import maestro.process.elytra.NullElytraProcess
-import maestro.utils.MaestroProcessHelper
-import maestro.utils.PathingCommandContext
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.Items

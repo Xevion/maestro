@@ -9,6 +9,7 @@ import maestro.api.pathing.movement.MovementStatus.PREPPING
 import maestro.api.pathing.movement.MovementStatus.SUCCESS
 import maestro.api.utils.IPlayerContext
 import maestro.api.utils.PackedBlockPos
+import maestro.pathing.BlockStateInterface
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 
@@ -159,11 +160,11 @@ abstract class Movement(
     fun toBreakAll(): Array<BlockPos> = emptyArray()
 
     // Legacy stub methods for unconverted Java movements
-    open fun toBreak(bsi: maestro.utils.BlockStateInterface): List<BlockPos> = emptyList()
+    open fun toBreak(bsi: BlockStateInterface): List<BlockPos> = emptyList()
 
-    open fun toPlace(bsi: maestro.utils.BlockStateInterface): List<BlockPos> = emptyList()
+    open fun toPlace(bsi: BlockStateInterface): List<BlockPos> = emptyList()
 
-    open fun toWalkInto(bsi: maestro.utils.BlockStateInterface): List<BlockPos> = emptyList()
+    open fun toWalkInto(bsi: BlockStateInterface): List<BlockPos> = emptyList()
 
     // MovementBehavior interface - subclasses must implement
     abstract override fun computeIntent(ctx: IPlayerContext): Intent

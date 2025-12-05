@@ -12,11 +12,13 @@ import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.goals.GoalXZ
 import maestro.api.process.PathingCommand
-import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
+import maestro.api.utils.format
 import maestro.api.utils.interfaces.IGoalRenderPos
+import maestro.pathing.Favoring
+import maestro.pathing.PathingCommandContext
 import maestro.pathing.calc.AStarPathFinder
 import maestro.pathing.calc.AbstractNodeCostSearch
 import maestro.pathing.movement.CalculationContext
@@ -28,9 +30,7 @@ import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.TeleportMovementProvider
 import maestro.pathing.path.PathExecutor
 import maestro.pathing.recovery.MovementFailureMemory
-import maestro.utils.PathRenderer
-import maestro.utils.PathingCommandContext
-import maestro.utils.pathing.Favoring
+import maestro.rendering.PathRenderer
 import net.minecraft.core.BlockPos
 import org.slf4j.Logger
 import java.util.ArrayList
@@ -607,7 +607,7 @@ class PathingBehavior(
                     log
                         .atDebug()
                         .addKeyValue("reason", reason.name.lowercase())
-                        .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
+                        .addKeyValue("start", PackedBlockPos(start).format())
                         .addKeyValue("goal", goal)
                         .log("Starting path search")
                 }
@@ -706,7 +706,7 @@ class PathingBehavior(
                             log
                                 .atInfo()
                                 .addKeyValue("reason", reason.name.lowercase())
-                                .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
+                                .addKeyValue("start", PackedBlockPos(start).format())
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(
                                     "nodes_considered",
@@ -716,7 +716,7 @@ class PathingBehavior(
                             log
                                 .atDebug()
                                 .addKeyValue("reason", reason.name.lowercase())
-                                .addKeyValue("start", LoggingUtils.formatPos(PackedBlockPos(start)))
+                                .addKeyValue("start", PackedBlockPos(start).format())
                                 .addKeyValue("goal", goal)
                                 .addKeyValue(
                                     "nodes_considered",

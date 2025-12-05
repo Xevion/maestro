@@ -14,7 +14,6 @@ import maestro.combat.BowController
 import maestro.combat.ProjectilePhysics
 import maestro.combat.TargetPredictor
 import maestro.combat.TrajectoryRenderer
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.world.entity.Entity
 import org.slf4j.Logger
 import java.util.function.Predicate

@@ -9,7 +9,6 @@ import maestro.api.utils.input.Input
 import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementState
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState

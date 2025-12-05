@@ -21,7 +21,7 @@ import maestro.behavior.Behavior;
 import maestro.command.argument.ArgConsumer;
 import maestro.command.argument.CommandArguments;
 import maestro.command.manager.CommandManager;
-import maestro.utils.chat.ChatMessage;
+import maestro.gui.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.*;

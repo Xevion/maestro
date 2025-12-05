@@ -20,7 +20,7 @@ import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementHelper;
 import maestro.pathing.movement.MovementState;
-import maestro.utils.BlockStateInterface;
+import maestro.pathing.BlockStateInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.Blocks;

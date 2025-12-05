@@ -15,7 +15,6 @@ import maestro.api.utils.RayTraceUtils
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.input.Input
 import maestro.pathing.movement.MovementHelper
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.world.entity.item.ItemEntity

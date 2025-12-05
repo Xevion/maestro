@@ -4,7 +4,7 @@ import maestro.Agent
 import maestro.api.event.events.TickEvent
 import maestro.api.utils.Helper
 import maestro.api.utils.MaestroLogger
-import maestro.utils.ToolSet.Companion.calculateSpeedVsBlock
+import maestro.process.ToolSet.Companion.calculateSpeedVsBlock
 import net.minecraft.core.Direction
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.inventory.ClickType

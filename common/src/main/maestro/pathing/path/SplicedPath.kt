@@ -4,7 +4,7 @@ import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.IMovement
 import maestro.api.utils.PackedBlockPos
-import maestro.utils.pathing.PathBase
+import maestro.pathing.PathBase
 
 class SplicedPath
     private constructor(

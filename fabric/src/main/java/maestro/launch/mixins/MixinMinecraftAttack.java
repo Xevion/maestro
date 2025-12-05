@@ -2,7 +2,7 @@ package maestro.launch.mixins;
 
 import maestro.Agent;
 import maestro.api.MaestroAPI;
-import maestro.utils.InputOverrideHandler;
+import maestro.input.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

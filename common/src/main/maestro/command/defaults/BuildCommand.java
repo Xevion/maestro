@@ -13,7 +13,7 @@ import maestro.api.command.datatypes.RelativeBlockPos;
 import maestro.api.command.datatypes.RelativeFile;
 import maestro.api.command.exception.CommandException;
 import maestro.api.utils.PackedBlockPos;
-import maestro.utils.schematic.SchematicSystem;
+import maestro.process.schematic.SchematicSystem;
 import org.apache.commons.io.FilenameUtils;
 
 public class BuildCommand extends Command {

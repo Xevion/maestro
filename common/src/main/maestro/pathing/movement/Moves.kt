@@ -1,11 +1,11 @@
 package maestro.pathing.movement
 
 import maestro.api.utils.PackedBlockPos
+import maestro.pathing.MutableMoveResult
 import maestro.pathing.movement.movements.MovementAscend
 import maestro.pathing.movement.movements.MovementDescend
 import maestro.pathing.movement.movements.MovementDownward
 import maestro.pathing.movement.movements.MovementTraverse
-import maestro.utils.pathing.MutableMoveResult
 
 // TODO: Convert to Kotlin
 // import maestro.pathing.movement.movements.MovementDiagonal

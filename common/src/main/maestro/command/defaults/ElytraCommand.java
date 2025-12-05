@@ -15,7 +15,7 @@ import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.process.ICustomGoalProcess;
 import maestro.api.process.IElytraProcess;
-import maestro.utils.chat.ChatMessage;
+import maestro.gui.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.ClickEvent;

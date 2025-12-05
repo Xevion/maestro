@@ -9,6 +9,8 @@ import maestro.api.utils.RotationUtils
 import maestro.api.utils.center
 import maestro.api.utils.centerWithY
 import maestro.api.utils.centerXZ
+import maestro.pathing.BlockStateInterface
+import maestro.pathing.MutableMoveResult
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
@@ -17,11 +19,9 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
-import maestro.utils.BlockStateInterface
 import maestro.utils.distanceSquaredTo
 import maestro.utils.lerp
 import maestro.utils.minus
-import maestro.utils.pathing.MutableMoveResult
 import maestro.utils.plus
 import maestro.utils.toVec3XZ
 import net.minecraft.core.BlockPos

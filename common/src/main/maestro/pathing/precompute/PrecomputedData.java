@@ -3,8 +3,8 @@ package maestro.pathing.precompute;
 import static maestro.pathing.precompute.Ternary.MAYBE;
 import static maestro.pathing.precompute.Ternary.YES;
 
+import maestro.pathing.BlockStateInterface;
 import maestro.pathing.movement.MovementHelper;
-import maestro.utils.BlockStateInterface;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 

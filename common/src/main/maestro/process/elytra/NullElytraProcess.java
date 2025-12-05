@@ -4,7 +4,7 @@ import maestro.Agent;
 import maestro.api.pathing.goals.Goal;
 import maestro.api.process.IElytraProcess;
 import maestro.api.process.PathingCommand;
-import maestro.utils.MaestroProcessHelper;
+import maestro.process.MaestroProcessHelper;
 import net.minecraft.core.BlockPos;
 
 public final class NullElytraProcess extends MaestroProcessHelper implements IElytraProcess {

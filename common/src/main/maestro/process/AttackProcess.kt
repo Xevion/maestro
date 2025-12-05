@@ -7,7 +7,6 @@ import maestro.api.process.IAttackProcess
 import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
 import maestro.api.utils.RotationUtils
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import java.util.function.Predicate

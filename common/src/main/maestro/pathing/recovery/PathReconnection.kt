@@ -6,13 +6,13 @@ import maestro.api.pathing.goals.GoalBlock
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
+import maestro.pathing.Favoring
 import maestro.pathing.calc.AStarPathFinder
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.Movement
 import maestro.pathing.movement.movements.MovementAscend
 import maestro.pathing.movement.movements.MovementDescend
 import maestro.pathing.movement.movements.MovementTraverse
-import maestro.utils.pathing.Favoring
 import org.slf4j.Logger
 import kotlin.math.ceil
 import kotlin.math.max

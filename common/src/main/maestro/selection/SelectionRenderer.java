@@ -6,7 +6,7 @@ import maestro.Agent;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.event.listener.AbstractGameEventListener;
 import maestro.api.selection.ISelection;
-import maestro.utils.IRenderer;
+import maestro.rendering.IRenderer;
 import net.minecraft.world.phys.AABB;
 
 public class SelectionRenderer implements IRenderer, AbstractGameEventListener {

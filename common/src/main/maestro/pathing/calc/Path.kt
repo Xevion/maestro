@@ -5,10 +5,10 @@ import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.IMovement
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
+import maestro.pathing.PathBase
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.Movement
 import maestro.pathing.path.CutoffPath
-import maestro.utils.pathing.PathBase
 import org.slf4j.Logger
 
 /** A node based implementation of IPath */

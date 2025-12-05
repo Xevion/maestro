@@ -8,6 +8,7 @@ import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.center
 import maestro.api.utils.centerXZ
 import maestro.api.utils.normalizedDirectionTo
+import maestro.pathing.BlockStateInterface
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
@@ -16,12 +17,10 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
-import maestro.utils.BlockStateInterface
 import maestro.utils.distanceTo
 import maestro.utils.dot
 import maestro.utils.horizontalDistanceTo
 import maestro.utils.horizontalLength
-import maestro.utils.length
 import maestro.utils.minus
 import maestro.utils.perpendicularDistanceTo
 import maestro.utils.plus

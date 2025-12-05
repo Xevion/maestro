@@ -2,9 +2,9 @@ package maestro.cache
 
 import maestro.api.utils.BlockUtils
 import maestro.api.utils.MaestroLogger
+import maestro.pathing.BlockStateInterface
+import maestro.pathing.PathingBlockType
 import maestro.pathing.movement.MovementHelper
-import maestro.utils.BlockStateInterface
-import maestro.utils.pathing.PathingBlockType
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.AirBlock
 import net.minecraft.world.level.block.Blocks

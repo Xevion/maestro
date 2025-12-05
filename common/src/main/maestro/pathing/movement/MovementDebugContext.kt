@@ -1,7 +1,7 @@
 package maestro.pathing.movement
 
 import com.mojang.blaze3d.vertex.PoseStack
-import maestro.utils.IRenderer
+import maestro.rendering.IRenderer
 import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.Vec3
 import java.awt.Color

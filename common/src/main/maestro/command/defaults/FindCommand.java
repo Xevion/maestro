@@ -15,7 +15,7 @@ import maestro.api.command.exception.CommandException;
 import maestro.api.command.helpers.TabCompleteHelper;
 import maestro.api.utils.PackedBlockPos;
 import maestro.cache.CachedChunk;
-import maestro.utils.chat.ChatMessage;
+import maestro.gui.chat.ChatMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;

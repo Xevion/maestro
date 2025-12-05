@@ -7,7 +7,7 @@ import maestro.api.event.events.TickEvent
 import maestro.api.pathing.goals.GoalGetToBlock
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
-import maestro.utils.InputOverrideHandler
+import maestro.input.InputOverrideHandler
 import maestro.utils.clampLength
 import maestro.utils.forward
 import maestro.utils.strafe
@@ -30,7 +30,7 @@ class FreecamBehavior(
     companion object {
         private const val MOVEMENT_VELOCITY_PER_SECOND = 22.0
         private const val SPRINT_MULTIPLIER = 2.0
-        private const val PATHFIND_HOLD_DURATION_MS = 350L
+        private const val PATHFIND_HOLD_DURATION_MS = 250L
 
         // Acceleration easing; seconds to reach max speed
         private const val ACCELERATION_TIME = 0.12

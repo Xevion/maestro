@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.IMovement;
 import maestro.api.utils.PackedBlockPos;
-import maestro.utils.pathing.MutableMoveResult;
+import maestro.pathing.MutableMoveResult;
 
 /**
  * Wraps the existing {@link Moves} enum to implement {@link IMovementProvider}. Provides backward

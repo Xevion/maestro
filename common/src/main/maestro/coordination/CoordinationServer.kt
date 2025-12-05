@@ -3,8 +3,9 @@ package maestro.coordination
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.stub.StreamObserver
-import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
+import maestro.api.utils.PackedBlockPos
+import maestro.api.utils.format
 import maestro.coordination.proto.Claim
 import maestro.coordination.proto.ClaimAreaRequest
 import maestro.coordination.proto.ClaimAreaResponse
@@ -251,7 +252,7 @@ class CoordinationServer {
                 log
                     .atDebug()
                     .addKeyValue("worker_id", workerId)
-                    .addKeyValue("center", LoggingUtils.formatCoords(center.x, center.y, center.z))
+                    .addKeyValue("center", PackedBlockPos(center.x, center.y, center.z).format())
                     .addKeyValue("radius", radius)
                     .log("Area claimed")
             } else {

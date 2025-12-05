@@ -18,7 +18,6 @@ import maestro.api.utils.RotationUtils
 import maestro.api.utils.input.Input
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.MovementHelper
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.level.block.Block

@@ -5,7 +5,6 @@ import maestro.api.pathing.goals.Goal
 import maestro.api.process.ICustomGoalProcess
 import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
-import maestro.utils.MaestroProcessHelper
 
 class CustomGoalProcess(
     maestro: Agent,

@@ -7,6 +7,7 @@ import maestro.api.utils.IPlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.center
 import maestro.api.utils.centerXZ
+import maestro.pathing.BlockStateInterface
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.Intent
@@ -15,7 +16,6 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementHelper
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
-import maestro.utils.BlockStateInterface
 import maestro.utils.horizontalDistanceTo
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks

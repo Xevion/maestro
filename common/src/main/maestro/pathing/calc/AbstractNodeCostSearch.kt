@@ -5,10 +5,10 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.calc.IPathFinder
 import maestro.api.pathing.goals.Goal
-import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
+import maestro.api.utils.format
 import maestro.pathing.movement.CalculationContext
 import org.slf4j.Logger
 import java.util.Optional
@@ -204,9 +204,9 @@ abstract class AbstractNodeCostSearch(
             logBuilder
                 .addKeyValue("reason", failureReason.name.lowercase())
                 .addKeyValue("goal", goalDescription)
-                .addKeyValue("start", LoggingUtils.formatCoords(startNode!!.x, startNode!!.y, startNode!!.z))
+                .addKeyValue("start", PackedBlockPos(startNode!!.x, startNode!!.y, startNode!!.z).format())
                 .addKeyValue("nodes_explored", numNodes)
-                .addKeyValue("max_distance_blocks", LoggingUtils.formatFloat(maxDistReached))
+                .addKeyValue("max_distance_blocks", maxDistReached.format())
                 .addKeyValue("duration_ms", durationMs)
 
             // Add reason-specific context and message
@@ -216,7 +216,7 @@ abstract class AbstractNodeCostSearch(
                 }
                 PathfindingFailureReason.PRIMARY_TIMEOUT -> {
                     logBuilder
-                        .addKeyValue("progress_pct", LoggingUtils.formatFloat(progressPct))
+                        .addKeyValue("progress_pct", progressPct.format())
                         .log("Timeout - making partial progress toward goal")
                 }
                 PathfindingFailureReason.FAILURE_TIMEOUT -> {

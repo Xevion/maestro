@@ -9,7 +9,7 @@ import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.utils.*;
 import maestro.api.utils.input.Input;
 import maestro.behavior.PathingBehavior;
-import maestro.utils.BlockStateInterface;
+import maestro.pathing.BlockStateInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.item.FallingBlockEntity;

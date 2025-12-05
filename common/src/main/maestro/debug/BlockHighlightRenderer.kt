@@ -1,7 +1,7 @@
 package maestro.debug
 
 import com.mojang.blaze3d.vertex.PoseStack
-import maestro.utils.IRenderer
+import maestro.rendering.IRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction

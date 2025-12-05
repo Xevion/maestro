@@ -3,7 +3,7 @@ package maestro.cache
 import com.google.common.collect.ImmutableSet
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import maestro.api.utils.BlockUtils
-import maestro.utils.pathing.PathingBlockType
+import maestro.pathing.PathingBlockType
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks

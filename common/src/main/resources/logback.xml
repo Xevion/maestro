@@ -18,7 +18,7 @@
     </appender>
 
     <!-- Chat appender for in-game messages -->
-    <appender name="CHAT" class="maestro.utils.chat.ChatAppender"/>
+    <appender name="CHAT" class="maestro.gui.chat.ChatAppender"/>
 
     <!--
         Maestro category loggers are configured programmatically.

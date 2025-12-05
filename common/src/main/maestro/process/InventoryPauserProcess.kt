@@ -3,7 +3,6 @@ package maestro.process
 import maestro.Agent
 import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
-import maestro.utils.MaestroProcessHelper
 
 class InventoryPauserProcess(
     maestro: Agent,

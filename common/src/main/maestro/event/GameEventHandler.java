@@ -10,7 +10,7 @@ import maestro.api.event.listener.IGameEventListener;
 import maestro.api.utils.MaestroLogger;
 import maestro.cache.CachedChunk;
 import maestro.cache.WorldProvider;
-import maestro.utils.BlockStateInterface;
+import maestro.pathing.BlockStateInterface;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;

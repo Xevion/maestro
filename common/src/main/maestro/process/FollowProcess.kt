@@ -10,7 +10,6 @@ import maestro.api.process.IFollowProcess
 import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
 import maestro.api.utils.PackedBlockPos
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.item.ItemEntity

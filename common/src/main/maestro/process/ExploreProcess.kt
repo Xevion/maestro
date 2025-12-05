@@ -15,7 +15,6 @@ import maestro.api.process.PathingCommandType
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.MyChunkPos
 import maestro.cache.CachedWorld
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.ChunkPos
 import org.slf4j.Logger

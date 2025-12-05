@@ -13,17 +13,16 @@ import maestro.api.process.PathingCommand
 import maestro.api.process.PathingCommandType
 import maestro.api.utils.BlockOptionalMetaLookup
 import maestro.api.utils.BlockUtils
-import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
 import maestro.api.utils.SettingsUtil
+import maestro.api.utils.format
 import maestro.api.utils.input.Input
 import maestro.cache.CachedChunk
+import maestro.pathing.BlockStateInterface
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.MovementHelper
-import maestro.utils.BlockStateInterface
-import maestro.utils.MaestroProcessHelper
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.item.ItemEntity
@@ -234,7 +233,7 @@ class MineProcess(
                 if (!claimed) {
                     log
                         .atWarn()
-                        .addKeyValue("pos", LoggingUtils.formatPos(currentPos))
+                        .addKeyValue("pos", currentPos.format())
                         .addKeyValue("radius", radius)
                         .log("Area claim denied, pausing mining")
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
@@ -242,7 +241,7 @@ class MineProcess(
 
                 log
                     .atInfo()
-                    .addKeyValue("pos", LoggingUtils.formatPos(currentPos))
+                    .addKeyValue("pos", currentPos.format())
                     .addKeyValue("radius", radius)
                     .log("Area claimed")
 

@@ -11,7 +11,7 @@ import maestro.api.schematic.ISchematicSystem;
 import maestro.cache.FasterWorldScanner;
 import maestro.command.CommandSystem;
 import maestro.command.ExampleMaestroControl;
-import maestro.utils.schematic.SchematicSystem;
+import maestro.process.schematic.SchematicSystem;
 import net.minecraft.client.Minecraft;
 
 public final class MaestroProvider implements IMaestroProvider {

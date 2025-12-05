@@ -13,6 +13,7 @@ import maestro.api.MaestroAPI;
 import maestro.api.Settings;
 import maestro.api.behavior.IBehavior;
 import maestro.api.event.listener.IEventBus;
+import maestro.api.player.MaestroPlayerContext;
 import maestro.api.process.IElytraProcess;
 import maestro.api.process.IMaestroProcess;
 import maestro.api.utils.IPlayerContext;
@@ -20,15 +21,15 @@ import maestro.api.utils.MaestroLogger;
 import maestro.behavior.*;
 import maestro.cache.WorldProvider;
 import maestro.command.manager.CommandManager;
+import maestro.debug.DevModeManager;
 import maestro.debug.MaestroDebugRenderer;
 import maestro.event.GameEventHandler;
+import maestro.gui.GuiClick;
+import maestro.input.InputOverrideHandler;
+import maestro.pathing.BlockStateInterface;
+import maestro.pathing.PathingControlManager;
 import maestro.process.*;
 import maestro.selection.SelectionManager;
-import maestro.utils.BlockStateInterface;
-import maestro.utils.GuiClick;
-import maestro.utils.InputOverrideHandler;
-import maestro.utils.PathingControlManager;
-import maestro.utils.player.MaestroPlayerContext;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
@@ -103,7 +104,7 @@ public class Agent implements IAgent {
     private maestro.coordination.CoordinationClient coordinationClient;
 
     // Development mode manager
-    private final maestro.utils.DevModeManager devModeManager;
+    private final DevModeManager devModeManager;
 
     // Free-look camera state (independent of player rotation)
     private float freeLookYaw = 0.0f;
@@ -131,7 +132,7 @@ public class Agent implements IAgent {
     Agent(Minecraft mc) {
         this.mc = mc;
         this.gameEventHandler = new GameEventHandler(this);
-        this.devModeManager = new maestro.utils.DevModeManager(this);
+        this.devModeManager = new DevModeManager(this);
 
         this.directory = mc.gameDirectory.toPath().resolve("maestro");
         if (!Files.exists(this.directory)) {
@@ -639,7 +640,7 @@ public class Agent implements IAgent {
         this.coordinationClient = client;
     }
 
-    public maestro.utils.DevModeManager getDevModeManager() {
+    public DevModeManager getDevModeManager() {
         return this.devModeManager;
     }
 

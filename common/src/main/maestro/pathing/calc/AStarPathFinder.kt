@@ -4,12 +4,14 @@ import maestro.Agent
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.movement.ActionCosts
-import maestro.api.utils.LoggingUtils
 import maestro.api.utils.MaestroLogger
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
+import maestro.api.utils.format
 import maestro.api.utils.pack
-import maestro.pathing.calc.PathfindingFailureReason
+import maestro.pathing.BetterWorldBorder
+import maestro.pathing.Favoring
+import maestro.pathing.MutableMoveResult
 import maestro.pathing.calc.openset.BinaryHeapOpenSet
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.CompositeMovementProvider
@@ -18,9 +20,6 @@ import maestro.pathing.movement.EnumMovementProvider
 import maestro.pathing.movement.IMovementProvider
 import maestro.pathing.movement.Movement
 import maestro.pathing.movement.TeleportMovementProvider
-import maestro.utils.pathing.BetterWorldBorder
-import maestro.utils.pathing.Favoring
-import maestro.utils.pathing.MutableMoveResult
 import org.slf4j.Logger
 import java.util.Optional
 
@@ -218,8 +217,8 @@ class AStarPathFinder
                         if (calcContext.failureMemory.shouldFilter(src, dest, movementClass)) {
                             log
                                 .atDebug()
-                                .addKeyValue("src", LoggingUtils.formatPos(src))
-                                .addKeyValue("dest", LoggingUtils.formatPos(dest))
+                                .addKeyValue("src", src.format())
+                                .addKeyValue("dest", dest.format())
                                 .addKeyValue("movement_type", movement::class.java.simpleName)
                                 .log("Filtered movement due to excessive failures")
                             continue
@@ -230,12 +229,12 @@ class AStarPathFinder
                         if (penalty > 1.0) {
                             log
                                 .atDebug()
-                                .addKeyValue("src", LoggingUtils.formatPos(src))
-                                .addKeyValue("dest", LoggingUtils.formatPos(dest))
+                                .addKeyValue("src", src.format())
+                                .addKeyValue("dest", dest.format())
                                 .addKeyValue("movement_type", movement::class.java.simpleName)
-                                .addKeyValue("penalty", LoggingUtils.formatFloat(penalty))
-                                .addKeyValue("original_cost", LoggingUtils.formatFloat(actionCost))
-                                .addKeyValue("penalized_cost", LoggingUtils.formatFloat(actionCost * penalty))
+                                .addKeyValue("penalty", penalty.format())
+                                .addKeyValue("original_cost", actionCost.format())
+                                .addKeyValue("penalized_cost", (actionCost * penalty).format())
                                 .log("Applying failure penalty")
                             actionCost *= penalty
                         }
@@ -315,7 +314,7 @@ class AStarPathFinder
             if (result.isPresent) {
                 log
                     .atDebug()
-                    .addKeyValue("start", LoggingUtils.formatCoords(startNode!!.x, startNode!!.y, startNode!!.z))
+                    .addKeyValue("start", PackedBlockPos(startNode!!.x, startNode!!.y, startNode!!.z).format())
                     .addKeyValue("goal", goal.toString())
                     .addKeyValue("duration_ms", durationMs)
                     .addKeyValue("movements_considered", numMovementsConsidered)

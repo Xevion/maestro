@@ -2,6 +2,7 @@ package maestro.api
 
 import maestro.api.utils.Helper
 import maestro.api.utils.gui.MaestroToast
+import maestro.behavior.FreecamMode
 import net.minecraft.client.Minecraft
 import net.minecraft.core.Vec3i
 import net.minecraft.network.chat.Component
@@ -1857,7 +1858,7 @@ class Settings {
     /** Default freecam mode (STATIC: fixed position, FOLLOW: tracks player) */
     @JvmField
     val freecamDefaultMode =
-        Setting(maestro.behavior.FreecamMode.STATIC) {
+        Setting(FreecamMode.STATIC) {
             category = SettingCategory.RENDERING
             description = "Default freecam mode (STATIC: fixed position, FOLLOW: tracks player)"
         }
@@ -3074,7 +3075,7 @@ class Settings {
 
     /**
      * The function that is called when Maestro will log to chat. This function can be added to via
-     * andThen or it can completely be overridden via setting value;
+     * andThen, or it can completely be overridden via setting value;
      */
     @JvmField
     val logger =
@@ -3096,7 +3097,7 @@ class Settings {
 
     /**
      * The function that is called when Maestro will send a desktop notification. This function can
-     * be added to via andThen or it can completely be overridden via setting value;
+     * be added to via andThen, or it can completely be overridden via setting value;
      */
     @JvmField
     val notifier =
@@ -3110,10 +3111,10 @@ class Settings {
 
     /**
      * The function that is called when Maestro will show a toast. This function can be added to via
-     * andThen or it can completely be overridden via setting value;
+     * andThen, or it can completely be overridden via setting value;
      */
     @JvmField
-    val toaster =
+    val toaster: Setting<BiConsumer<Component, Component>> =
         Setting<BiConsumer<Component, Component>>(
             BiConsumer { title, message ->
                 MaestroToast.addOrUpdate(title, message)
@@ -3126,14 +3127,14 @@ class Settings {
 
     /** A map of lowercase setting field names to their respective setting */
     @JvmField
-    val byLowerName: java.util.Map<String, Setting<*>>
+    val byLowerName: Map<String, Setting<*>>
 
     /** A list of all settings */
     @JvmField
-    val allSettings: java.util.List<Setting<*>>
+    val allSettings: List<Setting<*>>
 
     @JvmField
-    val settingTypes: java.util.Map<Setting<*>, Type>
+    val settingTypes: Map<Setting<*>, Type>
 
     init {
         val fields = javaClass.declaredFields
@@ -3165,9 +3166,9 @@ class Settings {
             throw IllegalStateException(e)
         }
 
-        byLowerName = Collections.unmodifiableMap(tmpByName) as java.util.Map<String, Setting<*>>
-        allSettings = Collections.unmodifiableList(tmpAll) as java.util.List<Setting<*>>
-        settingTypes = Collections.unmodifiableMap(tmpSettingTypes) as java.util.Map<Setting<*>, Type>
+        byLowerName = Collections.unmodifiableMap(tmpByName) as Map<String, Setting<*>>
+        allSettings = Collections.unmodifiableList(tmpAll) as List<Setting<*>>
+        settingTypes = Collections.unmodifiableMap(tmpSettingTypes) as Map<Setting<*>, Type>
     }
 
     /**

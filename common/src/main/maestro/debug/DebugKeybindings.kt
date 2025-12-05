@@ -5,7 +5,7 @@ import maestro.Agent
 import maestro.api.MaestroAPI
 import maestro.api.utils.gui.MaestroToast
 import maestro.gui.MaestroScreen
-import maestro.utils.InputOverrideHandler
+import maestro.input.InputOverrideHandler
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
