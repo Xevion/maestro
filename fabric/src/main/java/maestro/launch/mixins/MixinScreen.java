@@ -1,10 +1,6 @@
 package maestro.launch.mixins;
 
-import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
-
 import maestro.Agent;
-import maestro.api.AgentAPI;
-import maestro.api.event.events.ChatEvent;
 import maestro.utils.accessor.IGuiScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.ClickEvent;
@@ -17,31 +13,38 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Screen.class)
 public abstract class MixinScreen implements IGuiScreen {
 
-    // TODO: switch to enum extention with mixin 9.0 or whenever Mumfrey gets around to it
-    @Inject(
-            at =
-                    @At(
-                            value = "INVOKE",
-                            target =
-                                    "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;)V",
-                            remap = false,
-                            ordinal = 1),
-            method = "handleComponentClicked",
-            cancellable = true)
-    public void handleCustomClickEvent(Style style, CallbackInfoReturnable<Boolean> cir) {
+    /**
+     * Intercept COPY_TO_CLIPBOARD click events that contain Maestro commands. We use
+     * COPY_TO_CLIPBOARD instead of RUN_COMMAND for safety - if the mixin fails, it just copies text
+     * instead of sending commands to the server.
+     */
+    @Inject(method = "handleComponentClicked", at = @At("HEAD"), cancellable = true)
+    public void interceptMaestroCommands(Style style, CallbackInfoReturnable<Boolean> cir) {
         ClickEvent clickEvent = style.getClickEvent();
-        if (clickEvent == null) {
+        if (clickEvent == null || clickEvent.getAction() != ClickEvent.Action.COPY_TO_CLIPBOARD) {
             return;
         }
-        String command = clickEvent.getValue();
-        if (command == null || !command.startsWith(FORCE_COMMAND_PREFIX)) {
+
+        String value = clickEvent.getValue();
+        if (value == null) {
             return;
         }
-        Agent maestro = AgentAPI.getProvider().getPrimaryAgent();
-        if (maestro != null) {
-            maestro.getGameEventHandler().onSendChatMessage(new ChatEvent(command));
+
+        Agent agent = Agent.getPrimaryAgent();
+        if (agent == null) {
+            return;
         }
-        cir.setReturnValue(true);
-        cir.cancel();
+
+        // Check if this is a Maestro command (starts with configured prefix)
+        String prefix = agent.getSettings().prefix.value;
+        if (value.startsWith(prefix)) {
+            // Extract command without prefix and execute directly
+            String command = value.substring(prefix.length());
+            agent.executeCommand(command);
+
+            // Prevent default copy-to-clipboard behavior
+            cir.setReturnValue(true);
+            cir.cancel();
+        }
     }
 }

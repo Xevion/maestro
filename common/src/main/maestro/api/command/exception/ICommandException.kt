@@ -1,6 +1,6 @@
 package maestro.api.command.exception
 
-import maestro.api.AgentAPI
+import maestro.Agent
 import maestro.api.command.Command
 import maestro.api.command.argument.ICommandArgument
 import maestro.api.utils.Loggers
@@ -45,7 +45,8 @@ interface ICommandException {
         errorMsg.append(messageComponent)
 
         Minecraft.getInstance().execute {
-            AgentAPI
+            Agent
+                .getPrimaryAgent()
                 .getSettings()
                 .logger.value
                 .accept(errorMsg)

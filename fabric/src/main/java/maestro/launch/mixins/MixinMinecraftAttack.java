@@ -1,7 +1,6 @@
 package maestro.launch.mixins;
 
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.input.InputController;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,7 +21,7 @@ public class MixinMinecraftAttack {
 
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     private void maestro$preventAttackDuringFreecam(CallbackInfoReturnable<Boolean> cir) {
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive() && InputController.Companion.canUseBotKeys()) {
             cir.setReturnValue(false);
         }
@@ -30,7 +29,7 @@ public class MixinMinecraftAttack {
 
     @Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
     private void maestro$preventContinueAttackDuringFreecam(CallbackInfo ci) {
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive() && InputController.Companion.canUseBotKeys()) {
             ci.cancel();
         }
@@ -38,7 +37,7 @@ public class MixinMinecraftAttack {
 
     @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
     private void maestro$preventUseItemDuringFreecam(CallbackInfo ci) {
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive() && InputController.Companion.canUseBotKeys()) {
             ci.cancel();
         }

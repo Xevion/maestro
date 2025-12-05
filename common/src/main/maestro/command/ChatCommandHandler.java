@@ -1,12 +1,9 @@
 package maestro.command;
 
-import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.Setting;
 import maestro.api.Settings;
 import maestro.api.command.argument.ICommandArgument;
@@ -28,7 +25,7 @@ import net.minecraft.util.Tuple;
 
 public class ChatCommandHandler extends Behavior implements Helper {
 
-    private static final Settings settings = AgentAPI.getSettings();
+    private static final Settings settings = Agent.getPrimaryAgent().getSettings();
     private final CommandManager manager;
 
     public ChatCommandHandler(Agent maestro) {
@@ -40,11 +37,9 @@ public class ChatCommandHandler extends Behavior implements Helper {
     public void onSendChatMessage(ChatEvent event) {
         String msg = event.message;
         String prefix = settings.prefix.value;
-        boolean forceRun = msg.startsWith(FORCE_COMMAND_PREFIX);
-        if ((settings.prefixControl.value && msg.startsWith(prefix)) || forceRun) {
+        if (settings.prefixControl.value && msg.startsWith(prefix)) {
             event.cancel();
-            String commandStr =
-                    msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
+            String commandStr = msg.substring(prefix.length());
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
                 new CommandException.NotFound(CommandManager.expand(commandStr).getA())
                         .handle(null, null);
@@ -70,8 +65,8 @@ public class ChatCommandHandler extends Behavior implements Helper {
                                             Component.literal("Click to rerun command")))
                             .withClickEvent(
                                     new ClickEvent(
-                                            ClickEvent.Action.RUN_COMMAND,
-                                            FORCE_COMMAND_PREFIX + msg)));
+                                            ClickEvent.Action.COPY_TO_CLIPBOARD,
+                                            settings.prefix.value + msg)));
 
             // Send rich component to chat manually
             MutableComponent prefixed = Component.literal("");

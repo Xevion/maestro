@@ -1,7 +1,6 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.AgentAPI
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.goals.GoalBlock
 import maestro.api.pathing.goals.GoalComposite
@@ -14,6 +13,7 @@ import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RayTraceUtils
 import maestro.api.utils.RotationUtils
+import maestro.cache.WorldScanner
 import maestro.input.Input
 import maestro.pathing.movement.MovementValidation
 import net.minecraft.core.BlockPos
@@ -185,9 +185,7 @@ class FarmTask(
 
             Agent.getExecutor().execute {
                 locations =
-                    AgentAPI
-                        .getProvider()
-                        .worldScanner
+                    WorldScanner
                         .scanChunkRadius(
                             ctx,
                             BlockOptionalMetaLookup(scan),

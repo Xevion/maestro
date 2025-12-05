@@ -2,7 +2,6 @@
 package maestro.input
 
 import maestro.Agent
-import maestro.api.AgentAPI
 import maestro.api.behavior.ILookBehavior
 import maestro.api.event.events.TickEvent
 import maestro.api.player.PlayerContext
@@ -145,7 +144,7 @@ class InputController(
 
         return movementInputs.any { isInputForcedDown(it) } ||
             maestro.pathingBehavior.isPathing() ||
-            maestro != AgentAPI.getProvider().primaryAgent
+            maestro != Agent.getPrimaryAgent()
     }
 
     fun getBlockBreakManager(): BlockInteractionManager = blockBreakManager

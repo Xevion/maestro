@@ -2,7 +2,6 @@ package maestro.launch.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
@@ -46,7 +45,7 @@ public class MixinCamera {
         }
 
         // Get the current agent instance
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent == null) {
             return;
         }
@@ -77,7 +76,7 @@ public class MixinCamera {
             return;
         }
 
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent == null) {
             return;
         }
@@ -99,7 +98,7 @@ public class MixinCamera {
      */
     @ModifyReturnValue(method = "isDetached", at = @At("RETURN"))
     private boolean onIsDetached(boolean original) {
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive()) {
             return true;
         }

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.ForBlockSelector;
@@ -13,6 +12,7 @@ import maestro.api.command.exception.CommandException;
 import maestro.api.selector.block.BlockCategory;
 import maestro.api.selector.block.BlockSelector;
 import maestro.api.selector.block.BlockSelectorLookup;
+import maestro.cache.WorldScanner;
 
 public class MineCommand extends Command {
 
@@ -57,7 +57,7 @@ public class MineCommand extends Command {
             throw new NoMatchesException();
         }
 
-        AgentAPI.getProvider().getWorldScanner().repack(ctx);
+        WorldScanner.INSTANCE.repack(ctx);
         log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Mining started");
         maestro.getMineTask().mine(quantity, lookup.toBlockOptionalMetaLookup());
     }
@@ -65,14 +65,12 @@ public class MineCommand extends Command {
     @Override
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         args.getAsOrDefault(Integer.class, 0);
-        if (args.hasExactlyOne()) {
-            return args.tabCompleteDatatype(ForBlockSelector.INSTANCE);
-        } else {
+        if (!args.hasExactlyOne()) {
             while (args.has(2)) {
                 args.get();
             }
-            return args.tabCompleteDatatype(ForBlockSelector.INSTANCE);
         }
+        return args.tabCompleteDatatype(ForBlockSelector.INSTANCE);
     }
 
     @Override

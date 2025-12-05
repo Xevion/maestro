@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import maestro.Agent
-import maestro.api.AgentAPI
 import maestro.api.utils.Loggers
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.ChunkPos
@@ -227,7 +226,7 @@ class CachedWorld internal constructor(
     }
 
     private fun guessPosition(): BlockPos {
-        for (maestro in AgentAPI.getProvider().allMaestros) {
+        for (maestro in Agent.getAllAgents()) {
             val data = maestro.worldProvider.currentWorld
             if (data?.getCachedWorld() == this && maestro.playerContext.player() != null) {
                 return maestro.playerContext.playerFeet().toBlockPos()

@@ -1,6 +1,5 @@
 package maestro.command.defaults;
 
-import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
 import static maestro.api.utils.SettingsUtil.*;
 
 import java.util.Arrays;
@@ -9,7 +8,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.Setting;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -135,11 +133,16 @@ public class SetCommand extends Command {
 
                         Minecraft.getInstance()
                                 .execute(
-                                        () -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                                        () ->
+                                                Agent.getPrimaryAgent()
+                                                        .getSettings()
+                                                        .logger
+                                                        .value
+                                                        .accept(prefixed));
 
                         return component;
                     },
-                    FORCE_COMMAND_PREFIX + "set " + arg + " " + search);
+                    Agent.settings().prefix.value + "set " + arg + " " + search);
             return;
         }
         args.requireMax(1);
@@ -234,7 +237,7 @@ public class SetCommand extends Command {
                             .withClickEvent(
                                     new ClickEvent(
                                             ClickEvent.Action.RUN_COMMAND,
-                                            FORCE_COMMAND_PREFIX
+                                            Agent.settings().prefix.value
                                                     + String.format(
                                                             "set %s %s",
                                                             setting.getName(), oldValue))));
@@ -245,7 +248,13 @@ public class SetCommand extends Command {
             prefixed.append(oldValueComponent);
 
             Minecraft.getInstance()
-                    .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                    .execute(
+                            () ->
+                                    Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .logger
+                                            .value
+                                            .accept(prefixed));
 
             if (((setting.getName().equals("chatControl")
                             && !(Boolean) setting.value

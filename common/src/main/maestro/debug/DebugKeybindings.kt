@@ -2,7 +2,6 @@ package maestro.debug
 
 import com.mojang.blaze3d.platform.InputConstants
 import maestro.Agent
-import maestro.api.AgentAPI
 import maestro.gui.ControlScreen
 import maestro.gui.Toast
 import maestro.input.InputController
@@ -69,7 +68,7 @@ object DebugKeybindings {
 
         // Grave key: Toggle GUI
         val mc = Minecraft.getInstance()
-        val agent = AgentAPI.getProvider().primaryAgent as? Agent
+        val agent = Agent.getPrimaryAgent() as? Agent
         if (agent != null) {
             val gravePressed = isGravePressed()
             if (gravePressed && !wasGravePressed) {
@@ -113,7 +112,7 @@ object DebugKeybindings {
 
     /** Toggle freecam on/off. */
     private fun toggleFreecam() {
-        val agent = AgentAPI.getProvider().primaryAgent as? Agent ?: return
+        val agent = Agent.getPrimaryAgent() as? Agent ?: return
 
         if (agent.isFreecamActive) {
             agent.deactivateFreecam()

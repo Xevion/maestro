@@ -1,13 +1,10 @@
 package maestro.command.defaults;
 
-import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.ICommand;
 import maestro.api.command.argument.IArgConsumer;
@@ -59,7 +56,7 @@ public class HelpCommand extends Command {
                         hoverComponent.append("\n" + command.getShortDesc());
                         hoverComponent.append("\n\nClick to view full help");
                         String clickCommand =
-                                FORCE_COMMAND_PREFIX
+                                Agent.settings().prefix.value
                                         + String.format(
                                                 "%s %s", label, command.getNames().getFirst());
                         MutableComponent component = Component.literal(name);
@@ -84,11 +81,16 @@ public class HelpCommand extends Command {
 
                         Minecraft.getInstance()
                                 .execute(
-                                        () -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                                        () ->
+                                                Agent.getPrimaryAgent()
+                                                        .getSettings()
+                                                        .logger
+                                                        .value
+                                                        .accept(prefixed));
 
                         return component;
                     },
-                    FORCE_COMMAND_PREFIX + label);
+                    Agent.settings().prefix.value + label);
         } else {
             String commandName = args.getString().toLowerCase(java.util.Locale.ROOT);
             ICommand command = this.maestro.getCommandManager().getCommand(commandName);
@@ -111,7 +113,7 @@ public class HelpCommand extends Command {
                             .withClickEvent(
                                     new ClickEvent(
                                             ClickEvent.Action.RUN_COMMAND,
-                                            FORCE_COMMAND_PREFIX + label)));
+                                            Agent.settings().prefix.value + label)));
 
             MutableComponent prefixed = Component.literal("");
             prefixed.append(ChatMessage.createCategoryPrefix("cmd"));
@@ -119,7 +121,13 @@ public class HelpCommand extends Command {
             prefixed.append(returnComponent);
 
             Minecraft.getInstance()
-                    .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                    .execute(
+                            () ->
+                                    Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .logger
+                                            .value
+                                            .accept(prefixed));
         }
     }
 

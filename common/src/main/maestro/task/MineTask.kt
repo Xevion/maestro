@@ -1,7 +1,6 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.AgentAPI
 import maestro.api.pathing.goals.Goal
 import maestro.api.pathing.goals.GoalBlock
 import maestro.api.pathing.goals.GoalComposite
@@ -19,6 +18,7 @@ import maestro.api.utils.RotationUtils
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.format
 import maestro.cache.CachedChunk
+import maestro.cache.WorldScanner
 import maestro.input.Input
 import maestro.pathing.BlockStateInterface
 import maestro.pathing.movement.CalculationContext
@@ -697,9 +697,7 @@ class MineTask(
                 (Agent.settings().extendCacheOnThreshold.value && locs.size < max)
             ) {
                 locs.addAll(
-                    AgentAPI
-                        .getProvider()
-                        .worldScanner
+                    WorldScanner
                         .scanChunkRadius(
                             ctx.maestro.playerContext,
                             filter,

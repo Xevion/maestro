@@ -1,6 +1,6 @@
 package maestro.launch.mixins;
 
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.api.event.events.RotationMoveEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -27,14 +27,12 @@ public class MixinEntity {
     private void moveRelativeHead(CallbackInfo info) {
         // noinspection ConstantConditions
         if (!LocalPlayer.class.isInstance(this)
-                || AgentAPI.getProvider().getMaestroForPlayer((LocalPlayer) (Object) this)
-                        == null) {
+                || Agent.getAgentForPlayer((LocalPlayer) (Object) this) == null) {
             return;
         }
         this.motionUpdateRotationEvent =
                 new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.yRot, this.xRot);
-        AgentAPI.getProvider()
-                .getMaestroForPlayer((LocalPlayer) (Object) this)
+        Agent.getAgentForPlayer((LocalPlayer) (Object) this)
                 .getGameEventHandler()
                 .onPlayerRotationMove(motionUpdateRotationEvent);
         this.yRot = this.motionUpdateRotationEvent.getYaw();

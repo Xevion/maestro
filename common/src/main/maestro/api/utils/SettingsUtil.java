@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.api.Setting;
 import maestro.api.Settings;
 import net.minecraft.client.Minecraft;
@@ -144,7 +144,7 @@ public class SettingsUtil {
     }
 
     public static String maybeCensor(int coord) {
-        if (AgentAPI.getSettings().censorCoordinates.value) {
+        if (Agent.getPrimaryAgent().getSettings().censorCoordinates.value) {
             return "<censored>";
         }
 

@@ -1,6 +1,6 @@
 package maestro.api.pathing.goals
 
-import maestro.api.AgentAPI
+import maestro.Agent
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
 import net.minecraft.util.Mth
@@ -72,7 +72,7 @@ open class GoalXZ(
                 } else {
                     (x - z) to z
                 }
-            return (diagonal * SQRT_2 + straight) * AgentAPI.getSettings().costHeuristic.value
+            return (diagonal * SQRT_2 + straight) * Agent.settings().costHeuristic.value
         }
 
         @JvmStatic

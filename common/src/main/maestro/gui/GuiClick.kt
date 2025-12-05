@@ -4,7 +4,6 @@ package maestro.gui
 import com.mojang.blaze3d.vertex.BufferBuilder
 import com.mojang.blaze3d.vertex.PoseStack
 import maestro.Agent
-import maestro.api.AgentAPI
 import maestro.api.pathing.goals.GoalBlock
 import maestro.api.utils.Helper
 import maestro.api.utils.Loggers
@@ -57,9 +56,8 @@ class GuiClick :
         if (near != null && far != null) {
             val viewerPos = Vec3(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ())
             val player =
-                AgentAPI
-                    .getProvider()
-                    .primaryAgent
+                Agent
+                    .getPrimaryAgent()
                     .playerContext
                     .player()
 
@@ -86,7 +84,7 @@ class GuiClick :
         mouseButton: Int,
     ): Boolean {
         currentMouseOver?.let { mouseOver ->
-            val agent = AgentAPI.getProvider().primaryAgent
+            val agent = Agent.getPrimaryAgent()
 
             when (mouseButton) {
                 0 -> {

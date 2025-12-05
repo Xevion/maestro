@@ -1,7 +1,5 @@
 package maestro.command.defaults;
 
-import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
-
 import com.google.common.collect.ImmutableList;
 import java.time.Instant;
 import java.util.*;
@@ -10,7 +8,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.cache.Waypoint;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
@@ -77,10 +74,10 @@ public class WaypointsCommand extends Command {
                                                     Component.literal("Click to select")))
                                     .withClickEvent(
                                             new ClickEvent(
-                                                    ClickEvent.Action.RUN_COMMAND,
+                                                    ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s %s %s @ %d",
-                                                            FORCE_COMMAND_PREFIX,
+                                                            maestro.getSettings().prefix.value,
                                                             label,
                                                             _action.names.get(0),
                                                             waypoint.getTag().getName(),
@@ -113,7 +110,7 @@ public class WaypointsCommand extends Command {
                         transform,
                         String.format(
                                 "%s%s %s%s",
-                                FORCE_COMMAND_PREFIX,
+                                maestro.getSettings().prefix.value,
                                 label,
                                 action.names.get(0),
                                 tag != null ? " " + tag.getName() : ""));
@@ -147,7 +144,13 @@ public class WaypointsCommand extends Command {
             prefixed.append(component);
 
             Minecraft.getInstance()
-                    .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                    .execute(
+                            () ->
+                                    Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .logger
+                                            .value
+                                            .accept(prefixed));
         } else if (action == Action.CLEAR) {
             args.requireMax(1);
             String name = args.getString();
@@ -173,10 +176,10 @@ public class WaypointsCommand extends Command {
                             .getStyle()
                             .withClickEvent(
                                     new ClickEvent(
-                                            ClickEvent.Action.RUN_COMMAND,
+                                            ClickEvent.Action.COPY_TO_CLIPBOARD,
                                             String.format(
                                                     "%s%s restore @ %s",
-                                                    FORCE_COMMAND_PREFIX,
+                                                    maestro.getSettings().prefix.value,
                                                     label,
                                                     Stream.of(waypoints)
                                                             .map(
@@ -192,7 +195,13 @@ public class WaypointsCommand extends Command {
             prefixed.append(textComponent);
 
             Minecraft.getInstance()
-                    .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                    .execute(
+                            () ->
+                                    Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .logger
+                                            .value
+                                            .accept(prefixed));
         } else if (action == Action.RESTORE) {
             List<Waypoint> waypoints = new ArrayList<>();
             List<Waypoint> deletedWaypoints =
@@ -257,7 +266,7 @@ public class WaypointsCommand extends Command {
                         transform,
                         String.format(
                                 "%s%s %s %s",
-                                FORCE_COMMAND_PREFIX,
+                                maestro.getSettings().prefix.value,
                                 label,
                                 action.names.get(0),
                                 args.consumedString()));
@@ -269,7 +278,13 @@ public class WaypointsCommand extends Command {
                     prefixed1.append(" ");
                     prefixed1.append(waypointInfo);
                     Minecraft.getInstance()
-                            .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed1));
+                            .execute(
+                                    () ->
+                                            Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .logger
+                                                    .value
+                                                    .accept(prefixed1));
 
                     log.atInfo().log(String.format("Position: %s", waypoint.getLocation()));
                     MutableComponent deleteComponent =
@@ -279,10 +294,10 @@ public class WaypointsCommand extends Command {
                                     .getStyle()
                                     .withClickEvent(
                                             new ClickEvent(
-                                                    ClickEvent.Action.RUN_COMMAND,
+                                                    ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s delete %s @ %d",
-                                                            FORCE_COMMAND_PREFIX,
+                                                            maestro.getSettings().prefix.value,
                                                             label,
                                                             waypoint.getTag().getName(),
                                                             waypoint.getCreationTimestamp()))));
@@ -293,10 +308,10 @@ public class WaypointsCommand extends Command {
                                     .getStyle()
                                     .withClickEvent(
                                             new ClickEvent(
-                                                    ClickEvent.Action.RUN_COMMAND,
+                                                    ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s goal %s @ %d",
-                                                            FORCE_COMMAND_PREFIX,
+                                                            maestro.getSettings().prefix.value,
                                                             label,
                                                             waypoint.getTag().getName(),
                                                             waypoint.getCreationTimestamp()))));
@@ -328,38 +343,63 @@ public class WaypointsCommand extends Command {
                                     .getStyle()
                                     .withClickEvent(
                                             new ClickEvent(
-                                                    ClickEvent.Action.RUN_COMMAND,
+                                                    ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s list",
-                                                            FORCE_COMMAND_PREFIX, label))));
+                                                            maestro.getSettings().prefix.value,
+                                                            label))));
 
                     MutableComponent prefixed2 = Component.literal("");
                     prefixed2.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed2.append(" ");
                     prefixed2.append(deleteComponent);
                     Minecraft.getInstance()
-                            .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed2));
+                            .execute(
+                                    () ->
+                                            Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .logger
+                                                    .value
+                                                    .accept(prefixed2));
 
                     MutableComponent prefixed3 = Component.literal("");
                     prefixed3.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed3.append(" ");
                     prefixed3.append(goalComponent);
                     Minecraft.getInstance()
-                            .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed3));
+                            .execute(
+                                    () ->
+                                            Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .logger
+                                                    .value
+                                                    .accept(prefixed3));
 
                     MutableComponent prefixed4 = Component.literal("");
                     prefixed4.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed4.append(" ");
                     prefixed4.append(recreateComponent);
                     Minecraft.getInstance()
-                            .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed4));
+                            .execute(
+                                    () ->
+                                            Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .logger
+                                                    .value
+                                                    .accept(prefixed4));
 
                     MutableComponent prefixed5 = Component.literal("");
                     prefixed5.append(ChatMessage.createCategoryPrefix("cmd"));
                     prefixed5.append(" ");
                     prefixed5.append(backComponent);
                     Minecraft.getInstance()
-                            .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed5));
+                            .execute(
+                                    () ->
+                                            Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .logger
+                                                    .value
+                                                    .accept(prefixed5));
                 } else if (action == Action.DELETE) {
                     ForWaypoints.waypoints(this.maestro).removeWaypoint(waypoint);
                     deletedWaypoints
@@ -376,10 +416,10 @@ public class WaypointsCommand extends Command {
                                     .getStyle()
                                     .withClickEvent(
                                             new ClickEvent(
-                                                    ClickEvent.Action.RUN_COMMAND,
+                                                    ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s restore @ %s",
-                                                            FORCE_COMMAND_PREFIX,
+                                                            maestro.getSettings().prefix.value,
                                                             label,
                                                             waypoint.getCreationTimestamp()))));
 
@@ -388,7 +428,13 @@ public class WaypointsCommand extends Command {
                     prefixed6.append(" ");
                     prefixed6.append(textComponent);
                     Minecraft.getInstance()
-                            .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed6));
+                            .execute(
+                                    () ->
+                                            Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .logger
+                                                    .value
+                                                    .accept(prefixed6));
                 } else if (action == Action.GOAL) {
                     Goal goal = new GoalBlock(waypoint.getLocation().toBlockPos());
                     maestro.getCustomGoalTask().setGoal(goal);

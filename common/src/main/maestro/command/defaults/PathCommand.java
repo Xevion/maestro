@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
+import maestro.cache.WorldScanner;
 import maestro.task.CustomGoalTask;
 
 public class PathCommand extends Command {
@@ -20,7 +20,7 @@ public class PathCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         CustomGoalTask customGoalProcess = maestro.getCustomGoalTask();
         args.requireMax(0);
-        AgentAPI.getProvider().getWorldScanner().repack(ctx);
+        WorldScanner.INSTANCE.repack(ctx);
         customGoalProcess.path();
         log.atInfo().log("Pathing started");
     }

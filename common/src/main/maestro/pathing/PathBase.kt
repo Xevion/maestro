@@ -1,7 +1,6 @@
 package maestro.pathing
 
 import maestro.Agent
-import maestro.api.AgentAPI
 import maestro.api.pathing.calc.IPath
 import maestro.api.pathing.goals.Goal
 import maestro.pathing.path.CutoffPath
@@ -22,14 +21,14 @@ abstract class PathBase : IPath {
     }
 
     override fun staticCutoff(destination: Goal?): PathBase {
-        val min = AgentAPI.getSettings().pathCutoffMinimumLength.value
+        val min = Agent.settings().pathCutoffMinimumLength.value
         if (length() < min) {
             return this
         }
         if (destination == null || destination.isInGoal(dest.toBlockPos())) {
             return this
         }
-        val factor = AgentAPI.getSettings().pathCutoffFactor.value
+        val factor = Agent.settings().pathCutoffFactor.value
         val newLength = ((length() - min) * factor).toInt() + min - 1
         return CutoffPath(this, newLength)
     }

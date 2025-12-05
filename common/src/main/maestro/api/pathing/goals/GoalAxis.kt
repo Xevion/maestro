@@ -1,6 +1,6 @@
 package maestro.api.pathing.goals
 
-import maestro.api.AgentAPI
+import maestro.Agent
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -11,7 +11,12 @@ class GoalAxis : Goal {
         x: Int,
         y: Int,
         z: Int,
-    ): Boolean = y == AgentAPI.getSettings().axisHeight.value && (x == 0 || z == 0 || abs(x) == abs(z))
+    ): Boolean =
+        y ==
+            Agent
+                .getPrimaryAgent()
+                .settings.axisHeight.value &&
+            (x == 0 || z == 0 || abs(x) == abs(z))
 
     override fun heuristic(
         x: Int,
@@ -27,8 +32,8 @@ class GoalAxis : Goal {
 
         val flatAxisDistance = min(absX.toDouble(), min(absZ.toDouble(), diff * SQRT_2_OVER_2))
 
-        return flatAxisDistance * AgentAPI.getSettings().costHeuristic.value +
-            GoalYLevel.calculate(AgentAPI.getSettings().axisHeight.value, y)
+        return flatAxisDistance * Agent.settings().costHeuristic.value +
+            GoalYLevel.calculate(Agent.settings().axisHeight.value, y)
     }
 
     override fun equals(other: Any?): Boolean = other is GoalAxis

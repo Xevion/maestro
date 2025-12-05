@@ -1,12 +1,9 @@
 package maestro.command.defaults;
 
-import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
@@ -100,7 +97,13 @@ public class ElytraCommand extends Command {
                 prefixed1.append(" ");
                 prefixed1.append(msg1);
                 net.minecraft.client.Minecraft.getInstance()
-                        .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed1));
+                        .execute(
+                                () ->
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .logger
+                                                .value
+                                                .accept(prefixed1));
 
                 Component msg2 = suggest2b2tSeeds();
                 MutableComponent prefixed2 = Component.literal("");
@@ -108,7 +111,13 @@ public class ElytraCommand extends Command {
                 prefixed2.append(" ");
                 prefixed2.append(msg2);
                 net.minecraft.client.Minecraft.getInstance()
-                        .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed2));
+                        .execute(
+                                () ->
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .logger
+                                                .value
+                                                .accept(prefixed2));
             }
         }
     }
@@ -136,7 +145,7 @@ public class ElytraCommand extends Command {
                         .withClickEvent(
                                 new ClickEvent(
                                         ClickEvent.Action.RUN_COMMAND,
-                                        FORCE_COMMAND_PREFIX
+                                        Agent.settings().prefix.value
                                                 + "set elytraNetherSeed "
                                                 + OLD_2B2T_SEED)));
         clippy.append(olderSeed);
@@ -159,7 +168,7 @@ public class ElytraCommand extends Command {
                         .withClickEvent(
                                 new ClickEvent(
                                         ClickEvent.Action.RUN_COMMAND,
-                                        FORCE_COMMAND_PREFIX
+                                        Agent.settings().prefix.value
                                                 + "set elytraNetherSeed "
                                                 + NEW_2B2T_SEED)));
         clippy.append(newerSeed);
@@ -286,7 +295,7 @@ public class ElytraCommand extends Command {
         prefixed.append(" ");
         prefixed.append(gatekeep);
         net.minecraft.client.Minecraft.getInstance()
-                .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                .execute(() -> Agent.getPrimaryAgent().getSettings().logger.value.accept(prefixed));
     }
 
     private boolean detectOn2b2t() {

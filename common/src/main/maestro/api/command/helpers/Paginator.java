@@ -3,7 +3,7 @@ package maestro.api.command.helpers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.exception.CommandException;
 import net.minecraft.ChatFormatting;
@@ -65,7 +65,7 @@ public class Paginator<E> {
                             .getStyle()
                             .withClickEvent(
                                     new ClickEvent(
-                                            ClickEvent.Action.RUN_COMMAND,
+                                            ClickEvent.Action.COPY_TO_CLIPBOARD,
                                             String.format("%s %d", commandPrefix, page - 1)))
                             .withHoverEvent(
                                     new HoverEvent(
@@ -82,7 +82,7 @@ public class Paginator<E> {
                             .getStyle()
                             .withClickEvent(
                                     new ClickEvent(
-                                            ClickEvent.Action.RUN_COMMAND,
+                                            ClickEvent.Action.COPY_TO_CLIPBOARD,
                                             String.format("%s %d", commandPrefix, page + 1)))
                             .withHoverEvent(
                                     new HoverEvent(
@@ -111,7 +111,8 @@ public class Paginator<E> {
         prefixed.append(" ");
         prefixed.append(component);
 
-        Minecraft.getInstance().execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
+        Minecraft.getInstance()
+                .execute(() -> Agent.getPrimaryAgent().getSettings().logger.value.accept(prefixed));
     }
 
     public void display(Function<E, Component> transform) {

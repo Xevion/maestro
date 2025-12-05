@@ -5,7 +5,6 @@ import static maestro.pathing.precompute.Ternary.*;
 
 import java.util.Optional;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.pathing.movement.ActionCosts;
 import maestro.api.pathing.movement.MovementStatus;
 import maestro.api.player.PlayerContext;
@@ -676,7 +675,10 @@ public interface MovementValidation extends Helper {
      */
     static void switchToBestToolFor(PlayerContext ctx, BlockState b) {
         switchToBestToolFor(
-                ctx, b, new ToolSet(ctx.player()), AgentAPI.getSettings().preferSilkTouch.value);
+                ctx,
+                b,
+                new ToolSet(ctx.player()),
+                Agent.getPrimaryAgent().getSettings().preferSilkTouch.value);
     }
 
     /**

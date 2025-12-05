@@ -85,23 +85,26 @@ public class CalculationContext {
         this.bsi = new BlockStateInterface(maestro.getPlayerContext(), forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
         this.hasThrowaway =
-                Agent.settings().allowPlace.value
+                Agent.getPrimaryAgent().getSettings().allowPlace.value
                         && ((Agent) maestro).getInventoryBehavior().hasGenericThrowaway();
         this.hasWaterBucket =
-                Agent.settings().allowWaterBucketFall.value
+                Agent.getPrimaryAgent().getSettings().allowWaterBucketFall.value
                         && Inventory.isHotbarSlot(
                                 player.getInventory().findSlotMatchingItem(STACK_BUCKET_WATER))
                         && world.dimension() != Level.NETHER;
         this.canSprint =
-                Agent.settings().allowSprint.value && player.getFoodData().getFoodLevel() > 6;
-        this.placeBlockCost = Agent.settings().blockPlacementPenalty.value;
-        this.allowBreak = Agent.settings().allowBreak.value;
-        this.allowBreakAnyway = new ArrayList<>(Agent.settings().allowBreakAnyway.value);
-        this.allowParkour = Agent.settings().allowParkour.value;
-        this.allowParkourPlace = Agent.settings().allowParkourPlace.value;
-        this.allowJumpAtBuildLimit = Agent.settings().allowJumpAtBuildLimit.value;
-        this.allowParkourAscend = Agent.settings().allowParkourAscend.value;
-        this.assumeWalkOnWater = Agent.settings().assumeWalkOnWater.value;
+                Agent.getPrimaryAgent().getSettings().allowSprint.value
+                        && player.getFoodData().getFoodLevel() > 6;
+        this.placeBlockCost = Agent.getPrimaryAgent().getSettings().blockPlacementPenalty.value;
+        this.allowBreak = Agent.getPrimaryAgent().getSettings().allowBreak.value;
+        this.allowBreakAnyway =
+                new ArrayList<>(Agent.getPrimaryAgent().getSettings().allowBreakAnyway.value);
+        this.allowParkour = Agent.getPrimaryAgent().getSettings().allowParkour.value;
+        this.allowParkourPlace = Agent.getPrimaryAgent().getSettings().allowParkourPlace.value;
+        this.allowJumpAtBuildLimit =
+                Agent.getPrimaryAgent().getSettings().allowJumpAtBuildLimit.value;
+        this.allowParkourAscend = Agent.getPrimaryAgent().getSettings().allowParkourAscend.value;
+        this.assumeWalkOnWater = Agent.getPrimaryAgent().getSettings().assumeWalkOnWater.value;
         this.allowFallIntoLava = false; // Super secret internal setting for ElytraBehavior
         // todo: technically there can now be datapack enchants that replace blocks with any other
         // at any range
@@ -116,12 +119,14 @@ public class CalculationContext {
             }
         }
         this.frostWalker = frostWalkerLevel;
-        this.allowDiagonalDescend = Agent.settings().allowDiagonalDescend.value;
-        this.allowDiagonalAscend = Agent.settings().allowDiagonalAscend.value;
-        this.allowDownward = Agent.settings().allowDownward.value;
+        this.allowDiagonalDescend =
+                Agent.getPrimaryAgent().getSettings().allowDiagonalDescend.value;
+        this.allowDiagonalAscend = Agent.getPrimaryAgent().getSettings().allowDiagonalAscend.value;
+        this.allowDownward = Agent.getPrimaryAgent().getSettings().allowDownward.value;
         this.minFallHeight = 3; // Minimum fall height used by MovementFall
-        this.maxFallHeightNoWater = Agent.settings().maxFallHeightNoWater.value;
-        this.maxFallHeightBucket = Agent.settings().maxFallHeightBucket.value;
+        this.maxFallHeightNoWater =
+                Agent.getPrimaryAgent().getSettings().maxFallHeightNoWater.value;
+        this.maxFallHeightBucket = Agent.getPrimaryAgent().getSettings().maxFallHeightBucket.value;
         float waterSpeedMultiplier = 1.0f;
         OUTER:
         for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -143,20 +148,26 @@ public class CalculationContext {
         this.waterWalkSpeed =
                 ActionCosts.WALK_ONE_IN_WATER_COST * (1 - waterSpeedMultiplier)
                         + ActionCosts.WALK_ONE_BLOCK_COST * waterSpeedMultiplier;
-        this.breakBlockAdditionalCost = Agent.settings().blockBreakAdditionalPenalty.value;
+        this.breakBlockAdditionalCost =
+                Agent.getPrimaryAgent().getSettings().blockBreakAdditionalPenalty.value;
         this.backtrackCostFavoringCoefficient =
-                Agent.settings().backtrackCostFavoringCoefficient.value;
-        this.jumpPenalty = Agent.settings().jumpPenalty.value;
-        this.walkOnWaterOnePenalty = Agent.settings().walkOnWaterOnePenalty.value;
+                Agent.getPrimaryAgent().getSettings().backtrackCostFavoringCoefficient.value;
+        this.jumpPenalty = Agent.getPrimaryAgent().getSettings().jumpPenalty.value;
+        this.walkOnWaterOnePenalty =
+                Agent.getPrimaryAgent().getSettings().walkOnWaterOnePenalty.value;
         this.allowSwimming =
-                Agent.settings().allowSwimming.value && Agent.settings().enhancedSwimming.value;
-        this.minSwimmingDepth = Agent.settings().minSwimmingDepth.value;
-        this.allowDiagonalSwimming = Agent.settings().allowDiagonalSwimming.value;
-        this.allowTeleport = Agent.settings().allowTeleport.value;
-        this.teleportGenerationSparsity = Agent.settings().teleportGenerationSparsity.value;
-        this.teleportMinDistance = Agent.settings().teleportMinDistance.value;
-        this.teleportMaxDistance = Agent.settings().teleportMaxDistance.value;
-        this.teleportCostMultiplier = Agent.settings().teleportCostMultiplier.value;
+                Agent.getPrimaryAgent().getSettings().allowSwimming.value
+                        && Agent.getPrimaryAgent().getSettings().enhancedSwimming.value;
+        this.minSwimmingDepth = Agent.getPrimaryAgent().getSettings().minSwimmingDepth.value;
+        this.allowDiagonalSwimming =
+                Agent.getPrimaryAgent().getSettings().allowDiagonalSwimming.value;
+        this.allowTeleport = Agent.getPrimaryAgent().getSettings().allowTeleport.value;
+        this.teleportGenerationSparsity =
+                Agent.getPrimaryAgent().getSettings().teleportGenerationSparsity.value;
+        this.teleportMinDistance = Agent.getPrimaryAgent().getSettings().teleportMinDistance.value;
+        this.teleportMaxDistance = Agent.getPrimaryAgent().getSettings().teleportMaxDistance.value;
+        this.teleportCostMultiplier =
+                Agent.getPrimaryAgent().getSettings().teleportCostMultiplier.value;
         this.failureMemory = ((Agent) maestro).getPathingBehavior().failureMemory;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
@@ -194,11 +205,11 @@ public class CalculationContext {
         if (!worldBorder.canPlaceAt(x, z)) {
             return ActionCosts.COST_INF;
         }
-        if (!Agent.settings().allowPlaceInFluidsSource.value
+        if (!Agent.getPrimaryAgent().getSettings().allowPlaceInFluidsSource.value
                 && current.getFluidState().isSource()) {
             return ActionCosts.COST_INF;
         }
-        if (!Agent.settings().allowPlaceInFluidsFlow.value
+        if (!Agent.getPrimaryAgent().getSettings().allowPlaceInFluidsFlow.value
                 && !current.getFluidState().isEmpty()
                 && !current.getFluidState().isSource()) {
             return ActionCosts.COST_INF;

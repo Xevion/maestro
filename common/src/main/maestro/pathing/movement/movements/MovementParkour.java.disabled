@@ -298,7 +298,7 @@ public class MovementParkour extends Movement {
         } else if (!ctx.playerFeet().toBlockPos().equals(src.toBlockPos())) {
             if (ctx.playerFeet().toBlockPos().equals(src.relative(direction).toBlockPos())
                     || ctx.player().position().y - src.getY() > 0.0001) {
-                if (Agent.settings().allowPlace.value // see PR #3775
+                if (Agent.getPrimaryAgent().settings.allowPlace.value // see PR #3775
                         && ((Agent) maestro).getInventoryBehavior().hasGenericThrowaway()
                         && !MovementHelper.canWalkOn(ctx, dest.toBlockPos().below())
                         && !ctx.player().onGround()

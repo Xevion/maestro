@@ -1,6 +1,6 @@
 package maestro.api.player;
 
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -70,6 +70,6 @@ public final class PlayerController {
     public double getBlockReachDistance() {
         return this.getGameType().isCreative()
                 ? 5.0F
-                : AgentAPI.getSettings().blockReachDistance.value;
+                : Agent.getPrimaryAgent().getSettings().blockReachDistance.value;
     }
 }

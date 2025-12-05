@@ -3,7 +3,6 @@ package maestro.launch.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +22,7 @@ public class MixinGameRenderer {
      */
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
     private void onBobView(PoseStack poseStack, float tickDelta, CallbackInfo ci) {
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive()) {
             ci.cancel();
         }
@@ -35,7 +34,7 @@ public class MixinGameRenderer {
      */
     @Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true)
     private void onBobHurt(PoseStack poseStack, float tickDelta, CallbackInfo ci) {
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive()) {
             ci.cancel();
         }
@@ -47,7 +46,7 @@ public class MixinGameRenderer {
      */
     @ModifyReturnValue(method = "getFov", at = @At("RETURN"))
     private float onGetFov(float original) {
-        Agent agent = (Agent) AgentAPI.getProvider().getPrimaryAgent();
+        Agent agent = (Agent) Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive()) {
             return (float) agent.getSavedFov();
         }

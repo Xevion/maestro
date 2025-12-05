@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import java.awt.*;
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.api.Settings;
 import maestro.utils.Vec3ExtKt;
 import maestro.utils.accessor.IEntityRenderManager;
@@ -20,7 +20,7 @@ public interface IRenderer {
     IEntityRenderManager renderManager =
             (IEntityRenderManager) Minecraft.getInstance().getEntityRenderDispatcher();
     TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-    Settings settings = AgentAPI.getSettings();
+    Settings settings = Agent.getPrimaryAgent().getSettings();
 
     @SuppressWarnings("MutablePublicArray")
     float[] color = new float[] {1.0F, 1.0F, 1.0F, 255.0F};

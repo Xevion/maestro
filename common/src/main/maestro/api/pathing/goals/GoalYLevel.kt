@@ -1,6 +1,6 @@
 package maestro.api.pathing.goals
 
-import maestro.api.AgentAPI
+import maestro.Agent
 import maestro.api.pathing.movement.ActionCosts
 import maestro.api.utils.SettingsUtil
 
@@ -40,7 +40,8 @@ data class GoalYLevel(
             // Apply costHeuristic multiplier to match horizontal weighting
             // This ensures vertical progress is valued equally with horizontal progress in A* priority
             return baseCost *
-                AgentAPI
+                Agent
+                    .getPrimaryAgent()
                     .getSettings()
                     .costHeuristic.value
         }

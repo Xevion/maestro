@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.api.event.events.RenderEvent;
 import maestro.api.pathing.goals.*;
 import maestro.api.player.PlayerContext;
@@ -70,7 +70,7 @@ public final class PathRenderer implements IRenderer {
 
         final DimensionType thisPlayerDimension = ctx.world().dimensionType();
         final DimensionType currentRenderViewDimension =
-                AgentAPI.getProvider().getPrimaryAgent().getPlayerContext().world().dimensionType();
+                Agent.getPrimaryAgent().getPlayerContext().world().dimensionType();
 
         if (!Objects.equals(thisPlayerDimension, currentRenderViewDimension)) {
             // this is a path for a bot in a different dimension, don't render it
@@ -678,8 +678,7 @@ public final class PathRenderer implements IRenderer {
         // BlockPos blockpos = movingObjectPositionIn.getBlockPos();
         BlockStateInterface bsi =
                 new BlockStateInterface(
-                        AgentAPI.getProvider()
-                                .getPrimaryAgent()
+                        Agent.getPrimaryAgent()
                                 .getPlayerContext()); // TODO this assumes same dimension between
         // primary maestro and render view? is this
         // safe?

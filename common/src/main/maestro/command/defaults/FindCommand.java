@@ -1,13 +1,10 @@
 package maestro.command.defaults;
 
-import static maestro.api.AgentAPI.FORCE_COMMAND_PREFIX;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.AgentAPI;
 import maestro.api.command.Command;
 import maestro.api.command.argument.IArgConsumer;
 import maestro.api.command.datatypes.BlockById;
@@ -67,7 +64,13 @@ public class FindCommand extends Command {
                 prefixed.append(component);
 
                 net.minecraft.client.Minecraft.getInstance()
-                        .execute(() -> AgentAPI.getSettings().logger.value.accept(prefixed));
+                        .execute(
+                                () ->
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .logger
+                                                .value
+                                                .accept(prefixed));
             }
         } else {
             log.atInfo().log("No cached positions found for requested blocks");
@@ -76,7 +79,7 @@ public class FindCommand extends Command {
 
     private Component positionToComponent(PackedBlockPos pos) {
         String positionText = String.format("%s %s %s", pos.getX(), pos.getY(), pos.getZ());
-        String command = String.format("%sgoal %s", FORCE_COMMAND_PREFIX, positionText);
+        String command = String.format("%sgoal %s", Agent.settings().prefix.value, positionText);
         MutableComponent baseComponent = Component.literal(pos.toString());
         MutableComponent hoverComponent = Component.literal("Click to set goal to this position");
         baseComponent.setStyle(

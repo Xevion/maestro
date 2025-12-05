@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.api.Setting;
 import maestro.api.Settings;
 import maestro.api.command.argument.IArgConsumer;
@@ -277,7 +277,7 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addSettings() {
         return append(
-                AgentAPI.getSettings().allSettings.stream()
+                Agent.getPrimaryAgent().getSettings().allSettings.stream()
                         .filter(s -> !s.isJavaOnly())
                         .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
@@ -290,7 +290,7 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addModifiedSettings() {
         return append(
-                SettingsUtil.modifiedSettings(AgentAPI.getSettings()).stream()
+                SettingsUtil.modifiedSettings(Agent.getPrimaryAgent().getSettings()).stream()
                         .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
     }
@@ -303,7 +303,7 @@ public class TabCompleteHelper {
      */
     public TabCompleteHelper addToggleableSettings() {
         return append(
-                AgentAPI.getSettings().getAllValuesByType(Boolean.class).stream()
+                Agent.getPrimaryAgent().getSettings().getAllValuesByType(Boolean.class).stream()
                         .map(Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER));
     }

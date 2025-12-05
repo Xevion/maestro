@@ -231,7 +231,7 @@ public class MovementSwimHorizontal extends Movement {
                                     FallingBlockEntity.class,
                                     new AABB(0, 0, 0, 1, 1.1, 1).move(blockPosConverted))
                             .isEmpty()
-                    && Agent.settings().pauseMiningForFallingBlocks.value) {
+                    && Agent.getPrimaryAgent().settingspauseMiningForFallingBlocks.value) {
                 return false;
             }
 

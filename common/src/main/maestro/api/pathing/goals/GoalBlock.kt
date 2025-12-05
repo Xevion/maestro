@@ -1,6 +1,6 @@
 package maestro.api.pathing.goals
 
-import maestro.api.AgentAPI
+import maestro.Agent
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.pack
 import maestro.rendering.IGoalRenderPos
@@ -62,7 +62,8 @@ open class GoalBlock(
             val verticalHeuristic = GoalYLevel.calculate(0, yDiff)
             val swimmingVerticalHeuristic =
                 abs(yDiff) * 3.5 *
-                    AgentAPI
+                    Agent
+                        .getPrimaryAgent()
                         .getSettings()
                         .costHeuristic.value
             heuristic += min(verticalHeuristic, swimmingVerticalHeuristic)

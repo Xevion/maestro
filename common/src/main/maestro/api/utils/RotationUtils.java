@@ -1,7 +1,7 @@
 package maestro.api.utils;
 
 import java.util.Optional;
-import maestro.api.AgentAPI;
+import maestro.Agent;
 import maestro.api.player.PlayerContext;
 import maestro.utils.BlockPosExtKt;
 import maestro.utils.Vec2ExtKt;
@@ -148,7 +148,8 @@ public final class RotationUtils {
 
     public static Optional<Rotation> reachable(
             PlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
-        if (AgentAPI.getSettings().remainWithExistingLookDirection.value && ctx.isLookingAt(pos)) {
+        if (Agent.getPrimaryAgent().getSettings().remainWithExistingLookDirection.value
+                && ctx.isLookingAt(pos)) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch
@@ -236,8 +237,7 @@ public final class RotationUtils {
                         : ctx.player().getEyePosition(1.0F);
         Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, ctx.playerRotations());
         Rotation actualRotation =
-                AgentAPI.getProvider()
-                        .getMaestroForPlayer(ctx.player())
+                Agent.getAgentForPlayer(ctx.player())
                         .getLookBehavior()
                         .getAimProcessor()
                         .peekRotation(rotation);

@@ -3,17 +3,19 @@ package maestro;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import maestro.api.AgentAPI;
 import maestro.api.Settings;
 import maestro.api.behavior.IBehavior;
 import maestro.api.player.PlayerContext;
 import maestro.api.task.ITask;
 import maestro.api.utils.Loggers;
+import maestro.api.utils.SettingsUtil;
 import maestro.behavior.*;
 import maestro.cache.WorldProvider;
 import maestro.command.manager.CommandManager;
@@ -30,9 +32,15 @@ import maestro.selection.SelectionManager;
 import maestro.task.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 public class Agent {
+
+    // Multi-agent registry (replaces AgentProvider)
+    private static final CopyOnWriteArrayList<Agent> allAgents = new CopyOnWriteArrayList<>();
 
     private static final ThreadPoolExecutor threadPool;
 
@@ -65,6 +73,7 @@ public class Agent {
 
     private final Minecraft mc;
     private final Path directory;
+    private final Settings settings;
 
     private final GameEventHandler gameEventHandler;
 
@@ -129,6 +138,11 @@ public class Agent {
 
     Agent(Minecraft mc) {
         this.mc = mc;
+
+        // Load settings for this agent instance
+        this.settings = new Settings();
+        SettingsUtil.readAndApply(this.settings, SettingsUtil.SETTINGS_DEFAULT_NAME);
+
         this.gameEventHandler = new GameEventHandler(this);
         this.devModeManager = new DevModeManager(this);
 
@@ -144,6 +158,9 @@ public class Agent {
         // Define this before behaviors try and get it, or else it will be null and the builds will
         // fail!
         this.playerContext = new PlayerContext(this, mc);
+
+        // Register this agent in the global registry
+        allAgents.add(this);
 
         {
             this.lookBehavior = this.registerBehavior(LookBehavior::new);
@@ -665,8 +682,77 @@ public class Agent {
         return this.directory;
     }
 
+    @NotNull
+    public Settings getSettings() {
+        return this.settings;
+    }
+
+    /**
+     * Execute a command directly without going through the chat system. This is the preferred way
+     * for clickable UI components to trigger commands.
+     *
+     * @param command The command string (without prefix)
+     * @return true if command was executed successfully
+     */
+    public boolean executeCommand(String command) {
+        return this.commandManager.execute(command);
+    }
+
+    // Static accessors for multi-agent scenarios
+
+    /**
+     * Get or create the primary agent instance. Lazily creates the agent on first access using the
+     * Minecraft singleton.
+     */
+    public static Agent getPrimaryAgent() {
+        if (allAgents.isEmpty()) {
+            new Agent(Minecraft.getInstance());
+        }
+        return allAgents.getFirst();
+    }
+
+    /** Get all agent instances for multi-agent scenarios. */
+    public static List<Agent> getAllAgents() {
+        return List.copyOf(allAgents);
+    }
+
+    /** Find the agent associated with a specific player. */
+    public static Agent getAgentForPlayer(LocalPlayer player) {
+        for (Agent agent : allAgents) {
+            if (agent.playerContext.player() == player) {
+                return agent;
+            }
+        }
+        return null;
+    }
+
+    /** Find the agent associated with a specific Minecraft instance. */
+    public static Agent getAgentForMinecraft(Minecraft minecraft) {
+        for (Agent agent : allAgents) {
+            if (agent.playerContext.minecraft() == minecraft) {
+                return agent;
+            }
+        }
+        return null;
+    }
+
+    /** Find the agent associated with a specific connection. */
+    public static Agent getAgentForConnection(ClientPacketListener connection) {
+        for (Agent agent : allAgents) {
+            LocalPlayer player = agent.playerContext.player();
+            if (player != null && player.connection == connection) {
+                return agent;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @deprecated Use {@link #getSettings()} on agent instance instead
+     */
+    @Deprecated
     public static Settings settings() {
-        return AgentAPI.getSettings();
+        return Agent.getPrimaryAgent().getSettings();
     }
 
     public static Executor getExecutor() {
