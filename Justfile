@@ -64,3 +64,52 @@ install-hooks:
 # Integration test - verify client starts and mixins load
 smoke platform="fabric":
     bun ./scripts/smoke.ts {{platform}}
+
+# Query Minecraft source JAR
+# Usage:
+#   just mcjar list renderer/     # List classes in package
+#   just mcjar cat Minecraft.java # Read entire class
+#   just mcjar grep shouldEntityAppearGlowing Minecraft.java  # Search in class
+#   just mcjar grep-all startUseItem 'client/*.java'  # Search multiple files
+mcjar cmd *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    JAR=$(find .gradle/loom-cache/minecraftMaven/net/minecraft -name '*-sources.jar' -path '*/1.21.4*' | head -1)
+    if [ -z "$JAR" ]; then
+        echo "Error: Minecraft sources JAR not found. Run './gradlew build' first."
+        exit 1
+    fi
+
+    case "{{cmd}}" in
+        list)
+            # List classes matching pattern: just mcjar list renderer/
+            unzip -l "$JAR" | grep "net/minecraft/{{ args }}"
+            ;;
+        cat)
+            # Read entire class: just mcjar cat client/Minecraft.java
+            unzip -p "$JAR" "net/minecraft/{{ args }}"
+            ;;
+        grep)
+            # Search in specific class: just mcjar grep shouldEntityAppearGlowing client/Minecraft.java
+            PATTERN="{{ args }}"
+            PATTERN_PART="${PATTERN%% *}"
+            FILE_PART="${PATTERN#* }"
+            unzip -p "$JAR" "net/minecraft/$FILE_PART" | grep --color=auto -B3 -A8 "$PATTERN_PART"
+            ;;
+        grep-all)
+            # Search multiple files: just mcjar grep-all startUseItem 'client/*.java'
+            PATTERN="{{ args }}"
+            PATTERN_PART="${PATTERN%% *}"
+            FILE_PART="${PATTERN#* }"
+            unzip -p "$JAR" "net/minecraft/$FILE_PART" 2>/dev/null | grep --color=auto -B2 -A5 "$PATTERN_PART"
+            ;;
+        *)
+            echo "Unknown command: {{cmd}}"
+            echo "Usage:"
+            echo "  just mcjar list <path>              # List classes"
+            echo "  just mcjar cat <file>               # Read class"
+            echo "  just mcjar grep <pattern> <file>    # Search in class"
+            echo "  just mcjar grep-all <pattern> <glob># Search multiple files"
+            exit 1
+            ;;
+    esac
