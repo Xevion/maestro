@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.Tesselator
 import com.mojang.blaze3d.vertex.VertexFormat
 import maestro.api.utils.Loggers
 import net.minecraft.client.renderer.CoreShaders
-import org.lwjgl.system.MemoryUtil
+import org.lwjgl.BufferUtils
 import org.slf4j.Logger
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -32,7 +32,6 @@ object TextRenderer {
     private val FONT_SIZES = intArrayOf(20, 30, 40, 60)
 
     private var fonts: Array<Font>? = null
-    private var fontBuffer: ByteBuffer? = null
     private var currentFont: Font? = null
     private var building = false
     private var fontScale = 1.0
@@ -50,25 +49,20 @@ object TextRenderer {
             return
         }
 
-        var createdFonts: MutableList<Font>? = null
-        var loadedBuffer: ByteBuffer? = null
         try {
             log.atInfo().log("Initializing custom font renderer")
-            loadedBuffer = loadFontFromResources()
+            val fontBuffer = loadFontFromResources()
 
             log
                 .atInfo()
-                .addKeyValue("buffer_size", loadedBuffer.remaining())
+                .addKeyValue("buffer_size", fontBuffer.remaining())
                 .log("Font buffer loaded")
 
-            createdFonts = mutableListOf()
-            for (i in FONT_SIZES.indices) {
-                log.atDebug().addKeyValue("size", FONT_SIZES[i]).log("Creating font")
-                createdFonts.add(Font(loadedBuffer, FONT_SIZES[i]))
-            }
-
-            fonts = createdFonts.toTypedArray()
-            fontBuffer = loadedBuffer
+            fonts =
+                Array(FONT_SIZES.size) { i ->
+                    log.atDebug().addKeyValue("size", FONT_SIZES[i]).log("Creating font")
+                    Font(fontBuffer, FONT_SIZES[i])
+                }
 
             log
                 .atInfo()
@@ -80,11 +74,6 @@ object TextRenderer {
                 .atError()
                 .setCause(e)
                 .log("Failed to initialize custom font renderer")
-            // Clean up partially created fonts
-            createdFonts?.forEach { it.close() }
-            if (loadedBuffer != null) {
-                MemoryUtil.memFree(loadedBuffer)
-            }
             initFailed = true
         }
     }
@@ -96,9 +85,7 @@ object TextRenderer {
                 ?: throw RuntimeException("Font resource not found: $resourcePath")
 
         val bytes = stream.use { it.readBytes() }
-        val buffer = MemoryUtil.memAlloc(bytes.size)
-        buffer.put(bytes).flip()
-        return buffer
+        return BufferUtils.createByteBuffer(bytes.size).put(bytes).flip() as ByteBuffer
     }
 
     fun isInitialized(): Boolean = fonts != null && !initFailed
@@ -305,7 +292,5 @@ object TextRenderer {
         fonts?.forEach { it.close() }
         fonts = null
         currentFont = null
-        fontBuffer?.let { MemoryUtil.memFree(it) }
-        fontBuffer = null
     }
 }
