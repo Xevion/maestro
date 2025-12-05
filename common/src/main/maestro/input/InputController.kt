@@ -9,6 +9,7 @@ import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
 import maestro.behavior.Behavior
 import maestro.gui.ControlScreen
+import maestro.gui.radial.RadialMenu
 import maestro.pathing.movement.ClickIntent
 import maestro.pathing.movement.ForwardInput
 import maestro.pathing.movement.Intent
@@ -168,6 +169,7 @@ class InputController(
                 // Death screen - allow keys (useful for reviewing what killed you)
                 is DeathScreen -> true
                 is ControlScreen -> true
+                is RadialMenu -> true
                 // Any other screen - block keys
                 else -> false
             }

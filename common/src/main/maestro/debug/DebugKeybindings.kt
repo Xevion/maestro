@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants
 import maestro.Agent
 import maestro.gui.ControlScreen
 import maestro.gui.Toast
+import maestro.gui.radial.RadialMenu
 import maestro.input.InputController
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
@@ -16,6 +17,7 @@ import org.lwjgl.glfw.GLFW
  * Keybindings:
  * - Grave (`) - Toggle GUI
  * - G - Toggle freecam
+ * - Right-click hold - Radial debug menu
  */
 object DebugKeybindings {
     private const val CATEGORY = "Maestro Debug"
@@ -26,6 +28,7 @@ object DebugKeybindings {
     private var wasGravePressed = false
     private var wasGPressed = false
     private var wasCtrlGPressed = false
+    private var wasRightClickPressed = false
 
     /** Initialize keybindings. Called during client initialization. */
     @JvmStatic
@@ -102,6 +105,32 @@ object DebugKeybindings {
             }
             wasCtrlGPressed = ctrlGPressed
         }
+
+        // Right-click hold: Open radial debug menu
+        handleRadialMenu(mc)
+    }
+
+    private fun handleRadialMenu(mc: Minecraft) {
+        val agent = Agent.getPrimaryAgent()
+        if (agent == null || !agent.isFreecamActive) {
+            wasRightClickPressed = false
+            return
+        }
+
+        if (!InputController.canUseBotKeys()) {
+            wasRightClickPressed = false
+            return
+        }
+
+        val window = mc.window.window
+        val rightClickPressed = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS
+
+        // Open menu on right-click press (not already open, no other screen)
+        if (rightClickPressed && !wasRightClickPressed && mc.screen == null) {
+            mc.setScreen(RadialMenu())
+        }
+
+        wasRightClickPressed = rightClickPressed
     }
 
     /** Check if grave accent key is pressed. */

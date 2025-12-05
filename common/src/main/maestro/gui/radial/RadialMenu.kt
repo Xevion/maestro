@@ -1,0 +1,463 @@
+package maestro.gui.radial
+
+import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.blaze3d.vertex.BufferUploader
+import com.mojang.blaze3d.vertex.DefaultVertexFormat
+import com.mojang.blaze3d.vertex.Tesselator
+import com.mojang.blaze3d.vertex.VertexFormat
+import maestro.Agent
+import maestro.api.pathing.goals.GoalBlock
+import maestro.api.pathing.goals.GoalXZ
+import maestro.api.utils.Helper
+import maestro.api.utils.Rotation
+import maestro.api.utils.RotationUtils
+import maestro.behavior.FreecamMode
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.renderer.CoreShaders
+import net.minecraft.network.chat.Component
+import net.minecraft.world.level.ClipContext
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.HitResult
+import net.minecraft.world.phys.Vec3
+import org.joml.Matrix4f
+import org.lwjgl.glfw.GLFW
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
+
+/**
+ * Radial debug menu that appears when right-click is held.
+ *
+ * Uses mouse delta tracking (via MixinMouseHandler) to determine which menu item
+ * is selected. Camera rotation is blocked while this menu is open.
+ */
+class RadialMenu :
+    Screen(Component.literal("Radial Menu")),
+    Helper {
+    private var deltaX: Float = 0f
+    private var deltaY: Float = 0f
+    private var selectedItem: RadialMenuItem? = null
+    private val items: List<RadialMenuItem> = buildMenuItems()
+    private var centerX: Int = 0
+    private var centerY: Int = 0
+    private var openedAtMs: Long = 0L
+
+    private fun buildMenuItems(): List<RadialMenuItem> =
+        listOf(
+            RadialMenuItem(
+                id = "stop",
+                label = "Stop",
+                action = ::executeStopPath,
+            ),
+            RadialMenuItem(
+                id = "goto",
+                label = "Goto",
+                action = ::executeGotoCursor,
+            ),
+            RadialMenuItem(
+                id = "direction",
+                label = "Direction",
+                action = ::executePathDirection,
+            ),
+            RadialMenuItem(
+                id = "teleport",
+                label = "Teleport",
+                action = ::executeTeleport,
+            ),
+        )
+
+    override fun isPauseScreen(): Boolean = false
+
+    override fun init() {
+        super.init()
+        centerX = width / 2
+        centerY = height / 2
+        openedAtMs = System.currentTimeMillis()
+        currentInstance = this
+    }
+
+    override fun removed() {
+        super.removed()
+        if (currentInstance === this) {
+            currentInstance = null
+        }
+    }
+
+    companion object {
+        private const val INNER_RADIUS = 30f
+        private const val OUTER_RADIUS = 80f
+        private const val DEAD_ZONE = 15f
+
+        /** Number of triangle segments per menu item arc (higher = smoother) */
+        private const val SEGMENTS_PER_ITEM = 32
+
+        private const val COLOR_BACKGROUND = 0x80000000.toInt()
+        private const val COLOR_SEGMENT = 0xCC333333.toInt()
+        private const val COLOR_SEGMENT_SELECTED = 0xCC4488FF.toInt()
+        private const val COLOR_BORDER = 0xFFAAAAAA.toInt()
+        private const val COLOR_TEXT = 0xFFFFFFFF.toInt()
+        private const val COLOR_TEXT_SELECTED = 0xFFFFFF00.toInt()
+
+        @Volatile
+        private var currentInstance: RadialMenu? = null
+
+        fun getInstance(): RadialMenu? = currentInstance
+    }
+
+    private fun updateSelectionFromMouse(
+        mouseX: Int,
+        mouseY: Int,
+    ) {
+        deltaX = (mouseX - centerX).toFloat()
+        deltaY = (mouseY - centerY).toFloat()
+
+        val distance = sqrt(deltaX * deltaX + deltaY * deltaY)
+
+        if (distance < DEAD_ZONE) {
+            selectedItem = null
+            return
+        }
+
+        // Calculate angle: 0 = up (negative Y), clockwise
+        // atan2(x, -y) gives us angle from "up" direction
+        val angle = Math.toDegrees(atan2(deltaX.toDouble(), -deltaY.toDouble())).toFloat()
+        val normalizedAngle = (angle + 360f) % 360f
+
+        val itemAngle = 360f / items.size
+        val index = (normalizedAngle / itemAngle).toInt().coerceIn(0, items.size - 1)
+        selectedItem = items[index]
+    }
+
+    override fun tick() {
+        super.tick()
+
+        // Grace period - don't check release for first 100ms to avoid timing issues
+        if (System.currentTimeMillis() - openedAtMs < 100) return
+
+        // Check if right-click is still held
+        val window = minecraft?.window?.window ?: return
+        val rightClickHeld = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS
+
+        if (!rightClickHeld) {
+            // Execute selected action and close
+            selectedItem?.action?.invoke()
+            minecraft?.setScreen(null)
+        }
+    }
+
+    override fun render(
+        graphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+        partialTick: Float,
+    ) {
+        // Update selection based on mouse position relative to center
+        updateSelectionFromMouse(mouseX, mouseY)
+
+        // Semi-transparent full-screen overlay
+        graphics.fill(0, 0, width, height, COLOR_BACKGROUND)
+
+        renderRadialSegments(graphics)
+        renderLabels(graphics)
+        renderCenterIndicator(graphics)
+    }
+
+    private fun renderRadialSegments(graphics: GuiGraphics) {
+        val matrix = graphics.pose().last().pose()
+        val itemCount = items.size
+        val anglePerItem = 360f / itemCount
+
+        // Set up render state for triangles
+        RenderSystem.enableBlend()
+        RenderSystem.defaultBlendFunc()
+        RenderSystem.setShader(CoreShaders.POSITION_COLOR)
+
+        items.forEachIndexed { index, item ->
+            val startAngle = index * anglePerItem - 90f // -90 to start from top
+            val isSelected = item == selectedItem
+            val fillColor = if (isSelected) COLOR_SEGMENT_SELECTED else COLOR_SEGMENT
+
+            renderArcSegment(
+                matrix,
+                centerX.toFloat(),
+                centerY.toFloat(),
+                INNER_RADIUS,
+                OUTER_RADIUS,
+                startAngle,
+                anglePerItem,
+                fillColor,
+            )
+        }
+
+        // Render borders between segments
+        items.forEachIndexed { index, _ ->
+            val angle = Math.toRadians((index * anglePerItem - 90f).toDouble())
+            renderRadialLine(
+                matrix,
+                centerX.toFloat(),
+                centerY.toFloat(),
+                INNER_RADIUS,
+                OUTER_RADIUS,
+                angle.toFloat(),
+                COLOR_BORDER,
+            )
+        }
+
+        // Render inner and outer ring borders
+        renderRingOutline(matrix, centerX.toFloat(), centerY.toFloat(), INNER_RADIUS, COLOR_BORDER)
+        renderRingOutline(matrix, centerX.toFloat(), centerY.toFloat(), OUTER_RADIUS, COLOR_BORDER)
+
+        RenderSystem.disableBlend()
+    }
+
+    /**
+     * Renders a filled arc segment using GPU triangle strip.
+     */
+    private fun renderArcSegment(
+        matrix: Matrix4f,
+        cx: Float,
+        cy: Float,
+        innerRadius: Float,
+        outerRadius: Float,
+        startAngleDeg: Float,
+        sweepAngleDeg: Float,
+        color: Int,
+    ) {
+        val tesselator = Tesselator.getInstance()
+        val buffer = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR)
+
+        val startRad = Math.toRadians(startAngleDeg.toDouble())
+        val sweepRad = Math.toRadians(sweepAngleDeg.toDouble())
+
+        // Extract ARGB components
+        val a = (color shr 24 and 0xFF) / 255f
+        val r = (color shr 16 and 0xFF) / 255f
+        val g = (color shr 8 and 0xFF) / 255f
+        val b = (color and 0xFF) / 255f
+
+        for (i in 0..SEGMENTS_PER_ITEM) {
+            val angle = startRad + (sweepRad * i / SEGMENTS_PER_ITEM)
+            val cosA = cos(angle).toFloat()
+            val sinA = sin(angle).toFloat()
+
+            // Outer vertex first, then inner - creates proper winding for triangle strip
+            buffer
+                .addVertex(matrix, cx + cosA * outerRadius, cy + sinA * outerRadius, 0f)
+                .setColor(r, g, b, a)
+            buffer
+                .addVertex(matrix, cx + cosA * innerRadius, cy + sinA * innerRadius, 0f)
+                .setColor(r, g, b, a)
+        }
+
+        BufferUploader.drawWithShader(buffer.buildOrThrow())
+    }
+
+    /**
+     * Renders a radial line from inner to outer radius at the given angle.
+     */
+    private fun renderRadialLine(
+        matrix: Matrix4f,
+        cx: Float,
+        cy: Float,
+        innerRadius: Float,
+        outerRadius: Float,
+        angleRad: Float,
+        color: Int,
+    ) {
+        val tesselator = Tesselator.getInstance()
+        val buffer = tesselator.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR)
+
+        val cosA = cos(angleRad.toDouble()).toFloat()
+        val sinA = sin(angleRad.toDouble()).toFloat()
+
+        val a = (color shr 24 and 0xFF) / 255f
+        val r = (color shr 16 and 0xFF) / 255f
+        val g = (color shr 8 and 0xFF) / 255f
+        val b = (color and 0xFF) / 255f
+
+        buffer
+            .addVertex(matrix, cx + cosA * innerRadius, cy + sinA * innerRadius, 0f)
+            .setColor(r, g, b, a)
+        buffer
+            .addVertex(matrix, cx + cosA * outerRadius, cy + sinA * outerRadius, 0f)
+            .setColor(r, g, b, a)
+
+        BufferUploader.drawWithShader(buffer.buildOrThrow())
+    }
+
+    /**
+     * Renders a circular outline at the given radius.
+     */
+    private fun renderRingOutline(
+        matrix: Matrix4f,
+        cx: Float,
+        cy: Float,
+        radius: Float,
+        color: Int,
+    ) {
+        val tesselator = Tesselator.getInstance()
+        val buffer = tesselator.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR)
+
+        val a = (color shr 24 and 0xFF) / 255f
+        val r = (color shr 16 and 0xFF) / 255f
+        val g = (color shr 8 and 0xFF) / 255f
+        val b = (color and 0xFF) / 255f
+
+        val segments = SEGMENTS_PER_ITEM * items.size
+        for (i in 0..segments) {
+            val angle = Math.toRadians(360.0 * i / segments)
+            val cosA = cos(angle).toFloat()
+            val sinA = sin(angle).toFloat()
+
+            buffer
+                .addVertex(matrix, cx + cosA * radius, cy + sinA * radius, 0f)
+                .setColor(r, g, b, a)
+        }
+
+        BufferUploader.drawWithShader(buffer.buildOrThrow())
+    }
+
+    private fun renderLabels(graphics: GuiGraphics) {
+        val itemCount = items.size
+        val anglePerItem = 360f / itemCount
+        val labelRadius = (INNER_RADIUS + OUTER_RADIUS) / 2
+
+        items.forEachIndexed { index, item ->
+            val midAngle = Math.toRadians((index * anglePerItem - 90f + anglePerItem / 2).toDouble())
+            val labelX = centerX + (labelRadius * cos(midAngle)).toInt()
+            val labelY = centerY + (labelRadius * sin(midAngle)).toInt()
+
+            val isSelected = item == selectedItem
+            val textColor = if (isSelected) COLOR_TEXT_SELECTED else COLOR_TEXT
+
+            val textWidth = font.width(item.label)
+            graphics.drawString(
+                font,
+                item.label,
+                labelX - textWidth / 2,
+                labelY - font.lineHeight / 2,
+                textColor,
+                true, // shadow
+            )
+        }
+    }
+
+    private fun renderCenterIndicator(graphics: GuiGraphics) {
+        // Draw small indicator showing current mouse direction
+        val indicatorLength = 10
+        val distance = sqrt(deltaX * deltaX + deltaY * deltaY)
+
+        if (distance > 2) {
+            val normalizedX = (deltaX / distance * indicatorLength).toInt()
+            val normalizedY = (deltaY / distance * indicatorLength).toInt()
+
+            graphics.fill(
+                centerX - 2,
+                centerY - 2,
+                centerX + 2,
+                centerY + 2,
+                COLOR_BORDER,
+            )
+            graphics.fill(
+                centerX + normalizedX - 1,
+                centerY + normalizedY - 1,
+                centerX + normalizedX + 1,
+                centerY + normalizedY + 1,
+                COLOR_TEXT_SELECTED,
+            )
+        } else {
+            // Just center dot when in dead zone
+            graphics.fill(
+                centerX - 3,
+                centerY - 3,
+                centerX + 3,
+                centerY + 3,
+                COLOR_BORDER,
+            )
+        }
+    }
+
+    // --- Actions ---
+
+    private fun executeStopPath() {
+        val agent = Agent.getPrimaryAgent() ?: return
+        agent.pathingBehavior.cancelEverything()
+    }
+
+    private fun executeGotoCursor() {
+        val target = raycastFromFreecam() ?: return
+        if (target.type == HitResult.Type.BLOCK) {
+            val blockPos = (target as BlockHitResult).blockPos
+            val agent = Agent.getPrimaryAgent() ?: return
+            agent.customGoalTask.setGoalAndPath(GoalBlock(blockPos))
+        }
+    }
+
+    private fun executePathDirection() {
+        val agent = Agent.getPrimaryAgent() ?: return
+        val yaw = agent.freeLookYaw
+
+        val freecamPos = getFreecamPosition(agent) ?: return
+
+        val distance = 10000.0
+        val dx = -sin(Math.toRadians(yaw.toDouble()))
+        val dz = cos(Math.toRadians(yaw.toDouble()))
+
+        val goal =
+            GoalXZ(
+                (freecamPos.x + dx * distance).toInt(),
+                (freecamPos.z + dz * distance).toInt(),
+            )
+        agent.customGoalTask.setGoalAndPath(goal)
+    }
+
+    private fun executeTeleport() {
+        val target = raycastFromFreecam() ?: return
+        if (target.type != HitResult.Type.BLOCK) return
+
+        val pos = target.location
+        val mc = minecraft ?: return
+        val player = mc.player ?: return
+
+        // Use command for server compatibility
+        player.connection.sendUnsignedCommand("tp ${pos.x} ${pos.y} ${pos.z}")
+    }
+
+    private fun getFreecamPosition(agent: Agent): Vec3? =
+        when (agent.freecamMode) {
+            FreecamMode.FOLLOW ->
+                agent.freecamFollowOffset?.let { offset ->
+                    agent.playerContext
+                        .player()
+                        .position()
+                        .add(offset)
+                }
+
+            else -> agent.freecamPosition
+        }
+
+    private fun raycastFromFreecam(): HitResult? {
+        val agent = Agent.getPrimaryAgent() ?: return null
+        val mc = minecraft ?: return null
+        val level = mc.level ?: return null
+        val player = mc.player ?: return null
+
+        val start = getFreecamPosition(agent) ?: return null
+        val rotation = Rotation(agent.freeLookYaw, agent.freeLookPitch)
+        val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
+        val distance = 1024.0
+        val end = start.add(direction.scale(distance))
+
+        return level.clip(
+            ClipContext(
+                start,
+                end,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.NONE,
+                player,
+            ),
+        )
+    }
+}

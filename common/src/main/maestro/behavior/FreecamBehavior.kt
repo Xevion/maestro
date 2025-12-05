@@ -7,6 +7,7 @@ import maestro.api.event.events.TickEvent
 import maestro.api.pathing.goals.GoalGetToBlock
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
+import maestro.gui.radial.RadialMenu
 import maestro.input.InputController
 import maestro.utils.clampLength
 import maestro.utils.forward
@@ -215,26 +216,23 @@ class FreecamBehavior(
     }
 
     private fun handleFreecamInput() {
+        // Skip input handling if radial menu is open (it handles right-click)
+        if (RadialMenu.getInstance() != null) {
+            wasLeftClickPressed = false
+            wasRightClickPressed = false
+            rightClickStartTimeMs = 0L
+            rightClickPathQueued = false
+            return
+        }
+
         val mouse = readMouseState()
 
         if (mouse.leftClick && !wasLeftClickPressed) {
             handleTeleport()
         }
 
-        if (mouse.rightClick) {
-            if (rightClickStartTimeMs == 0L) {
-                rightClickStartTimeMs = Util.getMillis()
-            }
-
-            val holdDurationMs = Util.getMillis() - rightClickStartTimeMs
-            if (holdDurationMs >= PATHFIND_HOLD_DURATION_MS && !rightClickPathQueued) {
-                handlePathfinding()
-                rightClickPathQueued = true
-            }
-        } else {
-            rightClickStartTimeMs = 0L
-            rightClickPathQueued = false
-        }
+        // Right-click handling disabled - radial menu now handles this
+        // The menu opens on right-click press via DebugKeybindings
 
         wasLeftClickPressed = mouse.leftClick
         wasRightClickPressed = mouse.rightClick
