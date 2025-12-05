@@ -5,7 +5,6 @@ import maestro.api.behavior.IPathingBehavior
 import maestro.api.event.events.PathEvent
 import maestro.api.event.events.PlayerUpdateEvent
 import maestro.api.event.events.RenderEvent
-import maestro.api.event.events.SprintStateEvent
 import maestro.api.event.events.TickEvent
 import maestro.api.event.events.type.EventState
 import maestro.api.pathing.calc.IPath
@@ -140,12 +139,6 @@ class PathingBehavior(
         }
 
         dispatchEvents()
-    }
-
-    override fun onPlayerSprintState(event: SprintStateEvent) {
-        if (isPathing()) {
-            event.state = current!!.isSprinting
-        }
     }
 
     private fun tickPath() {

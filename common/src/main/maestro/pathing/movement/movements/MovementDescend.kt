@@ -279,7 +279,7 @@ class MovementDescend(
             movement =
                 MovementIntent.Toward(
                     target = target,
-                    speed = MovementSpeed.WALK,
+                    speed = MovementSpeed.SPRINT,
                     startPos = src.centerXZ,
                 ),
             look =
