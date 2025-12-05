@@ -1,6 +1,7 @@
 package maestro.gui.widget
 
 import maestro.gui.GuiColors
+import maestro.gui.drawText
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -24,7 +25,7 @@ class LabelWidget(
         tickDelta: Float,
     ) {
         val font = Minecraft.getInstance().font
-        graphics.drawString(font, text, x, y, GuiColors.TEXT_SECONDARY, false)
+        graphics.drawText(font, text, x, y, GuiColors.TEXT_SECONDARY)
     }
 
     override fun handleClick(

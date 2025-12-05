@@ -1,6 +1,8 @@
 package maestro.gui.widget
 
 import maestro.gui.GuiColors
+import maestro.gui.drawBorder
+import maestro.gui.drawText
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -106,7 +108,7 @@ class CheckboxWidget(
         )
 
         // Render checkbox border
-        renderBorder(graphics, checkboxX, checkboxY, CHECKBOX_SIZE, CHECKBOX_SIZE, GuiColors.CHECKBOX_BORDER)
+        graphics.drawBorder(checkboxX, checkboxY, CHECKBOX_SIZE, CHECKBOX_SIZE, GuiColors.CHECKBOX_BORDER)
 
         // Render checkmark if checked
         if (checked) {
@@ -121,7 +123,7 @@ class CheckboxWidget(
         }
 
         // Render label
-        graphics.drawString(font, label, labelX, labelY, GuiColors.TEXT, false)
+        graphics.drawText(font, label, labelX, labelY, GuiColors.TEXT)
     }
 
     override fun handleClick(
@@ -134,27 +136,6 @@ class CheckboxWidget(
         checked = !checked
         onChange(checked)
         return true
-    }
-
-    /**
-     * Renders a 1-pixel border around a rectangular area.
-     */
-    private fun renderBorder(
-        graphics: GuiGraphics,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        color: Int,
-    ) {
-        // Top
-        graphics.fill(x, y, x + width, y + 1, color)
-        // Bottom
-        graphics.fill(x, y + height - 1, x + width, y + height, color)
-        // Left
-        graphics.fill(x, y, x + 1, y + height, color)
-        // Right
-        graphics.fill(x + width - 1, y, x + width, y + height, color)
     }
 
     companion object {

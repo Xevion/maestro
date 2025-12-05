@@ -1,6 +1,9 @@
 package maestro.gui.widget
 
 import maestro.gui.GuiColors
+import maestro.gui.drawBorder
+import maestro.gui.drawText
+import maestro.renderer.text.TextRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -31,32 +34,20 @@ class ResetButtonWidget(
         graphics.fill(x, y, x + width, y + height, bgColor)
 
         // Border
-        val borderColor =
-            if (hovered) {
-                GuiColors.BUTTON_BORDER_HOVERED
-            } else {
-                GuiColors.BUTTON_BORDER
-            }
-        graphics.fill(x, y, x + width, y + 1, borderColor) // Top
-        graphics.fill(x, y + height - 1, x + width, y + height, borderColor) // Bottom
-        graphics.fill(x, y + 1, x + 1, y + height - 1, borderColor) // Left
-        graphics.fill(x + width - 1, y + 1, x + width, y + height - 1, borderColor) // Right
+        val borderColor = if (hovered) GuiColors.BUTTON_BORDER_HOVERED else GuiColors.BUTTON_BORDER
+        graphics.drawBorder(x, y, width, height, borderColor)
 
         val icon = "↻"
-        val scale = 1.8f
+        val iconScale = 1.8f
 
-        graphics.pose().pushPose()
-        graphics.pose().scale(scale, scale, 1.0f)
+        // Get scaled dimensions for centering calculation
+        val iconWidth = TextRenderer.getWidthForVanillaFont(icon, font, iconScale)
+        val iconHeight = (font.lineHeight * iconScale).toInt()
 
-        val iconWidth = font.width(icon)
-        val iconHeight = font.lineHeight
+        val iconX = x + (width - iconWidth) / 2
+        val iconY = y + (height - iconHeight) / 2
 
-        val iconX = (x / scale + (width / scale - iconWidth) / 2).toInt()
-        val iconY = (y / scale + (height / scale - iconHeight) / 2).toInt()
-
-        graphics.drawString(font, icon, iconX, iconY, GuiColors.TEXT, false)
-
-        graphics.pose().popPose()
+        graphics.drawText(font, icon, iconX, iconY, GuiColors.TEXT, scale = iconScale)
     }
 
     override fun handleClick(

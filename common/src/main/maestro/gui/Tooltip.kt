@@ -1,5 +1,6 @@
 package maestro.gui
 
+import maestro.renderer.text.TextRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -14,7 +15,6 @@ object Tooltip {
     private const val LINE_SPACING = 2
     private const val CURSOR_OFFSET_X = 12
     private const val CURSOR_OFFSET_Y = -12
-    private const val FONT_SCALE = 0.95f
 
     /**
      * Renders a tooltip with multiple text lines.
@@ -37,13 +37,17 @@ object Tooltip {
         if (lines.isEmpty()) return
 
         val font = Minecraft.getInstance().font
+        val lineHeight = font.lineHeight
 
-        // Calculate scaled dimensions
-        val maxLineWidth = (lines.maxOf { font.width(it) } * FONT_SCALE).toInt()
-        val scaledLineHeight = (font.lineHeight * FONT_SCALE).toInt()
-        val scaledLineSpacing = (LINE_SPACING * FONT_SCALE).toInt()
-        val tooltipWidth = maxLineWidth + TOOLTIP_PADDING * 2
-        val tooltipHeight = lines.size * scaledLineHeight + (lines.size - 1) * scaledLineSpacing + TOOLTIP_PADDING * 2
+        // Calculate dimensions using custom renderer's width calculation
+        // Clamp width to screen if tooltip content is too wide
+        val maxLineWidth = lines.maxOf { TextRenderer.getWidthForVanillaFont(it, font) }
+        val tooltipWidth = minOf(maxLineWidth + TOOLTIP_PADDING * 2, screenWidth)
+        val tooltipHeight =
+            minOf(
+                lines.size * lineHeight + (lines.size - 1) * LINE_SPACING + TOOLTIP_PADDING * 2,
+                screenHeight,
+            )
 
         // Calculate position (offset from cursor, clamped to screen)
         var x = mouseX + CURSOR_OFFSET_X
@@ -65,25 +69,18 @@ object Tooltip {
         // Render border
         graphics.renderOutline(x, y, tooltipWidth, tooltipHeight, GuiColors.BORDER)
 
-        // Render text lines with scaling
-        val pose = graphics.pose()
-        pose.pushPose()
-        pose.translate((x + TOOLTIP_PADDING).toFloat(), (y + TOOLTIP_PADDING).toFloat(), 0f)
-        pose.scale(FONT_SCALE, FONT_SCALE, 1.0f)
-
-        var textY = 0
+        // Render text lines
+        var textY = y + TOOLTIP_PADDING
         for (line in lines) {
-            graphics.drawString(
+            graphics.drawText(
                 font,
                 line,
-                0,
+                x + TOOLTIP_PADDING,
                 textY,
                 GuiColors.TEXT,
                 false,
             )
-            textY += font.lineHeight + LINE_SPACING
+            textY += lineHeight + LINE_SPACING
         }
-
-        pose.popPose()
     }
 }

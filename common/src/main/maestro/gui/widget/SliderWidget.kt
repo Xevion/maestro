@@ -2,6 +2,8 @@ package maestro.gui.widget
 
 import maestro.api.units.SettingUnit
 import maestro.gui.GuiColors
+import maestro.gui.drawText
+import maestro.renderer.text.TextRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
@@ -32,14 +34,14 @@ private class SliderLayout(
     x: Int,
     width: Int,
 ) {
-    val labelWidth: Int = font.width(label)
+    val labelWidth: Int = TextRenderer.getWidthForVanillaFont(label, font)
     val valueText: String =
         if (unit != null) {
             "${unit.formatCompact(currentValue)} ${unit.displayName()}"
         } else {
             formatValueFallback(currentValue, precision)
         }
-    val valueWidth: Int = font.width(valueText)
+    val valueWidth: Int = TextRenderer.getWidthForVanillaFont(valueText, font)
     val smallValueWidth: Int = (valueWidth * SMALL_TEXT_SCALE).toInt()
 
     val trackStartX: Int = x + labelWidth + LABEL_SPACING
@@ -198,7 +200,7 @@ class SliderWidget(
 
     fun isMouseOverLabel(): Boolean {
         val font = Minecraft.getInstance().font
-        val labelWidth = font.width(label)
+        val labelWidth = TextRenderer.getWidthForVanillaFont(label, font)
         return lastMouseX < x + labelWidth
     }
 
@@ -229,29 +231,28 @@ class SliderWidget(
         updateHandleHover(mouseX, mouseY, handleX, handleY, HANDLE_WIDTH, TRACK_HEIGHT)
 
         // Render small value text above (scaled 0.8x)
-        graphics.pose().pushPose()
-        graphics.pose().scale(0.8f, 0.8f, 1.0f)
-        graphics.drawString(
-            font,
-            layout.valueText,
-            (smallTextX / 0.8f).toInt(),
-            (smallTextY / 0.8f).toInt(),
-            GuiColors.TEXT_SECONDARY,
-            false,
-        )
-        graphics.pose().popPose()
+        with(graphics) {
+            drawText(
+                font,
+                layout.valueText,
+                smallTextX,
+                smallTextY,
+                GuiColors.TEXT_SECONDARY,
+                scale = 0.8f,
+            )
 
-        // Render label
-        graphics.drawString(font, label, labelX, labelY, GuiColors.TEXT, false)
+            // Render label
+            drawText(font, label, labelX, labelY, GuiColors.TEXT)
 
-        // Render track
-        graphics.fill(
-            layout.trackStartX,
-            trackY,
-            layout.trackEndX,
-            trackY + TRACK_HEIGHT,
-            GuiColors.BUTTON_NORMAL,
-        )
+            // Render track
+            fill(
+                layout.trackStartX,
+                trackY,
+                layout.trackEndX,
+                trackY + TRACK_HEIGHT,
+                GuiColors.BUTTON_NORMAL,
+            )
+        }
 
         // Render handle
         val handleColor =

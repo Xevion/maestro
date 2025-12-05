@@ -2,6 +2,8 @@ package maestro.gui.widget
 
 import maestro.gui.GuiColors
 import maestro.gui.drawBorder
+import maestro.gui.drawText
+import maestro.renderer.text.TextRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import org.lwjgl.glfw.GLFW
@@ -90,12 +92,12 @@ class TextInputWidget(
 
         // Enable scissor to clip text that's too long
         graphics.enableScissor(x + TEXT_PADDING, y, x + width - TEXT_PADDING, y + height)
-        graphics.drawString(font, displayText, textX, textY, textColor, false)
+        graphics.drawText(font, displayText, textX, textY, textColor)
 
         // Render cursor if focused
-        if (focused && showCursor && text.isNotEmpty()) {
+        if (focused && showCursor) {
             val textBeforeCursor = text.substring(0, cursorPosition.coerceIn(0, text.length))
-            val cursorX = textX + font.width(textBeforeCursor)
+            val cursorX = textX + TextRenderer.getWidthForVanillaFont(textBeforeCursor, font)
             graphics.fill(cursorX, textY, cursorX + 1, textY + font.lineHeight, GuiColors.TEXT)
         }
 
@@ -121,7 +123,7 @@ class TextInputWidget(
             var currentWidth = 0
 
             for (i in text.indices) {
-                val charWidth = font.width(text.substring(i, i + 1))
+                val charWidth = TextRenderer.getWidthForVanillaFont(text.substring(i, i + 1), font)
                 if (currentWidth + charWidth / 2 > clickX) {
                     cursorPosition = i
                     return true

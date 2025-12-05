@@ -9,9 +9,12 @@ import maestro.Agent
 import maestro.api.pathing.goals.GoalBlock
 import maestro.api.pathing.goals.GoalXZ
 import maestro.api.utils.Helper
+import maestro.api.utils.Loggers
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
 import maestro.behavior.FreecamMode
+import maestro.gui.drawText
+import maestro.renderer.text.TextRenderer
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.renderer.CoreShaders
@@ -22,6 +25,7 @@ import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
+import org.slf4j.Logger
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -99,6 +103,8 @@ class RadialMenu :
         private const val COLOR_BORDER = 0xFFAAAAAA.toInt()
         private const val COLOR_TEXT = 0xFFFFFFFF.toInt()
         private const val COLOR_TEXT_SELECTED = 0xFFFFFF00.toInt()
+
+        private val log: Logger = Loggers.Cmd.get()
 
         @Volatile
         private var currentInstance: RadialMenu? = null
@@ -332,14 +338,14 @@ class RadialMenu :
             val isSelected = item == selectedItem
             val textColor = if (isSelected) COLOR_TEXT_SELECTED else COLOR_TEXT
 
-            val textWidth = font.width(item.label)
-            graphics.drawString(
+            val textWidth = TextRenderer.getWidthForVanillaFont(item.label, font)
+            graphics.drawText(
                 font,
                 item.label,
                 labelX - textWidth / 2,
                 labelY - font.lineHeight / 2,
                 textColor,
-                true, // shadow
+                shadow = true,
             )
         }
     }
@@ -382,24 +388,47 @@ class RadialMenu :
     // --- Actions ---
 
     private fun executeStopPath() {
-        val agent = Agent.getPrimaryAgent() ?: return
+        val agent = Agent.getPrimaryAgent()
+        if (agent == null) {
+            log.atDebug().log("Stop action: no primary agent")
+            return
+        }
         agent.pathingBehavior.cancelEverything()
+        log.atDebug().log("Stop action executed")
     }
 
     private fun executeGotoCursor() {
-        val target = raycastFromFreecam() ?: return
-        if (target.type == HitResult.Type.BLOCK) {
-            val blockPos = (target as BlockHitResult).blockPos
-            val agent = Agent.getPrimaryAgent() ?: return
-            agent.customGoalTask.setGoalAndPath(GoalBlock(blockPos))
+        val target = raycastFromFreecam()
+        if (target == null) {
+            log.atDebug().log("Goto action: raycast returned null")
+            return
         }
+        if (target.type != HitResult.Type.BLOCK) {
+            log.atDebug().log("Goto action: hit result is not a block")
+            return
+        }
+        val blockPos = (target as BlockHitResult).blockPos
+        val agent = Agent.getPrimaryAgent()
+        if (agent == null) {
+            log.atDebug().log("Goto action: no primary agent")
+            return
+        }
+        agent.customGoalTask.setGoalAndPath(GoalBlock(blockPos))
+        log.atDebug().addKeyValue("target", blockPos.toShortString()).log("Goto action executed")
     }
 
     private fun executePathDirection() {
-        val agent = Agent.getPrimaryAgent() ?: return
+        val agent = Agent.getPrimaryAgent()
+        if (agent == null) {
+            log.atDebug().log("Direction action: no primary agent")
+            return
+        }
         val yaw = agent.freeLookYaw
-
-        val freecamPos = getFreecamPosition(agent) ?: return
+        val freecamPos = getFreecamPosition(agent)
+        if (freecamPos == null) {
+            log.atDebug().log("Direction action: no freecam position")
+            return
+        }
 
         val distance = 10000.0
         val dx = -sin(Math.toRadians(yaw.toDouble()))
@@ -411,18 +440,34 @@ class RadialMenu :
                 (freecamPos.z + dz * distance).toInt(),
             )
         agent.customGoalTask.setGoalAndPath(goal)
+        log.atDebug().addKeyValue("yaw", yaw).log("Direction action executed")
     }
 
     private fun executeTeleport() {
-        val target = raycastFromFreecam() ?: return
-        if (target.type != HitResult.Type.BLOCK) return
+        val target = raycastFromFreecam()
+        if (target == null) {
+            log.atDebug().log("Teleport action: raycast returned null")
+            return
+        }
+        if (target.type != HitResult.Type.BLOCK) {
+            log.atDebug().log("Teleport action: hit result is not a block")
+            return
+        }
 
         val pos = target.location
-        val mc = minecraft ?: return
-        val player = mc.player ?: return
+        val mc = minecraft
+        if (mc == null) {
+            log.atDebug().log("Teleport action: minecraft instance null")
+            return
+        }
+        val player = mc.player
+        if (player == null) {
+            log.atDebug().log("Teleport action: player null")
+            return
+        }
 
-        // Use command for server compatibility
         player.connection.sendUnsignedCommand("tp ${pos.x} ${pos.y} ${pos.z}")
+        log.atDebug().addKeyValue("pos", "${pos.x}, ${pos.y}, ${pos.z}").log("Teleport action executed")
     }
 
     private fun getFreecamPosition(agent: Agent): Vec3? =

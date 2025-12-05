@@ -1,6 +1,8 @@
 package maestro.gui.widget
 
 import maestro.gui.GuiColors
+import maestro.gui.drawText
+import maestro.renderer.text.TextRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -41,7 +43,7 @@ class TabWidget(
 
         var currentX = x
         for (tab in tabs) {
-            val textWidth = font.width(tab)
+            val textWidth = TextRenderer.getWidthForVanillaFont(tab, font)
             val tabWidth = textWidth + (TAB_PADDING * 2)
 
             tabPositions.add(currentX)
@@ -99,7 +101,7 @@ class TabWidget(
             val textX = tabX + TAB_PADDING
             val textY = y + (height - font.lineHeight) / 2
 
-            graphics.drawString(font, tabs[i], textX, textY, textColor, false)
+            graphics.drawText(font, tabs[i], textX, textY, textColor)
         }
     }
 

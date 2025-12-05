@@ -71,6 +71,8 @@ enum class Loggers(
 
     /** Inventory operations */
     Inventory("inventory"),
+
+    Text("text"),
     ;
 
     /**
