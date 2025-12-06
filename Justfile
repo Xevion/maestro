@@ -67,41 +67,65 @@ smoke platform="fabric":
 
 # Query Minecraft source JAR
 # Usage:
-#   just mcjar list renderer/     # List classes in package
-#   just mcjar cat Minecraft.java # Read entire class
-#   just mcjar grep shouldEntityAppearGlowing Minecraft.java  # Search in class
-#   just mcjar grep-all startUseItem 'client/*.java'  # Search multiple files
+#   just mcjar list net/minecraft/client/renderer/        # List classes in package
+#   just mcjar cat net/minecraft/client/Minecraft.java    # Read entire class
+#   just mcjar grep shouldEntityAppearGlowing net/minecraft/client/Minecraft.java  # Search in class
+#   just mcjar grep-all startUseItem 'net/minecraft/client/*.java'  # Search multiple files
+#   just mcjar cat com/mojang/blaze3d/vertex/VertexFormat.java  # Read Blaze3D class
+#   just mcjar asset rendertype_lines.vsh  # Read shader/asset file
+#   just mcjar asset-list shaders/  # List asset files
 mcjar cmd *args:
     #!/usr/bin/env bash
     set -euo pipefail
-    JAR=$(find .gradle/loom-cache/minecraftMaven/net/minecraft -name '*-sources.jar' -path '*/1.21.4*' | head -1)
-    if [ -z "$JAR" ]; then
+    SOURCES_JAR=$(find .gradle/loom-cache/minecraftMaven/net/minecraft -name '*-sources.jar' -path '*/1.21.4*' | head -1)
+    MERGED_JAR=$(find .gradle/loom-cache/minecraftMaven/net/minecraft -name 'minecraft-merged-*.jar' -path '*/1.21.4*' -not -name '*-sources.jar' | head -1)
+
+    if [ -z "$SOURCES_JAR" ]; then
         echo "Error: Minecraft sources JAR not found. Run './gradlew build' first."
         exit 1
     fi
 
     case "{{cmd}}" in
         list)
-            # List classes matching pattern: just mcjar list renderer/
-            unzip -l "$JAR" | grep "net/minecraft/{{ args }}"
+            # List classes matching pattern: just mcjar list net/minecraft/client/renderer/
+            unzip -l "$SOURCES_JAR" | grep "{{ args }}"
             ;;
         cat)
-            # Read entire class: just mcjar cat client/Minecraft.java
-            unzip -p "$JAR" "net/minecraft/{{ args }}"
+            # Read entire class: just mcjar cat net/minecraft/client/Minecraft.java
+            unzip -p "$SOURCES_JAR" "{{ args }}"
             ;;
         grep)
-            # Search in specific class: just mcjar grep shouldEntityAppearGlowing client/Minecraft.java
+            # Search in specific class: just mcjar grep shouldEntityAppearGlowing net/minecraft/client/Minecraft.java
             PATTERN="{{ args }}"
             PATTERN_PART="${PATTERN%% *}"
             FILE_PART="${PATTERN#* }"
-            unzip -p "$JAR" "net/minecraft/$FILE_PART" | grep --color=auto -B3 -A8 "$PATTERN_PART"
+            unzip -p "$SOURCES_JAR" "$FILE_PART" | grep --color=auto -B3 -A8 "$PATTERN_PART"
             ;;
         grep-all)
-            # Search multiple files: just mcjar grep-all startUseItem 'client/*.java'
+            # Search multiple files: just mcjar grep-all startUseItem 'net/minecraft/client/*.java'
             PATTERN="{{ args }}"
             PATTERN_PART="${PATTERN%% *}"
             FILE_PART="${PATTERN#* }"
-            unzip -p "$JAR" "net/minecraft/$FILE_PART" 2>/dev/null | grep --color=auto -B2 -A5 "$PATTERN_PART"
+            unzip -p "$SOURCES_JAR" "$FILE_PART" 2>/dev/null | grep --color=auto -B2 -A5 "$PATTERN_PART"
+            ;;
+        asset)
+            # Read asset file: just mcjar asset rendertype_lines.vsh
+            if [ -z "$MERGED_JAR" ]; then
+                echo "Error: Minecraft merged JAR not found. Run './gradlew build' first."
+                exit 1
+            fi
+            # Try both with and without assets/minecraft/ prefix
+            unzip -p "$MERGED_JAR" "assets/minecraft/{{ args }}" 2>/dev/null || \
+            unzip -p "$MERGED_JAR" "{{ args }}" 2>/dev/null || \
+            (echo "Error: Asset not found. Try 'just mcjar asset-list' to browse." && exit 1)
+            ;;
+        asset-list)
+            # List assets: just mcjar asset-list shaders/
+            if [ -z "$MERGED_JAR" ]; then
+                echo "Error: Minecraft merged JAR not found. Run './gradlew build' first."
+                exit 1
+            fi
+            unzip -l "$MERGED_JAR" | grep "assets/minecraft/{{ args }}"
             ;;
         *)
             echo "Unknown command: {{cmd}}"
@@ -110,6 +134,8 @@ mcjar cmd *args:
             echo "  just mcjar cat <file>               # Read class"
             echo "  just mcjar grep <pattern> <file>    # Search in class"
             echo "  just mcjar grep-all <pattern> <glob># Search multiple files"
+            echo "  just mcjar asset <file>             # Read shader/asset file"
+            echo "  just mcjar asset-list <path>        # List asset files"
             exit 1
             ;;
     esac
