@@ -4,12 +4,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.cache.Waypoint;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.ForWaypoints;
-import maestro.api.command.exception.CommandException;
-import maestro.api.utils.PackedBlockPos;
+import maestro.cache.Waypoint;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.datatypes.ForWaypoints;
+import maestro.command.exception.CommandException;
+import maestro.utils.PackedBlockPos;
 
 public class FarmCommand extends Command {
 

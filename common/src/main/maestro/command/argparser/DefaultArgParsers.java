@@ -3,8 +3,7 @@ package maestro.command.argparser;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import maestro.api.command.argparser.IArgParser;
-import maestro.api.command.argument.ICommandArgument;
+import maestro.command.argument.ICommandArgument;
 
 public class DefaultArgParsers {
 

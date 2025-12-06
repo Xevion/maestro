@@ -1,6 +1,6 @@
 package maestro.command.defaults;
 
-import static maestro.api.utils.SettingsUtil.*;
+import static maestro.utils.SettingsUtil.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,16 +8,16 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.Setting;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.RelativeFile;
-import maestro.api.command.exception.CommandException;
-import maestro.api.command.helpers.FuzzySearchHelper;
-import maestro.api.command.helpers.Paginator;
-import maestro.api.command.helpers.TabCompleteHelper;
-import maestro.api.utils.SettingsUtil;
+import maestro.Setting;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.datatypes.RelativeFile;
+import maestro.command.exception.CommandException;
+import maestro.command.helpers.FuzzySearchHelper;
+import maestro.command.helpers.Paginator;
+import maestro.command.helpers.TabCompleteHelper;
 import maestro.gui.chat.ChatMessage;
+import maestro.utils.SettingsUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;

@@ -3,7 +3,7 @@ package maestro.gui.widget
 import maestro.gui.GuiColors
 import maestro.gui.drawBorder
 import maestro.gui.drawText
-import maestro.renderer.text.TextRenderer
+import maestro.rendering.text.TextRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import org.lwjgl.glfw.GLFW

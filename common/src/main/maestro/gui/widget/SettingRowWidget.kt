@@ -1,9 +1,9 @@
 package maestro.gui.widget
 
-import maestro.api.Setting
-import maestro.api.toBooleanOrNull
-import maestro.api.toDoubleOrNull
+import maestro.Setting
 import maestro.gui.GuiColors
+import maestro.toBooleanOrNull
+import maestro.toDoubleOrNull
 import net.minecraft.client.gui.GuiGraphics
 
 /**

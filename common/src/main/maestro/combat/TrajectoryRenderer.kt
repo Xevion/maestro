@@ -1,8 +1,7 @@
 package maestro.combat
 
 import maestro.Agent
-import maestro.api.combat.TrajectoryResult
-import maestro.api.event.events.RenderEvent
+import maestro.event.events.RenderEvent
 import maestro.rendering.gfx.GfxLines
 import maestro.rendering.gfx.GfxRenderer
 import maestro.rendering.gfx.GfxRenderer.awtToArgb

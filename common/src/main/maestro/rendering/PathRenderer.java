@@ -14,17 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import maestro.Agent;
-import maestro.api.event.events.RenderEvent;
-import maestro.api.pathing.goals.*;
-import maestro.api.player.PlayerContext;
-import maestro.api.utils.PackedBlockPos;
 import maestro.behavior.PathingBehavior;
+import maestro.event.events.RenderEvent;
 import maestro.gui.GuiClick;
 import maestro.pathing.BlockStateInterface;
+import maestro.pathing.goals.*;
+import maestro.pathing.movement.IMovement;
 import maestro.pathing.path.PathExecutor;
+import maestro.player.PlayerContext;
 import maestro.rendering.gfx.GfxRenderer;
 import maestro.rendering.gfx.GfxVoxel;
 import maestro.utils.*;
+import maestro.utils.PackedBlockPos;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -444,7 +445,7 @@ public final class PathRenderer implements IRenderer {
     public static void drawPathWithMovements(
             PoseStack stack,
             List<PackedBlockPos> positions,
-            List<maestro.api.pathing.movement.IMovement> movements,
+            List<IMovement> movements,
             int startIndex,
             Color color,
             boolean fadeOut,
@@ -494,7 +495,7 @@ public final class PathRenderer implements IRenderer {
             PackedBlockPos start = positions.get(i);
             PackedBlockPos end = positions.get(next = i + 1);
 
-            maestro.api.pathing.movement.IMovement movement = movements.get(i);
+            IMovement movement = movements.get(i);
             if (movement == null) {
                 // Determine segment color even when movement is null
                 Color segmentColor = color;
@@ -596,7 +597,7 @@ public final class PathRenderer implements IRenderer {
                 continue;
             }
 
-            maestro.api.pathing.movement.IMovement movement = movements.get(i);
+            IMovement movement = movements.get(i);
             if (movement == null) {
                 continue;
             }
@@ -941,7 +942,7 @@ public final class PathRenderer implements IRenderer {
         }
     }
 
-    private static boolean isSwimmingMovement(maestro.api.pathing.movement.IMovement movement) {
+    private static boolean isSwimmingMovement(IMovement movement) {
         if (movement == null) {
             return false;
         }
@@ -952,7 +953,7 @@ public final class PathRenderer implements IRenderer {
         //         || movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
     }
 
-    private static boolean isVerticalSwimming(maestro.api.pathing.movement.IMovement movement) {
+    private static boolean isVerticalSwimming(IMovement movement) {
         if (movement == null) {
             return false;
         }
@@ -961,7 +962,7 @@ public final class PathRenderer implements IRenderer {
         // return movement instanceof maestro.pathing.movement.movements.MovementSwimVertical;
     }
 
-    private static boolean isAscending(maestro.api.pathing.movement.IMovement movement) {
+    private static boolean isAscending(IMovement movement) {
         if (movement == null) {
             return false;
         }
@@ -973,8 +974,7 @@ public final class PathRenderer implements IRenderer {
         // return false;
     }
 
-    private static Color getMovementColor(
-            maestro.api.pathing.movement.IMovement movement, Color defaultColor) {
+    private static Color getMovementColor(IMovement movement, Color defaultColor) {
         if (!isSwimmingMovement(movement)) {
             return defaultColor;
         }
@@ -989,7 +989,7 @@ public final class PathRenderer implements IRenderer {
         return Color.CYAN;
     }
 
-    private static Color getArrowColor(maestro.api.pathing.movement.IMovement movement) {
+    private static Color getArrowColor(IMovement movement) {
         if (isVerticalSwimming(movement)) {
             return isAscending(movement) ? Color.YELLOW : Color.ORANGE;
         }
@@ -997,20 +997,17 @@ public final class PathRenderer implements IRenderer {
     }
 
     private static boolean shouldPlaceArrow(
-            List<maestro.api.pathing.movement.IMovement> movements,
-            int currentIndex,
-            int lastArrowIndex) {
+            List<IMovement> movements, int currentIndex, int lastArrowIndex) {
         if (currentIndex >= movements.size()) {
             return false;
         }
 
-        maestro.api.pathing.movement.IMovement current = movements.get(currentIndex);
+        IMovement current = movements.get(currentIndex);
         if (current == null) {
             return false;
         }
 
-        maestro.api.pathing.movement.IMovement previous =
-                currentIndex > 0 ? movements.get(currentIndex - 1) : null;
+        IMovement previous = currentIndex > 0 ? movements.get(currentIndex - 1) : null;
 
         // Rule 1: Movement type change (walk↔swim, horizontal↔vertical)
         if (previous != null) {
@@ -1045,9 +1042,7 @@ public final class PathRenderer implements IRenderer {
         return false;
     }
 
-    private static boolean hasSignificantDirectionChange(
-            maestro.api.pathing.movement.IMovement previous,
-            maestro.api.pathing.movement.IMovement current) {
+    private static boolean hasSignificantDirectionChange(IMovement previous, IMovement current) {
         // Calculate horizontal direction vectors (ignore Y)
         Vec2 prevDir =
                 new Vec2(

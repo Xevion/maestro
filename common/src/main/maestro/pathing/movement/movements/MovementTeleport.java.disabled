@@ -2,10 +2,10 @@ package maestro.pathing.movement.movements;
 
 import java.util.Set;
 import maestro.Agent;
-import maestro.api.pathing.movement.ActionCosts;
-import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.utils.Loggers;
-import maestro.api.utils.PackedBlockPos;
+import movement.maestro.pathing.ActionCosts;
+import movement.maestro.pathing.MovementStatus;
+import maestro.utils.Loggers;
+import maestro.utils.PackedBlockPos;
 import maestro.pathing.movement.CalculationContext;
 import maestro.pathing.movement.Movement;
 import maestro.pathing.movement.MovementValidation;

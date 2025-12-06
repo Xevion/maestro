@@ -1,7 +1,7 @@
 package maestro.pathing.calc.openset
 
-import maestro.api.pathing.goals.Goal
 import maestro.pathing.calc.PathNode
+import maestro.pathing.goals.Goal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

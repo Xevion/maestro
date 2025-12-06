@@ -1,7 +1,7 @@
 package maestro.cache
 
 import maestro.Agent
-import maestro.api.player.PlayerContext
+import maestro.player.PlayerContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.storage.LevelResource
 import org.apache.commons.lang3.SystemUtils

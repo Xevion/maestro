@@ -1,14 +1,14 @@
 package maestro.pathing.recovery
 
 import maestro.Agent
-import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.goals.GoalBlock
-import maestro.api.pathing.movement.MovementStatus
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
 import maestro.behavior.PathingBehavior
+import maestro.pathing.calc.IPath
+import maestro.pathing.goals.GoalBlock
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.Movement
+import maestro.pathing.movement.MovementStatus
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
 import org.slf4j.Logger
 
 /**

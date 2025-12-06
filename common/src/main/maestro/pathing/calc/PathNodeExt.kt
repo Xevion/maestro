@@ -1,6 +1,6 @@
 package maestro.pathing.calc
 
-import maestro.api.utils.PackedBlockPos
+import maestro.utils.PackedBlockPos
 
 /**
  * Converts this PathNode's position to a PackedBlockPos.

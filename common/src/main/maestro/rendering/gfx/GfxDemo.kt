@@ -1,8 +1,8 @@
 package maestro.rendering.gfx
 
 import maestro.Agent
-import maestro.api.event.events.RenderEvent
-import maestro.api.event.listener.AbstractGameEventListener
+import maestro.event.events.RenderEvent
+import maestro.event.listener.AbstractGameEventListener
 import net.minecraft.client.Minecraft
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3

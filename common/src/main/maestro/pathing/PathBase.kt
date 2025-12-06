@@ -1,8 +1,8 @@
 package maestro.pathing
 
 import maestro.Agent
-import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.goals.Goal
+import maestro.pathing.calc.IPath
+import maestro.pathing.goals.Goal
 import maestro.pathing.path.CutoffPath
 
 abstract class PathBase : IPath {

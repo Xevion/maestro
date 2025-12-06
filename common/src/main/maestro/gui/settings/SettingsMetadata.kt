@@ -1,9 +1,9 @@
 package maestro.gui.settings
 
-import maestro.api.Setting
-import maestro.api.SettingCategory
-import maestro.api.Settings
-import maestro.api.command.helpers.FuzzySearchHelper
+import maestro.Setting
+import maestro.SettingCategory
+import maestro.Settings
+import maestro.command.helpers.FuzzySearchHelper
 
 /**
  * Metadata and search utilities for settings in the GUI.

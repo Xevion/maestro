@@ -3,7 +3,7 @@ package maestro.launch.mixins;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import maestro.Agent;
-import maestro.api.event.events.RenderEvent;
+import maestro.event.events.RenderEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;

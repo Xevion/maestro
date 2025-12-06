@@ -1,6 +1,6 @@
 package maestro.gui.settings
 
-import maestro.api.Setting
+import maestro.Setting
 import maestro.gui.widget.CheckboxWidget
 import maestro.gui.widget.GuiWidget
 import maestro.gui.widget.SliderWidget

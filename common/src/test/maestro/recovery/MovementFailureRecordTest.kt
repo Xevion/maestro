@@ -1,10 +1,10 @@
 package maestro.recovery
 
-import maestro.api.utils.pack
 import maestro.pathing.movement.movements.MovementTraverse
 import maestro.pathing.recovery.FailureReason
 import maestro.pathing.recovery.MovementFailureRecord
 import maestro.pathing.recovery.MovementKey
+import maestro.utils.pack
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

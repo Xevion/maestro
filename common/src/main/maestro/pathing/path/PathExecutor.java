@@ -1,22 +1,18 @@
 package maestro.pathing.path;
 
-import static maestro.api.pathing.movement.MovementStatus.*;
-import static maestro.api.utils.LoggingExtKt.format;
+import static maestro.utils.LoggingExtKt.format;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import maestro.Agent;
-import maestro.api.pathing.calc.IPath;
-import maestro.api.pathing.movement.ActionCosts;
-import maestro.api.pathing.movement.IMovement;
-import maestro.api.pathing.movement.MovementStatus;
-import maestro.api.pathing.path.IPathExecutor;
-import maestro.api.player.PlayerContext;
-import maestro.api.utils.*;
 import maestro.behavior.PathingBehavior;
 import maestro.pathing.BlockStateInterface;
 import maestro.pathing.calc.AbstractNodeCostSearch;
+import maestro.pathing.calc.IPath;
+import maestro.pathing.movement.ActionCosts;
+import maestro.pathing.movement.IMovement;
 import maestro.pathing.movement.Movement;
+import maestro.pathing.movement.MovementStatus;
 import maestro.pathing.movement.MovementValidation;
 // TODO: Re-enable after MovementFall, MovementParkour, MovementDiagonal are converted to Kotlin
 // import maestro.pathing.movement.movements.MovementFall;
@@ -26,7 +22,11 @@ import maestro.pathing.movement.movements.*;
 import maestro.pathing.recovery.FailureReason;
 import maestro.pathing.recovery.PathRecoveryManager;
 import maestro.pathing.recovery.RecoveryAction;
+import maestro.player.PlayerContext;
 import maestro.utils.BlockPosExtKt;
+import maestro.utils.Helper;
+import maestro.utils.Loggers;
+import maestro.utils.PackedBlockPos;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Tuple;
 import org.slf4j.Logger;
@@ -348,10 +348,11 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
         MovementStatus movementStatus = movement.update();
-        if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
+        if (movementStatus == MovementStatus.UNREACHABLE
+                || movementStatus == MovementStatus.FAILED) {
             log.atDebug().addKeyValue("status", movementStatus).log("Movement failed");
             FailureReason reason =
-                    movementStatus == UNREACHABLE
+                    movementStatus == MovementStatus.UNREACHABLE
                             ? FailureReason.UNREACHABLE
                             : FailureReason.BLOCKED;
             behavior.failureMemory.recordFailure(movement, reason);
@@ -373,7 +374,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 throw new IllegalStateException("Unknown recovery type: " + action.getClass());
             }
         }
-        if (movementStatus == SUCCESS) {
+        if (movementStatus == MovementStatus.SUCCESS) {
             pathPosition++;
             onChangeInPathPosition();
             return true;

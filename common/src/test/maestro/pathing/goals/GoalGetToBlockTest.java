@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import maestro.api.pathing.goals.GoalGetToBlock;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 

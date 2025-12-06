@@ -1,10 +1,10 @@
 package maestro.pathing.path
 
-import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.goals.Goal
-import maestro.api.pathing.movement.IMovement
-import maestro.api.utils.PackedBlockPos
 import maestro.pathing.PathBase
+import maestro.pathing.calc.IPath
+import maestro.pathing.goals.Goal
+import maestro.pathing.movement.IMovement
+import maestro.utils.PackedBlockPos
 
 class CutoffPath : PathBase {
     private val path: List<PackedBlockPos>

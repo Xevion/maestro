@@ -1,9 +1,9 @@
 package maestro.behavior
 
 import maestro.Agent
-import maestro.api.cache.Waypoint
-import maestro.api.utils.Loggers
+import maestro.cache.Waypoint
 import maestro.gui.chat.ChatMessage.Companion.info
+import maestro.utils.Loggers
 import org.slf4j.Logger
 
 /**

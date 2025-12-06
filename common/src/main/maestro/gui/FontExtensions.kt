@@ -1,8 +1,8 @@
 package maestro.gui
 
-import maestro.api.utils.Loggers
-import maestro.renderer.text.TextColor
-import maestro.renderer.text.TextRenderer
+import maestro.rendering.text.TextColor
+import maestro.rendering.text.TextRenderer
+import maestro.utils.Loggers
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component

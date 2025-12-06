@@ -1,8 +1,6 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
 
 class InventoryPauserTask(
     agent: Agent,

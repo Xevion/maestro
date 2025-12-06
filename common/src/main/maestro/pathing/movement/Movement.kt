@@ -2,13 +2,11 @@ package maestro.pathing.movement
 
 import com.google.common.collect.ImmutableList
 import maestro.Agent
-import maestro.api.pathing.movement.IMovement
-import maestro.api.pathing.movement.MovementStatus
-import maestro.api.pathing.movement.MovementStatus.PREPPING
-import maestro.api.pathing.movement.MovementStatus.SUCCESS
-import maestro.api.player.PlayerContext
-import maestro.api.utils.PackedBlockPos
 import maestro.pathing.BlockStateInterface
+import maestro.pathing.movement.MovementStatus.PREPPING
+import maestro.pathing.movement.MovementStatus.SUCCESS
+import maestro.player.PlayerContext
+import maestro.utils.PackedBlockPos
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 

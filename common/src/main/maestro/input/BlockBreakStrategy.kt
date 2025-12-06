@@ -1,7 +1,7 @@
 package maestro.input
 
 import maestro.Agent
-import maestro.api.player.PlayerContext
+import maestro.player.PlayerContext
 import maestro.utils.accessor.IPlayerControllerMP
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.phys.BlockHitResult

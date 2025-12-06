@@ -5,14 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.ForEntitySelector;
-import maestro.api.command.exception.CommandException;
-import maestro.api.command.helpers.TabCompleteHelper;
-import maestro.api.selector.entity.EntityCategory;
-import maestro.api.selector.entity.EntitySelector;
-import maestro.api.selector.entity.EntitySelectorLookup;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.datatypes.ForEntitySelector;
+import maestro.command.exception.CommandException;
+import maestro.command.helpers.TabCompleteHelper;
+import maestro.selector.entity.EntityCategory;
+import maestro.selector.entity.EntitySelector;
+import maestro.selector.entity.EntitySelectorLookup;
 
 public class ShootCommand extends Command {
 

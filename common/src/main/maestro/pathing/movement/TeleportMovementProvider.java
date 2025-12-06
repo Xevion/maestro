@@ -1,9 +1,8 @@
 package maestro.pathing.movement;
 
 import java.util.stream.Stream;
-import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.Loggers;
-import maestro.api.utils.PackedBlockPos;
+import maestro.utils.Loggers;
+import maestro.utils.PackedBlockPos;
 // TODO: Re-enable after MovementTeleport is converted to Kotlin
 // import maestro.pathing.movement.movements.MovementTeleport;
 import org.slf4j.Logger;

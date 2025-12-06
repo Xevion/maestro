@@ -1,9 +1,9 @@
 package maestro.pathing.calc
 
-import maestro.api.pathing.goals.Goal
-import maestro.api.pathing.movement.ActionCosts
-import maestro.api.pathing.movement.IMovement
-import maestro.api.utils.SettingsUtil
+import maestro.pathing.goals.Goal
+import maestro.pathing.movement.ActionCosts
+import maestro.pathing.movement.IMovement
+import maestro.utils.SettingsUtil
 
 /** A node in the path, containing the cost and steps to get to it. */
 class PathNode(

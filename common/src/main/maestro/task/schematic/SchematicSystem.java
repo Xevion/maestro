@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import maestro.api.command.registry.Registry;
-import maestro.api.schematic.format.ISchematicFormat;
+import maestro.command.registry.Registry;
+import maestro.schematic.format.ISchematicFormat;
 import maestro.task.schematic.format.DefaultSchematicFormats;
 
 @SuppressWarnings("ImmutableEnumChecker")

@@ -1,7 +1,6 @@
 package maestro.pathing.movement
 
-import maestro.api.pathing.movement.MovementStatus
-import maestro.api.utils.Rotation
+import maestro.utils.Rotation
 import java.util.Optional
 
 /**

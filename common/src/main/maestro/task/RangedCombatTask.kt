@@ -1,18 +1,16 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.combat.TrajectoryResult
-import maestro.api.event.events.RenderEvent
-import maestro.api.event.listener.AbstractGameEventListener
-import maestro.api.pathing.goals.GoalNear
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
-import maestro.api.utils.Loggers
-import maestro.api.utils.Rotation
 import maestro.combat.BowController
 import maestro.combat.ProjectilePhysics
 import maestro.combat.TargetPredictor
 import maestro.combat.TrajectoryRenderer
+import maestro.combat.TrajectoryResult
+import maestro.event.events.RenderEvent
+import maestro.event.listener.AbstractGameEventListener
+import maestro.pathing.goals.GoalNear
+import maestro.utils.Loggers
+import maestro.utils.Rotation
 import net.minecraft.world.entity.Entity
 import org.slf4j.Logger
 import java.util.function.Predicate

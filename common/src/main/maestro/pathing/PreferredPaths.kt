@@ -1,10 +1,10 @@
 package maestro.pathing
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
-import maestro.api.pathing.calc.IPath
-import maestro.api.player.PlayerContext
-import maestro.api.utils.Loggers
+import maestro.pathing.calc.IPath
 import maestro.pathing.movement.CalculationContext
+import maestro.player.PlayerContext
+import maestro.utils.Loggers
 import org.slf4j.Logger
 
 class PreferredPaths {

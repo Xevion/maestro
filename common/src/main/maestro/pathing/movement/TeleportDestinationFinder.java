@@ -2,9 +2,9 @@ package maestro.pathing.movement;
 
 import java.util.ArrayList;
 import java.util.List;
-import maestro.api.utils.Loggers;
-import maestro.api.utils.PackedBlockPos;
 import maestro.utils.BlockPosExtKt;
+import maestro.utils.Loggers;
+import maestro.utils.PackedBlockPos;
 import maestro.utils.Vec3ExtKt;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;

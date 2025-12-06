@@ -1,9 +1,9 @@
 package maestro.debug.pathing
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
-import maestro.api.pathing.goals.Goal
-import maestro.api.utils.PackedBlockPos
 import maestro.pathing.calc.PathNode
+import maestro.pathing.goals.Goal
+import maestro.utils.PackedBlockPos
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 

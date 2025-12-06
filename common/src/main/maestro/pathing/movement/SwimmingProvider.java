@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.PackedBlockPos;
+import maestro.utils.PackedBlockPos;
 
 // TODO: Re-enable after MovementSwimHorizontal is converted to Kotlin
 // import maestro.pathing.movement.movements.MovementSwimHorizontal;

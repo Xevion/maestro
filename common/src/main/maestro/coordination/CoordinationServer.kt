@@ -3,9 +3,6 @@ package maestro.coordination
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.stub.StreamObserver
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.format
 import maestro.coordination.proto.Claim
 import maestro.coordination.proto.ClaimAreaRequest
 import maestro.coordination.proto.ClaimAreaResponse
@@ -21,6 +18,9 @@ import maestro.coordination.proto.ProgressReport
 import maestro.coordination.proto.ProgressResponse
 import maestro.coordination.proto.ReleaseAreaRequest
 import maestro.coordination.proto.ReleaseAreaResponse
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
+import maestro.utils.format
 import org.slf4j.Logger
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit

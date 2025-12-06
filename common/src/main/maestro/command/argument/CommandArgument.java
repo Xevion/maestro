@@ -1,9 +1,8 @@
 package maestro.command.argument;
 
 import java.util.stream.Stream;
-import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.exception.CommandException;
 import maestro.command.argparser.ArgParserManager;
+import maestro.command.exception.CommandException;
 
 /** The default implementation of {@link ICommandArgument} */
 class CommandArgument implements ICommandArgument {

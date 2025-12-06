@@ -1,8 +1,6 @@
 package maestro.pathing.movement
 
-import maestro.api.pathing.movement.ActionCosts
-import maestro.api.pathing.movement.IMovement
-import maestro.api.utils.PackedBlockPos
+import maestro.utils.PackedBlockPos
 import java.util.stream.Stream
 
 /**

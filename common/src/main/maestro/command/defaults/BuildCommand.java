@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.RelativeBlockPos;
-import maestro.api.command.datatypes.RelativeFile;
-import maestro.api.command.exception.CommandException;
-import maestro.api.utils.PackedBlockPos;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.datatypes.RelativeBlockPos;
+import maestro.command.datatypes.RelativeFile;
+import maestro.command.exception.CommandException;
 import maestro.task.schematic.SchematicSystem;
+import maestro.utils.PackedBlockPos;
 import org.apache.commons.io.FilenameUtils;
 
 public class BuildCommand extends Command {

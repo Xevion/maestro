@@ -1,6 +1,6 @@
 package maestro.pathing
 
-import maestro.api.pathing.movement.ActionCosts
+import maestro.pathing.movement.ActionCosts
 
 /**
  * The result of a calculated movement, with destination x, y, z, and the cost of performing the

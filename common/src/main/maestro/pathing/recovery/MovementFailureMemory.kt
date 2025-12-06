@@ -1,9 +1,9 @@
 package maestro.pathing.recovery
 
 import maestro.Agent
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
 import maestro.pathing.movement.Movement
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
 import org.slf4j.Logger
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min

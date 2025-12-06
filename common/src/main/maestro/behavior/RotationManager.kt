@@ -1,10 +1,10 @@
 package maestro.behavior
 
 import maestro.Agent
-import maestro.api.event.events.PlayerUpdateEvent
-import maestro.api.event.events.TickEvent
-import maestro.api.utils.Loggers
-import maestro.api.utils.Rotation
+import maestro.event.events.PlayerUpdateEvent
+import maestro.event.events.TickEvent
+import maestro.utils.Loggers
+import maestro.utils.Rotation
 import org.slf4j.Logger
 import java.util.PriorityQueue
 import kotlin.math.max

@@ -1,10 +1,8 @@
 package maestro.command.argparser;
 
-import maestro.api.command.argparser.IArgParser;
-import maestro.api.command.argparser.IArgParserManager;
-import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.exception.CommandException;
-import maestro.api.command.registry.Registry;
+import maestro.command.argument.ICommandArgument;
+import maestro.command.exception.CommandException;
+import maestro.command.registry.Registry;
 
 @SuppressWarnings("ImmutableEnumChecker")
 public enum ArgParserManager implements IArgParserManager {

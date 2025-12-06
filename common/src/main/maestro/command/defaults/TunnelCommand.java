@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.exception.CommandException;
-import maestro.api.pathing.goals.Goal;
-import maestro.api.pathing.goals.GoalStrictDirection;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.exception.CommandException;
+import maestro.pathing.goals.Goal;
+import maestro.pathing.goals.GoalStrictDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 

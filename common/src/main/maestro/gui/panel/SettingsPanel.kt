@@ -1,8 +1,8 @@
 package maestro.gui.panel
 
 import maestro.Agent
-import maestro.api.Setting
-import maestro.api.SettingCategory
+import maestro.Setting
+import maestro.SettingCategory
 import maestro.gui.ControlScreen
 import maestro.gui.GuiColors
 import maestro.gui.container.ScrollableContainer

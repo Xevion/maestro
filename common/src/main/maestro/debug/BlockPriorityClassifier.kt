@@ -1,10 +1,10 @@
 package maestro.debug
 
 import maestro.Agent
-import maestro.api.pathing.goals.Goal
-import maestro.api.pathing.goals.GoalComposite
-import maestro.api.player.PlayerContext
+import maestro.pathing.goals.Goal
+import maestro.pathing.goals.GoalComposite
 import maestro.pathing.path.PathExecutor
+import maestro.player.PlayerContext
 import maestro.rendering.IGoalRenderPos
 import maestro.task.MineTask
 import net.minecraft.core.BlockPos

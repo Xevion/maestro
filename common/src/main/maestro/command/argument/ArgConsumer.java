@@ -6,15 +6,13 @@ import java.util.Deque;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.datatypes.IDatatype;
-import maestro.api.command.datatypes.IDatatypeContext;
-import maestro.api.command.datatypes.IDatatypeFor;
-import maestro.api.command.datatypes.IDatatypePost;
-import maestro.api.command.exception.CommandException;
-import maestro.api.utils.Loggers;
+import maestro.command.datatypes.IDatatype;
+import maestro.command.datatypes.IDatatypeContext;
+import maestro.command.datatypes.IDatatypeFor;
+import maestro.command.datatypes.IDatatypePost;
+import maestro.command.exception.CommandException;
 import maestro.command.manager.CommandManager;
+import maestro.utils.Loggers;
 import org.slf4j.Logger;
 
 public class ArgConsumer implements IArgConsumer {

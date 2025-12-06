@@ -1,6 +1,6 @@
 package maestro.pathing.recovery
 
-import maestro.api.utils.PackedBlockPos
+import maestro.utils.PackedBlockPos
 
 /**
  * Composite key representing a specific movement from source to destination.

@@ -1,6 +1,6 @@
 package maestro.pathing.movement;
 
-import static maestro.api.pathing.movement.ActionCosts.*;
+import static maestro.pathing.movement.ActionCosts.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;

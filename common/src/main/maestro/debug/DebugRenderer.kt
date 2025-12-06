@@ -1,13 +1,11 @@
 package maestro.debug
 
 import maestro.Agent
-import maestro.api.debug.IDebugRenderer
-import maestro.api.debug.IHudDebugRenderer
-import maestro.api.event.events.RenderEvent
-import maestro.api.event.listener.AbstractGameEventListener
 import maestro.debug.hud.HudDebugRenderer
 import maestro.debug.pathing.PathfindingDebugHud
 import maestro.debug.pathing.PathfindingDebugRenderer
+import maestro.event.events.RenderEvent
+import maestro.event.listener.AbstractGameEventListener
 import net.minecraft.client.gui.GuiGraphics
 
 /**

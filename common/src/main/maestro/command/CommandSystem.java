@@ -1,7 +1,7 @@
 package maestro.command;
 
-import maestro.api.command.argparser.IArgParserManager;
 import maestro.command.argparser.ArgParserManager;
+import maestro.command.argparser.IArgParserManager;
 
 public enum CommandSystem {
     INSTANCE;

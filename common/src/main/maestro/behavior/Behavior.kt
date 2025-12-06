@@ -1,8 +1,7 @@
 package maestro.behavior
 
 import maestro.Agent
-import maestro.api.behavior.IBehavior
-import maestro.api.player.PlayerContext
+import maestro.player.PlayerContext
 
 /**
  * Base behavior class that provides [Agent] and [PlayerContext] to subclasses.

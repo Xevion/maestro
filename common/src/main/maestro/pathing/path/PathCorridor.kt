@@ -1,8 +1,8 @@
 package maestro.pathing.path
 
-import maestro.api.pathing.calc.IPath
-import maestro.api.utils.PackedBlockPos
+import maestro.pathing.calc.IPath
 import maestro.pathing.movement.Movement
+import maestro.utils.PackedBlockPos
 import kotlin.math.abs
 import kotlin.math.sqrt
 

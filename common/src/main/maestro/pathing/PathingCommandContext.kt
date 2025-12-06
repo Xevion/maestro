@@ -1,10 +1,10 @@
 
 package maestro.pathing
 
-import maestro.api.pathing.goals.Goal
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
+import maestro.pathing.goals.Goal
 import maestro.pathing.movement.CalculationContext
+import maestro.task.PathingCommand
+import maestro.task.PathingCommandType
 
 /**
  * A pathing command that includes a desired calculation context.

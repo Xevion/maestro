@@ -1,4 +1,4 @@
-package maestro.renderer.text
+package maestro.rendering.text
 
 /**
  * Color representation for text rendering.

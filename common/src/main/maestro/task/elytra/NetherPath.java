@@ -3,7 +3,7 @@ package maestro.task.elytra;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.List;
-import maestro.api.utils.PackedBlockPos;
+import maestro.utils.PackedBlockPos;
 import net.minecraft.world.phys.Vec3;
 
 public final class NetherPath extends AbstractList<PackedBlockPos> {

@@ -1,14 +1,6 @@
 package maestro.pathing.calc
 
 import maestro.Agent
-import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.goals.Goal
-import maestro.api.pathing.movement.ActionCosts
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.SettingsUtil
-import maestro.api.utils.format
-import maestro.api.utils.pack
 import maestro.debug.pathing.PathfindingSnapshot
 import maestro.debug.pathing.PathfindingSnapshotStore
 import maestro.debug.pathing.PhaseInfo
@@ -16,6 +8,8 @@ import maestro.pathing.BetterWorldBorder
 import maestro.pathing.MutableMoveResult
 import maestro.pathing.PreferredPaths
 import maestro.pathing.calc.openset.BinaryHeapOpenSet
+import maestro.pathing.goals.Goal
+import maestro.pathing.movement.ActionCosts
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.CompositeMovementProvider
 import maestro.pathing.movement.IMovementProvider
@@ -23,6 +17,11 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.StandardMovementProvider
 import maestro.pathing.movement.SwimmingProvider
 import maestro.pathing.movement.TeleportMovementProvider
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
+import maestro.utils.SettingsUtil
+import maestro.utils.format
+import maestro.utils.pack
 import org.slf4j.Logger
 import java.util.Optional
 

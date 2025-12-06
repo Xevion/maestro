@@ -2,10 +2,10 @@
 package maestro.debug
 
 import maestro.Agent
-import maestro.api.event.events.TickEvent
-import maestro.api.event.events.TickEvent.Type
-import maestro.api.utils.Loggers
 import maestro.coordination.CoordinationServer
+import maestro.event.events.TickEvent
+import maestro.event.events.TickEvent.Type
+import maestro.utils.Loggers
 import net.minecraft.world.level.GameType
 import org.slf4j.Logger
 

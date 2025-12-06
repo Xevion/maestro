@@ -1,10 +1,10 @@
 package maestro.behavior
 
 import maestro.Agent
-import maestro.api.event.events.TickEvent
-import maestro.api.utils.Helper
-import maestro.api.utils.Loggers
+import maestro.event.events.TickEvent
 import maestro.task.ToolSet.Companion.calculateSpeedVsBlock
+import maestro.utils.Helper
+import maestro.utils.Loggers
 import net.minecraft.core.Direction
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.inventory.ClickType

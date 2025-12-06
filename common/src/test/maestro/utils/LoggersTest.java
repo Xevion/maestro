@@ -2,7 +2,6 @@ package maestro.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import maestro.api.utils.Loggers;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 

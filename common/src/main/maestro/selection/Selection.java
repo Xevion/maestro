@@ -1,6 +1,6 @@
 package maestro.selection;
 
-import maestro.api.utils.PackedBlockPos;
+import maestro.utils.PackedBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;

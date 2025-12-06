@@ -2,9 +2,8 @@ package maestro.cache
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import maestro.api.cache.Waypoint
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.DataInputStream

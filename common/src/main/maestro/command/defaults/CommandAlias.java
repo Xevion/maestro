@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
 
 public class CommandAlias extends Command {
 

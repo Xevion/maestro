@@ -3,7 +3,7 @@ package maestro.gui.chat
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
-import maestro.api.utils.Loggers
+import maestro.utils.Loggers
 import net.minecraft.client.Minecraft
 
 /**

@@ -1,12 +1,9 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.pathing.goals.Goal
-import maestro.api.pathing.goals.GoalNear
-import maestro.api.task.ITask
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
-import maestro.api.utils.RotationUtils
+import maestro.pathing.goals.Goal
+import maestro.pathing.goals.GoalNear
+import maestro.utils.RotationUtils
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import java.util.function.Predicate

@@ -2,8 +2,8 @@ package maestro.task.schematic;
 
 import java.util.OptionalInt;
 import java.util.function.Predicate;
-import maestro.api.schematic.IStaticSchematic;
-import maestro.api.schematic.MaskSchematic;
+import maestro.schematic.IStaticSchematic;
+import maestro.schematic.MaskSchematic;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.state.BlockState;
 

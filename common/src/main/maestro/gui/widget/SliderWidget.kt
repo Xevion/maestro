@@ -1,9 +1,9 @@
 package maestro.gui.widget
 
-import maestro.api.units.SettingUnit
 import maestro.gui.GuiColors
 import maestro.gui.drawText
-import maestro.renderer.text.TextRenderer
+import maestro.rendering.text.TextRenderer
+import maestro.units.SettingUnit
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics

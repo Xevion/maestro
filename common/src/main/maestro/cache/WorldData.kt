@@ -1,9 +1,7 @@
 package maestro.cache
 
 import maestro.Agent
-import maestro.api.cache.IWorldData
-import maestro.api.utils.Loggers
-import maestro.cache.WorldData
+import maestro.utils.Loggers
 import net.minecraft.world.level.dimension.DimensionType
 import java.nio.file.Path
 

@@ -1,9 +1,7 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.pathing.goals.Goal
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
+import maestro.pathing.goals.Goal
 
 class CustomGoalTask(
     agent: Agent,

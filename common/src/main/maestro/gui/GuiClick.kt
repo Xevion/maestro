@@ -3,15 +3,15 @@ package maestro.gui
 
 import com.mojang.blaze3d.vertex.PoseStack
 import maestro.Agent
-import maestro.api.pathing.goals.GoalBlock
-import maestro.api.utils.Helper
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
 import maestro.gui.chat.ChatMessage
+import maestro.pathing.goals.GoalBlock
 import maestro.rendering.PathRenderer
 import maestro.rendering.gfx.GfxCube
 import maestro.rendering.gfx.GfxRenderer
 import maestro.rendering.gfx.PolylineJoins
+import maestro.utils.Helper
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen

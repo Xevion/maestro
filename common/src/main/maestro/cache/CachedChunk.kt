@@ -2,8 +2,8 @@ package maestro.cache
 
 import com.google.common.collect.ImmutableSet
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
-import maestro.api.utils.BlockUtils
 import maestro.pathing.PathingBlockType
+import maestro.utils.BlockUtils
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks

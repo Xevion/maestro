@@ -1,6 +1,5 @@
 package maestro.combat
 
-import maestro.api.combat.TrajectoryResult
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.HitResult

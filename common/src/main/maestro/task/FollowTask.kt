@@ -1,14 +1,12 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.pathing.goals.Goal
-import maestro.api.pathing.goals.GoalBlock
-import maestro.api.pathing.goals.GoalComposite
-import maestro.api.pathing.goals.GoalNear
-import maestro.api.pathing.goals.GoalXZ
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
-import maestro.api.utils.PackedBlockPos
+import maestro.pathing.goals.Goal
+import maestro.pathing.goals.GoalBlock
+import maestro.pathing.goals.GoalComposite
+import maestro.pathing.goals.GoalNear
+import maestro.pathing.goals.GoalXZ
+import maestro.utils.PackedBlockPos
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.item.ItemEntity

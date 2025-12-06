@@ -1,8 +1,8 @@
-package maestro.renderer.text
+package maestro.rendering.text
 
 import com.mojang.blaze3d.platform.NativeImage
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
-import maestro.api.utils.Loggers
+import maestro.utils.Loggers
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.ResourceLocation

@@ -1,6 +1,6 @@
 package maestro.input
 
-import maestro.api.player.PlayerContext
+import maestro.player.PlayerContext
 
 /**
  * Manages block interaction timing and delegates to strategies for breaking/placing.

@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.exception.CommandException;
 import maestro.cache.WorldScanner;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.exception.CommandException;
 import maestro.task.CustomGoalTask;
 
 public class PathCommand extends Command {

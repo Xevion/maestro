@@ -5,14 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.ForBlockSelector;
-import maestro.api.command.exception.CommandException;
-import maestro.api.selector.block.BlockCategory;
-import maestro.api.selector.block.BlockSelector;
-import maestro.api.selector.block.BlockSelectorLookup;
 import maestro.cache.WorldScanner;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.datatypes.ForBlockSelector;
+import maestro.command.exception.CommandException;
+import maestro.selector.block.BlockCategory;
+import maestro.selector.block.BlockSelector;
+import maestro.selector.block.BlockSelectorLookup;
 
 public class MineCommand extends Command {
 

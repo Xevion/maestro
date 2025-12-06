@@ -1,14 +1,14 @@
 package maestro.pathing
 
 import maestro.Agent
-import maestro.api.event.events.TickEvent
-import maestro.api.event.listener.AbstractGameEventListener
-import maestro.api.pathing.goals.Goal
-import maestro.api.task.ITask
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
 import maestro.behavior.PathingBehavior
+import maestro.event.events.TickEvent
+import maestro.event.listener.AbstractGameEventListener
+import maestro.pathing.goals.Goal
 import maestro.pathing.path.PathExecutor
+import maestro.task.ITask
+import maestro.task.PathingCommand
+import maestro.task.PathingCommandType
 import net.minecraft.core.BlockPos
 import java.util.Optional
 

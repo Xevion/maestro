@@ -1,14 +1,13 @@
 package maestro.pathing.calc
 
-import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.goals.Goal
-import maestro.api.pathing.movement.IMovement
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
 import maestro.pathing.PathBase
+import maestro.pathing.goals.Goal
 import maestro.pathing.movement.CalculationContext
+import maestro.pathing.movement.IMovement
 import maestro.pathing.movement.Movement
 import maestro.pathing.path.CutoffPath
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
 import org.slf4j.Logger
 
 /** A node based implementation of IPath */

@@ -2,7 +2,7 @@ package maestro.command.defaults;
 
 import java.util.*;
 import maestro.Agent;
-import maestro.api.command.ICommand;
+import maestro.command.ICommand;
 
 public final class DefaultCommands {
 

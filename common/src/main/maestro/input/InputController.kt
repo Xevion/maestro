@@ -2,12 +2,9 @@
 package maestro.input
 
 import maestro.Agent
-import maestro.api.behavior.ILookBehavior
-import maestro.api.event.events.TickEvent
-import maestro.api.player.PlayerContext
-import maestro.api.utils.Rotation
-import maestro.api.utils.RotationUtils
 import maestro.behavior.Behavior
+import maestro.behavior.ILookBehavior
+import maestro.event.events.TickEvent
 import maestro.gui.ControlScreen
 import maestro.gui.radial.RadialMenu
 import maestro.pathing.movement.ClickIntent
@@ -17,6 +14,9 @@ import maestro.pathing.movement.LookIntent
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.StrafeInput
+import maestro.player.PlayerContext
+import maestro.utils.Rotation
+import maestro.utils.RotationUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.DeathScreen
 import net.minecraft.client.gui.screens.Screen

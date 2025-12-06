@@ -3,8 +3,8 @@ package maestro.selection;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import maestro.Agent;
-import maestro.api.event.events.RenderEvent;
-import maestro.api.event.listener.AbstractGameEventListener;
+import maestro.event.events.RenderEvent;
+import maestro.event.listener.AbstractGameEventListener;
 import maestro.rendering.IRenderer;
 import net.minecraft.world.phys.AABB;
 

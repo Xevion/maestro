@@ -2,14 +2,12 @@ package maestro.pathing.calc
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import maestro.Agent
-import maestro.api.pathing.calc.IPath
-import maestro.api.pathing.goals.Goal
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.PathCalculationResult
-import maestro.api.utils.format
-import maestro.pathing.calc.distanceSqTo
+import maestro.pathing.goals.Goal
 import maestro.pathing.movement.CalculationContext
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
+import maestro.utils.PathCalculationResult
+import maestro.utils.format
 import org.slf4j.Logger
 import java.util.Optional
 import kotlin.math.sqrt

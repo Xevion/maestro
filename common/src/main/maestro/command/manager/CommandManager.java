@@ -4,16 +4,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.ICommand;
-import maestro.api.command.argument.ICommandArgument;
-import maestro.api.command.exception.CommandException;
-import maestro.api.command.exception.ICommandException;
-import maestro.api.command.helpers.TabCompleteHelper;
-import maestro.api.command.registry.Registry;
-import maestro.api.utils.Loggers;
+import maestro.command.Command;
+import maestro.command.ICommand;
 import maestro.command.argument.ArgConsumer;
 import maestro.command.argument.CommandArguments;
+import maestro.command.argument.ICommandArgument;
 import maestro.command.defaults.DefaultCommands;
+import maestro.command.exception.CommandException;
+import maestro.command.exception.ICommandException;
+import maestro.command.helpers.TabCompleteHelper;
+import maestro.command.registry.Registry;
+import maestro.utils.Loggers;
 import net.minecraft.util.Tuple;
 import org.slf4j.Logger;
 
@@ -117,10 +118,7 @@ public class CommandManager {
                                 : new CommandException.Unhandled(t);
 
                 exception.handle(
-                        command instanceof maestro.api.command.Command
-                                ? (maestro.api.command.Command) command
-                                : null,
-                        args.getArgs());
+                        command instanceof Command ? (Command) command : null, args.getArgs());
             }
         }
 

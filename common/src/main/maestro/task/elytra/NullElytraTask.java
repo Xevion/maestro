@@ -2,8 +2,8 @@ package maestro.task.elytra;
 
 import com.google.errorprone.annotations.DoNotCall;
 import maestro.Agent;
-import maestro.api.pathing.goals.Goal;
-import maestro.api.task.PathingCommand;
+import maestro.pathing.goals.Goal;
+import maestro.task.PathingCommand;
 import maestro.task.TaskHelper;
 import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.NotNull;

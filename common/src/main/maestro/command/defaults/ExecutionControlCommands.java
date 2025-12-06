@@ -4,12 +4,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.exception.CommandException;
-import maestro.api.task.ITask;
-import maestro.api.task.PathingCommand;
-import maestro.api.task.PathingCommandType;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.exception.CommandException;
+import maestro.task.ITask;
+import maestro.task.PathingCommand;
+import maestro.task.PathingCommandType;
 
 /**
  * Contains the pause, resume, and paused commands.

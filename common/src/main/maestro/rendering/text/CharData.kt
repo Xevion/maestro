@@ -1,4 +1,4 @@
-package maestro.renderer.text
+package maestro.rendering.text
 
 /**
  * Glyph metadata for a single character.

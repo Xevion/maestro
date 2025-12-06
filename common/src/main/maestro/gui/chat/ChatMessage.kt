@@ -3,8 +3,8 @@ package maestro.gui.chat
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
 import maestro.Agent
-import maestro.api.Settings
-import maestro.api.utils.Helper
+import maestro.Settings
+import maestro.utils.Helper
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component

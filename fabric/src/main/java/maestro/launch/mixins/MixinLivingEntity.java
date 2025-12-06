@@ -2,7 +2,7 @@ package maestro.launch.mixins;
 
 import java.util.Optional;
 import maestro.Agent;
-import maestro.api.event.events.RotationMoveEvent;
+import maestro.event.events.RotationMoveEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;

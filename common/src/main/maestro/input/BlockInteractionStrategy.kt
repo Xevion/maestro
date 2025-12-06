@@ -1,6 +1,6 @@
 package maestro.input
 
-import maestro.api.player.PlayerContext
+import maestro.player.PlayerContext
 
 /**
  * Strategy interface for block interactions (breaking or placing).

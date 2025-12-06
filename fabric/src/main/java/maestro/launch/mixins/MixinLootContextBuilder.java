@@ -1,6 +1,6 @@
 package maestro.launch.mixins;
 
-import maestro.api.utils.BlockOptionalMeta;
+import maestro.utils.BlockOptionalMeta;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.level.ServerLevel;

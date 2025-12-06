@@ -1,9 +1,9 @@
 package maestro.cache
 
 import io.netty.buffer.Unpooled
-import maestro.api.player.PlayerContext
-import maestro.api.utils.BlockOptionalMetaLookup
-import maestro.api.utils.Loggers
+import maestro.player.PlayerContext
+import maestro.utils.BlockOptionalMetaLookup
+import maestro.utils.Loggers
 import maestro.utils.accessor.IPalettedContainer
 import net.minecraft.core.BlockPos
 import net.minecraft.network.FriendlyByteBuf

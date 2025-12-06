@@ -1,8 +1,8 @@
 package maestro.task.schematic;
 
 import java.util.stream.Stream;
-import maestro.api.schematic.ISchematic;
-import maestro.api.schematic.MaskSchematic;
+import maestro.schematic.ISchematic;
+import maestro.schematic.MaskSchematic;
 import maestro.selection.Selection;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;

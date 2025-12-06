@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import maestro.api.utils.PackedBlockPos;
+import maestro.utils.PackedBlockPos;
 
 public final class UnpackedSegment {
 

@@ -1,7 +1,7 @@
 package maestro.launch.mixins;
 
 import maestro.Agent;
-import maestro.api.event.events.RotationMoveEvent;
+import maestro.event.events.RotationMoveEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;

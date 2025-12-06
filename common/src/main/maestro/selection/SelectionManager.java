@@ -3,7 +3,7 @@ package maestro.selection;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import maestro.Agent;
-import maestro.api.utils.PackedBlockPos;
+import maestro.utils.PackedBlockPos;
 import net.minecraft.core.Direction;
 
 public class SelectionManager {

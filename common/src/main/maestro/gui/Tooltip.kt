@@ -1,6 +1,6 @@
 package maestro.gui
 
-import maestro.renderer.text.TextRenderer
+import maestro.rendering.text.TextRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 

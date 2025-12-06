@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import java.awt.*;
 import maestro.Agent;
-import maestro.api.Settings;
+import maestro.Settings;
 import maestro.utils.Vec3ExtKt;
 import maestro.utils.accessor.IEntityRenderManager;
 import net.minecraft.client.Minecraft;

@@ -2,13 +2,12 @@ package maestro.debug.pathing
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import maestro.Agent
-import maestro.api.event.events.RenderEvent
-import maestro.api.event.listener.AbstractGameEventListener
-import maestro.api.pathing.goals.GoalBlock
+import maestro.event.events.RenderEvent
+import maestro.event.listener.AbstractGameEventListener
+import maestro.pathing.goals.GoalBlock
 import maestro.rendering.gfx.GfxCube
 import maestro.rendering.gfx.GfxLines
 import maestro.rendering.gfx.GfxRenderer
-import maestro.utils.center
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.AABB

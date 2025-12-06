@@ -2,9 +2,9 @@
 package maestro.pathing
 
 import maestro.Agent
-import maestro.api.player.PlayerContext
 import maestro.cache.CachedRegion
 import maestro.cache.WorldData
+import maestro.player.PlayerContext
 import maestro.utils.accessor.IClientChunkProvider
 import net.minecraft.client.multiplayer.ClientChunkCache
 import net.minecraft.core.BlockPos

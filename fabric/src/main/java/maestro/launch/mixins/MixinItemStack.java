@@ -1,6 +1,6 @@
 package maestro.launch.mixins;
 
-import maestro.api.utils.accessor.IItemStack;
+import maestro.utils.accessor.IItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;

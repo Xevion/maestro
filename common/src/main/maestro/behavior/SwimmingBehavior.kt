@@ -1,10 +1,10 @@
 package maestro.behavior
 
 import maestro.Agent
-import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.RotationUtils
 import maestro.input.Input
 import maestro.pathing.movement.MovementState
+import maestro.utils.PackedBlockPos
+import maestro.utils.RotationUtils
 import net.minecraft.world.phys.Vec3
 
 /**

@@ -1,6 +1,6 @@
 package maestro.pathing.movement
 
-import maestro.api.player.PlayerContext
+import maestro.player.PlayerContext
 
 /**
  * Interface for stateless movement computation.

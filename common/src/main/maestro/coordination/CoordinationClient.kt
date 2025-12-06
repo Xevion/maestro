@@ -3,8 +3,6 @@ package maestro.coordination
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusRuntimeException
-import maestro.api.utils.Loggers
-import maestro.api.utils.format
 import maestro.coordination.proto.ClaimAreaRequest
 import maestro.coordination.proto.ConnectRequest
 import maestro.coordination.proto.CoordinationGrpc
@@ -13,6 +11,8 @@ import maestro.coordination.proto.HeartbeatRequest
 import maestro.coordination.proto.Position
 import maestro.coordination.proto.ProgressReport
 import maestro.coordination.proto.ReleaseAreaRequest
+import maestro.utils.Loggers
+import maestro.utils.format
 import net.minecraft.core.BlockPos
 import org.slf4j.Logger
 import java.util.concurrent.TimeUnit

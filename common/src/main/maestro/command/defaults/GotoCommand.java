@@ -4,15 +4,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.ForBlockOptionalMeta;
-import maestro.api.command.datatypes.RelativeCoordinate;
-import maestro.api.command.datatypes.RelativeGoal;
-import maestro.api.command.exception.CommandException;
-import maestro.api.pathing.goals.Goal;
-import maestro.api.utils.BlockOptionalMeta;
-import maestro.api.utils.PackedBlockPos;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.datatypes.ForBlockOptionalMeta;
+import maestro.command.datatypes.RelativeCoordinate;
+import maestro.command.datatypes.RelativeGoal;
+import maestro.command.exception.CommandException;
+import maestro.pathing.goals.Goal;
+import maestro.utils.BlockOptionalMeta;
+import maestro.utils.PackedBlockPos;
 
 public class GotoCommand extends Command {
 

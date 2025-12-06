@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.exception.CommandException;
-import maestro.api.pathing.goals.GoalBlock;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.exception.CommandException;
+import maestro.pathing.goals.GoalBlock;
 
 public class ComeCommand extends Command {
 

@@ -3,8 +3,7 @@ package maestro.pathing.movement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import maestro.api.pathing.movement.IMovement;
-import maestro.api.utils.PackedBlockPos;
+import maestro.utils.PackedBlockPos;
 
 /**
  * Combines multiple movement providers. Allows mixing different movement generation strategies

@@ -3,8 +3,8 @@ package maestro.cache
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import maestro.Agent
-import maestro.api.utils.BlockUtils
-import maestro.api.utils.Loggers
+import maestro.utils.BlockUtils
+import maestro.utils.Loggers
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.dimension.DimensionType

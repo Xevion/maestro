@@ -1,0 +1,232 @@
+package maestro.command.helpers;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import maestro.Agent;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.exception.CommandException;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+
+public class Paginator<E> {
+
+    public final List<E> entries;
+    public int pageSize = 8;
+    public int page = 1;
+
+    public Paginator(List<E> entries) {
+        this.entries = entries;
+    }
+
+    public Paginator(E... entries) {
+        this.entries = Arrays.asList(entries);
+    }
+
+    public Paginator<E> setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+        return this;
+    }
+
+    public int getMaxPage() {
+        return (entries.size() - 1) / pageSize + 1;
+    }
+
+    public boolean validPage(int page) {
+        return page > 0 && page <= getMaxPage();
+    }
+
+    public Paginator<E> skipPages(int pages) {
+        page += pages;
+        return this;
+    }
+
+    public void display(Function<E, Component> transform, String commandPrefix) {
+        int offset = (page - 1) * pageSize;
+        for (int i = offset; i < offset + pageSize; i++) {
+            if (i < entries.size()) {
+                sendToChat(transform.apply(entries.get(i)));
+            } else {
+                MutableComponent placeholder = Component.literal("--");
+                placeholder.setStyle(placeholder.getStyle().withColor(ChatFormatting.DARK_GRAY));
+                sendToChat(placeholder);
+            }
+        }
+        boolean hasPrevPage = commandPrefix != null && validPage(page - 1);
+        boolean hasNextPage = commandPrefix != null && validPage(page + 1);
+        MutableComponent prevPageComponent = Component.literal("<<");
+        if (hasPrevPage) {
+            prevPageComponent.setStyle(
+                    prevPageComponent
+                            .getStyle()
+                            .withClickEvent(
+                                    new ClickEvent(
+                                            ClickEvent.Action.COPY_TO_CLIPBOARD,
+                                            String.format("%s %d", commandPrefix, page - 1)))
+                            .withHoverEvent(
+                                    new HoverEvent(
+                                            HoverEvent.Action.SHOW_TEXT,
+                                            Component.literal("Click to view previous page"))));
+        } else {
+            prevPageComponent.setStyle(
+                    prevPageComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
+        }
+        MutableComponent nextPageComponent = Component.literal(">>");
+        if (hasNextPage) {
+            nextPageComponent.setStyle(
+                    nextPageComponent
+                            .getStyle()
+                            .withClickEvent(
+                                    new ClickEvent(
+                                            ClickEvent.Action.COPY_TO_CLIPBOARD,
+                                            String.format("%s %d", commandPrefix, page + 1)))
+                            .withHoverEvent(
+                                    new HoverEvent(
+                                            HoverEvent.Action.SHOW_TEXT,
+                                            Component.literal("Click to view next page"))));
+        } else {
+            nextPageComponent.setStyle(
+                    nextPageComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
+        }
+        MutableComponent pagerComponent = Component.literal("");
+        pagerComponent.setStyle(pagerComponent.getStyle().withColor(ChatFormatting.GRAY));
+        pagerComponent.append(prevPageComponent);
+        pagerComponent.append(" | ");
+        pagerComponent.append(nextPageComponent);
+        pagerComponent.append(String.format(" %d/%d", page, getMaxPage()));
+        sendToChat(pagerComponent);
+    }
+
+    private void sendToChat(Component component) {
+        // Add [cmd] prefix manually
+        MutableComponent prefix = Component.literal("[cmd]");
+        prefix.setStyle(prefix.getStyle().withColor(ChatFormatting.AQUA));
+
+        MutableComponent prefixed = Component.literal("");
+        prefixed.append(prefix);
+        prefixed.append(" ");
+        prefixed.append(component);
+
+        Minecraft.getInstance()
+                .execute(() -> Agent.getPrimaryAgent().getSettings().logger.value.accept(prefixed));
+    }
+
+    public void display(Function<E, Component> transform) {
+        display(transform, null);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer,
+            Paginator<T> pagi,
+            Runnable pre,
+            Function<T, Component> transform,
+            String commandPrefix)
+            throws CommandException {
+        int page = 1;
+        consumer.requireMax(1);
+        if (consumer.hasAny()) {
+            page = consumer.getAs(Integer.class);
+            if (!pagi.validPage(page)) {
+                throw new CommandException.InvalidArgument.InvalidType(
+                        consumer.consumed(),
+                        String.format("a valid page (1-%d)", pagi.getMaxPage()),
+                        consumer.consumed().getValue());
+            }
+        }
+        pagi.skipPages(page - pagi.page);
+        if (pre != null) {
+            pre.run();
+        }
+        pagi.display(transform, commandPrefix);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer,
+            List<T> elems,
+            Runnable pre,
+            Function<T, Component> transform,
+            String commandPrefix)
+            throws CommandException {
+        paginate(consumer, new Paginator<>(elems), pre, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer,
+            T[] elems,
+            Runnable pre,
+            Function<T, Component> transform,
+            String commandPrefix)
+            throws CommandException {
+        paginate(consumer, Arrays.asList(elems), pre, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer,
+            Paginator<T> pagi,
+            Function<T, Component> transform,
+            String commandPrefix)
+            throws CommandException {
+        paginate(consumer, pagi, null, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer,
+            List<T> elems,
+            Function<T, Component> transform,
+            String commandPrefix)
+            throws CommandException {
+        paginate(consumer, new Paginator<>(elems), null, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer,
+            T[] elems,
+            Function<T, Component> transform,
+            String commandPrefix)
+            throws CommandException {
+        paginate(consumer, Arrays.asList(elems), null, transform, commandPrefix);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer,
+            Paginator<T> pagi,
+            Runnable pre,
+            Function<T, Component> transform)
+            throws CommandException {
+        paginate(consumer, pagi, pre, transform, null);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer, List<T> elems, Runnable pre, Function<T, Component> transform)
+            throws CommandException {
+        paginate(consumer, new Paginator<>(elems), pre, transform, null);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer, T[] elems, Runnable pre, Function<T, Component> transform)
+            throws CommandException {
+        paginate(consumer, Arrays.asList(elems), pre, transform, null);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer, Paginator<T> pagi, Function<T, Component> transform)
+            throws CommandException {
+        paginate(consumer, pagi, null, transform, null);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer, List<T> elems, Function<T, Component> transform)
+            throws CommandException {
+        paginate(consumer, new Paginator<>(elems), null, transform, null);
+    }
+
+    public static <T> void paginate(
+            IArgConsumer consumer, T[] elems, Function<T, Component> transform)
+            throws CommandException {
+        paginate(consumer, Arrays.asList(elems), null, transform, null);
+    }
+}

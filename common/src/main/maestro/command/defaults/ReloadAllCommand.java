@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.exception.CommandException;
-import maestro.api.utils.Loggers;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.exception.CommandException;
+import maestro.utils.Loggers;
 import org.slf4j.Logger;
 
 public class ReloadAllCommand extends Command {

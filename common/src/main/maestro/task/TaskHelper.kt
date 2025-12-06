@@ -1,9 +1,8 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.player.PlayerContext
-import maestro.api.task.ITask
-import maestro.api.utils.Helper
+import maestro.player.PlayerContext
+import maestro.utils.Helper
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity

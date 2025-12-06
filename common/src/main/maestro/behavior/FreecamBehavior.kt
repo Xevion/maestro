@@ -1,15 +1,15 @@
 package maestro.behavior
 
 import maestro.Agent
-import maestro.api.event.events.ChunkOcclusionEvent
-import maestro.api.event.events.RenderEvent
-import maestro.api.event.events.TickEvent
-import maestro.api.pathing.goals.GoalGetToBlock
-import maestro.api.utils.Loggers
-import maestro.api.utils.Rotation
-import maestro.api.utils.RotationUtils
+import maestro.event.events.ChunkOcclusionEvent
+import maestro.event.events.RenderEvent
+import maestro.event.events.TickEvent
 import maestro.gui.radial.RadialMenu
 import maestro.input.InputController
+import maestro.pathing.goals.GoalGetToBlock
+import maestro.utils.Loggers
+import maestro.utils.Rotation
+import maestro.utils.RotationUtils
 import maestro.utils.clampLength
 import maestro.utils.forward
 import maestro.utils.strafe

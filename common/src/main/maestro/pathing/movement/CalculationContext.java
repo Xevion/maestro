@@ -3,7 +3,6 @@ package maestro.pathing.movement;
 import java.util.ArrayList;
 import java.util.List;
 import maestro.Agent;
-import maestro.api.pathing.movement.ActionCosts;
 import maestro.cache.WorldData;
 import maestro.pathing.BetterWorldBorder;
 import maestro.pathing.BlockStateInterface;

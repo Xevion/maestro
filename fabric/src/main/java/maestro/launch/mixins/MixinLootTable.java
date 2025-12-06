@@ -1,7 +1,7 @@
 package maestro.launch.mixins;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import maestro.api.utils.accessor.ILootTable;
+import maestro.utils.accessor.ILootTable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;

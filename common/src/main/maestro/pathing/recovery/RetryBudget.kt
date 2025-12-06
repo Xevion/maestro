@@ -1,6 +1,6 @@
 package maestro.pathing.recovery
 
-import maestro.api.utils.PackedBlockPos
+import maestro.utils.PackedBlockPos
 import java.util.concurrent.ConcurrentHashMap
 
 /**

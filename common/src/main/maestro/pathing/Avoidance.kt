@@ -2,8 +2,8 @@ package maestro.pathing
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import maestro.Agent
-import maestro.api.player.PlayerContext
-import maestro.api.utils.pack
+import maestro.player.PlayerContext
+import maestro.utils.pack
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Mob
 import net.minecraft.world.entity.monster.EnderMan

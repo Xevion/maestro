@@ -4,15 +4,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import maestro.Agent;
-import maestro.api.command.Command;
-import maestro.api.command.argument.IArgConsumer;
-import maestro.api.command.datatypes.RelativeCoordinate;
-import maestro.api.command.datatypes.RelativeGoal;
-import maestro.api.command.exception.CommandException;
-import maestro.api.command.helpers.TabCompleteHelper;
-import maestro.api.pathing.goals.Goal;
-import maestro.api.utils.PackedBlockPos;
+import maestro.command.Command;
+import maestro.command.argument.IArgConsumer;
+import maestro.command.datatypes.RelativeCoordinate;
+import maestro.command.datatypes.RelativeGoal;
+import maestro.command.exception.CommandException;
+import maestro.command.helpers.TabCompleteHelper;
+import maestro.pathing.goals.Goal;
 import maestro.task.CustomGoalTask;
+import maestro.utils.PackedBlockPos;
 
 public class GoalCommand extends Command {
 

@@ -1,8 +1,8 @@
 package maestro.task.schematic;
 
 import java.util.List;
-import maestro.api.schematic.AbstractSchematic;
-import maestro.api.schematic.IStaticSchematic;
+import maestro.schematic.AbstractSchematic;
+import maestro.schematic.IStaticSchematic;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Default implementation of {@link IStaticSchematic} */

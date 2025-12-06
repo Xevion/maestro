@@ -1,11 +1,11 @@
-package maestro.renderer.text
+package maestro.rendering.text
 
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.BufferUploader
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.Tesselator
 import com.mojang.blaze3d.vertex.VertexFormat
-import maestro.api.utils.Loggers
+import maestro.utils.Loggers
 import net.minecraft.client.renderer.CoreShaders
 import org.lwjgl.BufferUtils
 import org.slf4j.Logger

@@ -1,14 +1,12 @@
 package maestro.task
 
 import maestro.Agent
-import maestro.api.task.PathingCommand
-import maestro.api.task.PathingCommandType
-import maestro.api.utils.Loggers
-import maestro.api.utils.PackedBlockPos
 import maestro.input.Input
 import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementState
 import maestro.pathing.movement.MovementValidation
+import maestro.utils.Loggers
+import maestro.utils.PackedBlockPos
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState

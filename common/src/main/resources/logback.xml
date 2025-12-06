@@ -22,7 +22,7 @@
 
     <!--
         Maestro category loggers are configured programmatically.
-        See: maestro.api.utils.LoggerConfigurator
+        See: maestro.utils.LoggerConfigurator
 
         All category loggers (path, swim, combat, mine, farm, build, cache,
         move, rotation, event, cmd, api, waypoint, inventory) receive:
