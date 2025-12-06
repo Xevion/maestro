@@ -11,13 +11,13 @@ import maestro.coordination.CoordinationServer;
 
 public class CoordinatorCommand extends Command {
 
-    public CoordinatorCommand(Agent maestro) {
-        super(maestro, "coordinator");
+    public CoordinatorCommand(Agent agent) {
+        super(agent, "coordinator");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        Agent agent = (Agent) maestro;
+        Agent agent = this.agent;
         CoordinationServer server = agent.getCoordinationServer();
 
         if (server != null && server.isRunning()) {

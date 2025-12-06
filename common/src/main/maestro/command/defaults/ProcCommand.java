@@ -13,14 +13,14 @@ import maestro.task.PathingCommand;
 
 public class ProcCommand extends Command {
 
-    public ProcCommand(Agent maestro) {
-        super(maestro, "proc");
+    public ProcCommand(Agent agent) {
+        super(agent, "proc");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        TaskCoordinator pathingControlManager = maestro.getPathingControlManager();
+        TaskCoordinator pathingControlManager = agent.getPathingControlManager();
         ITask process = pathingControlManager.mostRecentInControl().orElse(null);
         if (process == null) {
             throw new CommandException.InvalidState("No process in control");

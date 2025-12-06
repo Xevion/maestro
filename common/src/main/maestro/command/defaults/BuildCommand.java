@@ -19,10 +19,10 @@ public class BuildCommand extends Command {
 
     private final File schematicsDir;
 
-    public BuildCommand(Agent maestro) {
-        super(maestro, "build");
+    public BuildCommand(Agent agent) {
+        super(agent, "build");
         this.schematicsDir =
-                new File(maestro.getPlayerContext().minecraft().gameDirectory, "schematics");
+                new File(agent.getPlayerContext().minecraft().gameDirectory, "schematics");
     }
 
     @Override
@@ -69,7 +69,7 @@ public class BuildCommand extends Command {
             buildOrigin = origin;
         }
         boolean success =
-                maestro.getBuilderTask().build(file.getName(), file, buildOrigin.toBlockPos());
+                agent.getBuilderTask().build(file.getName(), file, buildOrigin.toBlockPos());
         if (!success) {
             throw new CommandException.InvalidState(
                     "Couldn't load the schematic. Either your schematic is corrupt or this is a"

@@ -12,13 +12,13 @@ import maestro.task.CustomGoalTask;
 
 public class PathCommand extends Command {
 
-    public PathCommand(Agent maestro) {
-        super(maestro, "path");
+    public PathCommand(Agent agent) {
+        super(agent, "path");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        CustomGoalTask customGoalProcess = maestro.getCustomGoalTask();
+        CustomGoalTask customGoalProcess = agent.getCustomGoalTask();
         args.requireMax(0);
         WorldScanner.INSTANCE.repack(ctx);
         customGoalProcess.path();

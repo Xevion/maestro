@@ -10,14 +10,14 @@ import maestro.command.exception.CommandException;
 
 public class ClickCommand extends Command {
 
-    public ClickCommand(Agent maestro) {
-        super(maestro, "click");
+    public ClickCommand(Agent agent) {
+        super(agent, "click");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        maestro.openClick();
+        agent.openClick();
     }
 
     @Override

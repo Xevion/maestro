@@ -12,8 +12,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class ThisWayCommand extends Command {
 
-    public ThisWayCommand(Agent maestro) {
-        super(maestro, "thisway", "forward");
+    public ThisWayCommand(Agent agent) {
+        super(agent, "thisway", "forward");
     }
 
     @Override
@@ -24,7 +24,7 @@ public class ThisWayCommand extends Command {
         float yaw;
 
         // Use freecam perspective when active, otherwise use player's
-        Agent agent = (Agent) maestro;
+        Agent agent = (Agent) this.agent;
         if (agent.isFreecamActive()) {
             origin = agent.getFreecamPosition();
             yaw = agent.getFreeLookYaw();
@@ -34,7 +34,7 @@ public class ThisWayCommand extends Command {
         }
 
         GoalXZ goal = GoalXZ.fromDirection(origin, yaw, args.getAs(Double.class));
-        maestro.getCustomGoalTask().setGoal(goal);
+        this.agent.getCustomGoalTask().setGoal(goal);
         log.atInfo().addKeyValue("goal", goal).log("Goal set");
     }
 

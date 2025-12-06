@@ -12,15 +12,15 @@ import maestro.pathing.goals.GoalAxis;
 
 public class AxisCommand extends Command {
 
-    public AxisCommand(Agent maestro) {
-        super(maestro, "axis", "highway");
+    public AxisCommand(Agent agent) {
+        super(agent, "axis", "highway");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         Goal goal = new GoalAxis();
-        maestro.getCustomGoalTask().setGoal(goal);
+        agent.getCustomGoalTask().setGoal(goal);
         log.atInfo().addKeyValue("goal", goal).log("Goal set");
     }
 

@@ -19,7 +19,6 @@ import maestro.pathing.movement.SwimmingProvider
 import maestro.pathing.movement.TeleportMovementProvider
 import maestro.utils.Loggers
 import maestro.utils.PackedBlockPos
-import maestro.utils.SettingsUtil
 import maestro.utils.format
 import maestro.utils.pack
 import org.slf4j.Logger
@@ -50,7 +49,7 @@ class AStarPathFinder
             val openSet = BinaryHeapOpenSet()
             openSet.insert(startNode!!)
 
-            val res = MutableMoveResult()
+            MutableMoveResult()
             val worldBorder = BetterWorldBorder(calcContext.world.worldBorder)
             val startTime = System.currentTimeMillis()
 
@@ -205,11 +204,10 @@ class AStarPathFinder
                         Thread.sleep(
                             Agent
                                 .getPrimaryAgent()
-                                .getSettings()
-                                .slowPathTimeDelayMS.value
-                                .toLong(),
+                                .settings
+                                .slowPathTimeDelayMS.value,
                         )
-                    } catch (ignored: InterruptedException) {
+                    } catch (_: InterruptedException) {
                     }
                 }
 
@@ -317,14 +315,7 @@ class AStarPathFinder
 
                     if (actionCost <= 0 || actionCost.isNaN()) {
                         throw IllegalStateException(
-                            String.format(
-                                "%s from %s %s %s calculated implausible cost %s",
-                                movement::class.java.simpleName,
-                                SettingsUtil.maybeCensor(currentNode.x),
-                                SettingsUtil.maybeCensor(currentNode.y),
-                                SettingsUtil.maybeCensor(currentNode.z),
-                                actionCost,
-                            ),
+                            "${movement::class.java.simpleName} from ${currentNode.x} ${currentNode.y} ${currentNode.z} calculated implausible cost $actionCost",
                         )
                     }
 

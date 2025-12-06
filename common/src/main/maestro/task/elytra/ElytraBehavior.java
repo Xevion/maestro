@@ -56,7 +56,7 @@ public final class ElytraBehavior {
 
     private static final Logger log = Loggers.Path.get();
 
-    private final Agent maestro;
+    private final Agent agent;
     private final PlayerContext ctx;
 
     // Render stuff
@@ -109,9 +109,9 @@ public final class ElytraBehavior {
     private final Queue<Runnable> invTransactionQueue = new ArrayDeque<>();
 
     public ElytraBehavior(
-            Agent maestro, ElytraTask task, BlockPos destination, boolean appendDestination) {
-        this.maestro = maestro;
-        this.ctx = maestro.getPlayerContext();
+            Agent agent, ElytraTask task, BlockPos destination, boolean appendDestination) {
+        this.agent = agent;
+        this.ctx = agent.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.pathManager = this.new PathManager();
@@ -809,7 +809,7 @@ public final class ElytraBehavior {
 
         final boolean inLava = ctx.player().isInLava();
         if (inLava) {
-            maestro.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+            agent.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
         }
 
         if (solution == null) {
@@ -819,7 +819,7 @@ public final class ElytraBehavior {
             return;
         }
 
-        maestro.getLookBehavior().updateTarget(solution.rotation, false);
+        agent.getLookBehavior().updateTarget(solution.rotation, false);
 
         if (!solution.solvedPitch) {
             if (Agent.getPrimaryAgent().getSettings().elytraChatSpam.value) {
@@ -1030,9 +1030,8 @@ public final class ElytraBehavior {
                                 && currentSpeed < elytraFireworkSpeed * elytraFireworkSpeed))) {
             // Prioritize boosting fireworks over regular ones
             // TODO: Take the minimum boost time into account?
-            if (!maestro.getInventoryBehavior().throwaway(true, ElytraBehavior::isBoostingFireworks)
-                    && !maestro.getInventoryBehavior()
-                            .throwaway(true, ElytraBehavior::isFireworks)) {
+            if (!agent.getInventoryBehavior().throwaway(true, ElytraBehavior::isBoostingFireworks)
+                    && !agent.getInventoryBehavior().throwaway(true, ElytraBehavior::isFireworks)) {
                 log.atInfo().log("No fireworks available");
                 return;
             }
@@ -1098,7 +1097,7 @@ public final class ElytraBehavior {
                     new FireworkBoost(fireworkTicksExisted, ElytraBehavior.this.minimumBoostTicks);
 
             ITickableAimProcessor aim =
-                    ElytraBehavior.this.maestro.getLookBehavior().getAimProcessor().fork();
+                    ElytraBehavior.this.agent.getLookBehavior().getAimProcessor().fork();
             if (async) {
                 // async computation is done at the end of a tick, advance by 1 to prepare for the
                 // next tick

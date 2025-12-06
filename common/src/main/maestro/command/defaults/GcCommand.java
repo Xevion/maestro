@@ -10,8 +10,8 @@ import maestro.command.exception.CommandException;
 
 public class GcCommand extends Command {
 
-    public GcCommand(Agent maestro) {
-        super(maestro, "gc");
+    public GcCommand(Agent agent) {
+        super(agent, "gc");
     }
 
     @Override

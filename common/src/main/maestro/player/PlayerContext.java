@@ -23,12 +23,12 @@ import net.minecraft.world.phys.Vec3;
 /** Provides information about the primary player. */
 public final class PlayerContext {
 
-    private final Agent maestro;
+    private final Agent agent;
     private final Minecraft mc;
     private final PlayerController playerController;
 
-    public PlayerContext(Agent maestro, Minecraft mc) {
-        this.maestro = maestro;
+    public PlayerContext(Agent agent, Minecraft mc) {
+        this.agent = agent;
         this.mc = mc;
         this.playerController = new PlayerController(mc);
     }
@@ -50,7 +50,7 @@ public final class PlayerContext {
     }
 
     public WorldData worldData() {
-        return this.maestro.getWorldProvider().getCurrentWorld();
+        return this.agent.getWorldProvider().getCurrentWorld();
     }
 
     public PackedBlockPos viewerPos() {
@@ -64,7 +64,7 @@ public final class PlayerContext {
     }
 
     public Rotation playerRotations() {
-        return this.maestro
+        return this.agent
                 .getLookBehavior()
                 .getEffectiveRotation()
                 .orElseGet(() -> new Rotation(player().getYRot(), player().getXRot()));

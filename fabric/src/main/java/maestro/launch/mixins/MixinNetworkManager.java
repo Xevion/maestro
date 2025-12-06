@@ -33,11 +33,11 @@ public class MixinNetworkManager {
             return;
         }
 
-        for (Agent maestro : Agent.getAllAgents()) {
-            if (maestro.getPlayerContext().player() != null
-                    && maestro.getPlayerContext().player().connection.getConnection()
+        for (Agent agent : Agent.getAllAgents()) {
+            if (agent.getPlayerContext().player() != null
+                    && agent.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onSendPacket(
                                 new PacketEvent(
                                         (Connection) (Object) this, EventState.PRE, packet));
@@ -55,11 +55,11 @@ public class MixinNetworkManager {
             return;
         }
 
-        for (Agent maestro : Agent.getAllAgents()) {
-            if (maestro.getPlayerContext().player() != null
-                    && maestro.getPlayerContext().player().connection.getConnection()
+        for (Agent agent : Agent.getAllAgents()) {
+            if (agent.getPlayerContext().player() != null
+                    && agent.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onSendPacket(
                                 new PacketEvent(
                                         (Connection) (Object) this, EventState.POST, packet));
@@ -79,11 +79,11 @@ public class MixinNetworkManager {
         if (this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
-        for (Agent maestro : Agent.getAllAgents()) {
-            if (maestro.getPlayerContext().player() != null
-                    && maestro.getPlayerContext().player().connection.getConnection()
+        for (Agent agent : Agent.getAllAgents()) {
+            if (agent.getPlayerContext().player() != null
+                    && agent.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onReceivePacket(
                                 new PacketEvent(
                                         (Connection) (Object) this, EventState.PRE, packet));
@@ -97,11 +97,11 @@ public class MixinNetworkManager {
         if (!this.channel.isOpen() || this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
-        for (Agent maestro : Agent.getAllAgents()) {
-            if (maestro.getPlayerContext().player() != null
-                    && maestro.getPlayerContext().player().connection.getConnection()
+        for (Agent agent : Agent.getAllAgents()) {
+            if (agent.getPlayerContext().player() != null
+                    && agent.getPlayerContext().player().connection.getConnection()
                             == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onReceivePacket(
                                 new PacketEvent(
                                         (Connection) (Object) this, EventState.POST, packet));

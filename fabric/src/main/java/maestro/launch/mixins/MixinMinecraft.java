@@ -58,13 +58,13 @@ public class MixinMinecraft {
     private void runTick(CallbackInfo ci) {
         this.tickProvider = TickEvent.createNextProvider();
 
-        for (Agent maestro : Agent.getAllAgents()) {
+        for (Agent agent : Agent.getAllAgents()) {
             TickEvent.Type type =
-                    maestro.getPlayerContext().player() != null
-                                    && maestro.getPlayerContext().world() != null
+                    agent.getPlayerContext().player() != null
+                                    && agent.getPlayerContext().world() != null
                             ? TickEvent.Type.IN
                             : TickEvent.Type.OUT;
-            maestro.getGameEventHandler().onTick(this.tickProvider.apply(EventState.PRE, type));
+            agent.getGameEventHandler().onTick(this.tickProvider.apply(EventState.PRE, type));
         }
     }
 
@@ -74,14 +74,13 @@ public class MixinMinecraft {
             return;
         }
 
-        for (Agent maestro : Agent.getAllAgents()) {
+        for (Agent agent : Agent.getAllAgents()) {
             TickEvent.Type type =
-                    maestro.getPlayerContext().player() != null
-                                    && maestro.getPlayerContext().world() != null
+                    agent.getPlayerContext().player() != null
+                                    && agent.getPlayerContext().world() != null
                             ? TickEvent.Type.IN
                             : TickEvent.Type.OUT;
-            maestro.getGameEventHandler()
-                    .onPostTick(this.tickProvider.apply(EventState.POST, type));
+            agent.getGameEventHandler().onPostTick(this.tickProvider.apply(EventState.POST, type));
         }
 
         this.tickProvider = null;
@@ -98,12 +97,12 @@ public class MixinMinecraft {
                             target = "net/minecraft/client/multiplayer/ClientLevel.tickEntities()V",
                             shift = At.Shift.AFTER))
     private void postUpdateEntities(CallbackInfo ci) {
-        Agent maestro = Agent.getAgentForPlayer(this.player);
-        if (maestro != null) {
+        Agent agent = Agent.getAgentForPlayer(this.player);
+        if (agent != null) {
             // Intentionally call this after all entities have been updated. That way, any
             // modification to rotations
             // can be recognized by other entity code. (Fireworks and Pigs, for example)
-            maestro.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
+            agent.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
         }
     }
 

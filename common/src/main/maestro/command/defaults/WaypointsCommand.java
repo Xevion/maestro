@@ -32,8 +32,8 @@ public class WaypointsCommand extends Command {
 
     private Map<WorldData, List<Waypoint>> deletedWaypoints = new HashMap<>();
 
-    public WaypointsCommand(Agent maestro) {
-        super(maestro, "waypoints", "waypoint", "wp");
+    public WaypointsCommand(Agent agent) {
+        super(agent, "waypoints", "waypoint", "wp");
     }
 
     @Override
@@ -77,7 +77,7 @@ public class WaypointsCommand extends Command {
                                                     ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s %s %s @ %d",
-                                                            maestro.getSettings().prefix.value,
+                                                            agent.getSettings().prefix.value,
                                                             label,
                                                             _action.names.get(0),
                                                             waypoint.getTag().getName(),
@@ -94,8 +94,8 @@ public class WaypointsCommand extends Command {
             }
             Waypoint[] waypoints =
                     tag != null
-                            ? ForWaypoints.getWaypointsByTag(this.maestro, tag)
-                            : ForWaypoints.getWaypoints(this.maestro);
+                            ? ForWaypoints.getWaypointsByTag(this.agent, tag)
+                            : ForWaypoints.getWaypoints(this.agent);
             if (waypoints.length > 0) {
                 args.requireMax(1);
                 Paginator.paginate(
@@ -110,7 +110,7 @@ public class WaypointsCommand extends Command {
                         transform,
                         String.format(
                                 "%s%s %s%s",
-                                maestro.getSettings().prefix.value,
+                                agent.getSettings().prefix.value,
                                 label,
                                 action.names.get(0),
                                 tag != null ? " " + tag.getName() : ""));
@@ -133,7 +133,7 @@ public class WaypointsCommand extends Command {
                             : ctx.playerFeet();
             args.requireMax(0);
             Waypoint waypoint = new Waypoint(name, tag, pos);
-            ForWaypoints.waypoints(this.maestro).addWaypoint(waypoint);
+            ForWaypoints.waypoints(this.agent).addWaypoint(waypoint);
             MutableComponent component = Component.literal("Waypoint added: ");
             component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
             component.append(toComponent.apply(waypoint, Action.INFO));
@@ -158,13 +158,13 @@ public class WaypointsCommand extends Command {
             if (tag == null) {
                 throw new CommandException.InvalidState("Invalid tag, \"" + name + "\"");
             }
-            Waypoint[] waypoints = ForWaypoints.getWaypointsByTag(this.maestro, tag);
+            Waypoint[] waypoints = ForWaypoints.getWaypointsByTag(this.agent, tag);
             for (Waypoint waypoint : waypoints) {
-                ForWaypoints.waypoints(this.maestro).removeWaypoint(waypoint);
+                ForWaypoints.waypoints(this.agent).removeWaypoint(waypoint);
             }
             deletedWaypoints
                     .computeIfAbsent(
-                            maestro.getWorldProvider().getCurrentWorld(), k -> new ArrayList<>())
+                            agent.getWorldProvider().getCurrentWorld(), k -> new ArrayList<>())
                     .addAll(Arrays.asList(waypoints));
             MutableComponent textComponent =
                     Component.literal(
@@ -179,7 +179,7 @@ public class WaypointsCommand extends Command {
                                             ClickEvent.Action.COPY_TO_CLIPBOARD,
                                             String.format(
                                                     "%s%s restore @ %s",
-                                                    maestro.getSettings().prefix.value,
+                                                    agent.getSettings().prefix.value,
                                                     label,
                                                     Stream.of(waypoints)
                                                             .map(
@@ -206,7 +206,7 @@ public class WaypointsCommand extends Command {
             List<Waypoint> waypoints = new ArrayList<>();
             List<Waypoint> deletedWaypoints =
                     this.deletedWaypoints.getOrDefault(
-                            maestro.getWorldProvider().getCurrentWorld(), Collections.emptyList());
+                            agent.getWorldProvider().getCurrentWorld(), Collections.emptyList());
             if (args.peekString().equals("@")) {
                 args.get();
                 // no args.requireMin(1) because if the user clears an empty tag there is nothing to
@@ -226,7 +226,7 @@ public class WaypointsCommand extends Command {
                 int amount = Math.min(size, args.getAs(Integer.class));
                 waypoints = new ArrayList<>(deletedWaypoints.subList(size - amount, size));
             }
-            waypoints.forEach(ForWaypoints.waypoints(this.maestro)::addWaypoint);
+            waypoints.forEach(ForWaypoints.waypoints(this.agent)::addWaypoint);
             deletedWaypoints.removeIf(waypoints::contains);
             log.atInfo().log(String.format("Restored %d waypoints", waypoints.size()));
         } else {
@@ -266,7 +266,7 @@ public class WaypointsCommand extends Command {
                         transform,
                         String.format(
                                 "%s%s %s %s",
-                                maestro.getSettings().prefix.value,
+                                agent.getSettings().prefix.value,
                                 label,
                                 action.names.get(0),
                                 args.consumedString()));
@@ -297,7 +297,7 @@ public class WaypointsCommand extends Command {
                                                     ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s delete %s @ %d",
-                                                            maestro.getSettings().prefix.value,
+                                                            agent.getSettings().prefix.value,
                                                             label,
                                                             waypoint.getTag().getName(),
                                                             waypoint.getCreationTimestamp()))));
@@ -311,7 +311,7 @@ public class WaypointsCommand extends Command {
                                                     ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s goal %s @ %d",
-                                                            maestro.getSettings().prefix.value,
+                                                            agent.getSettings().prefix.value,
                                                             label,
                                                             waypoint.getTag().getName(),
                                                             waypoint.getCreationTimestamp()))));
@@ -347,7 +347,7 @@ public class WaypointsCommand extends Command {
                                                     ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s list",
-                                                            maestro.getSettings().prefix.value,
+                                                            agent.getSettings().prefix.value,
                                                             label))));
 
                     MutableComponent prefixed2 = Component.literal("");
@@ -402,10 +402,10 @@ public class WaypointsCommand extends Command {
                                                     .value
                                                     .accept(prefixed5));
                 } else if (action == Action.DELETE) {
-                    ForWaypoints.waypoints(this.maestro).removeWaypoint(waypoint);
+                    ForWaypoints.waypoints(this.agent).removeWaypoint(waypoint);
                     deletedWaypoints
                             .computeIfAbsent(
-                                    maestro.getWorldProvider().getCurrentWorld(),
+                                    agent.getWorldProvider().getCurrentWorld(),
                                     k -> new ArrayList<>())
                             .add(waypoint);
                     MutableComponent textComponent =
@@ -420,7 +420,7 @@ public class WaypointsCommand extends Command {
                                                     ClickEvent.Action.COPY_TO_CLIPBOARD,
                                                     String.format(
                                                             "%s%s restore @ %s",
-                                                            maestro.getSettings().prefix.value,
+                                                            agent.getSettings().prefix.value,
                                                             label,
                                                             waypoint.getCreationTimestamp()))));
 
@@ -438,11 +438,11 @@ public class WaypointsCommand extends Command {
                                                     .accept(prefixed6));
                 } else if (action == Action.GOAL) {
                     Goal goal = new GoalBlock(waypoint.getLocation().toBlockPos());
-                    maestro.getCustomGoalTask().setGoal(goal);
+                    agent.getCustomGoalTask().setGoal(goal);
                     log.atInfo().log(String.format("Goal: %s", goal));
                 } else if (action == Action.GOTO) {
                     Goal goal = new GoalBlock(waypoint.getLocation().toBlockPos());
-                    maestro.getCustomGoalTask().setGoalAndPath(goal);
+                    agent.getCustomGoalTask().setGoalAndPath(goal);
                     log.atInfo().log(String.format("Going to: %s", goal));
                 }
             }

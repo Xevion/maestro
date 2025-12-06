@@ -23,8 +23,8 @@ import net.minecraft.world.level.block.Block;
 
 public class FindCommand extends Command {
 
-    public FindCommand(Agent maestro) {
-        super(maestro, "find");
+    public FindCommand(Agent agent) {
+        super(agent, "find");
     }
 
     @Override

@@ -14,8 +14,8 @@ public class SaveAllCommand extends Command {
 
     private static final Logger log = Loggers.Cmd.get();
 
-    public SaveAllCommand(Agent maestro) {
-        super(maestro, "saveall");
+    public SaveAllCommand(Agent agent) {
+        super(agent, "saveall");
     }
 
     @Override

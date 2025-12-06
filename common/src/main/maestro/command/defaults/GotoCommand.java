@@ -16,8 +16,8 @@ import maestro.utils.PackedBlockPos;
 
 public class GotoCommand extends Command {
 
-    protected GotoCommand(Agent maestro) {
-        super(maestro, "goto");
+    protected GotoCommand(Agent agent) {
+        super(agent, "goto");
     }
 
     @Override
@@ -30,12 +30,12 @@ public class GotoCommand extends Command {
             PackedBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             log.atInfo().addKeyValue("goal", goal).log("Goal set");
-            maestro.getCustomGoalTask().setGoalAndPath(goal);
+            agent.getCustomGoalTask().setGoalAndPath(goal);
             return;
         }
         args.requireMax(1);
         BlockOptionalMeta destination = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
-        maestro.getGetToBlockTask().getToBlock(destination);
+        agent.getGetToBlockTask().getToBlock(destination);
     }
 
     @Override

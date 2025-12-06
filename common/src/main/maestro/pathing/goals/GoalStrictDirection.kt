@@ -1,6 +1,5 @@
 package maestro.pathing.goals
 
-import maestro.utils.SettingsUtil
 import maestro.utils.pack
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -58,6 +57,6 @@ data class GoalStrictDirection(
     }
 
     override fun toString(): String =
-        "GoalStrictDirection[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)}," +
-            "${SettingsUtil.maybeCensor(z)},${SettingsUtil.maybeCensor(dx)},${SettingsUtil.maybeCensor(dz)}]"
+        "GoalStrictDirection[$x,$y," +
+            "$z,$dx,$dz]"
 }

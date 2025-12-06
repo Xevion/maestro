@@ -34,11 +34,11 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
     @Inject(method = "sendChat(Ljava/lang/String;)V", at = @At("HEAD"), cancellable = true)
     private void sendChatMessage(String string, CallbackInfo ci) {
         ChatEvent event = new ChatEvent(string);
-        Agent maestro = Agent.getAgentForPlayer(this.minecraft.player);
-        if (maestro == null) {
+        Agent agent = Agent.getAgentForPlayer(this.minecraft.player);
+        if (agent == null) {
             return;
         }
-        maestro.getGameEventHandler().onSendChatMessage(event);
+        agent.getGameEventHandler().onSendChatMessage(event);
         if (event.isCancelled()) {
             ci.cancel();
         }
@@ -47,10 +47,10 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
     @Inject(method = "handleLevelChunkWithLight", at = @At("RETURN"))
     private void postHandleChunkData(
             ClientboundLevelChunkWithLightPacket packetIn, CallbackInfo ci) {
-        for (Agent maestro : Agent.getAllAgents()) {
-            LocalPlayer player = maestro.getPlayerContext().player();
+        for (Agent agent : Agent.getAllAgents()) {
+            LocalPlayer player = agent.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onChunkEvent(
                                 new ChunkEvent(
                                         EventState.POST,
@@ -65,10 +65,10 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
 
     @Inject(method = "handleForgetLevelChunk", at = @At("HEAD"))
     private void preChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
-        for (Agent maestro : Agent.getAllAgents()) {
-            LocalPlayer player = maestro.getPlayerContext().player();
+        for (Agent agent : Agent.getAllAgents()) {
+            LocalPlayer player = agent.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onChunkEvent(
                                 new ChunkEvent(
                                         EventState.PRE,
@@ -81,10 +81,10 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
 
     @Inject(method = "handleForgetLevelChunk", at = @At("RETURN"))
     private void postChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
-        for (Agent maestro : Agent.getAllAgents()) {
-            LocalPlayer player = maestro.getPlayerContext().player();
+        for (Agent agent : Agent.getAllAgents()) {
+            LocalPlayer player = agent.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onChunkEvent(
                                 new ChunkEvent(
                                         EventState.POST,
@@ -103,10 +103,10 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
         if (!CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(packetIn.getBlockState().getBlock())) {
             return;
         }
-        for (Agent maestro : Agent.getAllAgents()) {
-            LocalPlayer player = maestro.getPlayerContext().player();
+        for (Agent agent : Agent.getAllAgents()) {
+            LocalPlayer player = agent.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
-                maestro.getGameEventHandler()
+                agent.getGameEventHandler()
                         .onChunkEvent(
                                 new ChunkEvent(
                                         EventState.POST,
@@ -120,8 +120,8 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
     @Inject(method = "handleChunkBlocksUpdate", at = @At("RETURN"))
     private void postHandleMultiBlockChange(
             ClientboundSectionBlocksUpdatePacket packetIn, CallbackInfo ci) {
-        Agent maestro = Agent.getAgentForConnection((ClientPacketListener) (Object) this);
-        if (maestro == null) {
+        Agent agent = Agent.getAgentForConnection((ClientPacketListener) (Object) this);
+        if (agent == null) {
             return;
         }
 
@@ -133,7 +133,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
         if (changes.isEmpty()) {
             return;
         }
-        maestro.getGameEventHandler()
+        agent.getGameEventHandler()
                 .onBlockChange(
                         new BlockChangeEvent(new ChunkPos(changes.getFirst().getFirst()), changes));
     }
@@ -146,10 +146,10 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
                             target =
                                     "Lnet/minecraft/client/player/LocalPlayer;shouldShowDeathScreen()Z"))
     private void onPlayerDeath(ClientboundPlayerCombatKillPacket packetIn, CallbackInfo ci) {
-        for (Agent maestro : Agent.getAllAgents()) {
-            LocalPlayer player = maestro.getPlayerContext().player();
+        for (Agent agent : Agent.getAllAgents()) {
+            LocalPlayer player = agent.getPlayerContext().player();
             if (player != null && player.connection == (Object) this) {
-                maestro.getGameEventHandler().onPlayerDeath();
+                agent.getGameEventHandler().onPlayerDeath();
             }
         }
     }

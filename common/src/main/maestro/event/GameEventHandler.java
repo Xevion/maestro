@@ -21,7 +21,7 @@ public final class GameEventHandler implements IEventBus {
 
     private static final Logger log = Loggers.Event.get();
 
-    private final Agent maestro;
+    private final Agent agent;
 
     private final List<IGameEventListener> listeners = new CopyOnWriteArrayList<>();
 
@@ -37,8 +37,8 @@ public final class GameEventHandler implements IEventBus {
      */
     private boolean coordinationAutoConnected = false;
 
-    public GameEventHandler(Agent maestro) {
-        this.maestro = maestro;
+    public GameEventHandler(Agent agent) {
+        this.agent = agent;
     }
 
     @Override
@@ -48,14 +48,14 @@ public final class GameEventHandler implements IEventBus {
         if (!coordinationAutoConnected
                 && !isCoordinator
                 && Agent.getPrimaryAgent().getSettings().coordinationEnabled.value) {
-            maestro.coordination.CoordinationClient client = maestro.getCoordinationClient();
+            maestro.coordination.CoordinationClient client = agent.getCoordinationClient();
 
             // Create client lazily if it doesn't exist
-            if (client == null && maestro.getPlayerContext().player() != null) {
-                String workerId = maestro.getPlayerContext().player().getStringUUID();
-                String workerName = maestro.getPlayerContext().player().getName().getString();
+            if (client == null && agent.getPlayerContext().player() != null) {
+                String workerId = agent.getPlayerContext().player().getStringUUID();
+                String workerName = agent.getPlayerContext().player().getName().getString();
                 client = new maestro.coordination.CoordinationClient(workerId, workerName);
-                maestro.setCoordinationClient(client);
+                agent.setCoordinationClient(client);
             }
 
             if (client != null) {
@@ -74,13 +74,13 @@ public final class GameEventHandler implements IEventBus {
 
         if (event.type == TickEvent.Type.IN) {
             try {
-                maestro.bsi = new BlockStateInterface(maestro.getPlayerContext(), true);
+                agent.bsi = new BlockStateInterface(agent.getPlayerContext(), true);
             } catch (Exception ex) {
                 log.atError().setCause(ex).log("Failed to create BlockStateInterface");
-                maestro.bsi = null;
+                agent.bsi = null;
             }
         } else {
-            maestro.bsi = null;
+            agent.bsi = null;
         }
         listeners.forEach(l -> l.onTick(event));
     }
@@ -88,7 +88,7 @@ public final class GameEventHandler implements IEventBus {
     @Override
     public void onPostTick(TickEvent event) {
         // DevMode: Execute queued commands
-        maestro.getDevModeManager().onPostTick(event);
+        agent.getDevModeManager().onPostTick(event);
 
         listeners.forEach(l -> l.onPostTick(event));
     }
@@ -113,7 +113,7 @@ public final class GameEventHandler implements IEventBus {
         EventState state = event.state;
         ChunkEvent.Type type = event.type;
 
-        Level world = maestro.getPlayerContext().world();
+        Level world = agent.getPlayerContext().world();
 
         // Whenever the server sends us to another dimension, chunks are unloaded
         // technically after the new world has been loaded, so we perform a check
@@ -124,7 +124,7 @@ public final class GameEventHandler implements IEventBus {
                         && world.getChunkSource().getChunk(event.x, event.z, null, false) != null;
 
         if (event.isPostPopulate() || isPreUnload) {
-            maestro.getWorldProvider()
+            agent.getWorldProvider()
                     .ifWorldLoaded(
                             worldData -> {
                                 LevelChunk chunk = world.getChunk(event.x, event.z);
@@ -145,10 +145,10 @@ public final class GameEventHandler implements IEventBus {
                             .anyMatch(CachedChunk.BLOCKS_TO_KEEP_TRACK_OF::contains);
 
             if (keepingTrackOf) {
-                maestro.getWorldProvider()
+                agent.getWorldProvider()
                         .ifWorldLoaded(
                                 worldData -> {
-                                    final Level world = maestro.getPlayerContext().world();
+                                    final Level world = agent.getPlayerContext().world();
                                     ChunkPos pos = event.getChunkPos();
                                     worldData
                                             .getCachedWorld()
@@ -167,7 +167,7 @@ public final class GameEventHandler implements IEventBus {
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        WorldProvider cache = maestro.getWorldProvider();
+        WorldProvider cache = agent.getWorldProvider();
 
         if (event.state == EventState.POST) {
             cache.closeWorld();
@@ -175,7 +175,7 @@ public final class GameEventHandler implements IEventBus {
                 cache.initWorld(event.world);
 
                 // DevMode: Open LAN and queue commands after world load
-                maestro.getDevModeManager().onWorldLoad();
+                agent.getDevModeManager().onWorldLoad();
             }
         }
 

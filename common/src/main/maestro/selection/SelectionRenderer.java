@@ -14,9 +14,9 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
 
     private final SelectionManager manager;
 
-    SelectionRenderer(Agent maestro, SelectionManager manager) {
+    SelectionRenderer(Agent agent, SelectionManager manager) {
         this.manager = manager;
-        maestro.getGameEventHandler().registerEventListener(this);
+        agent.getGameEventHandler().registerEventListener(this);
     }
 
     public static void renderSelections(PoseStack stack, Selection[] selections) {

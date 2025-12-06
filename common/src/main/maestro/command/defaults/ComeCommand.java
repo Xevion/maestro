@@ -11,14 +11,14 @@ import maestro.pathing.goals.GoalBlock;
 
 public class ComeCommand extends Command {
 
-    public ComeCommand(Agent maestro) {
-        super(maestro, "come");
+    public ComeCommand(Agent agent) {
+        super(agent, "come");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        maestro.getCustomGoalTask().setGoalAndPath(new GoalBlock(ctx.viewerPos().toBlockPos()));
+        agent.getCustomGoalTask().setGoalAndPath(new GoalBlock(ctx.viewerPos().toBlockPos()));
         log.atInfo().log("Pathing to camera position");
     }
 

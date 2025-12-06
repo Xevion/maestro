@@ -700,7 +700,7 @@ public interface MovementValidation extends Helper {
         }
     }
 
-    static void moveTowards(PlayerContext ctx, MovementState state, BlockPos pos, Agent maestro) {
+    static void moveTowards(PlayerContext ctx, MovementState state, BlockPos pos, Agent agent) {
         state.setTarget(
                 new MovementTarget(
                         RotationUtils.calcRotationFromVec3d(
@@ -709,7 +709,7 @@ public interface MovementValidation extends Helper {
                                         ctx.playerRotations())
                                 .withPitch(ctx.playerRotations().getPitch()),
                         false));
-        maestro.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+        agent.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
     }
 
     /**
@@ -868,11 +868,11 @@ public interface MovementValidation extends Helper {
 
     static PlaceResult attemptToPlaceABlock(
             MovementState state,
-            Agent maestro,
+            Agent agent,
             BlockPos placeAt,
             boolean preferDown,
             boolean wouldSneak) {
-        PlayerContext ctx = maestro.getPlayerContext();
+        PlayerContext ctx = agent.getPlayerContext();
         Optional<Rotation> direct =
                 RotationUtils.reachable(
                         ctx,
@@ -889,7 +889,7 @@ public interface MovementValidation extends Helper {
                     placeAt.relative(
                             HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP.get(i));
             if (MovementValidation.canPlaceAgainst(ctx, against1)) {
-                if (!((Agent) maestro)
+                if (!((Agent) agent)
                         .getInventoryBehavior()
                         .selectThrowawayForLocation(
                                 false,
@@ -915,7 +915,7 @@ public interface MovementValidation extends Helper {
                                         : ctx.playerHead(),
                                 new Vec3(faceX, faceY, faceZ),
                                 ctx.playerRotations());
-                Rotation actual = maestro.getLookBehavior().getAimProcessor().peekRotation(place);
+                Rotation actual = agent.getLookBehavior().getAimProcessor().peekRotation(place);
                 HitResult res =
                         RayTraceUtils.rayTraceTowards(
                                 ctx.player(),
@@ -948,9 +948,9 @@ public interface MovementValidation extends Helper {
                     || (MovementValidation.canPlaceAgainst(ctx, selectedBlock)
                             && selectedBlock.relative(side).equals(placeAt))) {
                 if (wouldSneak) {
-                    maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
+                    agent.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
                 }
-                ((Agent) maestro)
+                ((Agent) agent)
                         .getInventoryBehavior()
                         .selectThrowawayForLocation(
                                 true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
@@ -959,9 +959,9 @@ public interface MovementValidation extends Helper {
         }
         if (found) {
             if (wouldSneak) {
-                maestro.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
+                agent.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
-            ((Agent) maestro)
+            ((Agent) agent)
                     .getInventoryBehavior()
                     .selectThrowawayForLocation(
                             true, placeAt.getX(), placeAt.getY(), placeAt.getZ());

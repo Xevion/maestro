@@ -10,15 +10,15 @@ import maestro.command.exception.CommandException;
 
 public class LitematicaCommand extends Command {
 
-    public LitematicaCommand(Agent maestro) {
-        super(maestro, "fi/dy/masa/litematica");
+    public LitematicaCommand(Agent agent) {
+        super(agent, "fi/dy/masa/litematica");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(1);
         int schematic = args.hasAny() ? args.getAs(Integer.class) - 1 : 0;
-        maestro.getBuilderTask().buildOpenLitematic(schematic);
+        agent.getBuilderTask().buildOpenLitematic(schematic);
     }
 
     @Override

@@ -206,7 +206,7 @@ public class TeleportDestinationFinder {
      * @return true if player can teleport without collision
      */
     private static boolean hasLineOfSight(CalculationContext context, PackedBlockPos dest) {
-        Vec3 srcPos = context.maestro.getPlayerContext().player().position();
+        Vec3 srcPos = context.agent.getPlayerContext().player().position();
         Vec3 destCenter = BlockPosExtKt.getCenter(dest.toBlockPos());
 
         // Phase 1: Quick center-point raycast as fast pre-filter
@@ -220,7 +220,7 @@ public class TeleportDestinationFinder {
                                 destFeet,
                                 ClipContext.Block.COLLIDER,
                                 ClipContext.Fluid.NONE,
-                                context.maestro.getPlayerContext().player()));
+                                context.agent.getPlayerContext().player()));
 
         // Early exit if even the center path is blocked
         if (feetResult.getType() != HitResult.Type.MISS) {
@@ -239,7 +239,7 @@ public class TeleportDestinationFinder {
                                 destEyes,
                                 ClipContext.Block.COLLIDER,
                                 ClipContext.Fluid.NONE,
-                                context.maestro.getPlayerContext().player()));
+                                context.agent.getPlayerContext().player()));
 
         // Early exit if eyes don't have line-of-sight (blocked by head-level obstacles)
         if (eyesResult.getType() != HitResult.Type.MISS) {
@@ -262,8 +262,7 @@ public class TeleportDestinationFinder {
 
         // Check if entire swept path is unobstructed
         // Player entity parameter excludes player's current position from collision check
-        return context.world.isUnobstructed(
-                context.maestro.getPlayerContext().player(), sweptShape);
+        return context.world.isUnobstructed(context.agent.getPlayerContext().player(), sweptShape);
     }
 
     /**
@@ -296,7 +295,6 @@ public class TeleportDestinationFinder {
         // Check if the shape is unobstructed by blocks
         // Pass player entity to exclude player's current position from collision check
         // isUnobstructed returns true if there are NO collisions
-        return context.world.isUnobstructed(
-                context.maestro.getPlayerContext().player(), playerShape);
+        return context.world.isUnobstructed(context.agent.getPlayerContext().player(), playerShape);
     }
 }

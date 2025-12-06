@@ -2,7 +2,6 @@ package maestro.pathing.goals
 
 import maestro.Agent
 import maestro.rendering.IGoalRenderPos
-import maestro.utils.SettingsUtil
 import maestro.utils.pack
 import net.minecraft.core.BlockPos
 import kotlin.math.abs
@@ -44,8 +43,7 @@ open class GoalBlock(
 
     override fun hashCode(): Int = (pack(x, y, z).packed * 905165533).toInt()
 
-    override fun toString(): String =
-        "GoalBlock[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)}]"
+    override fun toString(): String = "GoalBlock[$x,$y,$z]"
 
     companion object {
         fun calculate(
@@ -64,7 +62,7 @@ open class GoalBlock(
                 abs(yDiff) * 3.5 *
                     Agent
                         .getPrimaryAgent()
-                        .getSettings()
+                        .settings
                         .costHeuristic.value
             heuristic += min(verticalHeuristic, swimmingVerticalHeuristic)
 

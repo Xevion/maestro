@@ -16,13 +16,13 @@ import maestro.utils.PackedBlockPos;
 
 public class GoalCommand extends Command {
 
-    public GoalCommand(Agent maestro) {
-        super(maestro, "goal");
+    public GoalCommand(Agent agent) {
+        super(agent, "goal");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        CustomGoalTask goalProcess = maestro.getCustomGoalTask();
+        CustomGoalTask goalProcess = agent.getCustomGoalTask();
         if (args.hasAny() && Arrays.asList("reset", "clear", "none").contains(args.peekString())) {
             args.requireMax(1);
             if (goalProcess.getGoal() != null) {

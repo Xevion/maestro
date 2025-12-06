@@ -13,8 +13,8 @@ import net.minecraft.world.level.block.AirBlock;
 
 public class SurfaceCommand extends Command {
 
-    protected SurfaceCommand(Agent maestro) {
-        super(maestro, "surface", "top");
+    protected SurfaceCommand(Agent agent) {
+        super(agent, "surface", "top");
     }
 
     @Override
@@ -45,7 +45,7 @@ public class SurfaceCommand extends Command {
                     && newPos.getY() > playerPos.getY()) {
                 Goal goal = new GoalBlock(newPos.toBlockPos().above());
                 log.atInfo().addKeyValue("goal", goal).log("Goal set");
-                maestro.getCustomGoalTask().setGoalAndPath(goal);
+                agent.getCustomGoalTask().setGoalAndPath(goal);
                 return;
             }
         }

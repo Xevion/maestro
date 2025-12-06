@@ -20,7 +20,7 @@ import org.slf4j.Logger;
  */
 public abstract class Command implements ICommand {
 
-    protected Agent maestro;
+    protected Agent agent;
     protected PlayerContext ctx;
 
     /** Logger for command execution messages. Uses the "cmd" category. */
@@ -34,10 +34,10 @@ public abstract class Command implements ICommand {
      *
      * @param names The names of this command. This is what you put after the command prefix.
      */
-    protected Command(Agent maestro, String... names) {
+    protected Command(Agent agent, String... names) {
         this.names = Stream.of(names).map(s -> s.toLowerCase(Locale.US)).toList();
-        this.maestro = maestro;
-        this.ctx = maestro.getPlayerContext();
+        this.agent = agent;
+        this.ctx = agent.getPlayerContext();
         this.log = Loggers.Cmd.get();
     }
 

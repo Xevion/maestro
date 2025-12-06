@@ -13,8 +13,8 @@ import maestro.utils.PackedBlockPos;
 
 public class FarmCommand extends Command {
 
-    public FarmCommand(Agent maestro) {
-        super(maestro, "farm");
+    public FarmCommand(Agent agent) {
+        super(agent, "farm");
     }
 
     @Override
@@ -40,7 +40,7 @@ public class FarmCommand extends Command {
             origin = waypoint.getLocation();
         }
 
-        maestro.getFarmTask().farm(range, origin != null ? origin.toBlockPos() : null);
+        agent.getFarmTask().farm(range, origin != null ? origin.toBlockPos() : null);
         log.atInfo().log("Farming started");
     }
 

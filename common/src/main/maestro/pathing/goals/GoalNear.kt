@@ -2,7 +2,6 @@ package maestro.pathing.goals
 
 import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet
 import maestro.rendering.IGoalRenderPos
-import maestro.utils.SettingsUtil
 import maestro.utils.pack
 import net.minecraft.core.BlockPos
 import kotlin.math.ceil
@@ -73,6 +72,5 @@ data class GoalNear(
 
     override fun hashCode(): Int = pack(x, y, z).packed.toInt() + rangeSq
 
-    override fun toString(): String =
-        "GoalNear[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)},$rangeSq]"
+    override fun toString(): String = "GoalNear[$x,$y,$z,$rangeSq]"
 }

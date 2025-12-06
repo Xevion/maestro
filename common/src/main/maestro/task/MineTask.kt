@@ -19,7 +19,6 @@ import maestro.utils.BlockUtils
 import maestro.utils.Loggers
 import maestro.utils.PackedBlockPos
 import maestro.utils.RotationUtils
-import maestro.utils.SettingsUtil
 import maestro.utils.format
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
@@ -498,9 +497,9 @@ class MineTask(
         override fun toString(): String =
             String.format(
                 "GoalThreeBlocks{x=%s,y=%s,z=%s}",
-                SettingsUtil.maybeCensor(x),
-                SettingsUtil.maybeCensor(y),
-                SettingsUtil.maybeCensor(z),
+                x,
+                y,
+                z,
             )
     }
 
@@ -729,7 +728,7 @@ class MineTask(
             for (bom in filter.blocks()) {
                 val block = bom.block
                 if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
-                    val pf = ctx.maestro.playerContext.playerFeet()
+                    val pf = ctx.agent.playerContext.playerFeet()
 
                     // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing
                     // further than that
@@ -764,7 +763,7 @@ class MineTask(
                 locs.addAll(
                     WorldScanner
                         .scanChunkRadius(
-                            ctx.maestro.playerContext,
+                            ctx.agent.playerContext,
                             filter,
                             max,
                             10,
@@ -829,7 +828,7 @@ class MineTask(
                                 .settings.maxYLevelWhileMining.value
                     }.filter { pos -> !blacklist.contains(pos) }
                     .sortedBy {
-                        ctx.maestro.playerContext
+                        ctx.agent.playerContext
                             .player()
                             .blockPosition()
                             .distSqr(it)

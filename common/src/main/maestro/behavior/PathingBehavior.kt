@@ -762,7 +762,7 @@ class PathingBehavior(
             }
         }
         val preferredPaths =
-            PreferredPaths(context.getMaestro().getPlayerContext(), previous, context)
+            PreferredPaths(context.getAgent().getPlayerContext(), previous, context)
         val feet = ctx.playerFeet()
         var realStart = PackedBlockPos(start)
         val sub = feet.subtract(realStart.toBlockPos())

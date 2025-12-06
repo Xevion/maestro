@@ -16,8 +16,8 @@ import net.minecraft.world.item.Item;
 
 public class PickupCommand extends Command {
 
-    public PickupCommand(Agent maestro) {
-        super(maestro, "pickup");
+    public PickupCommand(Agent agent) {
+        super(agent, "pickup");
     }
 
     @Override
@@ -28,10 +28,10 @@ public class PickupCommand extends Command {
             collecting.add(item);
         }
         if (collecting.isEmpty()) {
-            maestro.getFollowTask().pickup(stack -> true);
+            agent.getFollowTask().pickup(stack -> true);
             log.atInfo().log("Picking up all items");
         } else {
-            maestro.getFollowTask().pickup(stack -> collecting.contains(stack.getItem()));
+            agent.getFollowTask().pickup(stack -> collecting.contains(stack.getItem()));
             log.atInfo()
                     .addKeyValue("item_count", collecting.size())
                     .log("Picking up specified items");

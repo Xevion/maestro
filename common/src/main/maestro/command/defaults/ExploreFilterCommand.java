@@ -17,8 +17,8 @@ public class ExploreFilterCommand extends Command {
 
     private static final Logger log = Loggers.Cmd.get();
 
-    public ExploreFilterCommand(Agent maestro) {
-        super(maestro, "explorefilter");
+    public ExploreFilterCommand(Agent agent) {
+        super(agent, "explorefilter");
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ExploreFilterCommand extends Command {
             }
         }
         try {
-            maestro.getExploreTask().applyJsonFilter(file.toPath().toAbsolutePath(), invert);
+            agent.getExploreTask().applyJsonFilter(file.toPath().toAbsolutePath(), invert);
         } catch (JsonSyntaxException e) {
             throw new CommandException.InvalidState("Invalid JSON syntax");
         } catch (Exception e) {

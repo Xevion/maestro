@@ -13,19 +13,19 @@ import maestro.task.ITask;
 
 public class ETACommand extends Command {
 
-    public ETACommand(Agent maestro) {
-        super(maestro, "eta");
+    public ETACommand(Agent agent) {
+        super(agent, "eta");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        TaskCoordinator pathingControlManager = maestro.getPathingControlManager();
+        TaskCoordinator pathingControlManager = agent.getPathingControlManager();
         ITask process = pathingControlManager.mostRecentInControl().orElse(null);
         if (process == null) {
             throw new CommandException.InvalidState("No process in control");
         }
-        PathingBehavior pathingBehavior = maestro.getPathingBehavior();
+        PathingBehavior pathingBehavior = agent.getPathingBehavior();
 
         double ticksRemainingInSegment =
                 pathingBehavior.ticksRemainingInSegment().orElse(Double.NaN);

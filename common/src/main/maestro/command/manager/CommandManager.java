@@ -22,15 +22,15 @@ public class CommandManager {
 
     private static final Logger log = Loggers.Cmd.get();
     private final Registry<ICommand> registry = new Registry<>();
-    private final Agent maestro;
+    private final Agent agent;
 
-    public CommandManager(Agent maestro) {
-        this.maestro = maestro;
-        DefaultCommands.createAll(maestro).forEach(this.registry::register);
+    public CommandManager(Agent agent) {
+        this.agent = agent;
+        DefaultCommands.createAll(agent).forEach(this.registry::register);
     }
 
-    public Agent getMaestro() {
-        return this.maestro;
+    public Agent getAgent() {
+        return this.agent;
     }
 
     public Registry<ICommand> getRegistry() {
@@ -69,7 +69,7 @@ public class CommandManager {
         List<ICommandArgument> args = pair.getB();
         if (args.isEmpty()) {
             return new TabCompleteHelper()
-                    .addCommands(this.maestro.getCommandManager()).filterPrefix(label).stream();
+                    .addCommands(this.agent.getCommandManager()).filterPrefix(label).stream();
         } else {
             return tabComplete(pair);
         }

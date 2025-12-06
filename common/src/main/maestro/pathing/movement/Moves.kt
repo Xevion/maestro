@@ -25,7 +25,7 @@ enum class Moves(
         override fun apply0(
             context: CalculationContext,
             src: PackedBlockPos,
-        ): Movement = MovementDownward(context.maestro, src, src.below())
+        ): Movement = MovementDownward(context.agent, src, src.below())
 
         override fun cost(
             context: CalculationContext,
@@ -54,7 +54,7 @@ enum class Moves(
         override fun apply0(
             context: CalculationContext,
             src: PackedBlockPos,
-        ): Movement = MovementTraverse(context.maestro, src, src.north())
+        ): Movement = MovementTraverse(context.agent, src, src.north())
 
         override fun cost(
             context: CalculationContext,
@@ -68,7 +68,7 @@ enum class Moves(
         override fun apply0(
             context: CalculationContext,
             src: PackedBlockPos,
-        ): Movement = MovementTraverse(context.maestro, src, src.south())
+        ): Movement = MovementTraverse(context.agent, src, src.south())
 
         override fun cost(
             context: CalculationContext,
@@ -82,7 +82,7 @@ enum class Moves(
         override fun apply0(
             context: CalculationContext,
             src: PackedBlockPos,
-        ): Movement = MovementTraverse(context.maestro, src, src.east())
+        ): Movement = MovementTraverse(context.agent, src, src.east())
 
         override fun cost(
             context: CalculationContext,
@@ -96,7 +96,7 @@ enum class Moves(
         override fun apply0(
             context: CalculationContext,
             src: PackedBlockPos,
-        ): Movement = MovementTraverse(context.maestro, src, src.west())
+        ): Movement = MovementTraverse(context.agent, src, src.west())
 
         override fun cost(
             context: CalculationContext,
@@ -112,7 +112,7 @@ enum class Moves(
             src: PackedBlockPos,
         ): Movement =
             MovementAscend(
-                context.maestro,
+                context.agent,
                 src,
                 PackedBlockPos(src.x, src.y + 1, src.z - 1),
             )
@@ -131,7 +131,7 @@ enum class Moves(
             src: PackedBlockPos,
         ): Movement =
             MovementAscend(
-                context.maestro,
+                context.agent,
                 src,
                 PackedBlockPos(src.x, src.y + 1, src.z + 1),
             )
@@ -150,7 +150,7 @@ enum class Moves(
             src: PackedBlockPos,
         ): Movement =
             MovementAscend(
-                context.maestro,
+                context.agent,
                 src,
                 PackedBlockPos(src.x + 1, src.y + 1, src.z),
             )
@@ -169,7 +169,7 @@ enum class Moves(
             src: PackedBlockPos,
         ): Movement =
             MovementAscend(
-                context.maestro,
+                context.agent,
                 src,
                 PackedBlockPos(src.x - 1, src.y + 1, src.z),
             )
@@ -192,9 +192,9 @@ enum class Moves(
             apply(context, src.x, src.y, src.z, res)
             // Only support single-block descend for now (y == src.y - 1)
             if (res.y != src.y - 1) {
-                return MovementDescend(context.maestro, src, src) // Invalid movement
+                return MovementDescend(context.agent, src, src) // Invalid movement
             }
-            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            return MovementDescend(context.agent, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(
@@ -216,9 +216,9 @@ enum class Moves(
             val res = MutableMoveResult()
             apply(context, src.x, src.y, src.z, res)
             if (res.y != src.y - 1) {
-                return MovementDescend(context.maestro, src, src)
+                return MovementDescend(context.agent, src, src)
             }
-            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            return MovementDescend(context.agent, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(
@@ -240,9 +240,9 @@ enum class Moves(
             val res = MutableMoveResult()
             apply(context, src.x, src.y, src.z, res)
             if (res.y != src.y - 1) {
-                return MovementDescend(context.maestro, src, src)
+                return MovementDescend(context.agent, src, src)
             }
-            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            return MovementDescend(context.agent, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(
@@ -264,9 +264,9 @@ enum class Moves(
             val res = MutableMoveResult()
             apply(context, src.x, src.y, src.z, res)
             if (res.y != src.y - 1) {
-                return MovementDescend(context.maestro, src, src)
+                return MovementDescend(context.agent, src, src)
             }
-            return MovementDescend(context.maestro, src, PackedBlockPos(res.x, res.y, res.z))
+            return MovementDescend(context.agent, src, PackedBlockPos(res.x, res.y, res.z))
         }
 
         override fun apply(

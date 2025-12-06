@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import maestro.Agent;
-import maestro.behavior.LookBehavior;
 import maestro.event.events.PlayerUpdateEvent;
 import maestro.event.events.SprintStateEvent;
 import maestro.event.events.type.EventState;
@@ -45,9 +44,9 @@ public class MixinClientPlayerEntity {
                             target = "net/minecraft/client/player/AbstractClientPlayer.tick()V",
                             shift = At.Shift.AFTER))
     private void onPreUpdate(CallbackInfo ci) {
-        Agent maestro = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
-        if (maestro != null) {
-            maestro.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
+        Agent agent = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
+        if (agent != null) {
+            agent.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
         }
     }
 
@@ -60,11 +59,11 @@ public class MixinClientPlayerEntity {
                             opcode = Opcodes.GETFIELD))
     @Group(name = "mayFly", min = 1, max = 1)
     private boolean isAllowFlying(Abilities capabilities) {
-        Agent maestro = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
-        if (maestro == null) {
+        Agent agent = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
+        if (agent == null) {
             return capabilities.mayfly;
         }
-        return !maestro.getPathingBehavior().isPathing() && capabilities.mayfly;
+        return !agent.getPathingBehavior().isPathing() && capabilities.mayfly;
     }
 
     @Redirect(
@@ -75,27 +74,27 @@ public class MixinClientPlayerEntity {
                             target = "Lnet/minecraft/client/player/LocalPlayer;mayFly()Z"))
     @Group(name = "mayFly", min = 1, max = 1)
     private boolean onMayFlyNeoforge(LocalPlayer instance) throws Throwable {
-        Agent maestro = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
-        if (maestro == null) {
+        Agent agent = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
+        if (agent == null) {
             return (boolean) MAY_FLY.invokeExact(instance);
         }
-        return !maestro.getPathingBehavior().isPathing() && (boolean) MAY_FLY.invokeExact(instance);
+        return !agent.getPathingBehavior().isPathing() && (boolean) MAY_FLY.invokeExact(instance);
     }
 
     @Redirect(
             method = "aiStep",
             at = @At(value = "INVOKE", target = "net/minecraft/client/KeyMapping.isDown()Z"))
     private boolean isKeyDown(KeyMapping keyBinding) {
-        Agent maestro = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
-        if (maestro == null) {
+        Agent agent = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
+        if (agent == null) {
             return keyBinding.isDown();
         }
         SprintStateEvent event = new SprintStateEvent();
-        maestro.getGameEventHandler().onPlayerSprintState(event);
+        agent.getGameEventHandler().onPlayerSprintState(event);
         if (event.state != null) {
             return event.state;
         }
-        if (maestro != Agent.getPrimaryAgent()) {
+        if (agent != Agent.getPrimaryAgent()) {
             // hitting control shouldn't make all bots sprint
             return false;
         }
@@ -104,9 +103,9 @@ public class MixinClientPlayerEntity {
 
     @Inject(method = "rideTick", at = @At(value = "HEAD"))
     private void updateRidden(CallbackInfo cb) {
-        Agent maestro = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
-        if (maestro != null) {
-            ((LookBehavior) maestro.getLookBehavior()).pig();
+        Agent agent = Agent.getAgentForPlayer((LocalPlayer) (Object) this);
+        if (agent != null) {
+            agent.getLookBehavior().pig();
         }
     }
 
@@ -118,8 +117,8 @@ public class MixinClientPlayerEntity {
                             target =
                                     "Lnet/minecraft/client/player/LocalPlayer;tryToStartFallFlying()Z"))
     private boolean tryToStartFallFlying(final LocalPlayer instance) {
-        Agent maestro = Agent.getAgentForPlayer(instance);
-        if (maestro != null && maestro.getPathingBehavior().isPathing()) {
+        Agent agent = Agent.getAgentForPlayer(instance);
+        if (agent != null && agent.getPathingBehavior().isPathing()) {
             return false;
         }
         return instance.tryToStartFallFlying();

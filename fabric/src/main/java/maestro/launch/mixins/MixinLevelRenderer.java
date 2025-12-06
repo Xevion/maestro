@@ -48,10 +48,10 @@ public class MixinLevelRenderer {
             final Matrix4f matrix4f,
             final Matrix4f matrix4f2,
             final CallbackInfo ci) {
-        for (Agent maestro : Agent.getAllAgents()) {
+        for (Agent agent : Agent.getAllAgents()) {
             PoseStack poseStack = new PoseStack();
             poseStack.mulPose(matrix4f);
-            maestro.getGameEventHandler()
+            agent.getGameEventHandler()
                     .onRenderPass(
                             new RenderEvent(
                                     deltaTracker.getGameTimeDeltaPartialTick(false),

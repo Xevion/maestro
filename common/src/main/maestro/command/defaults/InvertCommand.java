@@ -13,14 +13,14 @@ import maestro.task.CustomGoalTask;
 
 public class InvertCommand extends Command {
 
-    public InvertCommand(Agent maestro) {
-        super(maestro, "invert");
+    public InvertCommand(Agent agent) {
+        super(agent, "invert");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        CustomGoalTask customGoalProcess = maestro.getCustomGoalTask();
+        CustomGoalTask customGoalProcess = agent.getCustomGoalTask();
         Goal goal;
         if ((goal = customGoalProcess.getGoal()) == null) {
             throw new CommandException.InvalidState("No goal");

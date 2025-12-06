@@ -10,8 +10,8 @@ import maestro.command.exception.CommandException;
 
 public class FullbrightCommand extends Command {
 
-    public FullbrightCommand(Agent maestro) {
-        super(maestro, "fullbright", "gamma");
+    public FullbrightCommand(Agent agent) {
+        super(agent, "fullbright", "gamma");
     }
 
     @Override

@@ -14,8 +14,8 @@ import net.minecraft.core.Direction;
 
 public class TunnelCommand extends Command {
 
-    public TunnelCommand(Agent maestro) {
-        super(maestro, "tunnel");
+    public TunnelCommand(Agent agent) {
+        super(agent, "tunnel");
     }
 
     @Override
@@ -98,13 +98,13 @@ public class TunnelCommand extends Command {
                         .addKeyValue("width", width + 1)
                         .addKeyValue("depth", depth)
                         .log("Creating tunnel");
-                maestro.getBuilderTask().clearArea(corner1, corner2);
+                agent.getBuilderTask().clearArea(corner1, corner2);
             }
         } else {
             Goal goal =
                     new GoalStrictDirection(
                             ctx.playerFeet().toBlockPos(), ctx.player().getDirection());
-            maestro.getCustomGoalTask().setGoalAndPath(goal);
+            agent.getCustomGoalTask().setGoalAndPath(goal);
             log.atInfo().addKeyValue("goal", goal).log("Goal set");
         }
     }

@@ -17,8 +17,8 @@ import net.minecraft.world.entity.LivingEntity;
 
 public class AttackCommand extends Command {
 
-    public AttackCommand(Agent maestro) {
-        super(maestro, "attack");
+    public AttackCommand(Agent agent) {
+        super(agent, "attack");
     }
 
     @Override
@@ -30,7 +30,7 @@ public class AttackCommand extends Command {
             String arg = args.peekString();
             if (arg.equalsIgnoreCase("entities")) {
                 args.getString(); // consume the argument
-                maestro.getAttackTask().attack(LivingEntity.class::isInstance);
+                agent.getAttackTask().attack(LivingEntity.class::isInstance);
                 log.atInfo().log("Attacking all entities");
                 return;
             }
@@ -68,7 +68,7 @@ public class AttackCommand extends Command {
             throw new NoMatchesException();
         }
 
-        maestro.getAttackTask().attack(lookup.toPredicate());
+        agent.getAttackTask().attack(lookup.toPredicate());
 
         log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Attacking started");
     }

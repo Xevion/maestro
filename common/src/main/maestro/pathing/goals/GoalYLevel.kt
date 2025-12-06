@@ -2,7 +2,6 @@ package maestro.pathing.goals
 
 import maestro.Agent
 import maestro.pathing.movement.ActionCosts
-import maestro.utils.SettingsUtil
 
 /** Useful for mining (getting to diamond / iron level) */
 data class GoalYLevel(
@@ -22,7 +21,7 @@ data class GoalYLevel(
 
     override fun hashCode(): Int = level * 1271009915
 
-    override fun toString(): String = "GoalYLevel[${SettingsUtil.maybeCensor(level)}]"
+    override fun toString(): String = "GoalYLevel[$level]"
 
     companion object {
         fun calculate(

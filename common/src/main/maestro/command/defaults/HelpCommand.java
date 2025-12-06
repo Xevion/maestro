@@ -21,8 +21,8 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class HelpCommand extends Command {
 
-    public HelpCommand(Agent maestro) {
-        super(maestro, "help", "?");
+    public HelpCommand(Agent agent) {
+        super(agent, "help", "?");
     }
 
     @Override
@@ -32,7 +32,7 @@ public class HelpCommand extends Command {
             Paginator.paginate(
                     args,
                     new Paginator<>(
-                            this.maestro
+                            this.agent
                                     .getCommandManager()
                                     .getRegistry()
                                     .descendingStream()
@@ -93,7 +93,7 @@ public class HelpCommand extends Command {
                     Agent.getPrimaryAgent().getSettings().prefix.value + label);
         } else {
             String commandName = args.getString().toLowerCase(java.util.Locale.ROOT);
-            ICommand command = this.maestro.getCommandManager().getCommand(commandName);
+            ICommand command = this.agent.getCommandManager().getCommand(commandName);
             if (command == null) {
                 throw new CommandException.NotFound(commandName);
             }
@@ -136,7 +136,7 @@ public class HelpCommand extends Command {
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()
-                            .addCommands(this.maestro.getCommandManager())
+                            .addCommands(this.agent.getCommandManager())
                             .filterPrefix(args.getString())
                             .stream();
         }

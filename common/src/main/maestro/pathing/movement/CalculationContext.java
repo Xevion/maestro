@@ -28,7 +28,7 @@ public class CalculationContext {
     private static final ItemStack STACK_BUCKET_WATER = new ItemStack(Items.WATER_BUCKET);
 
     public final boolean safeForThreadedUse;
-    public final Agent maestro;
+    public final Agent agent;
     public final Level world;
     public final WorldData worldData;
     public final BlockStateInterface bsi;
@@ -70,22 +70,22 @@ public class CalculationContext {
 
     public final PrecomputedData precomputedData;
 
-    public CalculationContext(Agent maestro) {
-        this(maestro, false);
+    public CalculationContext(Agent agent) {
+        this(agent, false);
     }
 
-    public CalculationContext(Agent maestro, boolean forUseOnAnotherThread) {
+    public CalculationContext(Agent agent, boolean forUseOnAnotherThread) {
         this.precomputedData = new PrecomputedData();
         this.safeForThreadedUse = forUseOnAnotherThread;
-        this.maestro = maestro;
-        LocalPlayer player = maestro.getPlayerContext().player();
-        this.world = maestro.getPlayerContext().world();
-        this.worldData = (WorldData) maestro.getPlayerContext().worldData();
-        this.bsi = new BlockStateInterface(maestro.getPlayerContext(), forUseOnAnotherThread);
+        this.agent = agent;
+        LocalPlayer player = agent.getPlayerContext().player();
+        this.world = agent.getPlayerContext().world();
+        this.worldData = agent.getPlayerContext().worldData();
+        this.bsi = new BlockStateInterface(agent.getPlayerContext(), forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
         this.hasThrowaway =
                 Agent.getPrimaryAgent().getSettings().allowPlace.value
-                        && ((Agent) maestro).getInventoryBehavior().hasGenericThrowaway();
+                        && agent.getInventoryBehavior().hasGenericThrowaway();
         this.hasWaterBucket =
                 Agent.getPrimaryAgent().getSettings().allowWaterBucketFall.value
                         && Inventory.isHotbarSlot(
@@ -110,7 +110,7 @@ public class CalculationContext {
         int frostWalkerLevel = 0;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemEnchantments itemEnchantments =
-                    maestro.getPlayerContext().player().getItemBySlot(slot).getEnchantments();
+                    agent.getPlayerContext().player().getItemBySlot(slot).getEnchantments();
             for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
                 if (enchant.is(Enchantments.FROST_WALKER)) {
                     frostWalkerLevel = itemEnchantments.getLevel(enchant);
@@ -130,7 +130,7 @@ public class CalculationContext {
         OUTER:
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemEnchantments itemEnchantments =
-                    maestro.getPlayerContext().player().getItemBySlot(slot).getEnchantments();
+                    agent.getPlayerContext().player().getItemBySlot(slot).getEnchantments();
             for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
                 List<EnchantmentAttributeEffect> effects =
                         enchant.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES);
@@ -167,15 +167,15 @@ public class CalculationContext {
         this.teleportMaxDistance = Agent.getPrimaryAgent().getSettings().teleportMaxDistance.value;
         this.teleportCostMultiplier =
                 Agent.getPrimaryAgent().getSettings().teleportCostMultiplier.value;
-        this.failureMemory = ((Agent) maestro).getPathingBehavior().failureMemory;
+        this.failureMemory = agent.getPathingBehavior().failureMemory;
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
     }
 
-    public final Agent getMaestro() {
-        return maestro;
+    public final Agent getAgent() {
+        return agent;
     }
 
     public BlockState get(int x, int y, int z) {

@@ -30,7 +30,6 @@ import maestro.utils.PackedBlockPos
 import maestro.utils.RayTraceUtils
 import maestro.utils.Rotation
 import maestro.utils.RotationUtils
-import maestro.utils.SettingsUtil
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.Vec3i
@@ -1040,9 +1039,9 @@ class BuilderTask(
         override fun toString(): String =
             String.format(
                 "GoalBreak{x=%s,y=%s,z=%s}",
-                SettingsUtil.maybeCensor(this.x),
-                SettingsUtil.maybeCensor(this.y),
-                SettingsUtil.maybeCensor(this.z),
+                this.x,
+                this.y,
+                this.z,
             )
 
         override fun hashCode(): Int = super.hashCode() * 1636324008
@@ -1148,9 +1147,9 @@ class BuilderTask(
         override fun toString(): String =
             String.format(
                 "GoalAdjacent{x=%s,y=%s,z=%s}",
-                SettingsUtil.maybeCensor(x),
-                SettingsUtil.maybeCensor(y),
-                SettingsUtil.maybeCensor(z),
+                x,
+                y,
+                z,
             )
     }
 
@@ -1168,9 +1167,9 @@ class BuilderTask(
         override fun toString(): String =
             String.format(
                 "GoalPlace{x=%s,y=%s,z=%s}",
-                SettingsUtil.maybeCensor(x),
-                SettingsUtil.maybeCensor(y),
-                SettingsUtil.maybeCensor(z),
+                x,
+                y,
+                z,
             )
     }
 

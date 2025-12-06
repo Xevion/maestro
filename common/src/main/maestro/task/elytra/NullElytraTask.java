@@ -10,8 +10,8 @@ import org.jetbrains.annotations.NotNull;
 
 public final class NullElytraTask extends TaskHelper {
 
-    public NullElytraTask(Agent maestro) {
-        super(maestro);
+    public NullElytraTask(Agent agent) {
+        super(agent);
     }
 
     @DoNotCall

@@ -38,14 +38,14 @@ import net.minecraft.world.phys.AABB;
 
 public class SelCommand extends Command {
 
-    private SelectionManager manager = maestro.getSelectionManager();
+    private SelectionManager manager = agent.getSelectionManager();
     private PackedBlockPos pos1 = null;
     private ISchematic clipboard = null;
     private Vec3i clipboardOffset = null;
 
-    public SelCommand(Agent maestro) {
-        super(maestro, "sel", "selection", "s");
-        maestro.getGameEventHandler()
+    public SelCommand(Agent agent) {
+        super(agent, "sel", "selection", "s");
+        agent.getGameEventHandler()
                 .registerEventListener(
                         new AbstractGameEventListener() {
                             @Override
@@ -221,7 +221,7 @@ public class SelCommand extends Command {
                         min.getY() - origin.getY(),
                         min.getZ() - origin.getZ());
             }
-            maestro.getBuilderTask().build("Fill", composite, origin.toBlockPos());
+            agent.getBuilderTask().build("Fill", composite, origin.toBlockPos());
             log.atInfo().log("Filling now");
         } else if (action == Action.COPY) {
             PackedBlockPos playerPos = ctx.viewerPos();
@@ -278,7 +278,7 @@ public class SelCommand extends Command {
             if (clipboard == null) {
                 throw new CommandException.InvalidState("You need to copy a selection first");
             }
-            maestro.getBuilderTask()
+            agent.getBuilderTask()
                     .build("Fill", clipboard, pos.offset(clipboardOffset).toBlockPos());
             log.atInfo().log("Building now");
         } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {

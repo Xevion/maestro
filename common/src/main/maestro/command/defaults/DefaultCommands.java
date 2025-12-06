@@ -8,71 +8,71 @@ public final class DefaultCommands {
 
     private DefaultCommands() {}
 
-    public static List<ICommand> createAll(Agent maestro) {
-        Objects.requireNonNull(maestro);
+    public static List<ICommand> createAll(Agent agent) {
+        Objects.requireNonNull(agent);
         List<ICommand> commands =
                 new ArrayList<>(
                         Arrays.asList(
-                                new HelpCommand(maestro),
-                                new SetCommand(maestro),
+                                new HelpCommand(agent),
+                                new SetCommand(agent),
                                 new CommandAlias(
-                                        maestro,
+                                        agent,
                                         Arrays.asList(
                                                 "modified", "mod", "maestro", "modifiedsettings"),
                                         "List modified settings",
                                         "set modified"),
                                 new CommandAlias(
-                                        maestro,
+                                        agent,
                                         "reset",
                                         "Reset all settings or just one",
                                         "set reset"),
-                                new GoalCommand(maestro),
-                                new GotoCommand(maestro),
-                                new PathCommand(maestro),
-                                new ProcCommand(maestro),
-                                new ETACommand(maestro),
-                                new VersionCommand(maestro),
-                                new RepackCommand(maestro),
-                                new BuildCommand(maestro),
-                                new LitematicaCommand(maestro),
-                                new ComeCommand(maestro),
-                                new AxisCommand(maestro),
-                                new ForceCancelCommand(maestro),
-                                new GcCommand(maestro),
-                                new InvertCommand(maestro),
-                                new TunnelCommand(maestro),
-                                new RenderCommand(maestro),
-                                new FarmCommand(maestro),
-                                new FollowCommand(maestro),
-                                new AttackCommand(maestro),
-                                new ShootCommand(maestro),
-                                new PickupCommand(maestro),
-                                new ExploreFilterCommand(maestro),
-                                new ReloadAllCommand(maestro),
-                                new SaveAllCommand(maestro),
-                                new ExploreCommand(maestro),
-                                new BlacklistCommand(maestro),
-                                new FindCommand(maestro),
-                                new MineCommand(maestro),
-                                new CoordinatorCommand(maestro),
-                                new ClickCommand(maestro),
-                                new FullbrightCommand(maestro),
-                                new SurfaceCommand(maestro),
-                                new ThisWayCommand(maestro),
-                                new WaypointsCommand(maestro),
+                                new GoalCommand(agent),
+                                new GotoCommand(agent),
+                                new PathCommand(agent),
+                                new ProcCommand(agent),
+                                new ETACommand(agent),
+                                new VersionCommand(agent),
+                                new RepackCommand(agent),
+                                new BuildCommand(agent),
+                                new LitematicaCommand(agent),
+                                new ComeCommand(agent),
+                                new AxisCommand(agent),
+                                new ForceCancelCommand(agent),
+                                new GcCommand(agent),
+                                new InvertCommand(agent),
+                                new TunnelCommand(agent),
+                                new RenderCommand(agent),
+                                new FarmCommand(agent),
+                                new FollowCommand(agent),
+                                new AttackCommand(agent),
+                                new ShootCommand(agent),
+                                new PickupCommand(agent),
+                                new ExploreFilterCommand(agent),
+                                new ReloadAllCommand(agent),
+                                new SaveAllCommand(agent),
+                                new ExploreCommand(agent),
+                                new BlacklistCommand(agent),
+                                new FindCommand(agent),
+                                new MineCommand(agent),
+                                new CoordinatorCommand(agent),
+                                new ClickCommand(agent),
+                                new FullbrightCommand(agent),
+                                new SurfaceCommand(agent),
+                                new ThisWayCommand(agent),
+                                new WaypointsCommand(agent),
                                 new CommandAlias(
-                                        maestro,
+                                        agent,
                                         "sethome",
                                         "Sets your home waypoint",
                                         "waypoints save home"),
                                 new CommandAlias(
-                                        maestro,
+                                        agent,
                                         "home",
                                         "Path to your home waypoint",
                                         "waypoints goto home"),
-                                new SelCommand(maestro),
-                                new ElytraCommand(maestro)));
-        ExecutionControlCommands prc = new ExecutionControlCommands(maestro);
+                                new SelCommand(agent),
+                                new ElytraCommand(agent)));
+        ExecutionControlCommands prc = new ExecutionControlCommands(agent);
         commands.add(prc.pauseCommand);
         commands.add(prc.resumeCommand);
         commands.add(prc.pausedCommand);

@@ -27,8 +27,8 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class SetCommand extends Command {
 
-    public SetCommand(Agent maestro) {
-        super(maestro, "set", "setting", "settings");
+    public SetCommand(Agent agent) {
+        super(agent, "set", "setting", "settings");
     }
 
     @Override

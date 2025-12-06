@@ -1,7 +1,6 @@
 package maestro.pathing.goals
 
 import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet
-import maestro.utils.SettingsUtil
 import net.minecraft.core.BlockPos
 import kotlin.math.ceil
 import kotlin.math.sqrt
@@ -119,7 +118,7 @@ open class GoalRunAway(
 
     override fun toString(): String =
         if (maintainY != null) {
-            "GoalRunAwayFromMaintainY y=${SettingsUtil.maybeCensor(maintainY)}, ${from.toList()}"
+            "GoalRunAwayFromMaintainY y=$maintainY, ${from.toList()}"
         } else {
             "GoalRunAwayFrom${from.toList()}"
         }

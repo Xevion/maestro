@@ -16,8 +16,8 @@ import maestro.selector.entity.EntitySelectorLookup;
 
 public class ShootCommand extends Command {
 
-    public ShootCommand(Agent maestro) {
-        super(maestro, "shoot");
+    public ShootCommand(Agent agent) {
+        super(agent, "shoot");
     }
 
     @Override
@@ -29,7 +29,7 @@ public class ShootCommand extends Command {
             String arg = args.peekString();
             if (arg.equalsIgnoreCase("stop")) {
                 args.getString(); // consume
-                maestro.getRangedCombatTask().cancel();
+                agent.getRangedCombatTask().cancel();
                 log.atInfo().log("Shooting stopped");
                 return;
             }
@@ -67,7 +67,7 @@ public class ShootCommand extends Command {
             throw new NoMatchesException();
         }
 
-        maestro.getRangedCombatTask().shoot(lookup.toPredicate());
+        agent.getRangedCombatTask().shoot(lookup.toPredicate());
 
         log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Shooting started");
     }

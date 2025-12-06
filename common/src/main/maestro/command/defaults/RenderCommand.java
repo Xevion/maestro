@@ -11,8 +11,8 @@ import maestro.utils.PackedBlockPos;
 
 public class RenderCommand extends Command {
 
-    public RenderCommand(Agent maestro) {
-        super(maestro, "render");
+    public RenderCommand(Agent agent) {
+        super(agent, "render");
     }
 
     @Override

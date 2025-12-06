@@ -1,7 +1,6 @@
 package maestro.pathing.goals
 
 import maestro.rendering.IGoalRenderPos
-import maestro.utils.SettingsUtil
 import maestro.utils.pack
 import net.minecraft.core.BlockPos
 import kotlin.math.abs
@@ -47,6 +46,5 @@ open class GoalGetToBlock(
 
     override fun hashCode(): Int = (pack(x, y, z).packed * -49639096).toInt()
 
-    override fun toString(): String =
-        "GoalGetToBlock[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)}]"
+    override fun toString(): String = "GoalGetToBlock[$x,$y,$z]"
 }

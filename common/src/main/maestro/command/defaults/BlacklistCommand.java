@@ -11,14 +11,14 @@ import maestro.task.GetToBlockTask;
 
 public class BlacklistCommand extends Command {
 
-    public BlacklistCommand(Agent maestro) {
-        super(maestro, "blacklist");
+    public BlacklistCommand(Agent agent) {
+        super(agent, "blacklist");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        GetToBlockTask proc = maestro.getGetToBlockTask();
+        GetToBlockTask proc = agent.getGetToBlockTask();
         if (!proc.isActive()) {
             throw new CommandException.InvalidState("GetToBlockTask is not currently active");
         }

@@ -1,7 +1,6 @@
 package maestro.pathing.goals
 
 import maestro.rendering.IGoalRenderPos
-import maestro.utils.SettingsUtil
 import maestro.utils.pack
 import net.minecraft.core.BlockPos
 
@@ -44,6 +43,5 @@ open class GoalTwoBlocks(
 
     override fun hashCode(): Int = (pack(x, y, z).packed * 516508351).toInt()
 
-    override fun toString(): String =
-        "GoalTwoBlocks[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(y)},${SettingsUtil.maybeCensor(z)}]"
+    override fun toString(): String = "GoalTwoBlocks[$x,$y,$z]"
 }

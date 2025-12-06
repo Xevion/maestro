@@ -32,31 +32,31 @@ public enum ForWaypoints implements IDatatypeFor<Waypoint[]> {
                         .stream();
     }
 
-    public static WaypointCollection waypoints(Agent maestro) {
-        return maestro.getWorldProvider().getCurrentWorld().getWaypoints();
+    public static WaypointCollection waypoints(Agent agent) {
+        return agent.getWorldProvider().getCurrentWorld().getWaypoints();
     }
 
-    public static Waypoint[] getWaypoints(Agent maestro) {
-        return waypoints(maestro).getAllWaypoints().stream()
+    public static Waypoint[] getWaypoints(Agent agent) {
+        return waypoints(agent).getAllWaypoints().stream()
                 .sorted(Comparator.comparingLong(Waypoint::getCreationTimestamp).reversed())
                 .toArray(Waypoint[]::new);
     }
 
-    public static String[] getWaypointNames(Agent maestro) {
-        return Stream.of(getWaypoints(maestro))
+    public static String[] getWaypointNames(Agent agent) {
+        return Stream.of(getWaypoints(agent))
                 .map(Waypoint::getName)
                 .filter(name -> !name.isEmpty())
                 .toArray(String[]::new);
     }
 
-    public static Waypoint[] getWaypointsByTag(Agent maestro, Waypoint.Tag tag) {
-        return waypoints(maestro).getByTag(tag).stream()
+    public static Waypoint[] getWaypointsByTag(Agent agent, Waypoint.Tag tag) {
+        return waypoints(agent).getByTag(tag).stream()
                 .sorted(Comparator.comparingLong(Waypoint::getCreationTimestamp).reversed())
                 .toArray(Waypoint[]::new);
     }
 
-    public static Waypoint[] getWaypointsByName(Agent maestro, String name) {
-        return Stream.of(getWaypoints(maestro))
+    public static Waypoint[] getWaypointsByName(Agent agent, String name) {
+        return Stream.of(getWaypoints(agent))
                 .filter(waypoint -> waypoint.getName().equalsIgnoreCase(name))
                 .toArray(Waypoint[]::new);
     }

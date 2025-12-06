@@ -16,8 +16,8 @@ import maestro.selector.block.BlockSelectorLookup;
 
 public class MineCommand extends Command {
 
-    public MineCommand(Agent maestro) {
-        super(maestro, "mine");
+    public MineCommand(Agent agent) {
+        super(agent, "mine");
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MineCommand extends Command {
 
         WorldScanner.INSTANCE.repack(ctx);
         log.atInfo().addKeyValue("filter", lookup.toDisplayString()).log("Mining started");
-        maestro.getMineTask().mine(quantity, lookup.toBlockOptionalMetaLookup());
+        agent.getMineTask().mine(quantity, lookup.toBlockOptionalMetaLookup());
     }
 
     @Override

@@ -433,7 +433,7 @@ public class ArgConsumer implements IArgConsumer {
 
         @Override
         public Agent getMaestro() {
-            return ArgConsumer.this.manager.getMaestro();
+            return ArgConsumer.this.manager.getAgent();
         }
 
         @Override

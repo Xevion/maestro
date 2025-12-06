@@ -10,8 +10,8 @@ import maestro.command.exception.CommandException;
 
 public class VersionCommand extends Command {
 
-    public VersionCommand(Agent maestro) {
-        super(maestro, "version");
+    public VersionCommand(Agent agent) {
+        super(agent, "version");
     }
 
     @Override

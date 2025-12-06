@@ -11,8 +11,8 @@ import maestro.command.exception.CommandException;
 
 public class RepackCommand extends Command {
 
-    public RepackCommand(Agent maestro) {
-        super(maestro, "repack", "rescan");
+    public RepackCommand(Agent agent) {
+        super(agent, "repack", "rescan");
     }
 
     @Override

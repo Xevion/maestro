@@ -28,9 +28,9 @@ public class ChatCommandHandler extends Behavior implements Helper {
     private static final Settings settings = Agent.getPrimaryAgent().getSettings();
     private final CommandManager manager;
 
-    public ChatCommandHandler(Agent maestro) {
-        super(maestro);
-        this.manager = maestro.getCommandManager();
+    public ChatCommandHandler(Agent agent) {
+        super(agent);
+        this.manager = agent.getCommandManager();
     }
 
     @Override

@@ -29,7 +29,7 @@ class CoordinationClient(
     private var heartbeatThread: Thread? = null
 
     @Volatile
-    var connected = false
+    var connected: Boolean = false
         private set
 
     var currentClaim: BlockPos? = null
@@ -105,7 +105,7 @@ class CoordinationClient(
 
         if (currentClaim != null) {
             try {
-                releaseArea(currentClaim!!)
+                releaseArea(currentClaim ?: return)
             } catch (e: Exception) {
                 log.atWarn().setCause(e).log("Failed to release area on disconnect")
             }
@@ -114,7 +114,7 @@ class CoordinationClient(
         channel?.shutdown()
         try {
             channel?.awaitTermination(5, TimeUnit.SECONDS)
-        } catch (e: InterruptedException) {
+        } catch (_: InterruptedException) {
             channel?.shutdownNow()
         }
 
@@ -283,7 +283,7 @@ class CoordinationClient(
                                 .build()
 
                         stub?.heartbeat(request)
-                    } catch (e: InterruptedException) {
+                    } catch (_: InterruptedException) {
                         break
                     } catch (e: StatusRuntimeException) {
                         handleDisconnect(e)

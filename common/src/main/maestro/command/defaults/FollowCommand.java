@@ -20,8 +20,8 @@ import net.minecraft.world.entity.player.Player;
 
 public class FollowCommand extends Command {
 
-    public FollowCommand(Agent maestro) {
-        super(maestro, "follow");
+    public FollowCommand(Agent agent) {
+        super(agent, "follow");
     }
 
     @Override
@@ -32,7 +32,7 @@ public class FollowCommand extends Command {
         List<Entity> entities = new ArrayList<>();
         List<EntityType> classes = new ArrayList<>();
         if (args.hasExactlyOne()) {
-            maestro.getFollowTask().follow((group = args.getEnum(FollowGroup.class)).filter);
+            agent.getFollowTask().follow((group = args.getEnum(FollowGroup.class)).filter);
         } else {
             args.requireMin(2);
             group = null;
@@ -46,7 +46,7 @@ public class FollowCommand extends Command {
                 }
             }
 
-            maestro.getFollowTask()
+            agent.getFollowTask()
                     .follow(
                             classes.isEmpty()
                                     ? entities::contains

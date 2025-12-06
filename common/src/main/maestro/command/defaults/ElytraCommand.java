@@ -22,14 +22,14 @@ import net.minecraft.world.level.Level;
 
 public class ElytraCommand extends Command {
 
-    public ElytraCommand(Agent maestro) {
-        super(maestro, "elytra");
+    public ElytraCommand(Agent agent) {
+        super(agent, "elytra");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        final CustomGoalTask customGoalProcess = maestro.getCustomGoalTask();
-        final ElytraTask elytra = maestro.getElytraTask();
+        final CustomGoalTask customGoalProcess = agent.getCustomGoalTask();
+        final ElytraTask elytra = agent.getElytraTask();
         if (args.hasExactlyOne() && args.peekString().equals("supported")) {
             log.atInfo().log(elytra.isLoaded() ? "yes" : unsupportedSystemMessage());
             return;

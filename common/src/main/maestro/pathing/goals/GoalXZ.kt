@@ -2,7 +2,6 @@ package maestro.pathing.goals
 
 import maestro.Agent
 import maestro.utils.PackedBlockPos
-import maestro.utils.SettingsUtil
 import net.minecraft.util.Mth
 import net.minecraft.world.phys.Vec3
 import kotlin.math.abs
@@ -44,7 +43,7 @@ open class GoalXZ(
         return hash
     }
 
-    override fun toString(): String = "GoalXZ[${SettingsUtil.maybeCensor(x)},${SettingsUtil.maybeCensor(z)}]"
+    override fun toString(): String = "GoalXZ[$x,$z]"
 
     @JvmName("getX")
     fun getX(): Int = x

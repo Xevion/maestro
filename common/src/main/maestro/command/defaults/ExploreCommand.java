@@ -12,8 +12,8 @@ import maestro.pathing.goals.GoalXZ;
 
 public class ExploreCommand extends Command {
 
-    public ExploreCommand(Agent maestro) {
-        super(maestro, "explore");
+    public ExploreCommand(Agent agent) {
+        super(agent, "explore");
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ExploreCommand extends Command {
                 args.hasAny()
                         ? args.getDatatypePost(RelativeGoalXZ.INSTANCE, ctx.playerFeet())
                         : new GoalXZ(ctx.playerFeet());
-        maestro.getExploreTask().explore(goal.getX(), goal.getZ());
+        agent.getExploreTask().explore(goal.getX(), goal.getZ());
         log.atInfo().addKeyValue("goal", goal).log("Exploration started");
     }
 

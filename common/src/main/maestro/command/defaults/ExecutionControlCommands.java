@@ -25,10 +25,10 @@ public class ExecutionControlCommands {
     Command pausedCommand;
     Command cancelCommand;
 
-    public ExecutionControlCommands(Agent maestro) {
+    public ExecutionControlCommands(Agent agent) {
         // array for mutability, non-field so reflection can't touch it
         final boolean[] paused = {false};
-        maestro.getPathingControlManager()
+        agent.getPathingControlManager()
                 .registerTask(
                         new ITask() {
                             @Override
@@ -39,7 +39,7 @@ public class ExecutionControlCommands {
                             @Override
                             public PathingCommand onTick(
                                     boolean calcFailed, boolean isSafeToCancel) {
-                                maestro.getInputOverrideHandler().clearAllKeys();
+                                agent.getInputOverrideHandler().clearAllKeys();
                                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                             }
 
@@ -62,7 +62,7 @@ public class ExecutionControlCommands {
                             }
                         });
         pauseCommand =
-                new Command(maestro, "pause", "p", "paws") {
+                new Command(agent, "pause", "p", "paws") {
                     @Override
                     public void execute(String label, IArgConsumer args) throws CommandException {
                         args.requireMax(0);
@@ -98,11 +98,11 @@ public class ExecutionControlCommands {
                     }
                 };
         resumeCommand =
-                new Command(maestro, "resume", "r", "unpause") {
+                new Command(agent, "resume", "r", "unpause") {
                     @Override
                     public void execute(String label, IArgConsumer args) throws CommandException {
                         args.requireMax(0);
-                        maestro.getBuilderTask().resume();
+                        agent.getBuilderTask().resume();
                         if (!paused[0]) {
                             throw new CommandException.InvalidState("Not paused");
                         }
@@ -131,7 +131,7 @@ public class ExecutionControlCommands {
                     }
                 };
         pausedCommand =
-                new Command(maestro, "paused") {
+                new Command(agent, "paused") {
                     @Override
                     public void execute(String label, IArgConsumer args) throws CommandException {
                         args.requireMax(0);
@@ -159,14 +159,14 @@ public class ExecutionControlCommands {
                     }
                 };
         cancelCommand =
-                new Command(maestro, "cancel", "c", "stop") {
+                new Command(agent, "cancel", "c", "stop") {
                     @Override
                     public void execute(String label, IArgConsumer args) throws CommandException {
                         args.requireMax(0);
                         if (paused[0]) {
                             paused[0] = false;
                         }
-                        maestro.getPathingBehavior().cancelEverything();
+                        agent.getPathingBehavior().cancelEverything();
                         log.atInfo().log("Pathing canceled");
                     }
 

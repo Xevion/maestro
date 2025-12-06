@@ -14,8 +14,8 @@ public class ReloadAllCommand extends Command {
 
     private static final Logger log = Loggers.Cmd.get();
 
-    public ReloadAllCommand(Agent maestro) {
-        super(maestro, "reloadall");
+    public ReloadAllCommand(Agent agent) {
+        super(agent, "reloadall");
     }
 
     @Override

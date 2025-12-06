@@ -11,8 +11,8 @@ public class SelectionManager {
     private final ArrayList<Selection> selections = new ArrayList<>();
     private Selection[] selectionsArr = new Selection[0];
 
-    public SelectionManager(Agent maestro) {
-        new SelectionRenderer(maestro, this);
+    public SelectionManager(Agent agent) {
+        new SelectionRenderer(agent, this);
     }
 
     private void resetSelectionsArr() {
