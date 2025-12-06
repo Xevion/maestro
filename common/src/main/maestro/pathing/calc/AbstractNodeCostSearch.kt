@@ -30,8 +30,12 @@ abstract class AbstractNodeCostSearch(
      */
     private val map: Long2ObjectOpenHashMap<PathNode> =
         Long2ObjectOpenHashMap(
-            Agent.settings().pathingMapDefaultSize.value,
-            Agent.settings().pathingMapLoadFactor.value,
+            Agent
+                .getPrimaryAgent()
+                .settings.pathingMapDefaultSize.value,
+            Agent
+                .getPrimaryAgent()
+                .settings.pathingMapLoadFactor.value,
         )
 
     protected var startNode: PathNode? = null
@@ -219,8 +223,12 @@ abstract class AbstractNodeCostSearch(
                 }
                 PathfindingFailureReason.CHUNK_LOAD_LIMIT -> {
                     logBuilder
-                        .addKeyValue("chunk_fetch_limit", Agent.settings().pathingMaxChunkBorderFetch.value)
-                        .log("Chunk load limit - unloaded chunks block path")
+                        .addKeyValue(
+                            "chunk_fetch_limit",
+                            Agent
+                                .getPrimaryAgent()
+                                .settings.pathingMaxChunkBorderFetch.value,
+                        ).log("Chunk load limit - unloaded chunks block path")
                 }
                 PathfindingFailureReason.CANCELLED -> {
                     logBuilder.log("Pathfinding cancelled")

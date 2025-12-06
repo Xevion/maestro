@@ -31,7 +31,12 @@ class DebugRenderer(
     private val pathfindingHud = PathfindingDebugHud(pathfindingDebugRenderer)
 
     override fun onRenderPass(event: RenderEvent) {
-        if (!Agent.settings().debugEnabled.value) return
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.debugEnabled.value
+        ) {
+            return
+        }
 
         // Render 3D debug visualization for current movement
         val pathExecutor = agent.pathingBehavior.getCurrent()
@@ -51,7 +56,10 @@ class DebugRenderer(
         }
 
         // Render pathfinding debug visualization if enabled
-        if (Agent.settings().pathfindingDebugEnabled.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.pathfindingDebugEnabled.value
+        ) {
             pathfindingDebugRenderer.onRenderPass(event)
         }
     }
@@ -65,7 +73,10 @@ class DebugRenderer(
         graphics: GuiGraphics,
         tickDelta: Float,
     ) {
-        if (Agent.settings().pathfindingDebugEnabled.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.pathfindingDebugEnabled.value
+        ) {
             pathfindingHud.render(graphics, tickDelta)
         }
     }

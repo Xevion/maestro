@@ -79,18 +79,43 @@ class AStarPathFinder
 
             var bestNodeThisSearch: PathNode? = startNode
             var bestHeuristicThisSearch = startNode!!.estimatedCostToGoal
-            val slowPath = Agent.settings().slowPath.value
+            val slowPath =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.slowPath.value
 
             if (slowPath) {
                 log
                     .atDebug()
-                    .addKeyValue("slow_timeout_ms", Agent.settings().slowPathTimeoutMS.value)
-                    .addKeyValue("normal_timeout_ms", primaryTimeout)
+                    .addKeyValue(
+                        "slow_timeout_ms",
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.slowPathTimeoutMS.value,
+                    ).addKeyValue("normal_timeout_ms", primaryTimeout)
                     .log("Slow path enabled")
             }
 
-            val primaryTimeoutTime = startTime + (if (slowPath) Agent.settings().slowPathTimeoutMS.value else primaryTimeout)
-            val failureTimeoutTime = startTime + (if (slowPath) Agent.settings().slowPathTimeoutMS.value else failureTimeout)
+            val primaryTimeoutTime =
+                startTime + (
+                    if (slowPath) {
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.slowPathTimeoutMS.value
+                    } else {
+                        primaryTimeout
+                    }
+                )
+            val failureTimeoutTime =
+                startTime + (
+                    if (slowPath) {
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.slowPathTimeoutMS.value
+                    } else {
+                        failureTimeout
+                    }
+                )
             var failing = true
             var numNodes = 0
             var numMovementsConsidered = 0
@@ -99,8 +124,19 @@ class AStarPathFinder
             val timeCheckInterval = 1 shl 6
 
             // Grab all settings beforehand so that changing settings during pathing doesn't cause a crash or unpredictable behavior
-            val pathingMaxChunkBorderFetch = Agent.settings().pathingMaxChunkBorderFetch.value
-            val minimumImprovement = if (Agent.settings().minimumImprovementRepropagation.value) MIN_IMPROVEMENT else 0.0
+            val pathingMaxChunkBorderFetch =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.pathingMaxChunkBorderFetch.value
+            val minimumImprovement =
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.minimumImprovementRepropagation.value
+                ) {
+                    MIN_IMPROVEMENT
+                } else {
+                    0.0
+                }
 
             while (!openSet.isEmpty() && numEmptyChunk < pathingMaxChunkBorderFetch && !cancelRequested) {
                 // Only call this once every 64 nodes (about half a millisecond)
@@ -169,7 +205,8 @@ class AStarPathFinder
                     try {
                         Thread.sleep(
                             Agent
-                                .settings()
+                                .getPrimaryAgent()
+                                .getSettings()
                                 .slowPathTimeDelayMS.value
                                 .toLong(),
                         )
@@ -385,7 +422,12 @@ class AStarPathFinder
             endNode: PathNode?,
             pathFound: Boolean,
         ) {
-            if (!Agent.settings().pathfindingDebugCapture.value) return
+            if (!Agent
+                    .getPrimaryAgent()
+                    .settings.pathfindingDebugCapture.value
+            ) {
+                return
+            }
 
             val now = System.currentTimeMillis()
 

@@ -27,7 +27,7 @@ class OpenSetsTest {
         val toInsert =
             Array(size) {
                 // can't use an existing goal
-                // because they use Maestro.settings()
+                // because they use Maestro.getPrimaryAgent().getSettings()
                 // and we can't do that because Minecraft itself isn't initted
                 PathNode(
                     0,

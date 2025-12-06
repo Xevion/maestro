@@ -37,7 +37,10 @@ class InventoryBehavior(
     private var lastTickRequestedMove: IntArray? = null
 
     override fun onTick(event: TickEvent) {
-        if (!Agent.settings().allowInventory.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.allowInventory.value
+        ) {
             return
         }
         if (event.type == TickEvent.Type.OUT) {
@@ -106,16 +109,26 @@ class InventoryBehavior(
     ): Boolean {
         lastTickRequestedMove = intArrayOf(inInventory, inHotbar)
 
-        if (ticksSinceLastInventoryMove < Agent.settings().ticksBetweenInventoryMoves.value) {
+        if (ticksSinceLastInventoryMove <
+            Agent
+                .getPrimaryAgent()
+                .settings.ticksBetweenInventoryMoves.value
+        ) {
             log
                 .atDebug()
                 .addKeyValue("ticks_since_move", ticksSinceLastInventoryMove)
-                .addKeyValue("min_ticks_required", Agent.settings().ticksBetweenInventoryMoves.value)
-                .log("Inventory move throttled")
+                .addKeyValue(
+                    "min_ticks_required",
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.ticksBetweenInventoryMoves.value,
+                ).log("Inventory move throttled")
             return false
         }
 
-        if (Agent.settings().inventoryMoveOnlyIfStationary.value &&
+        if (Agent
+                .getPrimaryAgent()
+                .settings.inventoryMoveOnlyIfStationary.value &&
             !maestro.inventoryPauserTask.stationaryForInventoryMove()
         ) {
             log.atDebug().log("Inventory move deferred until stationary")
@@ -137,7 +150,10 @@ class InventoryBehavior(
 
     private fun firstValidThrowaway(): Int {
         val inventory = ctx.player().getInventory().items
-        val acceptableItems = Agent.settings().acceptableThrowawayItems.value
+        val acceptableItems =
+            Agent
+                .getPrimaryAgent()
+                .settings.acceptableThrowawayItems.value
 
         return inventory.indexOfFirst { it.item in acceptableItems }.takeIf { it >= 0 } ?: -1
     }
@@ -155,8 +171,15 @@ class InventoryBehavior(
             if (stack.isEmpty) continue
 
             // Check item saver
-            if (Agent.settings().itemSaver.value &&
-                (stack.damageValue + Agent.settings().itemSaverThreshold.value) >= stack.maxDamage &&
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.itemSaver.value &&
+                (
+                    stack.damageValue +
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.itemSaverThreshold.value
+                ) >= stack.maxDamage &&
                 stack.maxDamage > 1
             ) {
                 continue
@@ -175,7 +198,7 @@ class InventoryBehavior(
     }
 
     fun hasGenericThrowaway(): Boolean =
-        Agent.settings().acceptableThrowawayItems.value.any { item ->
+        Agent.getPrimaryAgent().settings.acceptableThrowawayItems.value.any { item ->
             throwaway(false, { stack -> item == stack.item })
         }
 
@@ -226,7 +249,7 @@ class InventoryBehavior(
         }
 
         // Fall back to generic throwaway
-        return Agent.settings().acceptableThrowawayItems.value.any { item ->
+        return Agent.getPrimaryAgent().settings.acceptableThrowawayItems.value.any { item ->
             throwaway(select, { stack -> item == stack.item })
         }
     }
@@ -235,7 +258,10 @@ class InventoryBehavior(
     fun throwaway(
         select: Boolean,
         desired: (ItemStack) -> Boolean,
-        allowInventory: Boolean = Agent.settings().allowInventory.value,
+        allowInventory: Boolean =
+            Agent
+                .getPrimaryAgent()
+                .settings.allowInventory.value,
     ): Boolean {
         val player = ctx.player()
         val inventory = player.getInventory().items

@@ -94,25 +94,40 @@ class BuilderTask(
         this.realSchematic = null
         val buildingSelectionSchematic = schematic is SelectionSchematic
         if (Agent
-                .settings()
+                .getPrimaryAgent()
+                .getSettings()
                 .buildSubstitutes.value
                 .isNotEmpty()
         ) {
             @Suppress("UNCHECKED_CAST")
             val substitutes =
-                Agent.settings().buildSubstitutes.value as
+                Agent
+                    .getPrimaryAgent()
+                    .settings.buildSubstitutes.value as
                     MutableMap<
                         net.minecraft.world.level.block.Block,
                         MutableList<net.minecraft.world.level.block.Block>,
                     >
             currentSchematic = SubstituteSchematic(currentSchematic, substitutes)
         }
-        val mirrorValue = Agent.settings().buildSchematicMirror.value
+        val mirrorValue =
+            Agent
+                .getPrimaryAgent()
+                .settings.buildSchematicMirror.value
         if (mirrorValue != net.minecraft.world.level.block.Mirror.NONE) {
             currentSchematic = MirroredSchematic(currentSchematic, mirrorValue)
         }
-        if (Agent.settings().buildSchematicRotation.value != net.minecraft.world.level.block.Rotation.NONE) {
-            currentSchematic = RotatedSchematic(currentSchematic, Agent.settings().buildSchematicRotation.value)
+        if (Agent
+                .getPrimaryAgent()
+                .settings.buildSchematicRotation.value != net.minecraft.world.level.block.Rotation.NONE
+        ) {
+            currentSchematic =
+                RotatedSchematic(
+                    currentSchematic,
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.buildSchematicRotation.value,
+                )
         }
         currentSchematic =
             object : MaskSchematic(currentSchematic) {
@@ -123,7 +138,8 @@ class BuilderTask(
                     current: BlockState,
                 ): Boolean =
                     !Agent
-                        .settings()
+                        .getPrimaryAgent()
+                        .getSettings()
                         .buildSkipBlocks
                         .value
                         .contains(this.desiredState(x, y, z, current, emptyList()).block)
@@ -133,24 +149,43 @@ class BuilderTask(
         var x = origin.x
         var y = origin.y
         var z = origin.z
-        if (Agent.settings().schematicOrientationX.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.schematicOrientationX.value
+        ) {
             x += schematic.widthX()
         }
-        if (Agent.settings().schematicOrientationY.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.schematicOrientationY.value
+        ) {
             y += schematic.heightY()
         }
-        if (Agent.settings().schematicOrientationZ.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.schematicOrientationZ.value
+        ) {
             z += schematic.lengthZ()
         }
         this.origin = Vec3i(x, y, z)
         this.paused = false
-        this.layer = Agent.settings().startAtLayer.value
+        this.layer =
+            Agent
+                .getPrimaryAgent()
+                .settings.startAtLayer.value
         this.stopAtHeight = schematic.heightY()
-        if (Agent.settings().buildOnlySelection.value && buildingSelectionSchematic) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.buildOnlySelection.value &&
+            buildingSelectionSchematic
+        ) {
             if (maestro.selectionManager.selections.isEmpty()) {
                 log.atWarn().log("No selection set while build-only-selection enabled")
                 this.stopAtHeight = 0
-            } else if (Agent.settings().buildInLayers.value) {
+            } else if (Agent
+                    .getPrimaryAgent()
+                    .settings.buildInLayers.value
+            ) {
                 val minim =
                     Stream
                         .of(*maestro.selectionManager.selections)
@@ -163,14 +198,20 @@ class BuilderTask(
                         .max()
                 if (minim.isPresent && maxim.isPresent) {
                     val startAtHeight =
-                        if (Agent.settings().layerOrder.value) {
+                        if (Agent
+                                .getPrimaryAgent()
+                                .settings.layerOrder.value
+                        ) {
                             y + schematic.heightY() - maxim.asInt
                         } else {
                             minim.asInt - y
                         }
                     this.stopAtHeight =
                         (
-                            if (Agent.settings().layerOrder.value) {
+                            if (Agent
+                                    .getPrimaryAgent()
+                                    .settings.layerOrder.value
+                            ) {
                                 y + schematic.heightY() - minim.asInt
                             } else {
                                 maxim.asInt - y
@@ -179,7 +220,10 @@ class BuilderTask(
                     this.layer =
                         maxOf(
                             this.layer,
-                            startAtHeight / Agent.settings().layerHeight.value,
+                            startAtHeight /
+                                Agent
+                                    .getPrimaryAgent()
+                                    .settings.layerHeight.value,
                         )
                     log
                         .atDebug()
@@ -255,10 +299,16 @@ class BuilderTask(
         parsed: IStaticSchematic,
     ): ISchematic {
         var schematic: ISchematic = parsed
-        if (Agent.settings().mapArtMode.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.mapArtMode.value
+        ) {
             schematic = MapArtSchematic(parsed)
         }
-        if (Agent.settings().buildOnlySelection.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.buildOnlySelection.value
+        ) {
             schematic = SelectionSchematic(schematic, origin, maestro.selectionManager.selections)
         }
         return schematic
@@ -337,7 +387,16 @@ class BuilderTask(
         val center = ctx.playerFeet()
         val pathStart = maestro.pathingBehavior.pathStart()
         for (dx in -5..5) {
-            for (dy in (if (Agent.settings().breakFromAbove.value) -1 else 0)..5) {
+            for (dy in (
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.breakFromAbove.value
+                ) {
+                    -1
+                } else {
+                    0
+                }
+            )..5) {
                 for (dz in -5..5) {
                     val x = center.x + dx
                     val y = center.y + dy
@@ -533,18 +592,30 @@ class BuilderTask(
         }
         val currentOrigin = origin ?: return null
 
-        if (Agent.settings().buildInLayers.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.buildInLayers.value
+        ) {
             if (realSchematic == null) {
                 realSchematic = schematic
             }
             val realSchematicLocal = this.realSchematic ?: return null
             val minYInclusive: Int
             val maxYInclusive: Int
-            if (Agent.settings().layerOrder.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.layerOrder.value
+            ) {
                 maxYInclusive = realSchematicLocal.heightY() - 1
-                minYInclusive = realSchematicLocal.heightY() - layer * Agent.settings().layerHeight.value
+                minYInclusive = realSchematicLocal.heightY() - layer *
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.layerHeight.value
             } else {
-                maxYInclusive = layer * Agent.settings().layerHeight.value - 1
+                maxYInclusive = layer *
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.layerHeight.value - 1
                 minYInclusive = 0
             }
             schematic =
@@ -581,17 +652,33 @@ class BuilderTask(
         }
         val bcc = BuilderCalculationContext()
         if (!recalc(bcc)) {
-            if (Agent.settings().buildInLayers.value && layer * Agent.settings().layerHeight.value < stopAtHeight) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.buildInLayers.value &&
+                layer *
+                Agent
+                    .getPrimaryAgent()
+                    .settings.layerHeight.value < stopAtHeight
+            ) {
                 log.atInfo().addKeyValue("layer_number", layer).log("Starting layer")
                 layer++
                 return onTick(calcFailed, isSafeToCancel, recursions + 1)
             }
-            val repeat = Agent.settings().buildRepeat.value
-            val max = Agent.settings().buildRepeatCount.value
+            val repeat =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.buildRepeat.value
+            val max =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.buildRepeatCount.value
             numRepeats++
             if (repeat == Vec3i(0, 0, 0) || (max != -1 && numRepeats >= max)) {
                 log.atInfo().log("Building complete")
-                if (Agent.settings().notificationOnBuildFinished.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.notificationOnBuildFinished.value
+                ) {
                     logNotification("Done building", false)
                 }
                 onLostControl()
@@ -599,7 +686,10 @@ class BuilderTask(
             }
             layer = 0
             origin = BlockPos(currentOrigin).offset(repeat)
-            if (!Agent.settings().buildRepeatSneaky.value) {
+            if (!Agent
+                    .getPrimaryAgent()
+                    .settings.buildRepeatSneaky.value
+            ) {
                 schematic?.reset()
             }
             log
@@ -609,7 +699,10 @@ class BuilderTask(
                 .log("Repeating build")
             return onTick(calcFailed, isSafeToCancel, recursions + 1)
         }
-        if (Agent.settings().distanceTrim.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.distanceTrim.value
+        ) {
             trim()
         }
 
@@ -645,7 +738,10 @@ class BuilderTask(
             return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
         }
 
-        if (Agent.settings().allowInventory.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.allowInventory.value
+        ) {
             val usefulSlots = mutableListOf<Int>()
             val noValidHotbarOption = mutableListOf<BlockState>()
             outer@ for (desired in desirableOnHotbar) {
@@ -675,10 +771,17 @@ class BuilderTask(
             goal = assemble(bcc, approxPlaceable, true)
             if (goal == null) {
                 val realSchematicLocal = realSchematic
-                if (Agent.settings().skipFailedLayers.value &&
-                    Agent.settings().buildInLayers.value &&
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.skipFailedLayers.value &&
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.buildInLayers.value &&
                     realSchematicLocal != null &&
-                    layer * Agent.settings().layerHeight.value < realSchematicLocal.heightY()
+                    layer *
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.layerHeight.value < realSchematicLocal.heightY()
                 ) {
                     log.atInfo().addKeyValue("layer_number", layer).log("Skipping unconstructable layer")
                     layer++
@@ -717,7 +820,10 @@ class BuilderTask(
 
     private fun recalcNearby(bcc: BuilderCalculationContext) {
         val center = ctx.playerFeet()
-        val radius = Agent.settings().builderTickScanRadius.value
+        val radius =
+            Agent
+                .getPrimaryAgent()
+                .settings.builderTickScanRadius.value
         for (dx in -radius..radius) {
             for (dy in -radius..radius) {
                 for (dz in -radius..radius) {
@@ -765,7 +871,11 @@ class BuilderTask(
                         } else {
                             incorrectPositions!!.add(PackedBlockPos(blockX, blockY, blockZ))
                             observedCompleted!!.remove(PackedBlockPos(blockX, blockY, blockZ).packed)
-                            if (incorrectPositions!!.size > Agent.settings().incorrectSize.value) {
+                            if (incorrectPositions!!.size >
+                                Agent
+                                    .getPrimaryAgent()
+                                    .settings.incorrectSize.value
+                            ) {
                                 return
                             }
                         }
@@ -773,7 +883,11 @@ class BuilderTask(
                     }
                     if (!observedCompleted!!.contains(PackedBlockPos(blockX, blockY, blockZ).packed)) {
                         incorrectPositions!!.add(PackedBlockPos(blockX, blockY, blockZ))
-                        if (incorrectPositions!!.size > Agent.settings().incorrectSize.value) {
+                        if (incorrectPositions!!.size >
+                            Agent
+                                .getPrimaryAgent()
+                                .settings.incorrectSize.value
+                        ) {
                             return
                         }
                     }
@@ -954,7 +1068,9 @@ class BuilderTask(
         pos: BlockPos,
         bcc: BuilderCalculationContext,
     ): Goal {
-        if (Agent.settings().goalBreakFromAbove.value &&
+        if (Agent
+                .getPrimaryAgent()
+                .settings.goalBreakFromAbove.value &&
             bcc.bsi.get0(pos.above()).block is AirBlock &&
             bcc.bsi.get0(pos.above(2)).block is AirBlock
         ) {
@@ -1060,7 +1176,10 @@ class BuilderTask(
         name = null
         schematic = null
         realSchematic = null
-        layer = Agent.settings().startAtLayer.value
+        layer =
+            Agent
+                .getPrimaryAgent()
+                .settings.startAtLayer.value
         numRepeats = 0
         paused = false
         observedCompleted = null
@@ -1075,7 +1194,10 @@ class BuilderTask(
      * @return The lower bound of the current mining layer
      */
     fun getMinLayer(): Optional<Int> =
-        if (Agent.settings().buildInLayers.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.buildInLayers.value
+        ) {
             Optional.of(this.layer)
         } else {
             Optional.empty()
@@ -1088,7 +1210,10 @@ class BuilderTask(
      * @return The upper bound of the current mining layer
      */
     fun getMaxLayer(): Optional<Int> =
-        if (Agent.settings().buildInLayers.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.buildInLayers.value
+        ) {
             Optional.of(this.stopAtHeight)
         } else {
             Optional.empty()
@@ -1179,7 +1304,10 @@ class BuilderTask(
             val sch = getSchematic(x, y, z, current)
             if (sch != null) {
                 if (sch.block is AirBlock) {
-                    return placeBlockCost * Agent.settings().placeIncorrectBlockPenaltyMultiplier.value
+                    return placeBlockCost *
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.placeIncorrectBlockPenaltyMultiplier.value
                 }
                 if (placeable.contains(sch)) {
                     return 0.0
@@ -1187,7 +1315,10 @@ class BuilderTask(
                 if (!hasThrowaway) {
                     return COST_INF
                 }
-                return placeBlockCost * 1.5 * Agent.settings().placeIncorrectBlockPenaltyMultiplier.value
+                return placeBlockCost * 1.5 *
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.placeIncorrectBlockPenaltyMultiplier.value
             } else {
                 return if (hasThrowaway) {
                     placeBlockCost
@@ -1212,7 +1343,9 @@ class BuilderTask(
                     return 1.0
                 }
                 return if (valid(bsi.get0(x, y, z), sch, false)) {
-                    Agent.settings().breakCorrectBlockPenaltyMultiplier.value
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.breakCorrectBlockPenaltyMultiplier.value
                 } else {
                     1.0
                 }
@@ -1273,8 +1406,14 @@ class BuilderTask(
             if (first.block != second.block) {
                 return false
             }
-            val ignoreDirection = Agent.settings().buildIgnoreDirection.value
-            val ignoredProps = Agent.settings().buildIgnoreProperties.value
+            val ignoreDirection =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.buildIgnoreDirection.value
+            val ignoredProps =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.buildIgnoreProperties.value
             if (!ignoreDirection && ignoredProps.isEmpty()) {
                 return first == second
             }
@@ -1311,7 +1450,11 @@ class BuilderTask(
             if (desired == null) {
                 return true
             }
-            if (current.block is LiquidBlock && Agent.settings().okIfWater.value) {
+            if (current.block is LiquidBlock &&
+                Agent
+                    .getPrimaryAgent()
+                    .settings.okIfWater.value
+            ) {
                 return true
             }
             if (current.block is AirBlock && desired.block is AirBlock) {
@@ -1319,7 +1462,8 @@ class BuilderTask(
             }
             if (current.block is AirBlock &&
                 Agent
-                    .settings()
+                    .getPrimaryAgent()
+                    .getSettings()
                     .okIfAir.value
                     .contains(desired.block)
             ) {
@@ -1327,17 +1471,24 @@ class BuilderTask(
             }
             if (desired.block is AirBlock &&
                 Agent
-                    .settings()
+                    .getPrimaryAgent()
+                    .getSettings()
                     .buildIgnoreBlocks.value
                     .contains(current.block)
             ) {
                 return true
             }
-            if (current.block !is AirBlock && Agent.settings().buildIgnoreExisting.value && !itemVerify) {
+            if (current.block !is AirBlock &&
+                Agent
+                    .getPrimaryAgent()
+                    .settings.buildIgnoreExisting.value &&
+                !itemVerify
+            ) {
                 return true
             }
             if (Agent
-                    .settings()
+                    .getPrimaryAgent()
+                    .getSettings()
                     .buildValidSubstitutes
                     .value
                     .getOrDefault(desired.block, emptyList())

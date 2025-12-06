@@ -31,7 +31,7 @@ import maestro.gui.widget.TextInputWidget
 class SettingsPanel(
     private val screen: ControlScreen,
 ) : VBox(spacing = 4) {
-    private val settings = Agent.settings()
+    private val settings = Agent.getPrimaryAgent().settings
 
     private var activeCategory: SettingCategory? = null
     private var searchQuery: String = ""

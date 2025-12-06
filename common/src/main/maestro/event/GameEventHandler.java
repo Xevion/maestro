@@ -47,7 +47,7 @@ public final class GameEventHandler implements IEventBus {
         boolean isCoordinator = "true".equalsIgnoreCase(System.getenv("AUTOSTART_COORDINATOR"));
         if (!coordinationAutoConnected
                 && !isCoordinator
-                && Agent.settings().coordinationEnabled.value) {
+                && Agent.getPrimaryAgent().getSettings().coordinationEnabled.value) {
             maestro.coordination.CoordinationClient client = maestro.getCoordinationClient();
 
             // Create client lazily if it doesn't exist
@@ -59,8 +59,8 @@ public final class GameEventHandler implements IEventBus {
             }
 
             if (client != null) {
-                String host = Agent.settings().coordinationHost.value;
-                int port = Agent.settings().coordinationPort.value;
+                String host = Agent.getPrimaryAgent().getSettings().coordinationHost.value;
+                int port = Agent.getPrimaryAgent().getSettings().coordinationPort.value;
                 boolean connected = client.connect(host, port);
                 if (connected) {
                     log.atInfo()
@@ -137,7 +137,7 @@ public final class GameEventHandler implements IEventBus {
 
     @Override
     public void onBlockChange(BlockChangeEvent event) {
-        if (Agent.settings().repackOnAnyBlockChange.value) {
+        if (Agent.getPrimaryAgent().getSettings().repackOnAnyBlockChange.value) {
             final boolean keepingTrackOf =
                     event.blocks.stream()
                             .map(pair -> pair.component2())

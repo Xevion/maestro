@@ -94,12 +94,20 @@ class LookBehavior(
                 // Reset the player's rotations back to their original values
                 prevRotation?.let { prev ->
                     smoothYawBuffer.addLast(currentTarget.rotation.yaw)
-                    while (smoothYawBuffer.size > Agent.settings().smoothLookTicks.value) {
+                    while (smoothYawBuffer.size >
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.smoothLookTicks.value
+                    ) {
                         smoothYawBuffer.removeFirst()
                     }
 
                     smoothPitchBuffer.addLast(currentTarget.rotation.pitch)
-                    while (smoothPitchBuffer.size > Agent.settings().smoothLookTicks.value) {
+                    while (smoothPitchBuffer.size >
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.smoothLookTicks.value
+                    ) {
                         smoothPitchBuffer.removeFirst()
                     }
 
@@ -112,9 +120,13 @@ class LookBehavior(
                         Target.Mode.CLIENT -> {
                             val smoothLookEnabled =
                                 if (ctx.player().isFallFlying) {
-                                    Agent.settings().elytraSmoothLook.value
+                                    Agent
+                                        .getPrimaryAgent()
+                                        .settings.elytraSmoothLook.value
                                 } else {
-                                    Agent.settings().smoothLook.value
+                                    Agent
+                                        .getPrimaryAgent()
+                                        .settings.smoothLook.value
                                 }
 
                             if (smoothLookEnabled) {
@@ -159,7 +171,10 @@ class LookBehavior(
 
     val effectiveRotation: Optional<Rotation>
         get() =
-            if (Agent.settings().freeLook.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.freeLook.value
+            ) {
                 Optional.ofNullable(serverRotation)
             } else {
                 // If freeLook isn't on, just defer to the player's actual rotations
@@ -222,15 +237,24 @@ class LookBehavior(
 
         override fun tick() {
             // randomLooking
-            randomYawOffset = (rand.nextDouble() - 0.5) * Agent.settings().randomLooking.value
-            randomPitchOffset = (rand.nextDouble() - 0.5) * Agent.settings().randomLooking.value
+            randomYawOffset = (rand.nextDouble() - 0.5) *
+                Agent
+                    .getPrimaryAgent()
+                    .settings.randomLooking.value
+            randomPitchOffset = (rand.nextDouble() - 0.5) *
+                Agent
+                    .getPrimaryAgent()
+                    .settings.randomLooking.value
 
             // randomLooking113
             var random = rand.nextDouble() - 0.5
             if (abs(random) < 0.1) {
                 random *= 4.0
             }
-            randomYawOffset += random * Agent.settings().randomLooking113.value
+            randomYawOffset += random *
+                Agent
+                    .getPrimaryAgent()
+                    .settings.randomLooking113.value
         }
 
         override fun advance(ticks: Int) {
@@ -312,7 +336,7 @@ class LookBehavior(
                     ctx: PlayerContext,
                     blockInteract: Boolean,
                 ): Mode {
-                    val settings = Agent.settings()
+                    val settings = Agent.getPrimaryAgent().settings
                     val antiCheat = settings.antiCheatCompatibility.value
                     val blockFreeLook = settings.blockFreeLook.value
 

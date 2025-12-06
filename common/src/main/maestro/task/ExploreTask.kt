@@ -61,7 +61,10 @@ class ExploreTask(
     ): PathingCommand? {
         if (calcFailed) {
             log.atWarn().addKeyValue("reason", "path_calculation_failed").log("Exploration failed")
-            if (Agent.settings().notificationOnExploreFinished.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.notificationOnExploreFinished.value
+            ) {
                 logNotification("Exploration failed", true)
             }
             onLostControl()
@@ -69,9 +72,16 @@ class ExploreTask(
         }
 
         val filter = calcFilter()
-        if (!Agent.settings().disableCompletionCheck.value && filter.countRemain() == 0) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.disableCompletionCheck.value &&
+            filter.countRemain() == 0
+        ) {
             log.atInfo().log("Exploration complete - all chunks explored")
-            if (Agent.settings().notificationOnExploreFinished.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.notificationOnExploreFinished.value
+            ) {
                 logNotification("Explored all chunks", false)
             }
             onLostControl()
@@ -97,9 +107,18 @@ class ExploreTask(
     ): Array<Goal>? {
         val chunkX = center.x shr 4
         val chunkZ = center.z shr 4
-        var count = min(filter.countRemain(), Agent.settings().exploreChunkSetMinimumSize.value)
+        var count =
+            min(
+                filter.countRemain(),
+                Agent
+                    .getPrimaryAgent()
+                    .settings.exploreChunkSetMinimumSize.value,
+            )
         val centers = mutableListOf<BlockPos>()
-        val renderDistance = Agent.settings().worldExploringChunkOffset.value
+        val renderDistance =
+            Agent
+                .getPrimaryAgent()
+                .settings.worldExploringChunkOffset.value
 
         var dist = distanceCompleted
         while (true) {
@@ -142,7 +161,13 @@ class ExploreTask(
             }
 
             if (dist % 10 == 0) {
-                count = min(filter.countRemain(), Agent.settings().exploreChunkSetMinimumSize.value)
+                count =
+                    min(
+                        filter.countRemain(),
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.exploreChunkSetMinimumSize.value,
+                    )
             }
 
             if (centers.size >= count) {
@@ -275,7 +300,11 @@ class ExploreTask(
                 if (bcc.isAlreadyExplored(pos.x, pos.z) != Status.EXPLORED) {
                     // Either waiting for it or don't have it at all
                     countRemain++
-                    if (countRemain >= Agent.settings().exploreChunkSetMinimumSize.value) {
+                    if (countRemain >=
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.exploreChunkSetMinimumSize.value
+                    ) {
                         return countRemain
                     }
                 }
@@ -310,7 +339,10 @@ class ExploreTask(
             x: Int,
             z: Int,
         ): Goal {
-            val maintainY = Agent.settings().exploreMaintainY.value
+            val maintainY =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.exploreMaintainY.value
             if (maintainY == -1) {
                 return GoalXZ(x, z)
             }

@@ -31,7 +31,10 @@ class BlockBreakStrategy : BlockInteractionStrategy {
             if (ctx.playerController().hasBrokenBlock()) {
                 // Block broken this tick
                 // Break delay timer only applies for multi-tick block breaks like vanilla
-                val delay = Agent.settings().blockBreakSpeed.value - BASE_BREAK_DELAY
+                val delay =
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.blockBreakSpeed.value - BASE_BREAK_DELAY
                 // Must reset controllers destroy delay to prevent the client from delaying itself unnecessarily
                 (ctx.minecraft().gameMode as IPlayerControllerMP).setDestroyDelay(0)
 

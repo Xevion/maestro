@@ -30,7 +30,7 @@ class MainMenuPanel(
     }
 
     private fun toggleDebug() {
-        val settings = Agent.settings()
+        val settings = Agent.getPrimaryAgent().settings
         settings.debugEnabled.value = !settings.debugEnabled.value
     }
 

@@ -52,7 +52,8 @@ public class MixinCamera {
 
         // Freecam takes priority; if not active, swimming free-look can still work
         if (agent.isFreecamActive()
-                || (Agent.settings().enableFreeLook.value && agent.isSwimmingActive())) {
+                || (Agent.getPrimaryAgent().getSettings().enableFreeLook.value
+                        && agent.isSwimmingActive())) {
             args.set(0, agent.getFreeLookYaw()); // yaw (horizontal)
             args.set(1, agent.getFreeLookPitch()); // pitch (vertical)
         }

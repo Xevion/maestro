@@ -59,7 +59,11 @@ class GetToBlockTask(
         val locations = knownLocations ?: emptyList()
 
         if (locations.isEmpty()) {
-            if (Agent.settings().exploreForBlocks.value && !calcFailed) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.exploreForBlocks.value &&
+                !calcFailed
+            ) {
                 val currentStart = start ?: ctx.playerFeet()
                 return PathingCommand(
                     object : GoalRunAway(1.0, currentStart.toBlockPos()) {
@@ -90,7 +94,10 @@ class GetToBlockTask(
         val goal = GoalComposite(*locations.map { createGoal(it) }.toTypedArray())
 
         if (calcFailed) {
-            return if (Agent.settings().blacklistClosestOnFailure.value) {
+            return if (Agent
+                    .getPrimaryAgent()
+                    .settings.blacklistClosestOnFailure.value
+            ) {
                 log
                     .atWarn()
                     .addKeyValue("target_block", gettingTo)
@@ -112,7 +119,10 @@ class GetToBlockTask(
             }
         }
 
-        val mineGoalUpdateInterval = Agent.settings().mineGoalUpdateInterval.value
+        val mineGoalUpdateInterval =
+            Agent
+                .getPrimaryAgent()
+                .settings.mineGoalUpdateInterval.value
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) {
             val current = ArrayList(locations)
             val context = GetToBlockCalculationContext(true)
@@ -296,14 +306,20 @@ class GetToBlockTask(
     }
 
     private fun walkIntoInsteadOfAdjacent(block: Block): Boolean {
-        if (!Agent.settings().enterPortal.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.enterPortal.value
+        ) {
             return false
         }
         return block == Blocks.NETHER_PORTAL
     }
 
     private fun rightClickOnArrival(block: Block): Boolean {
-        if (!Agent.settings().rightClickContainerOnArrival.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.rightClickContainerOnArrival.value
+        ) {
             return false
         }
 

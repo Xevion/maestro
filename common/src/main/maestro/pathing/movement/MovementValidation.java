@@ -50,7 +50,7 @@ public interface MovementValidation extends Helper {
             return true;
         }
         Block b = state.getBlock();
-        return Agent.settings().blocksToDisallowBreaking.value.contains(b)
+        return Agent.getPrimaryAgent().getSettings().blocksToDisallowBreaking.value.contains(b)
                 || b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof InfestedBlock // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no
@@ -77,7 +77,8 @@ public interface MovementValidation extends Helper {
                 && block
                         instanceof
                         FallingBlock // obviously, this check is only valid for falling blocks
-                && Agent.settings()
+                && Agent.getPrimaryAgent()
+                        .getSettings()
                         .avoidUpdatingFallingBlocks
                         .value // and if the setting is enabled
                 && FallingBlock.isFree(
@@ -89,7 +90,7 @@ public interface MovementValidation extends Helper {
         // only pure liquids for now
         // waterlogged blocks can have closed bottom sides and such
         if (block instanceof LiquidBlock) {
-            if (directlyAbove || Agent.settings().strictLiquidCheck.value) {
+            if (directlyAbove || Agent.getPrimaryAgent().getSettings().strictLiquidCheck.value) {
                 return true;
             }
             int level = state.getValue(LiquidBlock.LEVEL);
@@ -160,7 +161,7 @@ public interface MovementValidation extends Helper {
         if (block == Blocks.POWDER_SNOW) {
             return NO;
         }
-        if (Agent.settings().blocksToAvoid.value.contains(block)) {
+        if (Agent.getPrimaryAgent().getSettings().blocksToAvoid.value.contains(block)) {
             return NO;
         }
         if (block instanceof DoorBlock || block instanceof FenceGateBlock) {
@@ -229,7 +230,7 @@ public interface MovementValidation extends Helper {
             }
             // Everything after this point has to be a special case as it relies on the water not
             // being flowing, which means a special case is needed.
-            if (Agent.settings().assumeWalkOnWater.value) {
+            if (Agent.getPrimaryAgent().getSettings().assumeWalkOnWater.value) {
                 return false;
             }
 
@@ -438,7 +439,10 @@ public interface MovementValidation extends Helper {
         }
         if (block == Blocks.LADDER
                 || (block == Blocks.VINE
-                        && Agent.settings().allowVines.value)) { // TODO reconsider this
+                        && Agent.getPrimaryAgent()
+                                .getSettings()
+                                .allowVines
+                                .value)) { // TODO reconsider this
             return YES;
         }
         if (block == Blocks.FARMLAND || block == Blocks.DIRT_PATH || block == Blocks.SOUL_SAND) {
@@ -456,11 +460,12 @@ public interface MovementValidation extends Helper {
         if (isWater(state)) {
             return MAYBE;
         }
-        if (MovementValidation.isLava(state) && Agent.settings().assumeWalkOnLava.value) {
+        if (MovementValidation.isLava(state)
+                && Agent.getPrimaryAgent().getSettings().assumeWalkOnLava.value) {
             return MAYBE;
         }
         if (block instanceof SlabBlock) {
-            if (!Agent.settings().allowWalkOnBottomSlab.value) {
+            if (!Agent.getPrimaryAgent().getSettings().allowWalkOnBottomSlab.value) {
                 if (state.getValue(SlabBlock.TYPE) != SlabType.BOTTOM) {
                     return YES;
                 }
@@ -488,18 +493,20 @@ public interface MovementValidation extends Helper {
                     || upState.getFluidState().getType() == Fluids.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still
                 // water with jesus off
-                return isWater(upState) && !Agent.settings().assumeWalkOnWater.value;
+                return isWater(upState)
+                        && !Agent.getPrimaryAgent().getSettings().assumeWalkOnWater.value;
             }
             // if assumeWalkOnWater is on, we can only walk on water if there isn't water above it
             // if assumeWalkOnWater is off, we can only walk on water if there is water above it
-            return isWater(upState) ^ Agent.settings().assumeWalkOnWater.value;
+            return isWater(upState) ^ Agent.getPrimaryAgent().getSettings().assumeWalkOnWater.value;
         }
 
         // if we get here it means that assumeWalkOnLava must be true, so
         // put it last
         return MovementValidation.isLava(state)
                 && !MovementValidation.isFlowing(x, y, z, state, bsi)
-                && Agent.settings()
+                && Agent.getPrimaryAgent()
+                        .getSettings()
                         .assumeWalkOnLava
                         .value; // If we don't recognise it then we want to just return false to be
         // safe.
@@ -690,7 +697,8 @@ public interface MovementValidation extends Helper {
      */
     static void switchToBestToolFor(
             PlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
-        if (Agent.settings().autoTool.value && !Agent.settings().assumeExternalAutoTool.value) {
+        if (Agent.getPrimaryAgent().getSettings().autoTool.value
+                && !Agent.getPrimaryAgent().getSettings().assumeExternalAutoTool.value) {
             ctx.player().getInventory().selected = ts.getBestSlot(b.getBlock(), preferSilkTouch);
         }
     }

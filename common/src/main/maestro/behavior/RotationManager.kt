@@ -98,9 +98,6 @@ class RotationManager(
         }
     }
 
-    /** Returns true if there are pending rotations in the queue.  */
-    fun hasPendingRotations(): Boolean = rotations.isNotEmpty() || currentRotation != null
-
     /** Clears all pending rotations (emergency stop).  */
     fun clear() {
         rotations.clear()

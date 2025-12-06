@@ -306,7 +306,7 @@ public class ArgConsumer implements IArgConsumer {
         try {
             return datatype.apply(this.context, original);
         } catch (Exception e) {
-            if (Agent.settings().verboseCommandExceptions.value) {
+            if (Agent.getPrimaryAgent().getSettings().verboseCommandExceptions.value) {
                 e.printStackTrace();
             }
             throw new CommandException.InvalidArgument.InvalidType(
@@ -340,7 +340,7 @@ public class ArgConsumer implements IArgConsumer {
         try {
             return datatype.get(this.context);
         } catch (Exception e) {
-            if (Agent.settings().verboseCommandExceptions.value) {
+            if (Agent.getPrimaryAgent().getSettings().verboseCommandExceptions.value) {
                 e.printStackTrace();
             }
             throw new CommandException.InvalidArgument.InvalidType(

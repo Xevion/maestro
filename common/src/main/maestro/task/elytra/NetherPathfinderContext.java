@@ -109,7 +109,10 @@ public final class NetherPathfinderContext {
                                     true,
                                     false,
                                     10000,
-                                    !Agent.settings().elytraPredictTerrain.value);
+                                    !Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .elytraPredictTerrain
+                                            .value);
                     if (segment == null) {
                         throw new PathCalculationException("Path calculation failed");
                     }

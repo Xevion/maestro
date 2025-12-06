@@ -23,12 +23,20 @@ object TrajectoryRenderer {
         trajectory: TrajectoryResult?,
     ) {
         if (trajectory == null) return
-        if (!Agent.settings().renderTrajectory.value) return
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.renderTrajectory.value
+        ) {
+            return
+        }
 
         val points = trajectory.points
         if (points.size < 2) return
 
-        val awtColor = Agent.settings().trajectoryColor.value
+        val awtColor =
+            Agent
+                .getPrimaryAgent()
+                .settings.trajectoryColor.value
         val color = awtToArgb(awtColor)
 
         GfxRenderer.begin(event.modelViewStack, ignoreDepth = true)

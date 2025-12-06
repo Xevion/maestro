@@ -31,7 +31,7 @@ public class SwimmingProvider implements IMovementProvider {
     private final int angularPrecision;
 
     public SwimmingProvider() {
-        this.angularPrecision = Agent.settings().swimAngularPrecision.value;
+        this.angularPrecision = Agent.getPrimaryAgent().getSettings().swimAngularPrecision.value;
     }
 
     @Override

@@ -126,7 +126,10 @@ class PathRecoveryManager(
             .log("Handling corridor deviation")
 
         // Check if reconnection is enabled
-        if (!Agent.settings().pathReconnectionEnabled.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.pathReconnectionEnabled.value
+        ) {
             log
                 .atDebug()
                 .addKeyValue("decision", "cancel_path")
@@ -182,7 +185,10 @@ class PathRecoveryManager(
         val reconnectionCost =
             reconnectionPath.ticksRemainingFrom(0) +
                 currentPath.ticksRemainingFrom(candidate.pathIndex)
-        val threshold = Agent.settings().pathReconnectionCostThreshold.value
+        val threshold =
+            Agent
+                .getPrimaryAgent()
+                .settings.pathReconnectionCostThreshold.value
 
         if (!pathReconnection.shouldUseReconnection(reconnectionCost, fullRecalcCost, threshold)) {
             log

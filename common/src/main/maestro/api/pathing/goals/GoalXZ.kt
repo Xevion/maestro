@@ -72,7 +72,10 @@ open class GoalXZ(
                 } else {
                     (x - z) to z
                 }
-            return (diagonal * SQRT_2 + straight) * Agent.settings().costHeuristic.value
+            return (diagonal * SQRT_2 + straight) *
+                Agent
+                    .getPrimaryAgent()
+                    .settings.costHeuristic.value
         }
 
         @JvmStatic

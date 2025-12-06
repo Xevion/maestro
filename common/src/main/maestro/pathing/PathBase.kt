@@ -7,7 +7,10 @@ import maestro.pathing.path.CutoffPath
 
 abstract class PathBase : IPath {
     override fun cutoffAtLoadedChunks(bsi: Any): PathBase {
-        if (!Agent.settings().cutoffAtLoadBoundary.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.cutoffAtLoadBoundary.value
+        ) {
             return this
         }
         val blockStateInterface = bsi as BlockStateInterface
@@ -21,14 +24,20 @@ abstract class PathBase : IPath {
     }
 
     override fun staticCutoff(destination: Goal?): PathBase {
-        val min = Agent.settings().pathCutoffMinimumLength.value
+        val min =
+            Agent
+                .getPrimaryAgent()
+                .settings.pathCutoffMinimumLength.value
         if (length() < min) {
             return this
         }
         if (destination == null || destination.isInGoal(dest.toBlockPos())) {
             return this
         }
-        val factor = Agent.settings().pathCutoffFactor.value
+        val factor =
+            Agent
+                .getPrimaryAgent()
+                .settings.pathCutoffFactor.value
         val newLength = ((length() - min) * factor).toInt() + min - 1
         return CutoffPath(this, newLength)
     }

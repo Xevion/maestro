@@ -198,6 +198,9 @@ public class Agent {
         // Register debug renderer
         this.debugRenderer = new DebugRenderer(this);
         this.gameEventHandler.registerEventListener(this.debugRenderer);
+
+        // Register SDF demo renderer
+        //        this.gameEventHandler.registerEventListener(new GfxDemo(this));
     }
 
     public void registerBehavior(IBehavior behavior) {
@@ -366,8 +369,7 @@ public class Agent {
 
         // When switching to FOLLOW mode, calculate offset from current static position to player
         if (newMode == FreecamMode.FOLLOW && this.mc.player != null && freecamPosition != null) {
-            Vec3 playerPos =
-                    new Vec3(this.mc.player.getX(), this.mc.player.getY(), this.mc.player.getZ());
+            Vec3 playerPos = this.mc.player.position();
             Vec3 offset = freecamPosition.subtract(playerPos);
 
             // Initialize both current and prev to the same value for stable start
@@ -383,8 +385,7 @@ public class Agent {
                 && this.mc.player != null
                 && freecamFollowOffset != null) {
             // When switching to STATIC mode, set position from current follow position
-            Vec3 playerPos =
-                    new Vec3(this.mc.player.getX(), this.mc.player.getY(), this.mc.player.getZ());
+            Vec3 playerPos = this.mc.player.position();
             Vec3 staticPos = playerPos.add(freecamFollowOffset);
 
             // Initialize both current and prev to the same value for stable start
@@ -555,7 +556,7 @@ public class Agent {
             this.savedSmoothCamera = this.mc.options.smoothCamera;
 
             // Initialize freecam mode and player tracking
-            this.freecamMode = Agent.settings().freecamDefaultMode.value;
+            this.freecamMode = Agent.getPrimaryAgent().getSettings().freecamDefaultMode.value;
             if (this.mc.player != null) {
                 this.lastPlayerPosition = this.mc.player.position();
             }
@@ -563,7 +564,8 @@ public class Agent {
             this.freecamActive = true;
 
             // Reload chunks if configured (queue for next tick)
-            if (Agent.settings().freecamReloadChunks.value && this.mc.levelRenderer != null) {
+            if (Agent.getPrimaryAgent().getSettings().freecamReloadChunks.value
+                    && this.mc.levelRenderer != null) {
                 this.mc.execute(() -> this.mc.levelRenderer.allChanged());
             }
         }
@@ -588,7 +590,8 @@ public class Agent {
         this.mc.options.smoothCamera = this.savedSmoothCamera;
 
         // Reload chunks if configured (queue for next tick)
-        if (Agent.settings().freecamReloadChunks.value && this.mc.levelRenderer != null) {
+        if (Agent.getPrimaryAgent().getSettings().freecamReloadChunks.value
+                && this.mc.levelRenderer != null) {
             this.mc.execute(() -> this.mc.levelRenderer.allChanged());
         }
     }
@@ -726,16 +729,6 @@ public class Agent {
         return null;
     }
 
-    /** Find the agent associated with a specific Minecraft instance. */
-    public static Agent getAgentForMinecraft(Minecraft minecraft) {
-        for (Agent agent : allAgents) {
-            if (agent.playerContext.minecraft() == minecraft) {
-                return agent;
-            }
-        }
-        return null;
-    }
-
     /** Find the agent associated with a specific connection. */
     public static Agent getAgentForConnection(ClientPacketListener connection) {
         for (Agent agent : allAgents) {
@@ -745,14 +738,6 @@ public class Agent {
             }
         }
         return null;
-    }
-
-    /**
-     * @deprecated Use {@link #getSettings()} on agent instance instead
-     */
-    @Deprecated
-    public static Settings settings() {
-        return Agent.getPrimaryAgent().getSettings();
     }
 
     public static Executor getExecutor() {

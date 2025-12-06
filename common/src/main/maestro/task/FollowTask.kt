@@ -35,14 +35,22 @@ class FollowTask(
 
     private fun towards(following: Entity): Goal {
         val pos: BlockPos =
-            if (Agent.settings().followOffsetDistance.value == 0.0 || into) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.followOffsetDistance.value == 0.0 ||
+                into
+            ) {
                 following.blockPosition()
             } else {
                 val g =
                     GoalXZ.fromDirection(
                         following.position(),
-                        Agent.settings().followOffsetDirection.value,
-                        Agent.settings().followOffsetDistance.value,
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.followOffsetDirection.value,
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.followOffsetDistance.value,
                     )
                 PackedBlockPos(g.x, following.position().y.toInt(), g.z).toBlockPos()
             }
@@ -50,7 +58,12 @@ class FollowTask(
         return if (into) {
             GoalBlock(pos)
         } else {
-            GoalNear(pos, Agent.settings().followRadius.value)
+            GoalNear(
+                pos,
+                Agent
+                    .getPrimaryAgent()
+                    .settings.followRadius.value,
+            )
         }
     }
 
@@ -67,7 +80,10 @@ class FollowTask(
             return false
         }
 
-        val maxDist = Agent.settings().followTargetMaxDistance.value
+        val maxDist =
+            Agent
+                .getPrimaryAgent()
+                .settings.followTargetMaxDistance.value
         val player = ctx.player() ?: return false
 
         if (maxDist != 0 && entity.distanceToSqr(player) > maxDist * maxDist) {

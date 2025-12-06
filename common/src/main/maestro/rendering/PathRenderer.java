@@ -605,8 +605,7 @@ public final class PathRenderer implements IRenderer {
             // Calculate direction vector using normalized direction utility
             Vec3 srcCenter = BlockPosExtKt.getCenter(pos.toBlockPos());
             Vec3 destCenter = BlockPosExtKt.getCenter(movement.getDest().toBlockPos());
-            net.minecraft.world.phys.Vec3 direction =
-                    Vec3ExtKt.normalizedDirectionTo(srcCenter, destCenter);
+            Vec3 direction = Vec3ExtKt.normalizedDirectionTo(srcCenter, destCenter);
 
             // Set arrow color
             Color arrowColor = getArrowColor(movement);
@@ -869,7 +868,7 @@ public final class PathRenderer implements IRenderer {
             minZ = ctx.player().position().z - settings.yLevelBoxSize.value - renderPosZ;
             maxX = ctx.player().position().x + settings.yLevelBoxSize.value - renderPosX;
             maxZ = ctx.player().position().z + settings.yLevelBoxSize.value - renderPosZ;
-            minY = ((GoalYLevel) goal).level - renderPosY;
+            minY = goalpos.level - renderPosY;
             maxY = minY + 2;
             y1 = 1 + y + goalpos.level - renderPosY;
             y2 = 1 - y + goalpos.level - renderPosY;
@@ -1079,7 +1078,7 @@ public final class PathRenderer implements IRenderer {
             double x,
             double y,
             double z,
-            net.minecraft.world.phys.Vec3 direction,
+            Vec3 direction,
             double size) {
         // Calculate tip point (along direction)
         double tipX = x + direction.x * size;
@@ -1087,7 +1086,7 @@ public final class PathRenderer implements IRenderer {
         double tipZ = z + direction.z * size;
 
         // Calculate perpendicular vector for wings using utility
-        net.minecraft.world.phys.Vec3 perp = Vec3ExtKt.perpendicular(direction);
+        Vec3 perp = Vec3ExtKt.perpendicular(direction);
 
         // Wing points (70% back from tip, 30% spread)
         double backDist = size * 0.7;

@@ -49,8 +49,14 @@ class PathReconnection {
         currentPosition: PackedBlockPos,
         context: CalculationContext,
     ): ReconnectionCandidate? {
-        val lookbehind = Agent.settings().pathReconnectionLookbehind.value
-        val lookahead = Agent.settings().pathReconnectionLookahead.value
+        val lookbehind =
+            Agent
+                .getPrimaryAgent()
+                .settings.pathReconnectionLookbehind.value
+        val lookahead =
+            Agent
+                .getPrimaryAgent()
+                .settings.pathReconnectionLookahead.value
 
         val searchStart = max(0, corridorPosition - lookbehind)
         val searchEnd = min(currentPath.movements().size - 1, corridorPosition + lookahead)
@@ -134,14 +140,20 @@ class PathReconnection {
 
         // Use limited timeout and node budget for reconnection
         // Scale node budget based on distance - longer reconnections need more nodes
-        val baseNodes = Agent.settings().pathReconnectionMaxPartialNodes.value
+        val baseNodes =
+            Agent
+                .getPrimaryAgent()
+                .settings.pathReconnectionMaxPartialNodes.value
         val distance = ceil(reconnectionGoal.heuristic(from.x, from.y, from.z)).toInt()
         val scaledNodes =
             min(
                 2000, // Cap at reasonable maximum to prevent runaway calculations
                 baseNodes + max(0, (distance - 5) * 50), // Add 50 nodes per block beyond 5
             )
-        val timeout = Agent.settings().pathReconnectionTimeoutMs.value
+        val timeout =
+            Agent
+                .getPrimaryAgent()
+                .settings.pathReconnectionTimeoutMs.value
 
         log
             .atDebug()

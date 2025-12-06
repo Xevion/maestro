@@ -97,7 +97,7 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
 
     @Inject(method = "handleBlockUpdate", at = @At("RETURN"))
     private void postHandleBlockChange(ClientboundBlockUpdatePacket packetIn, CallbackInfo ci) {
-        if (!Agent.settings().repackOnAnyBlockChange.value) {
+        if (!Agent.getPrimaryAgent().getSettings().repackOnAnyBlockChange.value) {
             return;
         }
         if (!CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(packetIn.getBlockState().getBlock())) {

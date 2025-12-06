@@ -35,7 +35,10 @@ class ToolSet(
 
     init {
         backendCalculation =
-            if (Agent.settings().considerPotionEffects.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.considerPotionEffects.value
+            ) {
                 { block -> potionAmplifier() * getBestDestructionTime(block) }
             } else {
                 ::getBestDestructionTime
@@ -96,7 +99,11 @@ class ToolSet(
         If we actually want know what efficiency our held item has instead of the best one
         possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
          */
-        if (!Agent.settings().autoTool.value && pathingCalculation) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.autoTool.value &&
+            pathingCalculation
+        ) {
             return player.inventory.selected
         }
 
@@ -108,12 +115,23 @@ class ToolSet(
 
         for (i in 0 until 9) {
             val itemStack = player.inventory.getItem(i)
-            if (!Agent.settings().useSwordToMine.value && itemStack.item is SwordItem) {
+            if (!Agent
+                    .getPrimaryAgent()
+                    .settings.useSwordToMine.value &&
+                itemStack.item is SwordItem
+            ) {
                 continue
             }
 
-            if (Agent.settings().itemSaver.value &&
-                (itemStack.damageValue + Agent.settings().itemSaverThreshold.value) >= itemStack.maxDamage &&
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.itemSaver.value &&
+                (
+                    itemStack.damageValue +
+                        Agent
+                            .getPrimaryAgent()
+                            .settings.itemSaverThreshold.value
+                ) >= itemStack.maxDamage &&
                 itemStack.maxDamage > 1
             ) {
                 continue
@@ -155,11 +173,14 @@ class ToolSet(
 
     private fun avoidanceMultiplier(b: Block): Double =
         if (Agent
-                .settings()
+                .getPrimaryAgent()
+                .getSettings()
                 .blocksToAvoidBreaking.value
                 .contains(b)
         ) {
-            Agent.settings().avoidBreakingMultiplier.value
+            Agent
+                .getPrimaryAgent()
+                .settings.avoidBreakingMultiplier.value
         } else {
             1.0
         }

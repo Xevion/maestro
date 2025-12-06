@@ -19,7 +19,7 @@ public class MixinLightmapTextureManager {
                             target =
                                     "Lnet/minecraft/world/level/dimension/DimensionType;ambientLight()F"))
     private float modifyAmbientLight(DimensionType instance, Operation<Float> original) {
-        if (Agent.settings().fullbright.value) {
+        if (Agent.getPrimaryAgent().getSettings().fullbright.value) {
             return 1.0F;
         }
         return original.call(instance);

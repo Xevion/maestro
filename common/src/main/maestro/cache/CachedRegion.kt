@@ -335,7 +335,10 @@ class CachedRegion(
     }
 
     fun removeExpired() {
-        val expiry = Agent.settings().cachedChunksExpirySeconds.value
+        val expiry =
+            Agent
+                .getPrimaryAgent()
+                .settings.cachedChunksExpirySeconds.value
         if (expiry < 0) return
 
         val now = System.currentTimeMillis()

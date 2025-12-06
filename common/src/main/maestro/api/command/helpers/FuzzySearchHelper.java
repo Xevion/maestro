@@ -30,7 +30,7 @@ import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
  * // Returns: ["mine"] (catches typo)
  *
  * // Object search with custom extractor
- * List<Setting> settings = Agent.settings().allSettings;
+ * List<Setting> settings = Agent.getPrimaryAgent().getSettings().allSettings;
  * List<Setting> matches = FuzzySearchHelper.search(
  *     "phat",
  *     settings,

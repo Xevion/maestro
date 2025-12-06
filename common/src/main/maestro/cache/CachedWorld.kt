@@ -75,7 +75,11 @@ class CachedWorld internal constructor(
                     try {
                         val chunk = toPackMap.remove(pos) ?: return@collect
 
-                        if (toPackMap.size > Agent.settings().chunkPackerQueueMaxSize.value) {
+                        if (toPackMap.size >
+                            Agent
+                                .getPrimaryAgent()
+                                .settings.chunkPackerQueueMaxSize.value
+                        ) {
                             return@collect
                         }
 
@@ -181,7 +185,10 @@ class CachedWorld internal constructor(
     }
 
     fun save() {
-        if (!Agent.settings().chunkCaching.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.chunkCaching.value
+        ) {
             allRegions().forEach { region ->
                 region.removeExpired()
             }
@@ -204,7 +211,10 @@ class CachedWorld internal constructor(
     }
 
     private fun prune() {
-        if (!Agent.settings().pruneRegionsFromRAM.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.pruneRegionsFromRAM.value
+        ) {
             return
         }
 

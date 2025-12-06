@@ -79,11 +79,17 @@ class CustomGoalTask(
                     // We're there xd
                     onLostControl()
 
-                    if (Agent.settings().disconnectOnArrival.value) {
+                    if (Agent
+                            .getPrimaryAgent()
+                            .settings.disconnectOnArrival.value
+                    ) {
                         ctx.world().disconnect()
                     }
 
-                    if (Agent.settings().notificationOnPathComplete.value) {
+                    if (Agent
+                            .getPrimaryAgent()
+                            .settings.notificationOnPathComplete.value
+                    ) {
                         logNotification("Pathing complete", false)
                     }
 

@@ -84,7 +84,10 @@ class ElytraTask private constructor(
     ): PathingCommand {
         val currentBehavior = behavior ?: return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
 
-        val seedSetting = Agent.settings().elytraNetherSeed.value
+        val seedSetting =
+            Agent
+                .getPrimaryAgent()
+                .settings.elytraNetherSeed.value
         if (seedSetting != currentBehavior.context.seed) {
             log
                 .atInfo()
@@ -93,13 +96,24 @@ class ElytraTask private constructor(
                 .log("Nether seed changed, recalculating path")
             this.resetState()
         }
-        if (predictingTerrain != Agent.settings().elytraPredictTerrain.value) {
+        if (predictingTerrain !=
+            Agent
+                .getPrimaryAgent()
+                .settings.elytraPredictTerrain.value
+        ) {
             log
                 .atInfo()
                 .addKeyValue("setting", "elytraPredictTerrain")
-                .addKeyValue("new_value", Agent.settings().elytraPredictTerrain.value)
-                .log("Setting changed, recalculating path")
-            predictingTerrain = Agent.settings().elytraPredictTerrain.value
+                .addKeyValue(
+                    "new_value",
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.elytraPredictTerrain.value,
+                ).log("Setting changed, recalculating path")
+            predictingTerrain =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.elytraPredictTerrain.value
             this.resetState()
         }
 
@@ -113,7 +127,10 @@ class ElytraTask private constructor(
 
         var safetyLanding = false
         if (ctx.player().isFallFlying && shouldLandForSafety()) {
-            if (Agent.settings().elytraAllowEmergencyLand.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.elytraAllowEmergencyLand.value
+            ) {
                 log
                     .atInfo()
                     .addKeyValue("reason", "low_resources")
@@ -146,10 +163,16 @@ class ElytraTask private constructor(
             }
 
             if (last != null && ctx.player().position().distanceToSqr(last.toBlockPos().center) < 1) {
-                if (Agent.settings().notificationOnPathComplete.value && !reachedGoal) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.notificationOnPathComplete.value && !reachedGoal
+                ) {
                     logNotification("Pathing complete", false)
                 }
-                if (Agent.settings().disconnectOnArrival.value && !reachedGoal) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.disconnectOnArrival.value && !reachedGoal
+                ) {
                     this.onLostControl()
                     ctx.world().disconnect()
                     return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
@@ -204,7 +227,11 @@ class ElytraTask private constructor(
 
         if (this.state == State.FLYING || this.state == State.START_FLYING) {
             this.state =
-                if (ctx.player().onGround() && Agent.settings().elytraAutoJump.value) {
+                if (ctx.player().onGround() &&
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.elytraAutoJump.value
+                ) {
                     State.LOCATE_JUMP
                 } else {
                     State.START_FLYING
@@ -331,7 +358,10 @@ class ElytraTask private constructor(
             return
         }
         this.onLostControl()
-        this.predictingTerrain = Agent.settings().elytraPredictTerrain.value
+        this.predictingTerrain =
+            Agent
+                .getPrimaryAgent()
+                .settings.elytraPredictTerrain.value
         this.behavior = ElytraBehavior(this.maestro, this, destination, appendDestination)
         if (ctx.world() != null) {
             this.behavior?.repackChunks()
@@ -367,7 +397,10 @@ class ElytraTask private constructor(
     private fun shouldLandForSafety(): Boolean {
         val chest = ctx.player().getItemBySlot(EquipmentSlot.CHEST)
         if (chest.item != Items.ELYTRA ||
-            chest.maxDamage - chest.damageValue < Agent.settings().elytraMinimumDurability.value
+            chest.maxDamage - chest.damageValue <
+            Agent
+                .getPrimaryAgent()
+                .settings.elytraMinimumDurability.value
         ) {
             return true
         }
@@ -379,7 +412,10 @@ class ElytraTask private constructor(
                 qty += inv[i].count
             }
         }
-        return qty <= Agent.settings().elytraMinFireworksBeforeLanding.value
+        return qty <=
+            Agent
+                .getPrimaryAgent()
+                .settings.elytraMinFireworksBeforeLanding.value
     }
 
     fun isLoaded(): Boolean = true
@@ -456,7 +492,12 @@ class ElytraTask private constructor(
     private fun isSafeBlock(block: Block): Boolean =
         block == Blocks.NETHERRACK ||
             block == Blocks.GRAVEL ||
-            (block == Blocks.NETHER_BRICKS && Agent.settings().elytraAllowLandOnNetherFortress.value)
+            (
+                block == Blocks.NETHER_BRICKS &&
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.elytraAllowLandOnNetherFortress.value
+            )
 
     private fun isSafeBlock(pos: BlockPos): Boolean = isSafeBlock(ctx.world().getBlockState(pos).block)
 

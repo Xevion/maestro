@@ -50,15 +50,33 @@ public class SelCommand extends Command {
                         new AbstractGameEventListener() {
                             @Override
                             public void onRenderPass(RenderEvent event) {
-                                if (!Agent.settings().renderSelectionCorners.value
+                                if (!Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .renderSelectionCorners
+                                                .value
                                         || pos1 == null) {
                                     return;
                                 }
-                                Color color = Agent.settings().colorSelectionPos1.value;
-                                float opacity = Agent.settings().selectionOpacity.value;
-                                float lineWidth = Agent.settings().selectionLineWidth.value;
+                                Color color =
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .colorSelectionPos1
+                                                .value;
+                                float opacity =
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .selectionOpacity
+                                                .value;
+                                float lineWidth =
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .selectionLineWidth
+                                                .value;
                                 boolean ignoreDepth =
-                                        Agent.settings().renderSelectionIgnoreDepth.value;
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .renderSelectionIgnoreDepth
+                                                .value;
                                 BufferBuilder bufferBuilder =
                                         IRenderer.startLines(
                                                 color, opacity, lineWidth, ignoreDepth);

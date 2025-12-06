@@ -68,7 +68,11 @@ class FreecamBehavior(
     }
 
     override fun onChunkOcclusion(event: ChunkOcclusionEvent) {
-        if (maestro.isFreecamActive && Agent.settings().freecamDisableOcclusion.value) {
+        if (maestro.isFreecamActive &&
+            Agent
+                .getPrimaryAgent()
+                .settings.freecamDisableOcclusion.value
+        ) {
             event.cancel()
         }
     }
@@ -275,7 +279,10 @@ class FreecamBehavior(
     }
 
     private fun handleTeleport() {
-        val distance = Agent.settings().freecamTeleportDistance.value
+        val distance =
+            Agent
+                .getPrimaryAgent()
+                .settings.freecamTeleportDistance.value
         val hitResult = raycastFromFreecam(distance) ?: return
 
         val targetPos =
@@ -293,7 +300,10 @@ class FreecamBehavior(
     }
 
     private fun handlePathfinding() {
-        val distance = Agent.settings().freecamPathfindDistance.value
+        val distance =
+            Agent
+                .getPrimaryAgent()
+                .settings.freecamPathfindDistance.value
         val hitResult = raycastFromFreecam(distance) ?: return
 
         if (hitResult.type == HitResult.Type.BLOCK) {
@@ -302,4 +312,14 @@ class FreecamBehavior(
             maestro.customGoalTask.setGoalAndPath(goal)
         }
     }
+}
+
+/**
+ * Freecam camera modes.
+ * - STATIC: Camera position is independent of player (default)
+ * - FOLLOW: Camera follows player position deltas, rotation independent
+ */
+enum class FreecamMode {
+    STATIC,
+    FOLLOW,
 }

@@ -177,7 +177,10 @@ class RangedCombatTask(
                 updateAim(target)
 
                 // Check if fully charged (or meets minimum threshold)
-                val minimumCharge = Agent.settings().minimumBowCharge.value
+                val minimumCharge =
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.minimumBowCharge.value
                 if (bowController.hasMinimumCharge(minimumCharge)) {
                     transitionState(CombatState.SHOOTING)
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
@@ -243,8 +246,14 @@ class RangedCombatTask(
 
         // Predict target position if enabled
         val targetPos =
-            if (Agent.settings().predictTargetMovement.value && TargetPredictor.isPredictable(target)) {
-                val iterations = Agent.settings().targetPredictionIterations.value
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.predictTargetMovement.value && TargetPredictor.isPredictable(target)
+            ) {
+                val iterations =
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.targetPredictionIterations.value
                 TargetPredictor.predictEyePosition(target, shooterPos, velocity, iterations)
             } else {
                 // Aim for center of entity
@@ -264,7 +273,10 @@ class RangedCombatTask(
 
             // Calculate full trajectory for rendering (always calculate if rendering is enabled)
             currentTrajectory =
-                if (Agent.settings().renderTrajectory.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.renderTrajectory.value
+                ) {
                     ProjectilePhysics.simulateTrajectory(
                         shooterPos,
                         yaw,

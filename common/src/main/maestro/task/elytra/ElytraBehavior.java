@@ -123,7 +123,9 @@ public final class ElytraBehavior {
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
 
-        this.context = new NetherPathfinderContext(Agent.settings().elytraNetherSeed.value);
+        this.context =
+                new NetherPathfinderContext(
+                        Agent.getPrimaryAgent().getSettings().elytraNetherSeed.value);
         this.boi = new BlockStateOctreeInterface(context);
     }
 
@@ -173,7 +175,10 @@ public final class ElytraBehavior {
                                 final double distance =
                                         this.path.getFirst().distanceTo(this.path.getLast());
                                 if (this.completePath) {
-                                    if (Agent.settings().elytraChatSpam.value) {
+                                    if (Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .elytraChatSpam
+                                            .value) {
                                         log.atDebug()
                                                 .addKeyValue("distance_blocks", distance)
                                                 .addKeyValue(
@@ -182,7 +187,10 @@ public final class ElytraBehavior {
                                                 .log("Computed path");
                                     }
                                 } else {
-                                    if (Agent.settings().elytraChatSpam.value) {
+                                    if (Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .elytraChatSpam
+                                            .value) {
                                         log.atDebug()
                                                 .addKeyValue("distance_blocks", distance)
                                                 .addKeyValue(
@@ -274,7 +282,10 @@ public final class ElytraBehavior {
                                                         .distanceTo(this.path.get(recompute));
 
                                         if (this.completePath) {
-                                            if (Agent.settings().elytraChatSpam.value) {
+                                            if (Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .elytraChatSpam
+                                                    .value) {
                                                 log.atDebug()
                                                         .addKeyValue("distance_blocks", distance)
                                                         .addKeyValue(
@@ -283,7 +294,10 @@ public final class ElytraBehavior {
                                                         .log("Computed path");
                                             }
                                         } else {
-                                            if (Agent.settings().elytraChatSpam.value) {
+                                            if (Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .elytraChatSpam
+                                                    .value) {
                                                 log.atDebug()
                                                         .addKeyValue("distance_blocks", distance)
                                                         .addKeyValue(
@@ -305,7 +319,10 @@ public final class ElytraBehavior {
                                                         .distanceToSqr(
                                                                 pathStart.toBlockPos().getCenter())
                                                 < 16 * 16) {
-                                            if (Agent.settings().elytraChatSpam.value) {
+                                            if (Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .elytraChatSpam
+                                                    .value) {
                                                 log.atDebug().log(
                                                         "Player near segment start, marking as"
                                                                 + " complete");
@@ -406,7 +423,10 @@ public final class ElytraBehavior {
                         this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
                                 .thenRun(
                                         () -> {
-                                            if (Agent.settings().elytraChatSpam.value) {
+                                            if (Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .elytraChatSpam
+                                                    .value) {
                                                 log.atDebug().log(
                                                         "Recalculating segment, no progress in last"
                                                                 + " 100 ticks");
@@ -452,7 +472,10 @@ public final class ElytraBehavior {
                             this.pathRecalcSegment(rejoinMainPathAt)
                                     .thenRun(
                                             () -> {
-                                                if (Agent.settings().elytraChatSpam.value) {
+                                                if (Agent.getPrimaryAgent()
+                                                        .getSettings()
+                                                        .elytraChatSpam
+                                                        .value) {
                                                     log.atDebug()
                                                             .addKeyValue(
                                                                     "blockage_x",
@@ -487,7 +510,10 @@ public final class ElytraBehavior {
                         this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
                                 .thenRun(
                                         () -> {
-                                            if (Agent.settings().elytraChatSpam.value) {
+                                            if (Agent.getPrimaryAgent()
+                                                    .getSettings()
+                                                    .elytraChatSpam
+                                                    .value) {
                                                 log.atDebug().log(
                                                         "Recalculated segment, no path points"
                                                                 + " visible");
@@ -544,7 +570,7 @@ public final class ElytraBehavior {
 
     public void onRenderPass(RenderEvent event) {
 
-        final Settings settings = Agent.settings();
+        final Settings settings = Agent.getPrimaryAgent().getSettings();
         if (this.visiblePath != null) {
             PathRenderer.drawPath(
                     event.modelViewStack,
@@ -578,7 +604,8 @@ public final class ElytraBehavior {
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
-        if (!this.blockedLines.isEmpty() && Agent.settings().elytraRenderRaytraces.value) {
+        if (!this.blockedLines.isEmpty()
+                && Agent.getPrimaryAgent().getSettings().elytraRenderRaytraces.value) {
             BufferBuilder bufferBuilder =
                     IRenderer.startLines(
                             Color.BLUE,
@@ -590,7 +617,8 @@ public final class ElytraBehavior {
             }
             IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
-        if (this.simulationLine != null && Agent.settings().elytraRenderSimulation.value) {
+        if (this.simulationLine != null
+                && Agent.getPrimaryAgent().getSettings().elytraRenderSimulation.value) {
             BufferBuilder bufferBuilder =
                     IRenderer.startLines(
                             new Color(0x36CCDC),
@@ -623,13 +651,17 @@ public final class ElytraBehavior {
                     .execute(
                             () -> {
                                 this.remainingSetBackTicks =
-                                        Agent.settings().elytraFireworkSetbackUseDelay.value;
+                                        Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .elytraFireworkSetbackUseDelay
+                                                .value;
                             });
         }
     }
 
     public void pathTo() {
-        if (!Agent.settings().elytraAutoJump.value || ctx.player().isFallFlying()) {
+        if (!Agent.getPrimaryAgent().getSettings().elytraAutoJump.value
+                || ctx.player().isFallFlying()) {
             var unused = this.pathManager.pathToDestination();
         }
     }
@@ -677,11 +709,11 @@ public final class ElytraBehavior {
         }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000
-                > Agent.settings().elytraTimeBetweenCacheCullSecs.value) {
+                > Agent.getPrimaryAgent().getSettings().elytraTimeBetweenCacheCullSecs.value) {
             this.context.queueCacheCulling(
                     ctx.player().chunkPosition().x,
                     ctx.player().chunkPosition().z,
-                    Agent.settings().elytraCacheCullDistance.value,
+                    Agent.getPrimaryAgent().getSettings().elytraCacheCullDistance.value,
                     this.boi);
             this.timeLastCacheCull = now;
         }
@@ -750,12 +782,12 @@ public final class ElytraBehavior {
         trySwapElytra();
 
         if (ctx.player().horizontalCollision) {
-            if (Agent.settings().elytraChatSpam.value) {
+            if (Agent.getPrimaryAgent().getSettings().elytraChatSpam.value) {
                 log.atDebug().log("Horizontal collision");
             }
         }
         if (ctx.player().verticalCollision) {
-            if (Agent.settings().elytraChatSpam.value) {
+            if (Agent.getPrimaryAgent().getSettings().elytraChatSpam.value) {
                 log.atDebug().log("Vertical collision");
             }
         }
@@ -783,7 +815,7 @@ public final class ElytraBehavior {
         }
 
         if (solution == null) {
-            if (Agent.settings().elytraChatSpam.value) {
+            if (Agent.getPrimaryAgent().getSettings().elytraChatSpam.value) {
                 log.atDebug().log("No solution found");
             }
             return;
@@ -792,7 +824,7 @@ public final class ElytraBehavior {
         maestro.getLookBehavior().updateTarget(solution.rotation, false);
 
         if (!solution.solvedPitch) {
-            if (Agent.settings().elytraChatSpam.value) {
+            if (Agent.getPrimaryAgent().getSettings().elytraChatSpam.value) {
                 log.atDebug().log("No pitch solution, collision likely");
             }
             return;
@@ -914,7 +946,8 @@ public final class ElytraBehavior {
                         }
                     }
 
-                    final double minAvoidance = Agent.settings().elytraMinimumAvoidance.value;
+                    final double minAvoidance =
+                            Agent.getPrimaryAgent().getSettings().elytraMinimumAvoidance.value;
                     final Double growth =
                             relaxation == 2
                                     ? null
@@ -970,7 +1003,7 @@ public final class ElytraBehavior {
             return;
         }
         final boolean useOnDescend =
-                !Agent.settings().elytraConserveFireworks.value
+                !Agent.getPrimaryAgent().getSettings().elytraConserveFireworks.value
                         || ctx.player().position().y < goingTo.y + 5;
         final double currentSpeed =
                 new Vec3(
@@ -983,7 +1016,8 @@ public final class ElytraBehavior {
                                 ctx.player().getDeltaMovement().z)
                         .lengthSqr();
 
-        final double elytraFireworkSpeed = Agent.settings().elytraFireworkSpeed.value;
+        final double elytraFireworkSpeed =
+                Agent.getPrimaryAgent().getSettings().elytraFireworkSpeed.value;
         if (this.remainingFireworkTicks <= 0
                 && (forceUseFirework
                         || (!isBoosted
@@ -1004,7 +1038,7 @@ public final class ElytraBehavior {
                 log.atInfo().log("No fireworks available");
                 return;
             }
-            if (Agent.settings().elytraChatSpam.value) {
+            if (Agent.getPrimaryAgent().getSettings().elytraChatSpam.value) {
                 log.atDebug()
                         .addKeyValue("forced", forceUseFirework)
                         .log("Attempting to use firework");
@@ -1280,7 +1314,7 @@ public final class ElytraBehavior {
                 };
 
         // Use non-batching method without early failure
-        if (Agent.settings().elytraRenderHitboxRaytraces.value) {
+        if (Agent.getPrimaryAgent().getSettings().elytraRenderHitboxRaytraces.value) {
             boolean clear = true;
             for (int i = 0; i < 8; i++) {
                 final Vec3 s = new Vec3(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
@@ -1315,7 +1349,7 @@ public final class ElytraBehavior {
                             == HitResult.Type.MISS;
         }
 
-        if (Agent.settings().elytraRenderRaytraces.value) {
+        if (Agent.getPrimaryAgent().getSettings().elytraRenderRaytraces.value) {
             (clear ? this.clearLines : this.blockedLines).add(new Pair<>(start, dest));
         }
         return clear;
@@ -1326,9 +1360,23 @@ public final class ElytraBehavior {
         final float minPitch =
                 desperate
                         ? -90
-                        : Math.max(goodPitch - Agent.settings().elytraPitchRange.value, -89);
+                        : Math.max(
+                                goodPitch
+                                        - Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .elytraPitchRange
+                                                .value,
+                                -89);
         final float maxPitch =
-                desperate ? 90 : Math.min(goodPitch + Agent.settings().elytraPitchRange.value, 89);
+                desperate
+                        ? 90
+                        : Math.min(
+                                goodPitch
+                                        + Agent.getPrimaryAgent()
+                                                .getSettings()
+                                                .elytraPitchRange
+                                                .value,
+                                89);
 
         final FloatArrayList pitchValues = new FloatArrayList(fastCeil(maxPitch - minPitch) + 1);
         for (float pitch = goodPitch; pitch <= maxPitch; pitch++) {
@@ -1400,7 +1448,7 @@ public final class ElytraBehavior {
                         ? 3
                         : context.boost.isBoosted()
                                 ? Math.max(5, context.boost.getGuaranteedBoostTicks())
-                                : Agent.settings().elytraSimulationTicks.value;
+                                : Agent.getPrimaryAgent().getSettings().elytraSimulationTicks.value;
         tests.add(new IntTriple(ticks, context.boost.isBoosted() ? ticks : 0, 0));
 
         final Optional<PitchResult> result =
@@ -1617,7 +1665,8 @@ public final class ElytraBehavior {
             Runnable r = invTransactionQueue.poll();
             if (r != null) {
                 r.run();
-                invTickCountdown = Agent.settings().ticksBetweenInventoryMoves.value;
+                invTickCountdown =
+                        Agent.getPrimaryAgent().getSettings().ticksBetweenInventoryMoves.value;
             }
         }
         if (invTickCountdown > 0) invTickCountdown--;
@@ -1636,7 +1685,7 @@ public final class ElytraBehavior {
             ItemStack slot = inventory.get(i);
             if (slot.getItem() == Items.ELYTRA
                     && (slot.getMaxDamage() - slot.getDamageValue())
-                            > Agent.settings().elytraMinimumDurability.value) {
+                            > Agent.getPrimaryAgent().getSettings().elytraMinimumDurability.value) {
                 return i;
             }
         }
@@ -1644,14 +1693,15 @@ public final class ElytraBehavior {
     }
 
     private void trySwapElytra() {
-        if (!Agent.settings().elytraAutoSwap.value || !invTransactionQueue.isEmpty()) {
+        if (!Agent.getPrimaryAgent().getSettings().elytraAutoSwap.value
+                || !invTransactionQueue.isEmpty()) {
             return;
         }
 
         ItemStack chest = ctx.player().getItemBySlot(EquipmentSlot.CHEST);
         if (chest.getItem() != Items.ELYTRA
                 || chest.getMaxDamage() - chest.getDamageValue()
-                        > Agent.settings().elytraMinimumDurability.value) {
+                        > Agent.getPrimaryAgent().getSettings().elytraMinimumDurability.value) {
             return;
         }
 

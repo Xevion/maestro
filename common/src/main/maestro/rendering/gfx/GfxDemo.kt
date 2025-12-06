@@ -16,8 +16,8 @@ import kotlin.math.sin
  * Demonstrates:
  * - GfxLines: Anti-aliased lines with varying thickness
  * - GfxCircle: Billboard circles for point markers
- * - SdfQuads: Camera-facing filled quads
- * - GfxBoxes: Wireframe and filled AABBs
+ * - GfxQuad: Camera-facing filled quads
+ * - GfxCube: Wireframe and filled AABBs
  * - GfxPolyline: Connected line segments with joins and caps
  *
  * Set DEMO_MODE to switch between full demo (0) and line showcase (1).
@@ -62,22 +62,22 @@ class GfxDemo(
         // Demo 3: Horizontal ring (GfxCircle.circle with FLAT_XZ)
         drawHorizontalRing(center.subtract(0.0, 0.5, 0.0), time)
 
-        // Demo 4: Wireframe box (GfxBoxes.wireframe)
+        // Demo 4: Wireframe box (GfxCube.wireframe)
         drawWireframeBox(center.add(3.0, 0.0, 0.0), time)
 
-        // Demo 5: Filled box (GfxBoxes.filled)
+        // Demo 5: Filled box (GfxCube.filled)
         drawFilledBox(center.add(-3.0, 0.0, 0.0), time)
 
-        // Demo 6: Billboard quads (SdfQuads.quad)
+        // Demo 6: Billboard quads (GfxQuad.quad)
         drawBillboardQuads(center.add(0.0, 3.0, 0.0), time)
 
-        // Demo 7: Horizontal quad (SdfQuads.quadHorizontal)
+        // Demo 7: Horizontal quad (GfxQuad.quadHorizontal)
         drawHorizontalQuad(center.subtract(0.0, 1.0, 0.0), time)
 
         // Demo 8: Polyline wave (GfxPolyline.polyline)
         drawPolyline(center.add(0.0, 0.0, 3.0), 0.0) // Static for easier debugging
 
-        // Demo 9: Block highlight (GfxBoxes.block)
+        // Demo 9: Block highlight (GfxCube.block)
         drawBlockHighlight(center, time)
 
         // Demo 10: Join type comparison (shows MITER, ROUND, BEVEL side by side)
@@ -336,7 +336,7 @@ class GfxDemo(
                 center.z + size,
             )
 
-        GfxBoxes.wireframe(
+        GfxCube.wireframe(
             aabb,
             color = GfxRenderer.Colors.CYAN,
             thickness = 0.025f,
@@ -362,7 +362,7 @@ class GfxDemo(
         val hue = (time.toFloat() * 0.15f) % 1f
         val color = GfxRenderer.hsvToArgb(hue, 0.6f, 0.9f, 0.5f)
 
-        GfxBoxes.filled(aabb, color)
+        GfxCube.filled(aabb, color)
     }
 
     private fun drawBillboardQuads(
@@ -379,7 +379,7 @@ class GfxDemo(
             val hue = (i.toFloat() / 3 + time.toFloat() * 0.3f) % 1f
             val color = GfxRenderer.hsvToArgb(hue, 0.7f, 1.0f, 0.8f)
 
-            SdfQuads.quad(
+            GfxQuad.quad(
                 Vec3(x, center.y, z),
                 width = 0.4,
                 height = 0.6,
@@ -396,7 +396,7 @@ class GfxDemo(
         val size = 1.5 + sin(time * 1.3) * 0.3
         val color = GfxRenderer.withAlpha(GfxRenderer.Colors.PURPLE, 0.4f)
 
-        SdfQuads.quadHorizontal(
+        GfxQuad.quadHorizontal(
             center,
             width = size,
             depth = size,
@@ -448,13 +448,13 @@ class GfxDemo(
         val pulse = (sin(time * 4) * 0.5 + 0.5).toFloat()
         val color = GfxRenderer.hsvToArgb(0.3f, 0.6f, 0.9f, 0.3f + pulse * 0.3f)
 
-        GfxBoxes.block(
+        GfxCube.block(
             blockX,
             blockY,
             blockZ,
             color = color,
             thickness = 0.015f,
-            mode = GfxBoxes.BoxMode.BOTH,
+            mode = GfxCube.BoxMode.BOTH,
             expand = 0.01,
         )
     }

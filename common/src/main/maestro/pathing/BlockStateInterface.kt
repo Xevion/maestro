@@ -54,7 +54,10 @@ class BlockStateInterface
                     world.chunkSource as ClientChunkCache
                 }
 
-            this.useTheRealWorld = !Agent.settings().pathThroughCachedOnly.value
+            this.useTheRealWorld =
+                !Agent
+                    .getPrimaryAgent()
+                    .settings.pathThroughCachedOnly.value
 
             if (!ctx.minecraft().isSameThread) {
                 throw IllegalStateException("BlockStateInterface must be constructed on the main thread")

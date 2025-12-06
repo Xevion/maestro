@@ -71,7 +71,7 @@ public class HudDebugRenderer implements IHudDebugRenderer {
 
     @Override
     public void render(GuiGraphics graphics, float tickDelta) {
-        if (!Agent.settings().debugEnabled.value) {
+        if (!Agent.getPrimaryAgent().getSettings().debugEnabled.value) {
             return;
         }
 

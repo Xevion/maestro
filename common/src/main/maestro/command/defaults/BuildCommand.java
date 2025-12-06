@@ -35,7 +35,10 @@ public class BuildCommand extends Command {
                     new File(
                             file.getAbsolutePath()
                                     + "."
-                                    + Agent.settings().schematicFallbackExtension.value);
+                                    + Agent.getPrimaryAgent()
+                                            .getSettings()
+                                            .schematicFallbackExtension
+                                            .value);
         }
         if (!file.exists()) {
             if (file0.exists()) {

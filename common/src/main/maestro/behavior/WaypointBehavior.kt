@@ -16,7 +16,12 @@ class WaypointBehavior(
     maestro: Agent,
 ) : Behavior(maestro) {
     override fun onPlayerDeath() {
-        if (!Agent.settings().doDeathWaypoints.value) return
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.doDeathWaypoints.value
+        ) {
+            return
+        }
 
         val world = maestro.worldProvider.getCurrentWorld() ?: return
         val deathWaypoint = Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet())

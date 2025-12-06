@@ -62,7 +62,7 @@ object BlockPriorityClassifier {
         mineTask: MineTask?,
         ctx: PlayerContext,
     ): Map<BlockPos, PriorityBlock> {
-        val settings = Agent.settings()
+        val settings = Agent.getPrimaryAgent().settings
         val classified = mutableMapOf<BlockPos, PriorityBlock>()
 
         // Extract goal positions once for reuse

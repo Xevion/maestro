@@ -306,7 +306,7 @@ class ChatMessage private constructor(
          */
         @JvmStatic
         fun sendToChat(message: Component) {
-            val settings: Settings = Agent.settings()
+            val settings: Settings = Agent.getPrimaryAgent().settings
 
             if (settings.logAsToast.value) {
                 // Send as toast notification

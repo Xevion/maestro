@@ -290,7 +290,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             // when this path was calculated, not the cost as it is right now
             currentMovementOriginalCostEstimate = movement.getCost();
             for (int i = 1;
-                    i < Agent.settings().costVerificationLookahead.value
+                    i < Agent.getPrimaryAgent().getSettings().costVerificationLookahead.value
                             && pathPosition + i < path.length() - 1;
                     i++) {
                 Movement futureMove = (Movement) path.movements().get(pathPosition + i);
@@ -326,7 +326,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (!movement.calculatedWhileLoaded()
                 && currentCost - currentMovementOriginalCostEstimate
-                        > Agent.settings().maxCostIncrease.value
+                        > Agent.getPrimaryAgent().getSettings().maxCostIncrease.value
                 && canCancel) {
             // don't do this if the movement was calculated while loaded
             // that means that this isn't a cache error, it's just part of the path interfering with
@@ -381,7 +381,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             ticksOnCurrent++;
             if (ticksOnCurrent
                     > currentMovementOriginalCostEstimate
-                            + Agent.settings().movementTimeoutTicks.value) {
+                            + Agent.getPrimaryAgent().getSettings().movementTimeoutTicks.value) {
                 // only cancel if the total time has exceeded the initial estimate
                 // as you break the blocks required, the remaining cost goes down, to the point
                 // where
@@ -391,7 +391,9 @@ public class PathExecutor implements IPathExecutor, Helper {
                 log.atDebug()
                         .addKeyValue("ticks_taken", ticksOnCurrent)
                         .addKeyValue("expected_ticks", format(currentMovementOriginalCostEstimate))
-                        .addKeyValue("timeout", Agent.settings().movementTimeoutTicks.value)
+                        .addKeyValue(
+                                "timeout",
+                                Agent.getPrimaryAgent().getSettings().movementTimeoutTicks.value)
                         .log("Movement timeout exceeded, cancelling");
                 behavior.failureMemory.recordFailure(movement, FailureReason.TIMEOUT);
                 cancel();
@@ -581,7 +583,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private static boolean sprintableAscend(
             PlayerContext ctx, MovementTraverse current, MovementAscend next, IMovement nextnext) {
-        if (!Agent.settings().sprintAscends.value) {
+        if (!Agent.getPrimaryAgent().getSettings().sprintAscends.value) {
             return false;
         }
         if (!current.getDirection().equals(next.getDirection().below())) {
@@ -822,8 +824,8 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private PathExecutor cutIfTooLong() {
-        if (pathPosition > Agent.settings().maxPathHistoryLength.value) {
-            int cutoffAmt = Agent.settings().pathHistoryCutoffAmount.value;
+        if (pathPosition > Agent.getPrimaryAgent().getSettings().maxPathHistoryLength.value) {
+            int cutoffAmt = Agent.getPrimaryAgent().getSettings().pathHistoryCutoffAmount.value;
             CutoffPath newPath = new CutoffPath(path, cutoffAmt, path.length() - 1);
             if (!newPath.getDest().equals(path.getDest())) {
                 throw new IllegalStateException(

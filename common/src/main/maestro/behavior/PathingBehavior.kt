@@ -212,7 +212,10 @@ class PathingBehavior(
                     next = null
                     // Deactivate swimming mode when goal reached
                     maestro.swimmingBehavior.deactivateSwimming()
-                    if (Agent.settings().disconnectOnArrival.value) {
+                    if (Agent
+                            .getPrimaryAgent()
+                            .settings.disconnectOnArrival.value
+                    ) {
                         ctx.world().disconnect()
                     }
                     return
@@ -267,7 +270,10 @@ class PathingBehavior(
                 current!!.onTick()
                 return
             }
-            if (Agent.settings().splicePath.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.splicePath.value
+            ) {
                 current = current!!.trySplice(next)
             }
             if (next != null && current!!.path.dest == next!!.path.dest) {
@@ -287,7 +293,10 @@ class PathingBehavior(
                     return
                 }
                 if (ticksRemainingInSegment(false).get()
-                    < Agent.settings().planningTickLookahead.value
+                    <
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.planningTickLookahead.value
                 ) {
                     // and this path has 7.5 seconds or less left
                     // don't include the current movement so a very long last movement (e.g.
@@ -573,11 +582,23 @@ class PathingBehavior(
         val primaryTimeout: Long
         val failureTimeout: Long
         if (current == null) {
-            primaryTimeout = Agent.settings().primaryTimeoutMS.value
-            failureTimeout = Agent.settings().failureTimeoutMS.value
+            primaryTimeout =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.primaryTimeoutMS.value
+            failureTimeout =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.failureTimeoutMS.value
         } else {
-            primaryTimeout = Agent.settings().planAheadPrimaryTimeoutMS.value
-            failureTimeout = Agent.settings().planAheadFailureTimeoutMS.value
+            primaryTimeout =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.planAheadPrimaryTimeoutMS.value
+            failureTimeout =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.planAheadFailureTimeoutMS.value
         }
         val pathfinder =
             createPathfinder(start, goal, if (current == null) null else current!!.path, context)
@@ -732,7 +753,11 @@ class PathingBehavior(
         context: CalculationContext,
     ): AbstractNodeCostSearch {
         var transformed: Goal = goal
-        if (Agent.settings().simplifyUnloadedYCoord.value && goal is IGoalRenderPos) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.simplifyUnloadedYCoord.value &&
+            goal is IGoalRenderPos
+        ) {
             val pos = (goal as IGoalRenderPos).getGoalPos()
             if (!context.bsi.worldContainsLoadedChunk(pos.x, pos.z)) {
                 transformed = GoalXZ(pos.x, pos.z)

@@ -28,14 +28,18 @@ class BlockPlaceStrategy : BlockInteractionStrategy {
                 ) == InteractionResult.SUCCESS
             ) {
                 player.swing(hand)
-                return Agent.settings().rightClickSpeed.value - BASE_PLACE_DELAY
+                return Agent
+                    .getPrimaryAgent()
+                    .settings.rightClickSpeed.value - BASE_PLACE_DELAY
             }
 
             if (!player.getItemInHand(hand).isEmpty &&
                 ctx.playerController().processRightClick(player, ctx.world(), hand)
                 == InteractionResult.SUCCESS
             ) {
-                return Agent.settings().rightClickSpeed.value - BASE_PLACE_DELAY
+                return Agent
+                    .getPrimaryAgent()
+                    .settings.rightClickSpeed.value - BASE_PLACE_DELAY
             }
         }
 

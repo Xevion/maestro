@@ -45,7 +45,12 @@ class PathfindingDebugRenderer(
     private val hoverController = HoverController()
 
     override fun onRenderPass(event: RenderEvent) {
-        if (!Agent.settings().pathfindingDebugEnabled.value) return
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.pathfindingDebugEnabled.value
+        ) {
+            return
+        }
 
         // Store matrices for 3D-to-2D projection (used by HUD text rendering)
         lastModelView = org.joml.Matrix4f(event.modelViewStack.last().pose())
@@ -60,7 +65,7 @@ class PathfindingDebugRenderer(
         }
 
         val cache = cachedChunkCache ?: return
-        val settings = Agent.settings()
+        val settings = Agent.getPrimaryAgent().settings
 
         val mc = Minecraft.getInstance()
         val camera = mc.gameRenderer.mainCamera
@@ -105,7 +110,12 @@ class PathfindingDebugRenderer(
         button: Int,
         isCtrlHeld: Boolean,
     ): Boolean {
-        if (!Agent.settings().pathfindingDebugEnabled.value) return false
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.pathfindingDebugEnabled.value
+        ) {
+            return false
+        }
 
         return when (button) {
             0 -> handleLeftClick(isCtrlHeld)
@@ -149,7 +159,12 @@ class PathfindingDebugRenderer(
      * @return True if input was consumed
      */
     fun handleKeyPress(keyCode: Int): Boolean {
-        if (!Agent.settings().pathfindingDebugEnabled.value) return false
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.pathfindingDebugEnabled.value
+        ) {
+            return false
+        }
 
         // ESC clears selection
         if (keyCode == 256 && selectedNode != null) {

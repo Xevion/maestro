@@ -86,13 +86,20 @@ class MineTask(
         }
 
         if (calcFailed) {
-            if (knownOreLocations.isNotEmpty() && Agent.settings().blacklistClosestOnFailure.value) {
+            if (knownOreLocations.isNotEmpty() &&
+                Agent
+                    .getPrimaryAgent()
+                    .settings.blacklistClosestOnFailure.value
+            ) {
                 log
                     .atWarn()
                     .addKeyValue("filter", filter)
                     .addKeyValue("locations_remaining", knownOreLocations.size)
                     .log("Pathfinding failed, blacklisting closest location")
-                if (Agent.settings().notificationOnMineFail.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.notificationOnMineFail.value
+                ) {
                     logNotification(
                         "Unable to find any path to $filter, blacklisting presumably unreachable closest instance...",
                         true,
@@ -107,7 +114,10 @@ class MineTask(
                     .atError()
                     .addKeyValue("filter", filter)
                     .log("Pathfinding failed, canceling mine")
-                if (Agent.settings().notificationOnMineFail.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.notificationOnMineFail.value
+                ) {
                     logNotification("Unable to find any path to $filter, canceling mine", true)
                 }
                 cancel()
@@ -116,13 +126,19 @@ class MineTask(
         }
 
         updateLoucaSystem()
-        val mineGoalUpdateInterval = Agent.settings().mineGoalUpdateInterval.value
+        val mineGoalUpdateInterval =
+            Agent
+                .getPrimaryAgent()
+                .settings.mineGoalUpdateInterval.value
         val curr: List<BlockPos> = ArrayList(knownOreLocations)
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) {
             val context = CalculationContext(maestro, true)
             Agent.getExecutor().execute { rescan(curr, context) }
         }
-        if (Agent.settings().legitMine.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.legitMine.value
+        ) {
             if (!addNearby()) {
                 cancel()
                 return null
@@ -186,7 +202,10 @@ class MineTask(
         val copy = HashMap(anticipatedDrops)
         ctx.getSelectedBlock().ifPresent { pos ->
             if (knownOreLocations.contains(pos)) {
-                copy[pos] = System.currentTimeMillis() + Agent.settings().mineDropLoiterDurationMSThanksLouca.value
+                copy[pos] = System.currentTimeMillis() +
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.mineDropLoiterDurationMSThanksLouca.value
             }
         }
         // elaborate dance to avoid concurrentmodificationexception since rescan thread reads this
@@ -226,7 +245,10 @@ class MineTask(
             val needsClaim = lastClaimedArea?.let { currentPos.distSqr(it) > 16 * 16 } ?: true
 
             if (needsClaim) {
-                val radius = Agent.settings().coordinationClaimRadius.value
+                val radius =
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.coordinationClaimRadius.value
                 val claimed = client.claimArea(currentPos, radius)
 
                 if (!claimed) {
@@ -246,7 +268,10 @@ class MineTask(
 
                 lastClaimedArea = currentPos
             }
-        } else if (Agent.settings().coordinationEnabled.value) {
+        } else if (Agent
+                .getPrimaryAgent()
+                .settings.coordinationEnabled.value
+        ) {
             log
                 .atDebug()
                 .addKeyValue("client_null", client == null)
@@ -254,7 +279,10 @@ class MineTask(
                 .log("Coordination enabled but client unavailable")
         }
 
-        val legit = Agent.settings().legitMine.value
+        val legit =
+            Agent
+                .getPrimaryAgent()
+                .settings.legitMine.value
         val locs = knownOreLocations
         if (locs.isNotEmpty()) {
             val context = CalculationContext(maestro)
@@ -263,7 +291,9 @@ class MineTask(
                     context,
                     ArrayList(locs),
                     filter,
-                    Agent.settings().mineMaxOreLocationsCount.value,
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.mineMaxOreLocationsCount.value,
                     blacklist,
                     droppedItemsScan(),
                 )
@@ -284,11 +314,18 @@ class MineTask(
             )
         }
         // we don't know any ore locations at the moment
-        if (!legit && !Agent.settings().exploreForBlocks.value) {
+        if (!legit &&
+            !Agent
+                .getPrimaryAgent()
+                .settings.exploreForBlocks.value
+        ) {
             return null
         }
         // only when we should explore for blocks or are in legit mode we do this
-        val y = Agent.settings().legitMineYLevel.value
+        val y =
+            Agent
+                .getPrimaryAgent()
+                .settings.legitMineYLevel.value
         if (branchPoint == null) {
             branchPoint = ctx.playerFeet().toBlockPos()
         }
@@ -314,7 +351,10 @@ class MineTask(
         context: CalculationContext,
     ) {
         val filter = filterFilter() ?: return
-        if (Agent.settings().legitMine.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.legitMine.value
+        ) {
             return
         }
         val dropped = droppedItemsScan()
@@ -322,15 +362,24 @@ class MineTask(
             searchWorld(
                 context,
                 filter,
-                Agent.settings().mineMaxOreLocationsCount.value,
+                Agent
+                    .getPrimaryAgent()
+                    .settings.mineMaxOreLocationsCount.value,
                 already,
                 blacklist,
                 dropped,
             )
         locs.addAll(dropped)
-        if (locs.isEmpty() && !Agent.settings().exploreForBlocks.value) {
+        if (locs.isEmpty() &&
+            !Agent
+                .getPrimaryAgent()
+                .settings.exploreForBlocks.value
+        ) {
             log.atWarn().addKeyValue("filter", filter).log("No known locations, cancelling mine")
-            if (Agent.settings().notificationOnMineFail.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.notificationOnMineFail.value
+            ) {
                 logNotification("No locations for $filter known, cancelling", true)
             }
             cancel()
@@ -350,7 +399,11 @@ class MineTask(
             return true
         }
         val state = context.bsi.get0(pos)
-        if (Agent.settings().internalMiningAirException.value && state.block is AirBlock) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.internalMiningAirException.value &&
+            state.block is AirBlock
+        ) {
             return true
         }
         return filter!!.has(state) && plausibleToBreak(context, pos)
@@ -362,7 +415,10 @@ class MineTask(
         context: CalculationContext,
     ): Goal {
         val assumeVerticalShaftMine = maestro.bsi.get0(loc.above()).block !is FallingBlock
-        if (!Agent.settings().forceInternalMining.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.forceInternalMining.value
+        ) {
             return if (assumeVerticalShaftMine) {
                 // we can get directly below the block
                 GoalThreeBlocks(loc)
@@ -449,7 +505,10 @@ class MineTask(
     }
 
     fun droppedItemsScan(): MutableList<BlockPos> {
-        if (!Agent.settings().mineScanDroppedItems.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.mineScanDroppedItems.value
+        ) {
             return mutableListOf()
         }
         val ret = mutableListOf<BlockPos>()
@@ -483,7 +542,9 @@ class MineTask(
                     if (filter.has(bsi.get0(x, y, z))) {
                         val pos = BlockPos(x, y, z)
                         if ((
-                                Agent.settings().legitMineIncludeDiagonals.value &&
+                                Agent
+                                    .getPrimaryAgent()
+                                    .settings.legitMineIncludeDiagonals.value &&
                                     knownOreLocations.any { ore ->
                                         ore.distSqr(pos) <= 2 // sq means this is pytha dist <= sqrt(2)
                                     }
@@ -501,7 +562,9 @@ class MineTask(
                 CalculationContext(maestro),
                 knownOreLocations,
                 filter,
-                Agent.settings().mineMaxOreLocationsCount.value,
+                Agent
+                    .getPrimaryAgent()
+                    .settings.mineMaxOreLocationsCount.value,
                 blacklist,
                 dropped,
             )
@@ -623,14 +686,18 @@ class MineTask(
 
     private fun filterFilter(): BlockOptionalMetaLookup? {
         val currentFilter = this.filter ?: return null
-        if (!Agent.settings().allowBreak.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.allowBreak.value
+        ) {
             val f =
                 BlockOptionalMetaLookup(
                     *currentFilter
                         .blocks()
                         .filter { e ->
                             Agent
-                                .settings()
+                                .getPrimaryAgent()
+                                .getSettings()
                                 .allowBreakAnyway.value
                                 .contains(e.block)
                         }.toTypedArray(),
@@ -680,7 +747,9 @@ class MineTask(
                             .cachedWorld
                             .getLocationsOf(
                                 BlockUtils.blockToString(block),
-                                Agent.settings().maxCachedWorldScanCount.value,
+                                Agent
+                                    .getPrimaryAgent()
+                                    .settings.maxCachedWorldScanCount.value,
                                 pf.x,
                                 pf.z,
                                 2,
@@ -694,7 +763,12 @@ class MineTask(
             locs = prune(ctx, locs, filter, max, blacklist, dropped)
 
             if (untracked.isNotEmpty() ||
-                (Agent.settings().extendCacheOnThreshold.value && locs.size < max)
+                (
+                    Agent
+                        .getPrimaryAgent()
+                        .settings.extendCacheOnThreshold.value &&
+                        locs.size < max
+                )
             ) {
                 locs.addAll(
                     WorldScanner
@@ -745,15 +819,24 @@ class MineTask(
                     // remove any that are implausible to mine (encased in bedrock, or touching lava)
                     .filter { pos -> plausibleToBreak(ctx, pos) }
                     .filter { pos ->
-                        if (Agent.settings().allowOnlyExposedOres.value) {
+                        if (Agent
+                                .getPrimaryAgent()
+                                .settings.allowOnlyExposedOres.value
+                        ) {
                             isNextToAir(ctx, pos)
                         } else {
                             true
                         }
                     }.filter { pos ->
-                        pos.y >= Agent.settings().minYLevelWhileMining.value + ctx.world.dimensionType().minY()
-                    }.filter { pos -> pos.y <= Agent.settings().maxYLevelWhileMining.value }
-                    .filter { pos -> !blacklist.contains(pos) }
+                        pos.y >= Agent
+                            .getPrimaryAgent()
+                            .settings.minYLevelWhileMining.value + ctx.world.dimensionType().minY()
+                    }.filter { pos ->
+                        pos.y <=
+                            Agent
+                                .getPrimaryAgent()
+                                .settings.maxYLevelWhileMining.value
+                    }.filter { pos -> !blacklist.contains(pos) }
                     .sortedBy {
                         ctx.maestro.playerContext
                             .player()
@@ -772,7 +855,10 @@ class MineTask(
             ctx: CalculationContext,
             pos: BlockPos,
         ): Boolean {
-            val radius = Agent.settings().allowOnlyExposedOresDistance.value
+            val radius =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.allowOnlyExposedOresDistance.value
             for (dx in -radius..radius) {
                 for (dy in -radius..radius) {
                     for (dz in -radius..radius) {

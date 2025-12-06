@@ -477,7 +477,7 @@ class RadialMenu :
     }
 
     private fun togglePathfindingDebug() {
-        val settings = Agent.settings()
+        val settings = Agent.getPrimaryAgent().settings
         val wasEnabled = settings.pathfindingDebugEnabled.value
 
         settings.pathfindingDebugEnabled.value = !wasEnabled

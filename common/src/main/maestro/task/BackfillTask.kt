@@ -36,7 +36,10 @@ class BackfillTask(
         ctx.player() ?: return false
         val world = ctx.world() ?: return false
 
-        if (!Agent.settings().backfill.value) {
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.backfill.value
+        ) {
             return false
         }
 
@@ -56,14 +59,19 @@ class BackfillTask(
      * Parkour movements create intentional gaps that should not be filled.
      */
     private fun isParkourConflict(): Boolean {
-        if (Agent.settings().allowParkour.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.allowParkour.value
+        ) {
             log
                 .atWarn()
                 .addKeyValue("reason", "incompatible_settings")
                 .addKeyValue("setting_1", "backfill")
                 .addKeyValue("setting_2", "allowParkour")
                 .log("Backfill disabled due to incompatible settings")
-            Agent.settings().backfill.value = false
+            Agent
+                .getPrimaryAgent()
+                .settings.backfill.value = false
             return true
         }
         return false

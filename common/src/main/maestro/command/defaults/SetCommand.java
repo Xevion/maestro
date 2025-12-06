@@ -35,7 +35,7 @@ public class SetCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         String arg = args.hasAny() ? args.getString().toLowerCase(Locale.US) : "list";
         if (Arrays.asList("s", "save").contains(arg)) {
-            SettingsUtil.save(Agent.settings());
+            SettingsUtil.save(Agent.getPrimaryAgent().getSettings());
             log.atInfo().log("Settings saved");
             return;
         }
@@ -45,9 +45,10 @@ public class SetCommand extends Command {
                 file = args.getString();
             }
             // reset to defaults
-            SettingsUtil.modifiedSettings(Agent.settings()).forEach(Setting::reset);
+            SettingsUtil.modifiedSettings(Agent.getPrimaryAgent().getSettings())
+                    .forEach(Setting::reset);
             // then load from disk
-            SettingsUtil.readAndApply(Agent.settings(), file);
+            SettingsUtil.readAndApply(Agent.getPrimaryAgent().getSettings(), file);
             log.atInfo().addKeyValue("file", file).log("Settings reloaded");
             return;
         }
@@ -64,8 +65,9 @@ public class SetCommand extends Command {
             // Collect all candidates (filtered for Java-only)
             List<Setting> allCandidates =
                     (viewModified
-                                    ? SettingsUtil.modifiedSettings(Agent.settings())
-                                    : Agent.settings().allSettings)
+                                    ? SettingsUtil.modifiedSettings(
+                                            Agent.getPrimaryAgent().getSettings())
+                                    : Agent.getPrimaryAgent().getSettings().allSettings)
                             .stream().filter(s -> !s.isJavaOnly()).collect(Collectors.toList());
 
             // Use fuzzy search for non-empty queries, alphabetical sort for empty
@@ -109,7 +111,7 @@ public class SetCommand extends Command {
                                 String.format(
                                         "\n\nDefault Value:\n%s", settingDefaultToString(setting)));
                         String commandSuggestion =
-                                Agent.settings().prefix.value
+                                Agent.getPrimaryAgent().getSettings().prefix.value
                                         + String.format("set %s ", setting.getName());
                         MutableComponent component = Component.literal(setting.getName());
                         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
@@ -142,7 +144,11 @@ public class SetCommand extends Command {
 
                         return component;
                     },
-                    Agent.settings().prefix.value + "set " + arg + " " + search);
+                    Agent.getPrimaryAgent().getSettings().prefix.value
+                            + "set "
+                            + arg
+                            + " "
+                            + search);
             return;
         }
         args.requireMax(1);
@@ -160,9 +166,10 @@ public class SetCommand extends Command {
                 log.atInfo().log(
                         "Specify a setting name instead of 'all' to only reset one setting");
             } else if (args.peekString().equalsIgnoreCase("all")) {
-                SettingsUtil.modifiedSettings(Agent.settings()).forEach(Setting::reset);
+                SettingsUtil.modifiedSettings(Agent.getPrimaryAgent().getSettings())
+                        .forEach(Setting::reset);
                 log.atInfo().log("All settings have been reset to their default values");
-                SettingsUtil.save(Agent.settings());
+                SettingsUtil.save(Agent.getPrimaryAgent().getSettings());
                 return;
             }
         }
@@ -171,7 +178,7 @@ public class SetCommand extends Command {
         }
         String settingName = doingSomething ? args.getString() : arg;
         Setting<?> setting =
-                Agent.settings().allSettings.stream()
+                Agent.getPrimaryAgent().getSettings().allSettings.stream()
                         .filter(s -> s.getName().equalsIgnoreCase(settingName))
                         .findFirst()
                         .orElse(null);
@@ -207,7 +214,8 @@ public class SetCommand extends Command {
             } else {
                 String newValue = args.getString();
                 try {
-                    SettingsUtil.parseAndApply(Agent.settings(), arg, newValue);
+                    SettingsUtil.parseAndApply(
+                            Agent.getPrimaryAgent().getSettings(), arg, newValue);
                 } catch (Throwable t) {
                     t.printStackTrace();
                     throw new CommandException.InvalidArgument.InvalidType(
@@ -237,7 +245,7 @@ public class SetCommand extends Command {
                             .withClickEvent(
                                     new ClickEvent(
                                             ClickEvent.Action.RUN_COMMAND,
-                                            Agent.settings().prefix.value
+                                            Agent.getPrimaryAgent().getSettings().prefix.value
                                                     + String.format(
                                                             "set %s %s",
                                                             setting.getName(), oldValue))));
@@ -258,10 +266,10 @@ public class SetCommand extends Command {
 
             if (((setting.getName().equals("chatControl")
                             && !(Boolean) setting.value
-                            && !Agent.settings().chatControlAnyway.value)
+                            && !Agent.getPrimaryAgent().getSettings().chatControlAnyway.value)
                     || (setting.getName().equals("chatControlAnyway")
                             && !(Boolean) setting.value
-                            && !Agent.settings().chatControl.value))) {
+                            && !Agent.getPrimaryAgent().getSettings().chatControl.value))) {
                 log.atWarn()
                         .log(
                                 "Warning: Chat commands will no longer work. If you want to revert"
@@ -275,7 +283,7 @@ public class SetCommand extends Command {
                                     + " the old value listed above.");
             }
         }
-        SettingsUtil.save(Agent.settings());
+        SettingsUtil.save(Agent.getPrimaryAgent().getSettings());
     }
 
     @Override
@@ -304,7 +312,11 @@ public class SetCommand extends Command {
                                     .resolve("maestro")
                                     .toFile());
                 }
-                Setting<?> setting = Agent.settings().byLowerName.get(arg.toLowerCase(Locale.US));
+                Setting<?> setting =
+                        Agent.getPrimaryAgent()
+                                .getSettings()
+                                .byLowerName
+                                .get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
                     if (setting.getType() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();

@@ -30,7 +30,11 @@ class SwimmingBehavior(
      * Determines if enhanced swimming should be activated.
      * Requires player to be in water and the enhanced swimming setting enabled.
      */
-    fun shouldActivateSwimming(): Boolean = isInWater() && Agent.settings().enhancedSwimming.value
+    fun shouldActivateSwimming(): Boolean =
+        isInWater() &&
+            Agent
+                .getPrimaryAgent()
+                .settings.enhancedSwimming.value
 
     /**
      * Apply swimming inputs to trigger Minecraft 1.13+ swimming state.
@@ -94,7 +98,10 @@ class SwimmingBehavior(
         val player = ctx.player()
 
         // Get speed configuration (percentage of vanilla speed)
-        val speedPercent = Agent.settings().swimSpeedPercent.value / 100.0
+        val speedPercent =
+            Agent
+                .getPrimaryAgent()
+                .settings.swimSpeedPercent.value / 100.0
         val baseSpeed = 0.197 // Vanilla sprint-swimming speed (blocks/tick, ~3.93 blocks/sec)
         val targetSpeed = (baseSpeed * speedPercent).coerceAtLeast(0.01)
 

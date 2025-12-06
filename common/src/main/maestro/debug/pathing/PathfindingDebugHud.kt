@@ -44,7 +44,12 @@ class PathfindingDebugHud(
         graphics: GuiGraphics,
         partialTicks: Float,
     ) {
-        if (!Agent.settings().pathfindingDebugEnabled.value) return
+        if (!Agent
+                .getPrimaryAgent()
+                .settings.pathfindingDebugEnabled.value
+        ) {
+            return
+        }
 
         val mc = Minecraft.getInstance()
         val screenWidth = mc.window.guiScaledWidth

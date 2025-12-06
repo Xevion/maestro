@@ -67,7 +67,10 @@ class FarmTask(
                 pos: BlockPos,
                 state: BlockState,
             ): Boolean {
-                if (Agent.settings().replantCrops.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.replantCrops.value
+                ) {
                     return world.getBlockState(pos.below()).block is SugarCaneBlock
                 }
                 return true
@@ -79,7 +82,10 @@ class FarmTask(
                 pos: BlockPos,
                 state: BlockState,
             ): Boolean {
-                if (Agent.settings().replantCrops.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.replantCrops.value
+                ) {
                     return world.getBlockState(pos.below()).block is BambooStalkBlock
                 }
                 return true
@@ -91,7 +97,10 @@ class FarmTask(
                 pos: BlockPos,
                 state: BlockState,
             ): Boolean {
-                if (Agent.settings().replantCrops.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.replantCrops.value
+                ) {
                     return world.getBlockState(pos.below()).block is CactusBlock
                 }
                 return true
@@ -169,17 +178,28 @@ class FarmTask(
         calcFailed: Boolean,
         isSafeToCancel: Boolean,
     ): PathingCommand {
-        if (Agent.settings().mineGoalUpdateInterval.value != 0 &&
-            tickCount++ % Agent.settings().mineGoalUpdateInterval.value == 0
+        if (Agent
+                .getPrimaryAgent()
+                .settings.mineGoalUpdateInterval.value != 0 &&
+            tickCount++ %
+            Agent
+                .getPrimaryAgent()
+                .settings.mineGoalUpdateInterval.value == 0
         ) {
             val scan = mutableListOf<Block>()
             for (harvest in Harvest.entries) {
                 scan.add(harvest.block)
             }
-            if (Agent.settings().replantCrops.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.replantCrops.value
+            ) {
                 scan.add(Blocks.FARMLAND)
                 scan.add(Blocks.JUNGLE_LOG)
-                if (Agent.settings().replantNetherWart.value) {
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.replantNetherWart.value
+                ) {
                     scan.add(Blocks.SOUL_SAND)
                 }
             }
@@ -190,7 +210,9 @@ class FarmTask(
                         .scanChunkRadius(
                             ctx,
                             BlockOptionalMetaLookup(scan),
-                            Agent.settings().farmMaxScanSize.value,
+                            Agent
+                                .getPrimaryAgent()
+                                .settings.farmMaxScanSize.value,
                             10,
                             10,
                         )
@@ -367,7 +389,10 @@ class FarmTask(
 
         if (calcFailed) {
             log.atError().log("Farming failed - pathfinding failed")
-            if (Agent.settings().notificationOnFarmFail.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.notificationOnFarmFail.value
+            ) {
                 logNotification("Farm failed", true)
             }
             onLostControl()
@@ -427,7 +452,10 @@ class FarmTask(
 
         if (goals.isEmpty()) {
             log.atError().log("Farming failed - no valid goals")
-            if (Agent.settings().notificationOnFarmFail.value) {
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.notificationOnFarmFail.value
+            ) {
                 logNotification("Farm failed", true)
             }
             onLostControl()

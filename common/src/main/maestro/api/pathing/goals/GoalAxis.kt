@@ -32,8 +32,16 @@ class GoalAxis : Goal {
 
         val flatAxisDistance = min(absX.toDouble(), min(absZ.toDouble(), diff * SQRT_2_OVER_2))
 
-        return flatAxisDistance * Agent.settings().costHeuristic.value +
-            GoalYLevel.calculate(Agent.settings().axisHeight.value, y)
+        return flatAxisDistance *
+            Agent
+                .getPrimaryAgent()
+                .settings.costHeuristic.value +
+            GoalYLevel.calculate(
+                Agent
+                    .getPrimaryAgent()
+                    .settings.axisHeight.value,
+                y,
+            )
     }
 
     override fun equals(other: Any?): Boolean = other is GoalAxis

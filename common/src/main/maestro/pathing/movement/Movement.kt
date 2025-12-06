@@ -49,7 +49,10 @@ abstract class Movement(
 
     // Debug context for movement visualization
     val debug: MovementDebugContext by lazy {
-        if (Agent.settings().debugEnabled.value) {
+        if (Agent
+                .getPrimaryAgent()
+                .settings.debugEnabled.value
+        ) {
             ActiveDebugContext()
         } else {
             DisabledDebugContext

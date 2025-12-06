@@ -137,7 +137,9 @@ class TaskCoordinator(
             }
 
             PathingCommandType.REVALIDATE_GOAL_AND_PATH -> {
-                if (Agent.settings().cancelOnGoalInvalidation.value &&
+                if (Agent
+                        .getPrimaryAgent()
+                        .settings.cancelOnGoalInvalidation.value &&
                     (cmd.goal == null || revalidateGoal(cmd.goal))
                 ) {
                     p.softCancelIfSafe()

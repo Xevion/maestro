@@ -47,7 +47,12 @@ class MovementFailureMemory(
             val existingRecord =
                 recordList.find { record ->
                     record.movementType == movementType &&
-                        !record.isExpired(currentTime, Agent.settings().movementFailureMemoryDuration.value)
+                        !record.isExpired(
+                            currentTime,
+                            Agent
+                                .getPrimaryAgent()
+                                .settings.movementFailureMemoryDuration.value,
+                        )
                 }
 
             val attemptCount = (existingRecord?.attemptCount ?: 0) + 1
@@ -104,9 +109,18 @@ class MovementFailureMemory(
         val records = failures[key] ?: return 1.0
 
         val currentTime = System.currentTimeMillis()
-        val memoryDuration = Agent.settings().movementFailureMemoryDuration.value
-        val penaltyMultiplier = Agent.settings().movementFailurePenaltyMultiplier.value
-        val maxPenalty = Agent.settings().movementFailureMaxPenalty.value
+        val memoryDuration =
+            Agent
+                .getPrimaryAgent()
+                .settings.movementFailureMemoryDuration.value
+        val penaltyMultiplier =
+            Agent
+                .getPrimaryAgent()
+                .settings.movementFailurePenaltyMultiplier.value
+        val maxPenalty =
+            Agent
+                .getPrimaryAgent()
+                .settings.movementFailureMaxPenalty.value
 
         val multiplier =
             records
@@ -152,8 +166,14 @@ class MovementFailureMemory(
         val records = failures[key] ?: return false
 
         val currentTime = System.currentTimeMillis()
-        val memoryDuration = Agent.settings().movementFailureMemoryDuration.value
-        val maxAttempts = Agent.settings().movementFailureMaxAttempts.value
+        val memoryDuration =
+            Agent
+                .getPrimaryAgent()
+                .settings.movementFailureMemoryDuration.value
+        val maxAttempts =
+            Agent
+                .getPrimaryAgent()
+                .settings.movementFailureMaxAttempts.value
 
         return records.any { record ->
             if (record.movementType == movementType &&
@@ -182,7 +202,10 @@ class MovementFailureMemory(
      */
     fun cleanup() {
         val currentTime = System.currentTimeMillis()
-        val memoryDuration = Agent.settings().movementFailureMemoryDuration.value
+        val memoryDuration =
+            Agent
+                .getPrimaryAgent()
+                .settings.movementFailureMemoryDuration.value
         var removedCount = 0
 
         val iterator = failures.entries.iterator()

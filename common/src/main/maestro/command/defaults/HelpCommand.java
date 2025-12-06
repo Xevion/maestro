@@ -56,7 +56,7 @@ public class HelpCommand extends Command {
                         hoverComponent.append("\n" + command.getShortDesc());
                         hoverComponent.append("\n\nClick to view full help");
                         String clickCommand =
-                                Agent.settings().prefix.value
+                                Agent.getPrimaryAgent().getSettings().prefix.value
                                         + String.format(
                                                 "%s %s", label, command.getNames().getFirst());
                         MutableComponent component = Component.literal(name);
@@ -90,7 +90,7 @@ public class HelpCommand extends Command {
 
                         return component;
                     },
-                    Agent.settings().prefix.value + label);
+                    Agent.getPrimaryAgent().getSettings().prefix.value + label);
         } else {
             String commandName = args.getString().toLowerCase(java.util.Locale.ROOT);
             ICommand command = this.maestro.getCommandManager().getCommand(commandName);
@@ -113,7 +113,8 @@ public class HelpCommand extends Command {
                             .withClickEvent(
                                     new ClickEvent(
                                             ClickEvent.Action.RUN_COMMAND,
-                                            Agent.settings().prefix.value + label)));
+                                            Agent.getPrimaryAgent().getSettings().prefix.value
+                                                    + label)));
 
             MutableComponent prefixed = Component.literal("");
             prefixed.append(ChatMessage.createCategoryPrefix("cmd"));

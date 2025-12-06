@@ -103,13 +103,22 @@ class Avoidance {
          */
         @JvmStatic
         fun create(ctx: PlayerContext): List<Avoidance> {
-            if (!Agent.settings().avoidance.value) {
+            if (!Agent
+                    .getPrimaryAgent()
+                    .settings.avoidance.value
+            ) {
                 return emptyList()
             }
 
             val res = mutableListOf<Avoidance>()
-            val mobSpawnerCoefficient = Agent.settings().mobSpawnerAvoidanceCoefficient.value
-            val mobCoefficient = Agent.settings().mobAvoidanceCoefficient.value
+            val mobSpawnerCoefficient =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.mobSpawnerAvoidanceCoefficient.value
+            val mobCoefficient =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.mobAvoidanceCoefficient.value
 
             // Add avoidance for mob spawners
             if (mobSpawnerCoefficient != 1.0) {
@@ -122,7 +131,9 @@ class Avoidance {
                             Avoidance(
                                 mobSpawner,
                                 mobSpawnerCoefficient,
-                                Agent.settings().mobSpawnerAvoidanceRadius.value,
+                                Agent
+                                    .getPrimaryAgent()
+                                    .settings.mobSpawnerAvoidanceRadius.value,
                             ),
                         )
                     }
@@ -148,7 +159,9 @@ class Avoidance {
                             Avoidance(
                                 entity.blockPosition(),
                                 mobCoefficient,
-                                Agent.settings().mobAvoidanceRadius.value,
+                                Agent
+                                    .getPrimaryAgent()
+                                    .settings.mobAvoidanceRadius.value,
                             ),
                         )
                     }

@@ -17,9 +17,10 @@ public class FullbrightCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        boolean enabled = Agent.settings().fullbright.value;
-        Agent.settings().fullbright.value = !enabled;
-        String state = Agent.settings().fullbright.value ? "enabled" : "disabled";
+        boolean enabled = Agent.getPrimaryAgent().getSettings().fullbright.value;
+        Agent.getPrimaryAgent().getSettings().fullbright.value = !enabled;
+        String state =
+                Agent.getPrimaryAgent().getSettings().fullbright.value ? "enabled" : "disabled";
         log.atInfo().log(String.format("Fullbright %s", state));
     }
 

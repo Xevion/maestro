@@ -325,7 +325,8 @@ public class WaypointsCommand extends Command {
                                                     ClickEvent.Action.SUGGEST_COMMAND,
                                                     String.format(
                                                             "%s%s save %s %s %s %s %s",
-                                                            Agent.settings()
+                                                            Agent.getPrimaryAgent()
+                                                                    .getSettings()
                                                                     .prefix
                                                                     .value, // This uses the normal
                                                             // prefix because it is

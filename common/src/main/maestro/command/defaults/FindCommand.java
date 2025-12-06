@@ -79,7 +79,10 @@ public class FindCommand extends Command {
 
     private Component positionToComponent(PackedBlockPos pos) {
         String positionText = String.format("%s %s %s", pos.getX(), pos.getY(), pos.getZ());
-        String command = String.format("%sgoal %s", Agent.settings().prefix.value, positionText);
+        String command =
+                String.format(
+                        "%sgoal %s",
+                        Agent.getPrimaryAgent().getSettings().prefix.value, positionText);
         MutableComponent baseComponent = Component.literal(pos.toString());
         MutableComponent hoverComponent = Component.literal("Click to set goal to this position");
         baseComponent.setStyle(
