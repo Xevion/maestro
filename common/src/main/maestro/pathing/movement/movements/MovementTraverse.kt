@@ -15,7 +15,6 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.MovementValidation
-import maestro.utils.center
 import maestro.utils.centerWithY
 import maestro.utils.centerXZ
 import maestro.utils.distanceSquaredTo
@@ -32,10 +31,10 @@ import net.minecraft.core.BlockPos
  * - Opening doors/gates
  */
 class MovementTraverse(
-    maestro: Agent,
+    agent: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
-) : Movement(maestro, src, dest) {
+) : Movement(agent, src, dest) {
     /** Did we have to place a bridge block or was it always there */
     private var wasTheBridgeBlockAlwaysThere = true
 

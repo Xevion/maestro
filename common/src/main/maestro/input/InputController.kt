@@ -31,13 +31,13 @@ import kotlin.math.atan2
  * having the same effect as if we were actually physically forcing down the assigned key.
  */
 class InputController(
-    maestro: Agent,
-) : Behavior(maestro) {
+    agent: Agent,
+) : Behavior(agent) {
     /** Maps inputs to whether or not we are forcing their state down. */
     private val inputForceStateMap = mutableMapOf<Input, Boolean>()
 
-    internal val blockBreakManager = BlockInteractionManager(maestro.playerContext, BlockBreakStrategy())
-    internal val blockPlaceManager = BlockInteractionManager(maestro.playerContext, BlockPlaceStrategy())
+    internal val blockBreakManager = BlockInteractionManager(agent.playerContext, BlockBreakStrategy())
+    internal val blockPlaceManager = BlockInteractionManager(agent.playerContext, BlockPlaceStrategy())
 
     // Delta-based intent tracking for efficient input updates
     private var lastMovementIntent: MovementIntent? = null
@@ -144,8 +144,8 @@ class InputController(
             )
 
         return movementInputs.any { isInputForcedDown(it) } ||
-            maestro.pathingBehavior.isPathing() ||
-            maestro != Agent.getPrimaryAgent()
+            this@InputController.agent.pathingBehavior.isPathing() ||
+            this@InputController.agent != Agent.getPrimaryAgent()
     }
 
     fun getBlockBreakManager(): BlockInteractionManager = blockBreakManager

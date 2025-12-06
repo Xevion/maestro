@@ -26,14 +26,7 @@ public abstract class MixinScreen implements IGuiScreen {
         }
 
         String value = clickEvent.getValue();
-        if (value == null) {
-            return;
-        }
-
         Agent agent = Agent.getPrimaryAgent();
-        if (agent == null) {
-            return;
-        }
 
         // Check if this is a Maestro command (starts with configured prefix)
         String prefix = agent.getSettings().prefix.value;

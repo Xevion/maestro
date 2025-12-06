@@ -52,7 +52,7 @@ class GuiClick :
         mx *= window.width / window.screenWidth.toDouble()
 
         val near = toWorld(mx, my, 0.0)
-        val far = toWorld(mx, my, 1.0) // "Use 0.945 that's what stack overflow says" - leijurv
+        val far = toWorld(mx, my, 1.0)
 
         if (near != null && far != null) {
             val viewerPos = Vec3(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ())

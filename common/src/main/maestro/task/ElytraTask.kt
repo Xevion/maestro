@@ -41,8 +41,8 @@ import org.slf4j.Logger
 import java.util.PriorityQueue
 
 class ElytraTask private constructor(
-    maestro: Agent,
-) : TaskHelper(maestro),
+    agent: Agent,
+) : TaskHelper(agent),
     ITask,
     AbstractGameEventListener {
     @JvmField
@@ -55,7 +55,7 @@ class ElytraTask private constructor(
     private var predictingTerrain = false
 
     init {
-        maestro.gameEventHandler.registerEventListener(this)
+        agent.gameEventHandler.registerEventListener(this)
     }
 
     override fun onLostControl() {
@@ -165,13 +165,15 @@ class ElytraTask private constructor(
             if (last != null && ctx.player().position().distanceToSqr(last.toBlockPos().center) < 1) {
                 if (Agent
                         .getPrimaryAgent()
-                        .settings.notificationOnPathComplete.value && !reachedGoal
+                        .settings.notificationOnPathComplete.value &&
+                    !reachedGoal
                 ) {
                     logNotification("Pathing complete", false)
                 }
                 if (Agent
                         .getPrimaryAgent()
-                        .settings.disconnectOnArrival.value && !reachedGoal
+                        .settings.disconnectOnArrival.value &&
+                    !reachedGoal
                 ) {
                     this.onLostControl()
                     ctx.world().disconnect()
@@ -195,7 +197,7 @@ class ElytraTask private constructor(
                 val from = ctx.player().position()
                 val to = Vec3(endPos.x + 0.5, from.y, endPos.z + 0.5)
                 val rotation = RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations())
-                maestro.lookBehavior.updateTarget(Rotation(rotation.yaw, 0f), false)
+                this@ElytraTask.agent.lookBehavior.updateTarget(Rotation(rotation.yaw, 0f), false)
 
                 if (ctx.player().position().y < endPos.y - LANDING_COLUMN_HEIGHT) {
                     log
@@ -210,17 +212,17 @@ class ElytraTask private constructor(
         if (ctx.player().isFallFlying) {
             currentBehavior.landingMode = this.state == State.LANDING
             this.goal = null
-            maestro.inputOverrideHandler.clearAllKeys()
+            this@ElytraTask.agent.inputOverrideHandler.clearAllKeys()
             currentBehavior.tick()
             return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
         } else if (this.state == State.LANDING) {
             if (ctx.playerMotion().multiply(1.0, 0.0, 1.0).length() > 0.001) {
                 log.atInfo().log("Landed, waiting for velocity to stabilize")
-                maestro.inputOverrideHandler.setInputForceState(Input.SNEAK, true)
+                this@ElytraTask.agent.inputOverrideHandler.setInputForceState(Input.SNEAK, true)
                 return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
             }
             log.atInfo().log("Elytra path complete")
-            maestro.inputOverrideHandler.clearAllKeys()
+            this@ElytraTask.agent.inputOverrideHandler.clearAllKeys()
             this.onLostControl()
             return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
         }
@@ -250,7 +252,7 @@ class ElytraTask private constructor(
             if (this.goal == null) {
                 this.goal = GoalYLevel(31)
             }
-            val executor = maestro.pathingBehavior.getCurrent()
+            val executor = this@ElytraTask.agent.pathingBehavior.getCurrent()
             if (executor != null && executor.path.goal == this.goal) {
                 // TODO: Re-enable after MovementFall is converted to Kotlin
                 // val fall =
@@ -285,7 +287,7 @@ class ElytraTask private constructor(
             return PathingCommandContext(
                 this.goal!!,
                 PathingCommandType.SET_GOAL_AND_PAUSE,
-                WalkOffCalculationContext(maestro),
+                WalkOffCalculationContext(this@ElytraTask.agent),
             )
         }
 
@@ -294,7 +296,7 @@ class ElytraTask private constructor(
         }
 
         if (this.state == State.GET_TO_JUMP) {
-            val executor = maestro.pathingBehavior.getCurrent()
+            val executor = this@ElytraTask.agent.pathingBehavior.getCurrent()
             val canStartFlying =
                 ctx.player().deltaMovement.y < -0.377 &&
                     !isSafeToCancel &&
@@ -311,11 +313,11 @@ class ElytraTask private constructor(
 
         if (this.state == State.START_FLYING) {
             if (!isSafeToCancel) {
-                maestro.pathingBehavior.secretInternalSegmentCancel()
+                this@ElytraTask.agent.pathingBehavior.secretInternalSegmentCancel()
             }
-            maestro.inputOverrideHandler.clearAllKeys()
+            this@ElytraTask.agent.inputOverrideHandler.clearAllKeys()
             if (ctx.player().deltaMovement.y < -0.377) {
-                maestro.inputOverrideHandler.setInputForceState(Input.JUMP, true)
+                this@ElytraTask.agent.inputOverrideHandler.setInputForceState(Input.JUMP, true)
             }
         }
         return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
@@ -362,7 +364,7 @@ class ElytraTask private constructor(
             Agent
                 .getPrimaryAgent()
                 .settings.elytraPredictTerrain.value
-        this.behavior = ElytraBehavior(this.maestro, this, destination, appendDestination)
+        this.behavior = ElytraBehavior(this.agent, this, destination, appendDestination)
         if (ctx.world() != null) {
             this.behavior?.repackChunks()
         }
@@ -456,7 +458,11 @@ class ElytraTask private constructor(
     }
 
     override fun onPostTick(event: TickEvent) {
-        val procThisTick = maestro.pathingControlManager.mostRecentInControl().orElse(null)
+        val procThisTick =
+            this@ElytraTask
+                .agent.pathingControlManager
+                .mostRecentInControl()
+                .orElse(null)
         if (this.behavior != null && procThisTick === this) {
             this.behavior?.onPostTick(event)
         }
@@ -464,8 +470,8 @@ class ElytraTask private constructor(
 
     /** Custom calculation context which makes the player fall into lava */
     class WalkOffCalculationContext(
-        maestro: Agent,
-    ) : CalculationContext(maestro, true) {
+        agent: Agent,
+    ) : CalculationContext(agent, true) {
         init {
             this.allowFallIntoLava = true
             this.minFallHeight = 8
@@ -611,11 +617,11 @@ class ElytraTask private constructor(
         private const val LANDING_COLUMN_HEIGHT = 15
 
         @JvmStatic
-        fun create(maestro: Agent): TaskHelper =
+        fun create(agent: Agent): TaskHelper =
             if (NetherPathfinderContext.isSupported()) {
-                ElytraTask(maestro)
+                ElytraTask(agent)
             } else {
-                NullElytraTask(maestro)
+                NullElytraTask(agent)
             }
 
         private fun isInBounds(pos: BlockPos): Boolean = pos.y in 0..<128

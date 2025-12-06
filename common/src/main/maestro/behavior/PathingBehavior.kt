@@ -15,7 +15,6 @@ import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
 import maestro.api.utils.format
-import maestro.behavior.PathingBehavior
 import maestro.pathing.PathingCommandContext
 import maestro.pathing.PreferredPaths
 import maestro.pathing.calc.AStarPathFinder
@@ -42,8 +41,8 @@ import kotlin.concurrent.Volatile
 import kotlin.math.abs
 
 class PathingBehavior(
-    maestro: Agent,
-) : Behavior(maestro),
+    agent: Agent,
+) : Behavior(agent),
     IPathingBehavior {
     private var current: PathExecutor? = null
     private var next: PathExecutor? = null
@@ -87,7 +86,7 @@ class PathingBehavior(
 
     init {
         this.movementProvider = createMovementProvider()
-        this.failureMemory = MovementFailureMemory(maestro)
+        this.failureMemory = MovementFailureMemory(agent)
     }
 
     /**
@@ -116,7 +115,7 @@ class PathingBehavior(
         toDispatch.drainTo(curr)
         calcFailedLastTick = curr.contains(PathEvent.CALC_FAILED)
         for (event in curr) {
-            maestro.gameEventHandler.onPathEvent(event)
+            agent.gameEventHandler.onPathEvent(event)
         }
     }
 
@@ -124,12 +123,12 @@ class PathingBehavior(
         dispatchEvents()
         if (event.type == TickEvent.Type.OUT) {
             secretInternalSegmentCancel()
-            maestro.pathingControlManager.cancelEverything()
+            agent.pathingControlManager.cancelEverything()
             return
         }
 
         expectedSegmentStart = pathStart()
-        maestro.pathingControlManager.preTick()
+        agent.pathingControlManager.preTick()
         tickPath()
         ticksElapsedSoFar++
 
@@ -147,10 +146,10 @@ class PathingBehavior(
             pauseRequestedLastTick = false
             if (unpausedLastTick) {
                 // Clear only movement keys - let processes manage interaction keys
-                maestro.inputOverrideHandler.clearMovementKeys()
-                maestro.inputOverrideHandler.blockBreakManager.stop()
+                agent.inputOverrideHandler.clearMovementKeys()
+                agent.inputOverrideHandler.blockBreakManager.stop()
                 // Deactivate swimming mode when pausing
-                (maestro as Agent).swimmingBehavior.deactivateSwimming()
+                (agent as Agent).swimmingBehavior.deactivateSwimming()
             }
             unpausedLastTick = false
             pausedThisTick = true
@@ -161,7 +160,7 @@ class PathingBehavior(
             cancelRequested = false
             // Clear only movement keys - preserve interaction keys (CLICK_LEFT/RIGHT)
             // This prevents mining interruption during path revalidation
-            maestro.inputOverrideHandler.clearMovementKeys()
+            agent.inputOverrideHandler.clearMovementKeys()
         }
         synchronized(pathPlanLock) {
             synchronized(pathCalcLock) {
@@ -211,7 +210,7 @@ class PathingBehavior(
                     queuePathEvent(PathEvent.AT_GOAL)
                     next = null
                     // Deactivate swimming mode when goal reached
-                    maestro.swimmingBehavior.deactivateSwimming()
+                    agent.swimmingBehavior.deactivateSwimming()
                     if (Agent
                             .getPrimaryAgent()
                             .settings.disconnectOnArrival.value
@@ -349,7 +348,7 @@ class PathingBehavior(
             if (command is PathingCommandContext) {
                 command.desiredCalcContext
             } else {
-                CalculationContext(maestro, true)
+                CalculationContext(agent, true)
             }
         if (goal == null) {
             return false
@@ -387,8 +386,8 @@ class PathingBehavior(
 
     fun isSafeToCancel(): Boolean {
         if (current == null) {
-            return !maestro.elytraTask.isActive() ||
-                maestro.elytraTask.isSafeToCancel()
+            return !agent.elytraTask.isActive() ||
+                agent.elytraTask.isSafeToCancel()
         }
         return safeToCancel
     }
@@ -412,11 +411,11 @@ class PathingBehavior(
         } else {
             // Restore user control even when pathing can't be safely cancelled to prevent stuck
             // camera/input states
-            maestro.inputOverrideHandler.clearAllKeys()
-            maestro.inputOverrideHandler.blockBreakManager.stop()
-            maestro.swimmingBehavior.deactivateSwimming()
+            agent.inputOverrideHandler.clearAllKeys()
+            agent.inputOverrideHandler.blockBreakManager.stop()
+            agent.swimmingBehavior.deactivateSwimming()
         }
-        maestro.pathingControlManager
+        agent.pathingControlManager
             .cancelEverything() // regardless of if we can stop the current segment, we can
         // still stop the processes
         return doIt
@@ -431,13 +430,13 @@ class PathingBehavior(
             inProgress?.cancel() // only cancel ours
             if (!isSafeToCancel()) {
                 // Deactivate swimming to prevent stuck camera state
-                maestro.swimmingBehavior.deactivateSwimming()
+                agent.swimmingBehavior.deactivateSwimming()
                 return
             }
             current = null
             next = null
             // Deactivate swimming to restore camera control
-            maestro.swimmingBehavior.deactivateSwimming()
+            agent.swimmingBehavior.deactivateSwimming()
         }
         cancelRequested = true
         // do everything BUT clear keys
@@ -451,10 +450,10 @@ class PathingBehavior(
             if (current != null) {
                 current = null
                 next = null
-                maestro.inputOverrideHandler.clearAllKeys()
-                maestro.inputOverrideHandler.blockBreakManager.stop()
+                agent.inputOverrideHandler.clearAllKeys()
+                agent.inputOverrideHandler.blockBreakManager.stop()
                 // Deactivate swimming mode to restore normal camera control
-                (maestro as Agent).swimmingBehavior.deactivateSwimming()
+                (agent as Agent).swimmingBehavior.deactivateSwimming()
             }
         }
     }

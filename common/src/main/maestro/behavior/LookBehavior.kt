@@ -31,8 +31,8 @@ import kotlin.math.roundToInt
  * - Aim processing with randomization
  */
 class LookBehavior(
-    maestro: Agent,
-) : Behavior(maestro),
+    agent: Agent,
+) : Behavior(agent),
     ILookBehavior {
     /** The current look target, may be `null`.  */
     private var target: Target? = null
@@ -50,7 +50,7 @@ class LookBehavior(
      */
     private var prevRotation: Rotation? = null
 
-    private val processor: AimProcessor = AimProcessor(maestro.playerContext)
+    private val processor: AimProcessor = AimProcessor(agent.playerContext)
 
     private val smoothYawBuffer: Deque<Float> = ArrayDeque()
     private val smoothPitchBuffer: Deque<Float> = ArrayDeque()

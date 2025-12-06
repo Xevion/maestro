@@ -51,16 +51,6 @@ object DebugKeybindings {
     }
 
     /**
-     * Register keybindings with Minecraft's keybinding system.
-     *
-     * Must be called from client initialization.
-     */
-    fun register(minecraft: Minecraft) {
-        // Note: Minecraft's KeyMapping.ALL list is automatically populated when KeyMapping is
-        // created, but we may need platform-specific registration for some mod loaders
-    }
-
-    /**
      * Process keybindings. Called every client tick.
      *
      * Checks for key state changes and triggers appropriate actions.
@@ -71,18 +61,16 @@ object DebugKeybindings {
 
         // Grave key: Toggle GUI
         val mc = Minecraft.getInstance()
-        val agent = Agent.getPrimaryAgent() as? Agent
-        if (agent != null) {
-            val gravePressed = isGravePressed()
-            if (gravePressed && !wasGravePressed) {
-                if (mc.screen is ControlScreen) {
-                    mc.setScreen(null)
-                } else if (mc.screen == null) {
-                    mc.setScreen(ControlScreen(agent))
-                }
+        val agent = Agent.getPrimaryAgent()
+        val gravePressed = isGravePressed()
+        if (gravePressed && !wasGravePressed) {
+            if (mc.screen is ControlScreen) {
+                mc.setScreen(null)
+            } else if (mc.screen == null) {
+                mc.setScreen(ControlScreen(agent))
             }
-            wasGravePressed = gravePressed
         }
+        wasGravePressed = gravePressed
 
         // G key: Toggle freecam (but NOT when CTRL is pressed)
         val gRawPressed = isGPressed()
@@ -93,7 +81,7 @@ object DebugKeybindings {
         wasGPressed = gRawPressed
 
         // CTRL+G: Toggle freecam mode (only when freecam is active)
-        if (agent != null && agent.isFreecamActive) {
+        if (agent.isFreecamActive) {
             val ctrlGPressed = InputController.isCtrlPressed() && isGPressed()
             if (ctrlGPressed && !wasCtrlGPressed) {
                 agent.toggleFreecamMode()
@@ -112,7 +100,7 @@ object DebugKeybindings {
 
     private fun handleRadialMenu(mc: Minecraft) {
         val agent = Agent.getPrimaryAgent()
-        if (agent == null || !agent.isFreecamActive) {
+        if (!agent.isFreecamActive) {
             wasRightClickPressed = false
             return
         }
@@ -141,7 +129,7 @@ object DebugKeybindings {
 
     /** Toggle freecam on/off. */
     private fun toggleFreecam() {
-        val agent = Agent.getPrimaryAgent() as? Agent ?: return
+        val agent = Agent.getPrimaryAgent()
 
         if (agent.isFreecamActive) {
             agent.deactivateFreecam()

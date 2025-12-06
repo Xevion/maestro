@@ -87,7 +87,7 @@ public final class PathRenderer implements IRenderer {
         // Priority-based highlight rendering (unified system)
         if (settings.renderPriorityBasedHighlight.value && settings.renderGoalHighlight.value) {
             // Collect all necessary state
-            maestro.task.MineTask mineTask = (maestro.task.MineTask) behavior.maestro.getMineTask();
+            maestro.task.MineTask mineTask = (maestro.task.MineTask) behavior.agent.getMineTask();
 
             // Classify all blocks into priority tiers
             Map<BlockPos, maestro.debug.PriorityBlock> classified =
@@ -276,7 +276,7 @@ public final class PathRenderer implements IRenderer {
             // Render mining blocks if enabled
             if (settings.renderMiningBlocks.value) {
                 maestro.task.MineTask mineTask =
-                        (maestro.task.MineTask) behavior.maestro.getMineTask();
+                        (maestro.task.MineTask) behavior.agent.getMineTask();
                 if (mineTask != null) {
                     List<BlockPos> miningBlocks = mineTask.getKnownOreLocations();
                     if (!miningBlocks.isEmpty()) {

@@ -13,8 +13,8 @@ import org.slf4j.Logger
  * - Death locations
  */
 class WaypointBehavior(
-    maestro: Agent,
-) : Behavior(maestro) {
+    agent: Agent,
+) : Behavior(agent) {
     override fun onPlayerDeath() {
         if (!Agent
                 .getPrimaryAgent()
@@ -23,7 +23,7 @@ class WaypointBehavior(
             return
         }
 
-        val world = maestro.worldProvider.getCurrentWorld() ?: return
+        val world = this@WaypointBehavior.agent.worldProvider.getCurrentWorld() ?: return
         val deathWaypoint = Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet())
         world.getWaypoints().addWaypoint(deathWaypoint)
 

@@ -5,8 +5,8 @@ import maestro.api.task.PathingCommand
 import maestro.api.task.PathingCommandType
 
 class InventoryPauserTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     private var pauseRequestedLastTick = false
     private var safeToCancelLastTick = false
     private var ticksOfStationary = 0

@@ -40,8 +40,8 @@ import net.minecraft.world.phys.Vec3
 import org.slf4j.Logger
 
 class FarmTask(
-    maestro: Agent,
-) : TaskHelper(maestro),
+    agent: Agent,
+) : TaskHelper(agent),
     ITask {
     private var active = false
     private var locations: List<BlockPos>? = null
@@ -129,7 +129,10 @@ class FarmTask(
     ) {
         center =
             if (pos == null) {
-                maestro.playerContext.playerFeet().toBlockPos()
+                this@FarmTask
+                    .agent.playerContext
+                    .playerFeet()
+                    .toBlockPos()
             } else {
                 pos
             }
@@ -287,10 +290,10 @@ class FarmTask(
             }
             val rot = RotationUtils.reachable(ctx, pos)
             if (rot.isPresent && isSafeToCancel) {
-                maestro.lookBehavior.updateTarget(rot.get(), true)
+                this@FarmTask.agent.lookBehavior.updateTarget(rot.get(), true)
                 MovementValidation.switchToBestToolFor(ctx, ctx.world().getBlockState(pos))
                 if (ctx.isLookingAt(pos)) {
-                    maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, true)
+                    this@FarmTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, true)
                 }
                 return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
             }
@@ -316,16 +319,16 @@ class FarmTask(
                 )
             if (rot.isPresent &&
                 isSafeToCancel &&
-                maestro.inventoryBehavior.throwaway(
+                this@FarmTask.agent.inventoryBehavior.throwaway(
                     true,
                     if (soulsand) this::isNetherWart else this::isPlantable,
                 )
             ) {
                 val result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), blockReachDistance)
                 if (result is BlockHitResult && result.direction == Direction.UP) {
-                    maestro.lookBehavior.updateTarget(rot.get(), true)
+                    this@FarmTask.agent.lookBehavior.updateTarget(rot.get(), true)
                     if (ctx.isLookingAt(pos)) {
-                        maestro.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
+                        this@FarmTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
                     }
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                 }
@@ -355,13 +358,13 @@ class FarmTask(
                     )
                 if (rot.isPresent &&
                     isSafeToCancel &&
-                    maestro.inventoryBehavior.throwaway(true, this::isCocoa)
+                    this@FarmTask.agent.inventoryBehavior.throwaway(true, this::isCocoa)
                 ) {
                     val result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), blockReachDistance)
                     if (result is BlockHitResult && result.direction == dir) {
-                        maestro.lookBehavior.updateTarget(rot.get(), true)
+                        this@FarmTask.agent.lookBehavior.updateTarget(rot.get(), true)
                         if (ctx.isLookingAt(pos)) {
-                            maestro.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
+                            this@FarmTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
                         }
                         return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                     }
@@ -377,11 +380,11 @@ class FarmTask(
             val rot = RotationUtils.reachable(ctx, pos)
             if (rot.isPresent &&
                 isSafeToCancel &&
-                maestro.inventoryBehavior.throwaway(true, this::isBoneMeal)
+                this@FarmTask.agent.inventoryBehavior.throwaway(true, this::isBoneMeal)
             ) {
-                maestro.lookBehavior.updateTarget(rot.get(), true)
+                this@FarmTask.agent.lookBehavior.updateTarget(rot.get(), true)
                 if (ctx.isLookingAt(pos)) {
-                    maestro.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
+                    this@FarmTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
                 }
                 return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
             }
@@ -405,19 +408,19 @@ class FarmTask(
             goals.add(BuilderTask.GoalBreak(pos))
         }
 
-        if (maestro.inventoryBehavior.throwaway(false, this::isPlantable)) {
+        if (this@FarmTask.agent.inventoryBehavior.throwaway(false, this::isPlantable)) {
             for (pos in openFarmland) {
                 goals.add(GoalBlock(pos.above()))
             }
         }
 
-        if (maestro.inventoryBehavior.throwaway(false, this::isNetherWart)) {
+        if (this@FarmTask.agent.inventoryBehavior.throwaway(false, this::isNetherWart)) {
             for (pos in openSoulsand) {
                 goals.add(GoalBlock(pos.above()))
             }
         }
 
-        if (maestro.inventoryBehavior.throwaway(false, this::isCocoa)) {
+        if (this@FarmTask.agent.inventoryBehavior.throwaway(false, this::isCocoa)) {
             for (pos in openLog) {
                 for (direction in Direction.Plane.HORIZONTAL) {
                     if (ctx.world().getBlockState(pos.relative(direction)).block is AirBlock) {
@@ -427,7 +430,7 @@ class FarmTask(
             }
         }
 
-        if (maestro.inventoryBehavior.throwaway(false, this::isBoneMeal)) {
+        if (this@FarmTask.agent.inventoryBehavior.throwaway(false, this::isBoneMeal)) {
             for (pos in bonemealable) {
                 goals.add(GoalBlock(pos))
             }
@@ -470,7 +473,7 @@ class FarmTask(
 
     override fun onLostControl() {
         // Clear interaction keys when losing control
-        maestro.inputOverrideHandler.clearInteractionKeys()
+        this@FarmTask.agent.inputOverrideHandler.clearInteractionKeys()
         active = false
     }
 

@@ -61,8 +61,8 @@ import java.util.OptionalInt
 import java.util.stream.Stream
 
 class BuilderTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     private var incorrectPositions: HashSet<PackedBlockPos>? = null
     private var observedCompleted: LongOpenHashSet? = null
     private var name: String? = null
@@ -179,7 +179,10 @@ class BuilderTask(
                 .settings.buildOnlySelection.value &&
             buildingSelectionSchematic
         ) {
-            if (maestro.selectionManager.selections.isEmpty()) {
+            if (this@BuilderTask
+                    .agent.selectionManager.selections
+                    .isEmpty()
+            ) {
                 log.atWarn().log("No selection set while build-only-selection enabled")
                 this.stopAtHeight = 0
             } else if (Agent
@@ -188,12 +191,12 @@ class BuilderTask(
             ) {
                 val minim =
                     Stream
-                        .of(*maestro.selectionManager.selections)
+                        .of(*this@BuilderTask.agent.selectionManager.selections)
                         .mapToInt { sel -> sel.min().y }
                         .min()
                 val maxim =
                     Stream
-                        .of(*maestro.selectionManager.selections)
+                        .of(*this@BuilderTask.agent.selectionManager.selections)
                         .mapToInt { sel -> sel.max().y }
                         .max()
                 if (minim.isPresent && maxim.isPresent) {
@@ -309,7 +312,7 @@ class BuilderTask(
                 .getPrimaryAgent()
                 .settings.buildOnlySelection.value
         ) {
-            schematic = SelectionSchematic(schematic, origin, maestro.selectionManager.selections)
+            schematic = SelectionSchematic(schematic, origin, this@BuilderTask.agent.selectionManager.selections)
         }
         return schematic
     }
@@ -385,7 +388,7 @@ class BuilderTask(
 
     private fun toBreakNearPlayer(bcc: BuilderCalculationContext): Optional<net.minecraft.util.Tuple<PackedBlockPos, Rotation>> {
         val center = ctx.playerFeet()
-        val pathStart = maestro.pathingBehavior.pathStart()
+        val pathStart = this@BuilderTask.agent.pathingBehavior.pathStart()
         for (dx in -5..5) {
             for (dy in (
                 if (Agent
@@ -501,7 +504,11 @@ class BuilderTask(
                         Vec3(placeX, placeY, placeZ),
                         ctx.playerRotations(),
                     )
-                val actualRot = maestro.lookBehavior.getAimProcessor().peekRotation(rot)
+                val actualRot =
+                    this@BuilderTask
+                        .agent.lookBehavior
+                        .getAimProcessor()
+                        .peekRotation(rot)
                 val result =
                     RayTraceUtils.rayTraceTowards(
                         ctx.player(),
@@ -580,7 +587,7 @@ class BuilderTask(
             return PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH)
         }
         approxPlaceable = approxPlaceable(36)
-        if (maestro.inputOverrideHandler.isInputForcedDown(Input.CLICK_LEFT)) {
+        if (this@BuilderTask.agent.inputOverrideHandler.isInputForcedDown(Input.CLICK_LEFT)) {
             ticks = 5
         } else {
             ticks--
@@ -710,13 +717,13 @@ class BuilderTask(
         if (toBreak.isPresent && isSafeToCancel && ctx.player().onGround()) {
             val rot = toBreak.get().b
             val pos = toBreak.get().a
-            maestro.lookBehavior.updateTarget(rot, true)
+            this@BuilderTask.agent.lookBehavior.updateTarget(rot, true)
             MovementValidation.switchToBestToolFor(ctx, bcc[pos.toBlockPos()])
             if (ctx.player().isCrouching) {
-                maestro.inputOverrideHandler.setInputForceState(Input.SNEAK, true)
+                this@BuilderTask.agent.inputOverrideHandler.setInputForceState(Input.SNEAK, true)
             }
             if (ctx.isLookingAt(pos.toBlockPos()) || ctx.playerRotations().isReallyCloseTo(rot)) {
-                maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, true)
+                this@BuilderTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, true)
             }
             return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
         }
@@ -724,16 +731,16 @@ class BuilderTask(
         val toPlace = searchForPlaceables(bcc, desirableOnHotbar)
         if (toPlace.isPresent && isSafeToCancel && ctx.player().onGround() && ticks <= 0) {
             val rot = toPlace.get().rot
-            maestro.lookBehavior.updateTarget(rot, true)
+            this@BuilderTask.agent.lookBehavior.updateTarget(rot, true)
             ctx.player().inventory.selected = toPlace.get().hotbarSelection
-            maestro.inputOverrideHandler.setInputForceState(Input.SNEAK, true)
+            this@BuilderTask.agent.inputOverrideHandler.setInputForceState(Input.SNEAK, true)
             if ((
                     ctx.isLookingAt(toPlace.get().placeAgainst) &&
                         (ctx.objectMouseOver() as BlockHitResult).direction == toPlace.get().side
                 ) ||
                 ctx.playerRotations().isReallyCloseTo(rot)
             ) {
-                maestro.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
+                this@BuilderTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
             }
             return PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL)
         }
@@ -757,7 +764,7 @@ class BuilderTask(
             outer@ for (i in 9 until 36) {
                 for (desired in noValidHotbarOption) {
                     if (valid(approxPlaceable[i], desired, true)) {
-                        if (!maestro.inventoryBehavior.attemptToPutOnHotbar(i) { slot -> usefulSlots.contains(slot) }) {
+                        if (!this@BuilderTask.agent.inventoryBehavior.attemptToPutOnHotbar(i) { slot -> usefulSlots.contains(slot) }) {
                             return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                         }
                         break@outer
@@ -1171,7 +1178,7 @@ class BuilderTask(
 
     override fun onLostControl() {
         // Clear interaction keys when losing control
-        maestro.inputOverrideHandler.clearInteractionKeys()
+        this@BuilderTask.agent.inputOverrideHandler.clearInteractionKeys()
         incorrectPositions = null
         name = null
         schematic = null
@@ -1260,7 +1267,7 @@ class BuilderTask(
         return result
     }
 
-    inner class BuilderCalculationContext : CalculationContext(this@BuilderTask.maestro, true) {
+    inner class BuilderCalculationContext : CalculationContext(this@BuilderTask.agent, true) {
         private val placeable: List<BlockState> = approxPlaceable(9)
         private val schematic: ISchematic? = this@BuilderTask.schematic
         private val originX: Int = origin?.x ?: 0

@@ -26,8 +26,8 @@ import org.slf4j.Logger
 import kotlin.math.abs
 
 class GetToBlockTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     private var gettingTo: BlockOptionalMeta? = null
     private var knownLocations: MutableList<BlockPos>? = null
     private var blacklist: MutableList<BlockPos>? = null // Locations we failed to calc to
@@ -130,7 +130,10 @@ class GetToBlockTask(
         }
 
         if (goal.isInGoal(ctx.playerFeet().toBlockPos()) &&
-            maestro.pathingBehavior.pathStart()?.let { goal.isInGoal(it.toBlockPos()) } != false &&
+            this@GetToBlockTask
+                .agent.pathingBehavior
+                .pathStart()
+                ?.let { goal.isInGoal(it.toBlockPos()) } != false &&
             isSafeToCancel
         ) {
             // We're there
@@ -187,7 +190,7 @@ class GetToBlockTask(
     // It is NOT to be used to actually calculate a path
     inner class GetToBlockCalculationContext(
         forUseOnAnotherThread: Boolean,
-    ) : CalculationContext(maestro, forUseOnAnotherThread) {
+    ) : CalculationContext(this@GetToBlockTask.agent, forUseOnAnotherThread) {
         override fun breakCostMultiplierAt(
             x: Int,
             y: Int,
@@ -213,7 +216,7 @@ class GetToBlockTask(
         knownLocations = null
         start = null
         blacklist = null
-        maestro.inputOverrideHandler.clearAllKeys()
+        this@GetToBlockTask.agent.inputOverrideHandler.clearAllKeys()
     }
 
     override fun displayName0(): String {
@@ -255,7 +258,7 @@ class GetToBlockTask(
         }
 
         if (blockOnTopMustBeRemoved(block) &&
-            MovementValidation.isBlockNormalCube(maestro.bsi.get0(pos.above()))
+            MovementValidation.isBlockNormalCube(this@GetToBlockTask.agent.bsi.get0(pos.above()))
         ) {
             // TODO this should be the check for chest openability
             return GoalBlock(pos.above())
@@ -276,10 +279,10 @@ class GetToBlockTask(
                 )
 
             if (reachable.isPresent) {
-                maestro.lookBehavior.updateTarget(reachable.get(), true)
+                this@GetToBlockTask.agent.lookBehavior.updateTarget(reachable.get(), true)
 
                 if (locations.contains(ctx.getSelectedBlock().orElse(null))) {
-                    maestro.inputOverrideHandler.setInputForceState(
+                    this@GetToBlockTask.agent.inputOverrideHandler.setInputForceState(
                         Input.CLICK_RIGHT,
                         true,
                     ) // TODO find some way to right click even if we're in an ESC menu

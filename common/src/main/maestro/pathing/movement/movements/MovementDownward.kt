@@ -14,7 +14,6 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.MovementValidation
-import maestro.utils.center
 import maestro.utils.centerXZ
 import maestro.utils.horizontalDistanceTo
 import net.minecraft.core.BlockPos
@@ -34,10 +33,10 @@ import net.minecraft.world.level.block.Blocks
  *   (e.g., open trapdoors, glass panes, iron bars, end rods)
  */
 class MovementDownward(
-    maestro: Agent,
+    agent: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
-) : Movement(maestro, src, dest) {
+) : Movement(agent, src, dest) {
     override fun toBreak(bsi: BlockStateInterface): List<BlockPos> {
         // Break the block below our feet (dest position) if it's not already passable
         if (MovementValidation.canWalkThrough(ctx, dest)) {

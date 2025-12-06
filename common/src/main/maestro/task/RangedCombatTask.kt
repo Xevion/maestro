@@ -22,8 +22,8 @@ import java.util.function.Predicate
  * aiming with ballistic calculations, bow charging, and shooting.
  */
 class RangedCombatTask(
-    maestro: Agent,
-) : TaskHelper(maestro),
+    agent: Agent,
+) : TaskHelper(agent),
     AbstractGameEventListener {
     private val log: Logger = Loggers.Combat.get()
 
@@ -248,7 +248,8 @@ class RangedCombatTask(
         val targetPos =
             if (Agent
                     .getPrimaryAgent()
-                    .settings.predictTargetMovement.value && TargetPredictor.isPredictable(target)
+                    .settings.predictTargetMovement.value &&
+                TargetPredictor.isPredictable(target)
             ) {
                 val iterations =
                     Agent
@@ -269,7 +270,7 @@ class RangedCombatTask(
             // Valid trajectory found
             hasValidAim = true
             val rotation = Rotation(yaw, pitch)
-            maestro.lookBehavior.updateTarget(rotation, false)
+            this@RangedCombatTask.agent.lookBehavior.updateTarget(rotation, false)
 
             // Calculate full trajectory for rendering (always calculate if rendering is enabled)
             currentTrajectory =

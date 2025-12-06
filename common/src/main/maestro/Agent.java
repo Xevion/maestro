@@ -14,7 +14,6 @@ import maestro.api.Settings;
 import maestro.api.behavior.IBehavior;
 import maestro.api.player.PlayerContext;
 import maestro.api.task.ITask;
-import maestro.api.utils.Loggers;
 import maestro.api.utils.SettingsUtil;
 import maestro.behavior.*;
 import maestro.cache.WorldProvider;
@@ -30,7 +29,6 @@ import maestro.pathing.BlockStateInterface;
 import maestro.pathing.TaskCoordinator;
 import maestro.selection.SelectionManager;
 import maestro.task.*;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
@@ -83,6 +81,7 @@ public class Agent {
     private final InputController inputController;
     private final SwimmingBehavior swimmingBehavior;
     private final RotationManager rotationManager;
+    private final FreecamBehavior freecamBehavior;
 
     private final FollowTask followProcess;
     private final MineTask mineTask;
@@ -113,28 +112,8 @@ public class Agent {
     // Development mode manager
     private final DevModeManager devModeManager;
 
-    // Free-look camera state (independent of player rotation)
-    private float freeLookYaw = 0.0f;
-    private float freeLookPitch = 0.0f;
-
     // Swimming active state (tracks when swimming behavior is controlling the bot)
     private boolean swimmingActive = false;
-
-    // Freecam state (independent camera position and activation)
-    private Vec3 freecamPosition = null;
-    private Vec3 prevFreecamPosition = null;
-    private boolean freecamActive = false;
-    private int savedFov = -1;
-    private boolean savedSmoothCamera = false;
-    private FreecamMode freecamMode = FreecamMode.STATIC;
-    private Vec3 lastPlayerPosition = null;
-    private Vec3 freecamFollowOffset = null;
-    private Vec3 prevFreecamFollowOffset = null;
-
-    // Follow mode position tracking - we track our own snapshots to avoid physics artifacts
-    // from Minecraft's built-in xOld/x interpolation
-    private Vec3 followTargetPrev = null;
-    private Vec3 followTargetCurrent = null;
 
     Agent(Minecraft mc) {
         this.mc = mc;
@@ -169,8 +148,8 @@ public class Agent {
             this.inputController = this.registerBehavior(InputController::new);
             this.swimmingBehavior = this.registerBehavior(SwimmingBehavior::new);
             this.rotationManager = this.registerBehavior(RotationManager::new);
+            this.freecamBehavior = this.registerBehavior(FreecamBehavior::new);
             this.registerBehavior(WaypointBehavior::new);
-            this.registerBehavior(FreecamBehavior::new);
         }
 
         this.taskCoordinator = new TaskCoordinator(this);
@@ -263,337 +242,72 @@ public class Agent {
         return this.rotationManager;
     }
 
-    /**
-     * Gets the free-look camera yaw (horizontal rotation). This is independent of the player's
-     * actual rotation when free-look is enabled.
-     */
+    public FreecamBehavior getFreecamBehavior() {
+        return this.freecamBehavior;
+    }
+
+    // ===== Freecam delegation methods =====
+
     public float getFreeLookYaw() {
-        return freeLookYaw;
+        return this.freecamBehavior.getYaw();
     }
 
-    /**
-     * Sets the free-look camera yaw. Called by mouse movement handling when free-look is enabled.
-     */
-    public void setFreeLookYaw(float yaw) {
-        this.freeLookYaw = yaw;
-    }
-
-    /**
-     * Gets the free-look camera pitch (vertical rotation). This is independent of the player's
-     * actual rotation when free-look is enabled.
-     */
     public float getFreeLookPitch() {
-        return freeLookPitch;
+        return this.freecamBehavior.getPitch();
     }
 
-    /**
-     * Sets the free-look camera pitch. Called by mouse movement handling when free-look is enabled.
-     */
-    public void setFreeLookPitch(float pitch) {
-        this.freeLookPitch = pitch;
-    }
-
-    /**
-     * Updates free-look camera angles based on mouse delta. This allows the user to look around
-     * independently of the bot's movement direction.
-     */
     public void updateFreeLook(double deltaX, double deltaY) {
-        // Similar to Minecraft's camera handling
-        float sensitivity = 0.6f + 0.2f; // Default sensitivity
-
-        freeLookYaw += (float) deltaX * 0.15f * sensitivity;
-        freeLookPitch += (float) deltaY * 0.15f * sensitivity;
-
-        // Clamp pitch to -90 to +90 degrees
-        freeLookPitch = Math.max(-90.0f, Math.min(90.0f, freeLookPitch));
+        this.freecamBehavior.updateMouseLook(deltaX, deltaY);
     }
 
-    /**
-     * Returns true if swimming behavior is actively controlling the bot. This is used to
-     * conditionally activate free-look camera mode only during autonomous swimming.
-     */
+    public boolean isFreecamActive() {
+        return this.freecamBehavior.isActive();
+    }
+
+    public Vec3 getFreecamPosition() {
+        return this.freecamBehavior.getPosition();
+    }
+
+    public FreecamMode getFreecamMode() {
+        return this.freecamBehavior.getMode();
+    }
+
+    public void toggleFreecamMode() {
+        this.freecamBehavior.toggleMode();
+    }
+
+    public void activateFreecam() {
+        this.freecamBehavior.activate();
+    }
+
+    public void deactivateFreecam() {
+        this.freecamBehavior.deactivate();
+    }
+
+    public double getFreecamX(float tickDelta) {
+        return this.freecamBehavior.getInterpolatedX(tickDelta);
+    }
+
+    public double getFreecamY(float tickDelta) {
+        return this.freecamBehavior.getInterpolatedY(tickDelta);
+    }
+
+    public double getFreecamZ(float tickDelta) {
+        return this.freecamBehavior.getInterpolatedZ(tickDelta);
+    }
+
+    public int getSavedFov() {
+        return this.freecamBehavior.getSavedFov();
+    }
+
+    // ===== Swimming state =====
+
     public boolean isSwimmingActive() {
         return swimmingActive;
     }
 
-    /**
-     * Sets whether swimming behavior is actively controlling the bot. When activating swimming,
-     * this initializes the free-look angles to the current player rotation for smooth transition.
-     */
     public void setSwimmingActive(boolean active) {
-        // When activating swimming, initialize free-look to current player rotation
-        // Don't override rotation if freecam is already active
-        if (active && !swimmingActive && !freecamActive && this.mc.player != null) {
-            this.freeLookYaw = this.mc.player.getYRot();
-            this.freeLookPitch = this.mc.player.getXRot();
-        }
         this.swimmingActive = active;
-    }
-
-    /**
-     * Returns true if freecam is currently active. When active, the camera detaches from the player
-     * entity and can be controlled independently.
-     */
-    public boolean isFreecamActive() {
-        return freecamActive;
-    }
-
-    /** Gets the current freecam position. Returns null if freecam is not active. */
-    public Vec3 getFreecamPosition() {
-        return freecamPosition;
-    }
-
-    /** Sets the freecam position. Updates the previous position for interpolation. */
-    public void setFreecamPosition(Vec3 position) {
-        this.prevFreecamPosition = this.freecamPosition;
-        this.freecamPosition = position;
-    }
-
-    public FreecamMode getFreecamMode() {
-        return freecamMode;
-    }
-
-    public void setFreecamMode(FreecamMode mode) {
-        this.freecamMode = mode;
-    }
-
-    /** Gets the saved FOV value from when freecam was activated. */
-    public int getSavedFov() {
-        return this.savedFov;
-    }
-
-    public void toggleFreecamMode() {
-        FreecamMode newMode =
-                (freecamMode == FreecamMode.STATIC) ? FreecamMode.FOLLOW : FreecamMode.STATIC;
-        this.freecamMode = newMode;
-
-        // When switching to FOLLOW mode, calculate offset from current static position to player
-        if (newMode == FreecamMode.FOLLOW && this.mc.player != null && freecamPosition != null) {
-            Vec3 playerPos = this.mc.player.position();
-            Vec3 offset = freecamPosition.subtract(playerPos);
-
-            // Initialize both current and prev to the same value for stable start
-            this.freecamFollowOffset = offset;
-            this.prevFreecamFollowOffset = offset;
-
-            // Initialize follow target positions for stable interpolation
-            this.followTargetPrev = playerPos;
-            this.followTargetCurrent = playerPos;
-
-            Loggers.Dev.get().atDebug().addKeyValue("mode", "FOLLOW").log("Freecam mode switched");
-        } else if (newMode == FreecamMode.STATIC
-                && this.mc.player != null
-                && freecamFollowOffset != null) {
-            // When switching to STATIC mode, set position from current follow position
-            Vec3 playerPos = this.mc.player.position();
-            Vec3 staticPos = playerPos.add(freecamFollowOffset);
-
-            // Initialize both current and prev to the same value for stable start
-            this.freecamPosition = staticPos;
-            this.prevFreecamPosition = staticPos;
-
-            Loggers.Dev.get().atDebug().addKeyValue("mode", "STATIC").log("Freecam mode switched");
-        } else {
-            Loggers.Dev.get().atDebug().addKeyValue("mode", newMode).log("Freecam mode switched");
-        }
-    }
-
-    public Vec3 getLastPlayerPosition() {
-        return lastPlayerPosition;
-    }
-
-    public void setLastPlayerPosition(Vec3 pos) {
-        this.lastPlayerPosition = pos;
-    }
-
-    public Vec3 getFreecamFollowOffset() {
-        return freecamFollowOffset;
-    }
-
-    public void setFreecamFollowOffset(Vec3 offset) {
-        this.prevFreecamFollowOffset = this.freecamFollowOffset;
-        this.freecamFollowOffset = offset;
-
-        // Initialize prev if this is the first offset set
-        if (this.prevFreecamFollowOffset == null) {
-            this.prevFreecamFollowOffset = offset;
-        }
-    }
-
-    /**
-     * Updates follow target position snapshots. Call this once per tick to capture consistent
-     * positions for smooth interpolation. This avoids jitter from Minecraft's physics artifacts in
-     * the entity's xOld/x interpolation.
-     */
-    public void updateFollowTarget() {
-        if (this.mc.player == null) return;
-
-        Vec3 currentPos = this.mc.player.position();
-
-        // Shift current to prev, update current
-        this.followTargetPrev = this.followTargetCurrent;
-        this.followTargetCurrent = currentPos;
-
-        // Initialize prev if this is the first update
-        if (this.followTargetPrev == null) {
-            this.followTargetPrev = currentPos;
-        }
-    }
-
-    /** Gets interpolated freecam X coordinate for smooth rendering between ticks. */
-    public double getFreecamX(float tickDelta) {
-        // In FOLLOW mode, interpolate both player position AND offset for smooth 60 FPS
-        if (freecamMode == FreecamMode.FOLLOW
-                && freecamFollowOffset != null
-                && prevFreecamFollowOffset != null) {
-            // Interpolate player position
-            double playerX;
-            if (followTargetPrev != null && followTargetCurrent != null) {
-                playerX =
-                        followTargetPrev.x
-                                + (followTargetCurrent.x - followTargetPrev.x) * tickDelta;
-            } else if (this.mc.player != null) {
-                playerX = this.mc.player.getX();
-            } else {
-                playerX = 0;
-            }
-
-            // Interpolate offset
-            double offsetX =
-                    prevFreecamFollowOffset.x
-                            + (freecamFollowOffset.x - prevFreecamFollowOffset.x) * tickDelta;
-
-            return playerX + offsetX;
-        }
-
-        // STATIC mode: standard interpolation
-        if (freecamPosition == null || prevFreecamPosition == null) {
-            return freecamPosition != null ? freecamPosition.x : 0;
-        }
-        return prevFreecamPosition.x + (freecamPosition.x - prevFreecamPosition.x) * tickDelta;
-    }
-
-    /** Gets interpolated freecam Y coordinate for smooth rendering between ticks. */
-    public double getFreecamY(float tickDelta) {
-        // In FOLLOW mode, interpolate both player position AND offset for smooth 60 FPS
-        if (freecamMode == FreecamMode.FOLLOW
-                && freecamFollowOffset != null
-                && prevFreecamFollowOffset != null) {
-            // Interpolate player position
-            double playerY;
-            if (followTargetPrev != null && followTargetCurrent != null) {
-                playerY =
-                        followTargetPrev.y
-                                + (followTargetCurrent.y - followTargetPrev.y) * tickDelta;
-            } else if (this.mc.player != null) {
-                playerY = this.mc.player.getY();
-            } else {
-                playerY = 0;
-            }
-
-            // Interpolate offset
-            double offsetY =
-                    prevFreecamFollowOffset.y
-                            + (freecamFollowOffset.y - prevFreecamFollowOffset.y) * tickDelta;
-
-            return playerY + offsetY;
-        }
-
-        // STATIC mode: standard interpolation
-        if (freecamPosition == null || prevFreecamPosition == null) {
-            return freecamPosition != null ? freecamPosition.y : 0;
-        }
-        return prevFreecamPosition.y + (freecamPosition.y - prevFreecamPosition.y) * tickDelta;
-    }
-
-    /** Gets interpolated freecam Z coordinate for smooth rendering between ticks. */
-    public double getFreecamZ(float tickDelta) {
-        // In FOLLOW mode, interpolate both player position AND offset for smooth 60 FPS
-        if (freecamMode == FreecamMode.FOLLOW
-                && freecamFollowOffset != null
-                && prevFreecamFollowOffset != null) {
-            // Interpolate player position
-            double playerZ;
-            if (followTargetPrev != null && followTargetCurrent != null) {
-                playerZ =
-                        followTargetPrev.z
-                                + (followTargetCurrent.z - followTargetPrev.z) * tickDelta;
-            } else if (this.mc.player != null) {
-                playerZ = this.mc.player.getZ();
-            } else {
-                playerZ = 0;
-            }
-
-            // Interpolate offset
-            double offsetZ =
-                    prevFreecamFollowOffset.z
-                            + (freecamFollowOffset.z - prevFreecamFollowOffset.z) * tickDelta;
-
-            return playerZ + offsetZ;
-        }
-
-        // STATIC mode: standard interpolation
-        if (freecamPosition == null || prevFreecamPosition == null) {
-            return freecamPosition != null ? freecamPosition.z : 0;
-        }
-        return prevFreecamPosition.z + (freecamPosition.z - prevFreecamPosition.z) * tickDelta;
-    }
-
-    /**
-     * Activates freecam mode. Captures the current camera position and rotation as the initial
-     * freecam state, and saves FOV settings.
-     */
-    public void activateFreecam() {
-        if (!freecamActive && this.mc.player != null && this.mc.gameRenderer != null) {
-            Camera camera = this.mc.gameRenderer.getMainCamera();
-            this.freecamPosition = camera.getPosition();
-            this.prevFreecamPosition = this.freecamPosition;
-            this.freeLookYaw = camera.getYRot();
-            this.freeLookPitch = camera.getXRot();
-
-            // Save FOV settings
-            this.savedFov = this.mc.options.fov().get();
-            this.savedSmoothCamera = this.mc.options.smoothCamera;
-
-            // Initialize freecam mode and player tracking
-            this.freecamMode = Agent.getPrimaryAgent().getSettings().freecamDefaultMode.value;
-            if (this.mc.player != null) {
-                this.lastPlayerPosition = this.mc.player.position();
-            }
-
-            this.freecamActive = true;
-
-            // Reload chunks if configured (queue for next tick)
-            if (Agent.getPrimaryAgent().getSettings().freecamReloadChunks.value
-                    && this.mc.levelRenderer != null) {
-                this.mc.execute(() -> this.mc.levelRenderer.allChanged());
-            }
-        }
-    }
-
-    /** Deactivates freecam mode. Returns camera to normal player-following behavior. */
-    public void deactivateFreecam() {
-        this.freecamActive = false;
-        this.freecamPosition = null;
-        this.prevFreecamPosition = null;
-        this.lastPlayerPosition = null;
-        this.followTargetPrev = null;
-        this.followTargetCurrent = null;
-        this.freecamFollowOffset = null;
-        this.prevFreecamFollowOffset = null;
-
-        // Restore FOV settings
-        if (this.savedFov >= 0) {
-            this.mc.options.fov().set(this.savedFov);
-            this.savedFov = -1;
-        }
-        this.mc.options.smoothCamera = this.savedSmoothCamera;
-
-        // Reload chunks if configured (queue for next tick)
-        if (Agent.getPrimaryAgent().getSettings().freecamReloadChunks.value
-                && this.mc.levelRenderer != null) {
-            this.mc.execute(() -> this.mc.levelRenderer.allChanged());
-        }
     }
 
     public ExploreTask getExploreTask() {
@@ -707,6 +421,7 @@ public class Agent {
      * Get or create the primary agent instance. Lazily creates the agent on first access using the
      * Minecraft singleton.
      */
+    @NotNull
     public static Agent getPrimaryAgent() {
         if (allAgents.isEmpty()) {
             new Agent(Minecraft.getInstance());
@@ -722,7 +437,7 @@ public class Agent {
     /** Find the agent associated with a specific player. */
     public static Agent getAgentForPlayer(LocalPlayer player) {
         for (Agent agent : allAgents) {
-            if (agent.playerContext.player() == player) {
+            if (agent.playerContext.player().equals(player)) {
                 return agent;
             }
         }

@@ -22,8 +22,8 @@ import kotlin.math.min
  * - LOW (25): Idle look-around
  */
 class RotationManager(
-    maestro: Agent,
-) : Behavior(maestro) {
+    agent: Agent,
+) : Behavior(agent) {
     private val rotations: PriorityQueue<PendingRotation> = PriorityQueue(compareBy { it.priority })
     private var currentRotation: PendingRotation? = null
 

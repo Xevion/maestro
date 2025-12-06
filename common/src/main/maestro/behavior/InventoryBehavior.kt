@@ -30,8 +30,8 @@ import java.util.OptionalInt
  * - Throttled inventory moves to appear human-like
  */
 class InventoryBehavior(
-    maestro: Agent,
-) : Behavior(maestro),
+    agent: Agent,
+) : Behavior(agent),
     Helper {
     var ticksSinceLastInventoryMove: Int = 0
     private var lastTickRequestedMove: IntArray? = null
@@ -129,7 +129,7 @@ class InventoryBehavior(
         if (Agent
                 .getPrimaryAgent()
                 .settings.inventoryMoveOnlyIfStationary.value &&
-            !maestro.inventoryPauserTask.stationaryForInventoryMove()
+            !agent.inventoryPauserTask.stationaryForInventoryMove()
         ) {
             log.atDebug().log("Inventory move deferred until stationary")
             return false
@@ -208,7 +208,7 @@ class InventoryBehavior(
         y: Int,
         z: Int,
     ): Boolean {
-        val maybe = maestro.builderTask.placeAt(x, y, z, maestro.bsi.get0(x, y, z)) ?: return false
+        val maybe = agent.builderTask.placeAt(x, y, z, agent.bsi.get0(x, y, z)) ?: return false
 
         // Try exact state match first
         if (throwaway(select, { stack ->

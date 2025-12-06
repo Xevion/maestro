@@ -5,6 +5,7 @@ import maestro.api.event.events.ChunkOcclusionEvent
 import maestro.api.event.events.RenderEvent
 import maestro.api.event.events.TickEvent
 import maestro.api.pathing.goals.GoalGetToBlock
+import maestro.api.utils.Loggers
 import maestro.api.utils.Rotation
 import maestro.api.utils.RotationUtils
 import maestro.gui.radial.RadialMenu
@@ -21,13 +22,12 @@ import net.minecraft.world.phys.Vec3
 import org.lwjgl.glfw.GLFW
 
 /**
- * Handles freecam movement input and position updates. When freecam is active, this behavior
- * captures WASD/Space/Shift input and calculates camera movement independently of the player
- * entity.
+ * Manages freecam state and controls. Freecam allows the camera to detach from the player entity
+ * and move independently, providing a spectator-like view while the bot continues operating.
  */
 class FreecamBehavior(
-    maestro: Agent,
-) : Behavior(maestro) {
+    agent: Agent,
+) : Behavior(agent) {
     companion object {
         private const val MOVEMENT_VELOCITY_PER_SECOND = 9.0
         private const val SPRINT_MULTIPLIER = 2.0
@@ -40,35 +40,234 @@ class FreecamBehavior(
         private const val DECELERATION_TIME = 0.10
     }
 
-    private var lastUpdateTimeMs = 0L
-    private var currentVelocity = Vec3.ZERO // Smoothed velocity for easing
+    // Free-look camera angles (independent of player rotation)
+    private var freeLookYaw = 0.0f
+    private var freeLookPitch = 0.0f
 
+    // Freecam state
+    private var freecamPosition: Vec3? = null
+    private var prevFreecamPosition: Vec3? = null
+    private var freecamActive = false
+    private var _savedFov = -1
+    private var savedSmoothCamera = false
+    private var freecamMode = FreecamMode.STATIC
+    private var lastPlayerPosition: Vec3? = null
+    private var freecamFollowOffset: Vec3? = null
+    private var prevFreecamFollowOffset: Vec3? = null
+
+    // Follow mode position tracking
+    private var followTargetPrev: Vec3? = null
+    private var followTargetCurrent: Vec3? = null
+
+    // Movement state
+    private var lastUpdateTimeMs = 0L
+    private var currentVelocity = Vec3.ZERO
+
+    // Input state
     private var wasLeftClickPressed = false
     private var wasRightClickPressed = false
     private var rightClickStartTimeMs = 0L
     private var rightClickPathQueued = false
 
+    // ===== Public API =====
+
+    val isActive: Boolean get() = freecamActive
+
+    val mode: FreecamMode get() = freecamMode
+
+    val position: Vec3? get() = freecamPosition
+
+    val yaw: Float get() = freeLookYaw
+
+    val pitch: Float get() = freeLookPitch
+
+    val savedFov: Int get() = _savedFov
+
+    fun activate() {
+        if (!freecamActive && ctx.player() != null && ctx.minecraft().gameRenderer != null) {
+            val camera = ctx.minecraft().gameRenderer.mainCamera
+            freecamPosition = camera.position
+            prevFreecamPosition = freecamPosition
+            freeLookYaw = camera.yRot
+            freeLookPitch = camera.xRot
+
+            _savedFov =
+                ctx
+                    .minecraft()
+                    .options
+                    .fov()
+                    .get()
+            savedSmoothCamera = ctx.minecraft().options.smoothCamera
+
+            freecamMode =
+                Agent
+                    .getPrimaryAgent()
+                    .settings.freecamDefaultMode.value
+            lastPlayerPosition = ctx.player().position()
+
+            freecamActive = true
+
+            if (Agent
+                    .getPrimaryAgent()
+                    .settings.freecamReloadChunks.value
+            ) {
+                ctx.minecraft().execute(ctx.minecraft().levelRenderer::allChanged)
+            }
+        }
+    }
+
+    fun deactivate() {
+        freecamActive = false
+        freecamPosition = null
+        prevFreecamPosition = null
+        lastPlayerPosition = null
+        followTargetPrev = null
+        followTargetCurrent = null
+        freecamFollowOffset = null
+        prevFreecamFollowOffset = null
+
+        if (_savedFov >= 0) {
+            ctx
+                .minecraft()
+                .options
+                .fov()
+                .set(_savedFov)
+            _savedFov = -1
+        }
+        ctx.minecraft().options.smoothCamera = savedSmoothCamera
+
+        if (Agent
+                .getPrimaryAgent()
+                .settings.freecamReloadChunks.value &&
+            ctx.minecraft().levelRenderer != null
+        ) {
+            ctx.minecraft().execute { ctx.minecraft().levelRenderer.allChanged() }
+        }
+    }
+
+    fun toggleMode() {
+        val newMode = if (freecamMode == FreecamMode.STATIC) FreecamMode.FOLLOW else FreecamMode.STATIC
+        freecamMode = newMode
+
+        if (newMode == FreecamMode.FOLLOW && ctx.player() != null && freecamPosition != null) {
+            val playerPos = ctx.player().position()
+            val offset = freecamPosition!!.subtract(playerPos)
+
+            freecamFollowOffset = offset
+            prevFreecamFollowOffset = offset
+
+            followTargetPrev = playerPos
+            followTargetCurrent = playerPos
+        } else if (newMode == FreecamMode.STATIC && ctx.player() != null && freecamFollowOffset != null) {
+            val playerPos = ctx.player().position()
+            val staticPos = playerPos.add(freecamFollowOffset!!)
+
+            freecamPosition = staticPos
+            prevFreecamPosition = staticPos
+        }
+        Loggers.Dev
+            .get()
+            .atDebug()
+            .addKeyValue("mode", newMode)
+            .log("Freecam mode switched")
+    }
+
+    fun updateMouseLook(
+        deltaX: Double,
+        deltaY: Double,
+    ) {
+        val sensitivity = 0.6f + 0.2f
+
+        freeLookYaw += (deltaX * 0.15f * sensitivity).toFloat()
+        freeLookPitch += (deltaY * 0.15f * sensitivity).toFloat()
+
+        freeLookPitch = freeLookPitch.coerceIn(-90.0f, 90.0f)
+    }
+
+    fun getInterpolatedX(tickDelta: Float): Double {
+        if (freecamMode == FreecamMode.FOLLOW && freecamFollowOffset != null && prevFreecamFollowOffset != null) {
+            val playerX =
+                if (followTargetPrev != null && followTargetCurrent != null) {
+                    followTargetPrev!!.x + (followTargetCurrent!!.x - followTargetPrev!!.x) * tickDelta
+                } else {
+                    ctx.player().x
+                }
+
+            val offsetX =
+                prevFreecamFollowOffset!!.x + (freecamFollowOffset!!.x - prevFreecamFollowOffset!!.x) * tickDelta
+
+            return playerX + offsetX
+        }
+
+        if (freecamPosition == null || prevFreecamPosition == null) {
+            return freecamPosition?.x ?: 0.0
+        }
+        return prevFreecamPosition!!.x + (freecamPosition!!.x - prevFreecamPosition!!.x) * tickDelta
+    }
+
+    fun getInterpolatedY(tickDelta: Float): Double {
+        if (freecamMode == FreecamMode.FOLLOW && freecamFollowOffset != null && prevFreecamFollowOffset != null) {
+            val playerY =
+                if (followTargetPrev != null && followTargetCurrent != null) {
+                    followTargetPrev!!.y + (followTargetCurrent!!.y - followTargetPrev!!.y) * tickDelta
+                } else {
+                    ctx.player().y
+                }
+
+            val offsetY =
+                prevFreecamFollowOffset!!.y + (freecamFollowOffset!!.y - prevFreecamFollowOffset!!.y) * tickDelta
+
+            return playerY + offsetY
+        }
+
+        if (freecamPosition == null || prevFreecamPosition == null) {
+            return freecamPosition?.y ?: 0.0
+        }
+        return prevFreecamPosition!!.y + (freecamPosition!!.y - prevFreecamPosition!!.y) * tickDelta
+    }
+
+    fun getInterpolatedZ(tickDelta: Float): Double {
+        if (freecamMode == FreecamMode.FOLLOW && freecamFollowOffset != null && prevFreecamFollowOffset != null) {
+            val playerZ =
+                if (followTargetPrev != null && followTargetCurrent != null) {
+                    followTargetPrev!!.z + (followTargetCurrent!!.z - followTargetPrev!!.z) * tickDelta
+                } else {
+                    ctx.player().z
+                }
+
+            val offsetZ =
+                prevFreecamFollowOffset!!.z + (freecamFollowOffset!!.z - prevFreecamFollowOffset!!.z) * tickDelta
+
+            return playerZ + offsetZ
+        }
+
+        if (freecamPosition == null || prevFreecamPosition == null) {
+            return freecamPosition?.z ?: 0.0
+        }
+        return prevFreecamPosition!!.z + (freecamPosition!!.z - prevFreecamPosition!!.z) * tickDelta
+    }
+
+    // ===== Event Handlers =====
+
     override fun onTick(event: TickEvent) {
-        if (!maestro.isFreecamActive || event.type != TickEvent.Type.IN) {
+        if (!freecamActive || event.type != TickEvent.Type.IN) {
             return
         }
 
-        // Update follow target position snapshots for smooth interpolation
-        maestro.updateFollowTarget()
+        updateFollowTarget()
     }
 
     override fun onRenderPass(event: RenderEvent) {
-        if (!maestro.isFreecamActive) {
+        if (!freecamActive) {
             return
         }
 
-        // Handle input every frame for instant response regardless of tick-rate
         updateFreecamPosition()
         handleFreecamInput()
     }
 
     override fun onChunkOcclusion(event: ChunkOcclusionEvent) {
-        if (maestro.isFreecamActive &&
+        if (freecamActive &&
             Agent
                 .getPrimaryAgent()
                 .settings.freecamDisableOcclusion.value
@@ -77,22 +276,42 @@ class FreecamBehavior(
         }
     }
 
+    // ===== Internal Methods =====
+
+    private fun updateFollowTarget() {
+        if (ctx.player() == null) return
+
+        val currentPos = ctx.player().position()
+
+        followTargetPrev = followTargetCurrent
+        followTargetCurrent = currentPos
+
+        if (followTargetPrev == null) {
+            followTargetPrev = currentPos
+        }
+    }
+
     private fun updateFreecamPosition() {
         val input = readInputState()
         val deltaTimeSeconds = calculateDeltaTime()
         val targetMovement = calculateMovement(input, deltaTimeSeconds)
 
-        // Apply easing to velocity
         currentVelocity = applyEasing(currentVelocity, targetMovement, deltaTimeSeconds)
 
-        when (maestro.freecamMode) {
+        when (freecamMode) {
             FreecamMode.FOLLOW -> {
-                val currentOffset = maestro.freecamFollowOffset ?: Vec3.ZERO
-                maestro.setFreecamFollowOffset(currentOffset.add(currentVelocity))
+                val currentOffset = freecamFollowOffset ?: Vec3.ZERO
+                prevFreecamFollowOffset = freecamFollowOffset
+                freecamFollowOffset = currentOffset.add(currentVelocity)
+
+                if (prevFreecamFollowOffset == null) {
+                    prevFreecamFollowOffset = freecamFollowOffset
+                }
             }
             else -> {
-                maestro.freecamPosition?.let { currentPos ->
-                    maestro.setFreecamPosition(currentPos.add(currentVelocity))
+                freecamPosition?.let { currentPos ->
+                    prevFreecamPosition = freecamPosition
+                    freecamPosition = currentPos.add(currentVelocity)
                 }
             }
         }
@@ -182,15 +401,13 @@ class FreecamBehavior(
         deltaTimeSeconds: Double,
     ): Vec3 {
         val speed = calculateEffectiveSpeed(input.sprint, deltaTimeSeconds)
-        val yaw = maestro.freeLookYaw
-        val pitch = maestro.freeLookPitch
 
         var movement = Vec3.ZERO
 
-        if (input.forward) movement = movement.forward(yaw, pitch, speed)
-        if (input.back) movement = movement.forward(yaw, pitch, -speed)
-        if (input.left) movement = movement.strafe(yaw, -speed)
-        if (input.right) movement = movement.strafe(yaw, speed)
+        if (input.forward) movement = movement.forward(freeLookYaw, freeLookPitch, speed)
+        if (input.back) movement = movement.forward(freeLookYaw, freeLookPitch, -speed)
+        if (input.left) movement = movement.strafe(freeLookYaw, -speed)
+        if (input.right) movement = movement.strafe(freeLookYaw, speed)
 
         movement =
             when {
@@ -243,17 +460,17 @@ class FreecamBehavior(
     }
 
     private fun getCurrentFreecamPosition(): Vec3? =
-        when (maestro.freecamMode) {
+        when (freecamMode) {
             FreecamMode.FOLLOW ->
-                maestro.freecamFollowOffset?.let { offset ->
+                freecamFollowOffset?.let { offset ->
                     ctx.player().position().add(offset)
                 }
-            else -> maestro.freecamPosition
+            else -> freecamPosition
         }
 
     private fun raycastFromFreecam(distance: Double): HitResult? {
         val start = getCurrentFreecamPosition() ?: return null
-        val rotation = Rotation(maestro.freeLookYaw, maestro.freeLookPitch)
+        val rotation = Rotation(freeLookYaw, freeLookPitch)
         val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
         val end = start.add(direction.scale(distance))
 
@@ -269,12 +486,16 @@ class FreecamBehavior(
     }
 
     private fun updateFreecamTarget(targetPos: Vec3) {
-        when (maestro.freecamMode) {
+        when (freecamMode) {
             FreecamMode.FOLLOW -> {
                 val playerPos = ctx.player().position()
-                maestro.setFreecamFollowOffset(targetPos.subtract(playerPos))
+                prevFreecamFollowOffset = freecamFollowOffset
+                freecamFollowOffset = targetPos.subtract(playerPos)
             }
-            else -> maestro.setFreecamPosition(targetPos)
+            else -> {
+                prevFreecamPosition = freecamPosition
+                freecamPosition = targetPos
+            }
         }
     }
 
@@ -290,7 +511,7 @@ class FreecamBehavior(
                 HitResult.Type.BLOCK -> hitResult.location
                 else -> {
                     val start = getCurrentFreecamPosition() ?: return
-                    val rotation = Rotation(maestro.freeLookYaw, maestro.freeLookPitch)
+                    val rotation = Rotation(freeLookYaw, freeLookPitch)
                     val direction = RotationUtils.calcLookDirectionFromRotation(rotation)
                     start.add(direction.scale(distance))
                 }
@@ -309,7 +530,7 @@ class FreecamBehavior(
         if (hitResult.type == HitResult.Type.BLOCK) {
             val targetBlock = (hitResult as BlockHitResult).blockPos
             val goal = GoalGetToBlock(targetBlock)
-            maestro.customGoalTask.setGoalAndPath(goal)
+            agent.customGoalTask.setGoalAndPath(goal)
         }
     }
 }

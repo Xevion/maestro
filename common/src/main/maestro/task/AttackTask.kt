@@ -16,8 +16,8 @@ import java.util.function.Predicate
  * entities remain in range.
  */
 class AttackTask(
-    maestro: Agent,
-) : TaskHelper(maestro),
+    agent: Agent,
+) : TaskHelper(agent),
     ITask {
     companion object {
         private const val MELEE_RANGE = 4.5
@@ -84,7 +84,7 @@ class AttackTask(
             )
 
         // Update look behavior to rotate towards target (for visual appearance)
-        maestro.lookBehavior.updateTarget(targetRot, true)
+        this@AttackTask.agent.lookBehavior.updateTarget(targetRot, true)
 
         // Attack and track the tick to prevent redundant attacks
         ctx.minecraft().gameMode!!.attack(ctx.player(), target)

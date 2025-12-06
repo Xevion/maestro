@@ -14,7 +14,6 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.MovementValidation
-import maestro.utils.center
 import maestro.utils.centerXZ
 import maestro.utils.distanceTo
 import maestro.utils.dot
@@ -44,10 +43,10 @@ import kotlin.math.abs
  * ```
  */
 class MovementAscend(
-    maestro: Agent,
+    agent: Agent,
     src: PackedBlockPos,
     dest: PackedBlockPos,
-) : Movement(maestro, src, dest) {
+) : Movement(agent, src, dest) {
     private var ticksWithoutPlacement = 0
     private var isRecentering = false
 

@@ -23,8 +23,8 @@ import kotlin.math.abs
 import kotlin.math.min
 
 class ExploreTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     private var explorationOrigin: BlockPos? = null
     private var filter: IChunkFilter? = null
     private var distanceCompleted = 0
@@ -217,7 +217,10 @@ class ExploreTask(
 
     // Inner classes
     private inner class MaestroChunkCache : IChunkFilter {
-        private val cache: CachedWorld? = maestro.worldProvider.currentWorld?.cachedWorld
+        private val cache: CachedWorld? =
+            this@ExploreTask
+                .agent.worldProvider.currentWorld
+                ?.cachedWorld
 
         override fun isAlreadyExplored(
             chunkX: Int,

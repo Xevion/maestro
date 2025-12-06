@@ -19,7 +19,7 @@ import org.slf4j.Logger
  * Note: World autoloading is handled via --quickPlaySingleplayer command-line argument
  */
 class DevModeManager(
-    private val maestro: Agent,
+    private val agent: Agent,
 ) {
     private var lanOpened = false
     private var lanRequested = false
@@ -59,7 +59,7 @@ class DevModeManager(
             return
         }
 
-        val mc = maestro.playerContext.minecraft()
+        val mc = agent.playerContext.minecraft()
 
         // Try to open LAN (if requested and not already open)
         if (lanRequested && !lanOpened) {
@@ -108,7 +108,7 @@ class DevModeManager(
     }
 
     private fun openWorldToLAN() {
-        val mc = maestro.playerContext.minecraft()
+        val mc = agent.playerContext.minecraft()
 
         val server = mc.singleplayerServer
         if (server == null) {
@@ -135,7 +135,7 @@ class DevModeManager(
     }
 
     private fun startCoordinatorServer() {
-        var server = maestro.coordinationServer
+        var server = agent.coordinationServer
 
         // Check if already running
         if (server != null && server.isRunning()) {
@@ -164,7 +164,7 @@ class DevModeManager(
         // Create and start server
         if (server == null) {
             server = CoordinationServer()
-            maestro.coordinationServer = server
+            agent.coordinationServer = server
             log.atDebug().log("Created new coordination-server instance")
         }
 

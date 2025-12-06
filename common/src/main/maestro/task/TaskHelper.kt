@@ -13,10 +13,10 @@ import java.util.stream.Collectors
 import kotlin.math.sqrt
 
 abstract class TaskHelper(
-    @JvmField protected val maestro: Agent,
+    @JvmField protected val agent: Agent,
 ) : ITask,
     Helper {
-    @JvmField protected val ctx: PlayerContext = maestro.playerContext
+    @JvmField protected val ctx: PlayerContext = agent.playerContext
 
     override fun isTemporary(): Boolean = false
 

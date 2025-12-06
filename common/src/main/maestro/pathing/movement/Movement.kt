@@ -26,23 +26,14 @@ import net.minecraft.core.Direction
  * - computeLook: Dynamic look intent (called every tick)
  */
 abstract class Movement(
-    maestro: Agent,
-    src: PackedBlockPos,
-    dest: PackedBlockPos,
+    @JvmField val agent: Agent,
+    @JvmField val src: PackedBlockPos,
+    @JvmField val dest: PackedBlockPos,
 ) : IMovement,
     MovementBehavior {
     @JvmField
-    val maestro: Agent = maestro
-
-    @JvmField
-    val src: PackedBlockPos = src
-
-    @JvmField
-    val dest: PackedBlockPos = dest
-
-    @JvmField
-    val ctx: PlayerContext = maestro.playerContext
-    val state = MovementState()
+    val ctx: PlayerContext = agent.playerContext
+    val state: MovementState = MovementState()
 
     private var cost: Double? = null
     private var calculatedWhileLoaded: Boolean = false
@@ -89,7 +80,7 @@ abstract class Movement(
         val intent = computeIntent(ctx)
 
         // Apply unified intent via delta-based handler
-        maestro.inputOverrideHandler.applyIntent(intent, maestro.lookBehavior, ctx)
+        agent.inputOverrideHandler.applyIntent(intent, agent.lookBehavior, ctx)
 
         return state.getStatus() ?: PREPPING
     }
@@ -136,7 +127,7 @@ abstract class Movement(
     // IMovement interface
     override fun reset() {
         state.setStatus(PREPPING)
-        maestro.inputOverrideHandler.clearIntentTracking()
+        agent.inputOverrideHandler.clearIntentTracking()
     }
 
     override fun getSrc(): PackedBlockPos = src

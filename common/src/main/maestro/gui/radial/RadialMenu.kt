@@ -390,14 +390,8 @@ class RadialMenu :
         }
     }
 
-    // --- Actions ---
-
     private fun executeStopPath() {
         val agent = Agent.getPrimaryAgent()
-        if (agent == null) {
-            log.atDebug().log("Stop action: no primary agent")
-            return
-        }
         agent.pathingBehavior.cancelEverything()
         log.atDebug().log("Stop action executed")
     }
@@ -414,20 +408,12 @@ class RadialMenu :
         }
         val blockPos = (target as BlockHitResult).blockPos
         val agent = Agent.getPrimaryAgent()
-        if (agent == null) {
-            log.atDebug().log("Goto action: no primary agent")
-            return
-        }
         agent.customGoalTask.setGoalAndPath(GoalBlock(blockPos))
         log.atDebug().addKeyValue("target", blockPos.toShortString()).log("Goto action executed")
     }
 
     private fun executePathDirection() {
         val agent = Agent.getPrimaryAgent()
-        if (agent == null) {
-            log.atDebug().log("Direction action: no primary agent")
-            return
-        }
         val yaw = agent.freeLookYaw
         val freecamPos = getFreecamPosition(agent)
         if (freecamPos == null) {
@@ -435,7 +421,7 @@ class RadialMenu :
             return
         }
 
-        val distance = 10000.0
+        val distance = 10_000.0
         val yawRad = yaw * RotationUtils.DEG_TO_RAD
         val dx = -sin(yawRad)
         val dz = cos(yawRad)
@@ -493,21 +479,19 @@ class RadialMenu :
             .log("Pathfinding debug toggled")
     }
 
-    private fun getFreecamPosition(agent: Agent): Vec3? =
-        when (agent.freecamMode) {
+    private fun getFreecamPosition(agent: Agent): Vec3? {
+        val freecam = agent.freecamBehavior
+        return when (freecam.mode) {
             FreecamMode.FOLLOW ->
-                agent.freecamFollowOffset?.let { offset ->
-                    agent.playerContext
-                        .player()
-                        .position()
-                        .add(offset)
-                }
-
-            else -> agent.freecamPosition
+                agent.playerContext
+                    .player()
+                    .position()
+            else -> freecam.position
         }
+    }
 
     private fun raycastFromFreecam(): HitResult? {
-        val agent = Agent.getPrimaryAgent() ?: return null
+        val agent = Agent.getPrimaryAgent()
         val mc = minecraft ?: return null
         val level = mc.level ?: return null
         val player = mc.player ?: return null

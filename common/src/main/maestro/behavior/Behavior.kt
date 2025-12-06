@@ -10,8 +10,8 @@ import maestro.api.player.PlayerContext
  * All behaviors have access to the agent instance and player context through protected fields.
  */
 abstract class Behavior protected constructor(
-    @JvmField val maestro: Agent,
+    @JvmField val agent: Agent,
 ) : IBehavior {
     @JvmField
-    val ctx: PlayerContext = maestro.playerContext
+    val ctx: PlayerContext = agent.playerContext
 }

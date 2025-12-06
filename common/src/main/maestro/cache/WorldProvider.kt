@@ -2,7 +2,6 @@ package maestro.cache
 
 import maestro.Agent
 import maestro.api.player.PlayerContext
-import maestro.cache.WorldData
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.storage.LevelResource
 import org.apache.commons.lang3.SystemUtils
@@ -14,9 +13,9 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 
 class WorldProvider(
-    private val maestro: Agent,
+    private val agent: Agent,
 ) {
-    private val ctx: PlayerContext = maestro.playerContext
+    private val ctx: PlayerContext = agent.playerContext
 
     /**
      * This lets us detect a broken load/unload hook.
@@ -133,9 +132,9 @@ class WorldProvider(
                 }
 
             // TODO: This should probably be in "maestro/servers"
-            worldDir = maestro.directory.resolve(sanitizedFolderName)
+            worldDir = agent.directory.resolve(sanitizedFolderName)
             // Just write the readme to the maestro directory instead of each server save in it
-            readmeDir = maestro.directory
+            readmeDir = agent.directory
         }
 
         return Pair(worldDir, readmeDir)

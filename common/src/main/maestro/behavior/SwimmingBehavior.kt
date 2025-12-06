@@ -18,8 +18,8 @@ import net.minecraft.world.phys.Vec3
  * Rotation (yaw/pitch) is controlled by Movement classes for continuous error correction.
  */
 class SwimmingBehavior(
-    maestro: Agent,
-) : Behavior(maestro) {
+    agent: Agent,
+) : Behavior(agent) {
     /** Returns true if player is fully submerged underwater. */
     fun isSubmerged(): Boolean = ctx.player().isUnderWater
 
@@ -54,17 +54,11 @@ class SwimmingBehavior(
         targetY: Double,
     ) {
         val player = ctx.player()
-        val agent = maestro as Agent
+        val agent = agent as Agent
 
         // Trigger vanilla swimming state and pose
         player.isSwimming = true
         player.pose = net.minecraft.world.entity.Pose.SWIMMING
-
-        // Initialize freeLook angles on first activation (smooth transition)
-        if (!agent.isSwimmingActive) {
-            agent.freeLookYaw = player.yRot
-            agent.freeLookPitch = player.xRot
-        }
 
         // Activate swimming mode (enables free-look camera)
         agent.setSwimmingActive(true)
@@ -72,7 +66,7 @@ class SwimmingBehavior(
         // Core swimming inputs: Direct sprint control + Forward input
         // Direct sprint prevents jittering from input clearing
         player.isSprinting = true
-        maestro.inputOverrideHandler.setInputForceState(Input.MOVE_FORWARD, true)
+        agent.inputOverrideHandler.setInputForceState(Input.MOVE_FORWARD, true)
 
         // Apply velocity using rotation already set by Movement class
         // Movement calculated optimal yaw/pitch based on position error
@@ -150,7 +144,7 @@ class SwimmingBehavior(
         val rotation = RotationUtils.calcRotationFromVec3d(playerPos, targetVec, ctx.playerRotations())
 
         // Request rotation via RotationManager (priority 50 = NORMAL)
-        val rotationMgr = maestro.rotationManager
+        val rotationMgr = agent.rotationManager
         rotationMgr.queue(
             rotation.yaw,
             rotation.pitch,
@@ -158,7 +152,7 @@ class SwimmingBehavior(
         ) {
             // Callback: apply velocity after rotation complete
             // Guard callback execution
-            if (maestro.isSwimmingActive && isInWater()) {
+            if (agent.isSwimmingActive && isInWater()) {
                 applyTargetVelocity(rotation.yaw, rotation.pitch)
             }
         }
@@ -175,10 +169,10 @@ class SwimmingBehavior(
         player.isSwimming = false
         player.isSprinting = false
 
-        maestro.setSwimmingActive(false)
+        agent.setSwimmingActive(false)
 
         // Clear pending rotations to prevent camera jerk after deactivation
         // Without this, queued rotations from swimming continue executing after user regains control
-        maestro.rotationManager.clear()
+        this@SwimmingBehavior.agent.rotationManager.clear()
     }
 }

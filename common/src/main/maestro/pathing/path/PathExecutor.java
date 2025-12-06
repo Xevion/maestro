@@ -223,7 +223,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         } else {
             ticksAway = 0;
         }
-        BlockStateInterface bsi = behavior.maestro.bsi;
+        BlockStateInterface bsi = behavior.agent.bsi;
         for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
             if (i < 0 || i >= path.movements().size()) {
                 continue;
@@ -270,7 +270,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (pathPosition < path.movements().size() - 1) {
             IMovement next = path.movements().get(pathPosition + 1);
-            if (!behavior.maestro.bsi.worldContainsLoadedChunk(
+            if (!behavior.agent.bsi.worldContainsLoadedChunk(
                     next.getDest().getX(), next.getDest().getZ())) {
                 log.atDebug()
                         .addKeyValue(
@@ -651,17 +651,17 @@ public class PathExecutor implements IPathExecutor, Helper {
         // Clear only movement keys (WASD, JUMP, SNEAK) owned by movements
         // Preserve interaction keys (CLICK_LEFT/RIGHT) owned by processes
         // Sprint is managed directly by SwimmingBehavior, not via inputs
-        behavior.maestro.getInputOverrideHandler().clearMovementKeys();
+        behavior.agent.getInputOverrideHandler().clearMovementKeys();
     }
 
     private void stopMovement() {
         // Deactivate swimming mode if active, then clear movement inputs
         // Used when path execution stops (pause, cancel, goal reached, etc.)
-        Agent agent = behavior.maestro;
+        Agent agent = behavior.agent;
         if (agent.isSwimmingActive()) {
             agent.getSwimmingBehavior().deactivateSwimming();
         }
-        behavior.maestro.getInputOverrideHandler().clearMovementKeys();
+        behavior.agent.getInputOverrideHandler().clearMovementKeys();
     }
 
     /**
@@ -730,7 +730,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private void cancel() {
         stopMovement();
-        behavior.maestro.getInputOverrideHandler().getBlockBreakManager().stop();
+        behavior.agent.getInputOverrideHandler().getBlockBreakManager().stop();
         pathPosition = path.length() + 3;
         failed = true;
     }

@@ -25,8 +25,8 @@ import org.slf4j.Logger
  * Note: Incompatible with parkour movement setting.
  */
 class BackfillTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     private val _blocksToReplace = mutableMapOf<BlockPos, BlockState>()
 
     /** Read-only view of blocks queued for replacement */
@@ -49,7 +49,7 @@ class BackfillTask(
 
         cleanUpInvalidPositions(world)
         trackCurrentlyBreakingBlock()
-        maestro.inputOverrideHandler.clearAllKeys()
+        this@BackfillTask.agent.inputOverrideHandler.clearAllKeys()
 
         return toFillIn().isNotEmpty()
     }
@@ -95,17 +95,17 @@ class BackfillTask(
             return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
         }
 
-        maestro.inputOverrideHandler.clearAllKeys()
+        this@BackfillTask.agent.inputOverrideHandler.clearAllKeys()
 
         for (toPlace in toFillIn()) {
             val state = MovementState()
-            val result = MovementValidation.attemptToPlaceABlock(state, maestro, toPlace, false, false)
+            val result = MovementValidation.attemptToPlaceABlock(state, this@BackfillTask.agent, toPlace, false, false)
 
             when (result) {
                 MovementValidation.PlaceResult.NO_OPTION -> continue
 
                 MovementValidation.PlaceResult.READY_TO_PLACE -> {
-                    maestro.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
+                    this@BackfillTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_RIGHT, true)
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                 }
 
@@ -128,7 +128,7 @@ class BackfillTask(
      */
     private fun trackCurrentlyBreakingBlock() {
         val selectedBlock = ctx.getSelectedBlock()
-        if (selectedBlock.isEmpty || !maestro.pathingBehavior.isPathing()) {
+        if (selectedBlock.isEmpty || !this@BackfillTask.agent.pathingBehavior.isPathing()) {
             return
         }
 
@@ -149,7 +149,7 @@ class BackfillTask(
         return _blocksToReplace.keys
             .asSequence()
             .filter { pos -> world.getBlockState(pos).block == Blocks.AIR }
-            .filter { pos -> maestro.builderTask.placementPlausible(pos, DIRT_STATE) }
+            .filter { pos -> this@BackfillTask.agent.builderTask.placementPlausible(pos, DIRT_STATE) }
             .filter { pos -> !partOfCurrentMovement(pos) }
             .sortedByDescending { pos -> playerFeet.distSqr(PackedBlockPos(pos)) }
             .toList()
@@ -160,7 +160,7 @@ class BackfillTask(
      * Returns true if the position should not be filled because it's being actively used.
      */
     private fun partOfCurrentMovement(pos: BlockPos): Boolean {
-        val exec = maestro.pathingBehavior.getCurrent() ?: return false
+        val exec = this@BackfillTask.agent.pathingBehavior.getCurrent() ?: return false
 
         if (exec.finished() || exec.failed()) {
             return false

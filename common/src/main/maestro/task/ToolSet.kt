@@ -30,7 +30,7 @@ class ToolSet(
      */
     private val breakStrengthCache: MutableMap<Block, Double> = HashMap()
 
-    /** My buddy leijurv owned me so we have this to not create a new lambda instance. */
+    /** We have this to not create a new lambda instance. */
     private val backendCalculation: (Block) -> Double
 
     init {
@@ -174,7 +174,7 @@ class ToolSet(
     private fun avoidanceMultiplier(b: Block): Double =
         if (Agent
                 .getPrimaryAgent()
-                .getSettings()
+                .settings
                 .blocksToAvoidBreaking.value
                 .contains(b)
         ) {
@@ -242,7 +242,7 @@ class ToolSet(
                         null as BlockGetter?,
                         null as BlockPos?,
                     )
-                } catch (npe: NullPointerException) {
+                } catch (_: NullPointerException) {
                     // can't easily determine the hardness so treat it as unbreakable
                     return -1.0
                 }

@@ -17,8 +17,8 @@ import java.util.function.Predicate
 
 /** Follow an entity */
 class FollowTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     private var filter: Predicate<Entity>? = null
     private var cache: List<Entity>? = null
     private var into: Boolean = false // Walk straight into the target, regardless of settings

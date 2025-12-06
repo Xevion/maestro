@@ -6,8 +6,8 @@ import maestro.api.task.PathingCommand
 import maestro.api.task.PathingCommandType
 
 class CustomGoalTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     /** The current goal */
     private var goal: Goal? = null
 
@@ -21,8 +21,8 @@ class CustomGoalTask(
         this.goal = goal
         this.mostRecentGoal = goal
 
-        if (maestro.elytraTask.isActive) {
-            maestro.elytraTask.pathTo(goal)
+        if (this@CustomGoalTask.agent.elytraTask.isActive) {
+            this@CustomGoalTask.agent.elytraTask.pathTo(goal)
         }
 
         state =
@@ -73,7 +73,10 @@ class CustomGoalTask(
                 if (currentGoal == null ||
                     (
                         currentGoal.isInGoal(ctx.playerFeet().toBlockPos()) &&
-                            maestro.pathingBehavior.pathStart()?.let { currentGoal.isInGoal(it.toBlockPos()) } != false
+                            this@CustomGoalTask
+                                .agent.pathingBehavior
+                                .pathStart()
+                                ?.let { currentGoal.isInGoal(it.toBlockPos()) } != false
                     )
                 ) {
                     // We're there xd

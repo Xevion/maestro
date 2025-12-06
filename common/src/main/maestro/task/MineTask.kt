@@ -31,10 +31,11 @@ import net.minecraft.world.level.block.AirBlock
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.FallingBlock
 import org.slf4j.Logger
+import kotlin.math.abs
 
 class MineTask(
-    maestro: Agent,
-) : TaskHelper(maestro) {
+    agent: Agent,
+) : TaskHelper(agent) {
     private var filter: BlockOptionalMetaLookup? = null
     private var knownOreLocations: MutableList<BlockPos> = mutableListOf()
     private var blacklist: MutableList<BlockPos> = mutableListOf()
@@ -72,7 +73,7 @@ class MineTask(
         }
 
         // Check coordination goal status
-        val client = maestro.coordinationClient
+        val client = this@MineTask.agent.coordinationClient
         if (client != null && client.isConnected()) {
             val status = client.checkGoalStatus()
             if (status.component1()) {
@@ -132,7 +133,7 @@ class MineTask(
                 .settings.mineGoalUpdateInterval.value
         val curr: List<BlockPos> = ArrayList(knownOreLocations)
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) {
-            val context = CalculationContext(maestro, true)
+            val context = CalculationContext(this@MineTask.agent, true)
             Agent.getExecutor().execute { rescan(curr, context) }
         }
         if (Agent
@@ -163,31 +164,30 @@ class MineTask(
         // Don't clear all keys - preserve CLICK_LEFT across path revalidation
         // CLICK_LEFT lifecycle is managed explicitly based on mining state
         if (shaft != null && ctx.player().onGround()) {
-            val pos = shaft
-            val state = maestro.bsi.get0(pos)
-            if (!MovementValidation.avoidBreaking(maestro.bsi, pos.x, pos.y, pos.z, state)) {
-                val rot = RotationUtils.reachable(ctx, pos)
+            val state = this@MineTask.agent.bsi.get0(shaft)
+            if (!MovementValidation.avoidBreaking(this@MineTask.agent.bsi, shaft.x, shaft.y, shaft.z, state)) {
+                val rot = RotationUtils.reachable(ctx, shaft)
                 if (rot.isPresent && isSafeToCancel) {
-                    maestro.lookBehavior.updateTarget(rot.get(), true)
-                    MovementValidation.switchToBestToolFor(ctx, ctx.world().getBlockState(pos))
-                    if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
-                        maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, true)
+                    this@MineTask.agent.lookBehavior.updateTarget(rot.get(), true)
+                    MovementValidation.switchToBestToolFor(ctx, ctx.world().getBlockState(shaft))
+                    if (ctx.isLookingAt(shaft) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
+                        this@MineTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, true)
                     } else {
                         // Not looking at target - clear CLICK_LEFT
-                        maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
+                        this@MineTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
                     }
                     return PathingCommand(null, PathingCommandType.REQUEST_PAUSE)
                 } else {
                     // Target not reachable - clear CLICK_LEFT
-                    maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
+                    this@MineTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
                 }
             } else {
                 // Target should be avoided - clear CLICK_LEFT
-                maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
+                this@MineTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
             }
         } else {
             // No valid shaft target - clear CLICK_LEFT
-            maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
+            this@MineTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
         }
         val command = updateGoal()
         if (command == null) {
@@ -211,7 +211,7 @@ class MineTask(
         // elaborate dance to avoid concurrentmodificationexception since rescan thread reads this
         // don't want to slow everything down with a gross lock do we now
         for (pos in anticipatedDrops.keys) {
-            if (copy[pos]!! < System.currentTimeMillis()) {
+            if ((copy[pos] ?: return) < System.currentTimeMillis()) {
                 copy.remove(pos)
             }
         }
@@ -220,10 +220,10 @@ class MineTask(
 
     override fun onLostControl() {
         // Clear CLICK_LEFT when losing control
-        maestro.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
+        this@MineTask.agent.inputOverrideHandler.setInputForceState(Input.CLICK_LEFT, false)
 
         // Release area claim
-        val client = maestro.coordinationClient
+        val client = this@MineTask.agent.coordinationClient
         val claimedArea = lastClaimedArea
         if (client != null && claimedArea != null) {
             client.releaseArea(claimedArea)
@@ -239,7 +239,7 @@ class MineTask(
         val filter = filterFilter() ?: return null
 
         // Area claiming for coordination
-        val client = maestro.coordinationClient
+        val client = this@MineTask.agent.coordinationClient
         if (client != null && client.isConnected()) {
             val currentPos = ctx.playerFeet().toBlockPos()
             val needsClaim = lastClaimedArea?.let { currentPos.distSqr(it) > 16 * 16 } ?: true
@@ -285,7 +285,7 @@ class MineTask(
                 .settings.legitMine.value
         val locs = knownOreLocations
         if (locs.isNotEmpty()) {
-            val context = CalculationContext(maestro)
+            val context = CalculationContext(this@MineTask.agent)
             val locs2 =
                 prune(
                     context,
@@ -414,7 +414,11 @@ class MineTask(
         locs: List<BlockPos>,
         context: CalculationContext,
     ): Goal {
-        val assumeVerticalShaftMine = maestro.bsi.get0(loc.above()).block !is FallingBlock
+        val assumeVerticalShaftMine =
+            this@MineTask
+                .agent.bsi
+                .get0(loc.above())
+                .block !is FallingBlock
         if (!Agent
                 .getPrimaryAgent()
                 .settings.forceInternalMining.value
@@ -491,8 +495,6 @@ class MineTask(
             )
         }
 
-        override fun equals(other: Any?): Boolean = super.equals(other)
-
         override fun hashCode(): Int = super.hashCode() * 393857768
 
         override fun toString(): String =
@@ -559,7 +561,7 @@ class MineTask(
         }
         knownOreLocations =
             prune(
-                CalculationContext(maestro),
+                CalculationContext(this@MineTask.agent),
                 knownOreLocations,
                 filter,
                 Agent
@@ -586,15 +588,6 @@ class MineTask(
     }
 
     /**
-     * Begin to search for and mine the specified blocks.
-     *
-     * @param blocks The blocks to mine
-     */
-    fun mineByName(vararg blocks: String) {
-        mineByName(0, *blocks)
-    }
-
-    /**
      * Begin to search for and mine the specified blocks until the number of specified items to get
      * from the blocks that are mined. This is based on the first target block to mine.
      *
@@ -616,7 +609,7 @@ class MineTask(
         this.branchPointRunaway = null
         this.anticipatedDrops = HashMap()
         if (filter != null) {
-            rescan(ArrayList(), CalculationContext(maestro))
+            rescan(ArrayList(), CalculationContext(this@MineTask.agent))
         }
     }
 
@@ -697,7 +690,7 @@ class MineTask(
                         .filter { e ->
                             Agent
                                 .getPrimaryAgent()
-                                .getSettings()
+                                .settings
                                 .allowBreakAnyway.value
                                 .contains(e.block)
                         }.toTypedArray(),
@@ -862,7 +855,7 @@ class MineTask(
             for (dx in -radius..radius) {
                 for (dy in -radius..radius) {
                     for (dz in -radius..radius) {
-                        if (kotlin.math.abs(dx) + kotlin.math.abs(dy) + kotlin.math.abs(dz) <= radius &&
+                        if (abs(dx) + abs(dy) + abs(dz) <= radius &&
                             MovementValidation.isTransparent(
                                 ctx.getBlock(pos.x + dx, pos.y + dy, pos.z + dz),
                             )

@@ -22,8 +22,8 @@ public class MixinGameRenderer {
      */
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
     private void onBobView(PoseStack poseStack, float tickDelta, CallbackInfo ci) {
-        Agent agent = (Agent) Agent.getPrimaryAgent();
-        if (agent != null && agent.isFreecamActive()) {
+        Agent agent = Agent.getPrimaryAgent();
+        if (agent.isFreecamActive()) {
             ci.cancel();
         }
     }
@@ -34,7 +34,7 @@ public class MixinGameRenderer {
      */
     @Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true)
     private void onBobHurt(PoseStack poseStack, float tickDelta, CallbackInfo ci) {
-        Agent agent = (Agent) Agent.getPrimaryAgent();
+        Agent agent = Agent.getPrimaryAgent();
         if (agent != null && agent.isFreecamActive()) {
             ci.cancel();
         }
@@ -46,8 +46,8 @@ public class MixinGameRenderer {
      */
     @ModifyReturnValue(method = "getFov", at = @At("RETURN"))
     private float onGetFov(float original) {
-        Agent agent = (Agent) Agent.getPrimaryAgent();
-        if (agent != null && agent.isFreecamActive()) {
+        Agent agent = Agent.getPrimaryAgent();
+        if (agent.isFreecamActive()) {
             return (float) agent.getSavedFov();
         }
         return original;

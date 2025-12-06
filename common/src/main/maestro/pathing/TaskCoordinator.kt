@@ -13,7 +13,7 @@ import net.minecraft.core.BlockPos
 import java.util.Optional
 
 class TaskCoordinator(
-    private val maestro: Agent,
+    private val agent: Agent,
 ) {
     private val tasks = mutableSetOf<ITask>()
     private val active = mutableListOf<ITask>()
@@ -22,7 +22,7 @@ class TaskCoordinator(
     private var command: PathingCommand? = null
 
     init {
-        maestro.gameEventHandler.registerEventListener(
+        agent.gameEventHandler.registerEventListener(
             object : AbstractGameEventListener { // needs to be after all behavior ticks
                 override fun onTick(event: TickEvent) {
                     if (event.type == TickEvent.Type.IN) {
@@ -60,7 +60,7 @@ class TaskCoordinator(
     fun preTick() {
         inControlLastTick = inControlThisTick
         inControlThisTick = null
-        val p: PathingBehavior = maestro.pathingBehavior
+        val p: PathingBehavior = agent.pathingBehavior
         command = executeTasks()
         val cmd = command
 
@@ -123,7 +123,7 @@ class TaskCoordinator(
         // "it would suck" means it would actually execute a path every other tick
         val cmd = command ?: return
 
-        val p: PathingBehavior = maestro.pathingBehavior
+        val p: PathingBehavior = agent.pathingBehavior
         when (cmd.commandType) {
             PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH -> {
                 if (cmd.goal == null ||
@@ -152,7 +152,7 @@ class TaskCoordinator(
     }
 
     fun forceRevalidate(newGoal: Goal): Boolean {
-        val current: PathExecutor? = maestro.pathingBehavior.getCurrent()
+        val current: PathExecutor? = agent.pathingBehavior.getCurrent()
         if (current != null) {
             if (newGoal.isInGoal(current.path.dest.toBlockPos())) {
                 return false
@@ -163,7 +163,7 @@ class TaskCoordinator(
     }
 
     fun revalidateGoal(newGoal: Goal): Boolean {
-        val current: PathExecutor? = maestro.pathingBehavior.getCurrent()
+        val current: PathExecutor? = agent.pathingBehavior.getCurrent()
         if (current != null) {
             val intended: Goal = current.path.goal
             val end: BlockPos = current.path.dest.toBlockPos()
@@ -194,8 +194,8 @@ class TaskCoordinator(
 
             val exec =
                 proc.onTick(
-                    proc == inControlLastTick && maestro.pathingBehavior.calcFailedLastTick(),
-                    maestro.pathingBehavior.isSafeToCancel(),
+                    proc == inControlLastTick && agent.pathingBehavior.calcFailedLastTick(),
+                    agent.pathingBehavior.isSafeToCancel(),
                 )
 
             if (exec == null) {
