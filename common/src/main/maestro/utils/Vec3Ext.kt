@@ -202,6 +202,24 @@ fun Vec3.withZ(z: Double): Vec3 = Vec3(this.x, this.y, z)
 fun Vec3.perpXZ(): Vec3 = Vec3(-z, 0.0, x)
 
 /**
+ * Calculates a perpendicular vector to this direction vector.
+ * Handles both horizontal and vertical cases automatically.
+ *
+ * For mostly horizontal vectors (|y| < 0.9), uses Y-axis cross product.
+ * For mostly vertical vectors, uses X-axis cross product.
+ *
+ * Useful for calculating arrow chevrons, offset paths, and perpendicular directions.
+ */
+fun Vec3.perpendicular(): Vec3 =
+    if (kotlin.math.abs(y) < 0.9) {
+        // Horizontal: use Y-axis cross product
+        Vec3(-z, 0.0, x).normalized()
+    } else {
+        // Vertical: use X-axis cross product
+        Vec3(0.0, -z, y).normalized()
+    }
+
+/**
  * Returns the midpoint between this vector and another.
  * Equivalent to lerp(other, 0.5).
  */

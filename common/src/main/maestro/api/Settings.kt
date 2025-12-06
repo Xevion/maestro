@@ -1812,6 +1812,58 @@ class Settings {
             description = "Enable debug rendering"
         }
 
+    // PATHFINDING DEBUG SETTINGS
+
+    /** Enable pathfinding debug visualization (post-hoc inspection of A* search) */
+    @JvmField
+    val pathfindingDebugEnabled =
+        Setting(false) {
+            category = SettingCategory.RENDERING
+            description = "Enable pathfinding debug visualization"
+        }
+
+    /** Capture pathfinding snapshots for post-hoc analysis */
+    @JvmField
+    val pathfindingDebugCapture =
+        Setting(false) {
+            category = SettingCategory.RENDERING
+            description = "Capture pathfinding snapshots"
+        }
+
+    /** Maximum nodes to display in pathfinding debug visualization */
+    @JvmField
+    val pathfindingDebugMaxNodes =
+        Setting(5000) {
+            category = SettingCategory.RENDERING
+            description = "Max nodes to display in debug visualization"
+            range(100.0, 50000.0)
+        }
+
+    /** Show edges between nodes in pathfinding debug visualization */
+    @JvmField
+    val pathfindingDebugShowEdges =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Show edges between nodes"
+        }
+
+    /** Show cost labels on nearby nodes in pathfinding debug */
+    @JvmField
+    val pathfindingDebugShowLabels =
+        Setting(true) {
+            category = SettingCategory.RENDERING
+            description = "Show cost labels on nearby nodes"
+        }
+
+    /** Distance for LOD transitions in pathfinding debug (blocks) */
+    @JvmField
+    val pathfindingDebugLODDistance =
+        Setting(30.0) {
+            category = SettingCategory.RENDERING
+            description = "LOD transition distance (blocks)"
+            range(10.0, 100.0)
+        }
+
     /** Renders the raytraces that are performed by the elytra fly calculation. */
     @JvmField
     val elytraRenderRaytraces =

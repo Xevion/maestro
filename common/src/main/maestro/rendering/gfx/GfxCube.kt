@@ -28,8 +28,8 @@ object GfxCube {
     /**
      * Draw a wireframe AABB using SDF anti-aliased polylines with proper corner joins.
      *
-     * Uses flat geometry modes for horizontal faces (FLAT_XZ) to ensure consistent
-     * line orientation, and billboard lines for vertical edges.
+     * Uses billboard geometry mode to make all edges face the camera for consistent
+     * appearance from any viewing angle.
      *
      * @param aabb The axis-aligned bounding box in world coordinates
      * @param color ARGB color
@@ -51,7 +51,7 @@ object GfxCube {
         val maxY = aabb.maxY
         val maxZ = aabb.maxZ
 
-        // Bottom face as closed polyline - use FLAT_XZ for horizontal plane
+        // Bottom face as closed polyline - use BILLBOARD for camera-facing edges
         val bottomFace =
             listOf(
                 Vec3(minX, minY, minZ),
@@ -59,9 +59,9 @@ object GfxCube {
                 Vec3(maxX, minY, maxZ),
                 Vec3(minX, minY, maxZ),
             )
-        GfxPolyline.loop(bottomFace, color, thickness, joins, LineGeometry.FLAT_XZ)
+        GfxPolyline.loop(bottomFace, color, thickness, joins, LineGeometry.BILLBOARD)
 
-        // Top face as closed polyline - use FLAT_XZ for horizontal plane
+        // Top face as closed polyline - use BILLBOARD for camera-facing edges
         val topFace =
             listOf(
                 Vec3(minX, maxY, minZ),
@@ -69,7 +69,7 @@ object GfxCube {
                 Vec3(maxX, maxY, maxZ),
                 Vec3(minX, maxY, maxZ),
             )
-        GfxPolyline.loop(topFace, color, thickness, joins, LineGeometry.FLAT_XZ)
+        GfxPolyline.loop(topFace, color, thickness, joins, LineGeometry.BILLBOARD)
 
         // Vertical edges (pillars) - use billboard for camera-facing lines
         GfxLines.line(Vec3(minX, minY, minZ), Vec3(minX, maxY, minZ), color, thickness)
@@ -131,20 +131,21 @@ object GfxCube {
         check(GfxRenderer.active) { "Must call GfxRenderer.begin() before filled()" }
 
         val pose = GfxRenderer.pose
-        val cameraPos = GfxRenderer.camera
 
         val a = GfxRenderer.alpha(color)
         val r = GfxRenderer.red(color)
         val g = GfxRenderer.green(color)
         val b = GfxRenderer.blue(color)
 
-        // Camera-relative coordinates
-        val minX = (aabb.minX - cameraPos.x).toFloat()
-        val minY = (aabb.minY - cameraPos.y).toFloat()
-        val minZ = (aabb.minZ - cameraPos.z).toFloat()
-        val maxX = (aabb.maxX - cameraPos.x).toFloat()
-        val maxY = (aabb.maxY - cameraPos.y).toFloat()
-        val maxZ = (aabb.maxZ - cameraPos.z).toFloat()
+        // Convert world coordinates to camera-relative space
+        val minCam = GfxRenderer.toCameraSpace(aabb.minX, aabb.minY, aabb.minZ)
+        val maxCam = GfxRenderer.toCameraSpace(aabb.maxX, aabb.maxY, aabb.maxZ)
+        val minX = minCam.x.toFloat()
+        val minY = minCam.y.toFloat()
+        val minZ = minCam.z.toFloat()
+        val maxX = maxCam.x.toFloat()
+        val maxY = maxCam.y.toFloat()
+        val maxZ = maxCam.z.toFloat()
 
         val program =
             Minecraft.getInstance().shaderManager.getProgram(GfxShaders.QUAD)

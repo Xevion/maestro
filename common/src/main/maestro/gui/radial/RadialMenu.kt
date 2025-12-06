@@ -70,6 +70,11 @@ class RadialMenu :
                 label = "Teleport",
                 action = ::executeTeleport,
             ),
+            RadialMenuItem(
+                id = "debug_paths",
+                label = "Debug",
+                action = ::togglePathfindingDebug,
+            ),
         )
 
     override fun isPauseScreen(): Boolean = false
@@ -128,7 +133,7 @@ class RadialMenu :
 
         // Calculate angle: 0 = up (negative Y), clockwise
         // atan2(x, -y) gives us angle from "up" direction
-        val angle = Math.toDegrees(atan2(deltaX.toDouble(), -deltaY.toDouble())).toFloat()
+        val angle = atan2(deltaX.toDouble(), -deltaY.toDouble()).toFloat() * RotationUtils.RAD_TO_DEG_F
         val normalizedAngle = (angle + 360f) % 360f
 
         val itemAngle = 360f / items.size
@@ -199,14 +204,14 @@ class RadialMenu :
 
         // Render borders between segments
         items.forEachIndexed { index, _ ->
-            val angle = Math.toRadians((index * anglePerItem - 90f).toDouble())
+            val angle = (index * anglePerItem - 90f) * RotationUtils.DEG_TO_RAD_F
             renderRadialLine(
                 matrix,
                 centerX.toFloat(),
                 centerY.toFloat(),
                 INNER_RADIUS,
                 OUTER_RADIUS,
-                angle.toFloat(),
+                angle,
                 COLOR_BORDER,
             )
         }
@@ -234,8 +239,8 @@ class RadialMenu :
         val tesselator = Tesselator.getInstance()
         val buffer = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR)
 
-        val startRad = Math.toRadians(startAngleDeg.toDouble())
-        val sweepRad = Math.toRadians(sweepAngleDeg.toDouble())
+        val startRad = startAngleDeg * RotationUtils.DEG_TO_RAD_F
+        val sweepRad = sweepAngleDeg * RotationUtils.DEG_TO_RAD_F
 
         // Extract ARGB components
         val a = (color shr 24 and 0xFF) / 255f
@@ -245,8 +250,8 @@ class RadialMenu :
 
         for (i in 0..SEGMENTS_PER_ITEM) {
             val angle = startRad + (sweepRad * i / SEGMENTS_PER_ITEM)
-            val cosA = cos(angle).toFloat()
-            val sinA = sin(angle).toFloat()
+            val cosA = cos(angle.toDouble()).toFloat()
+            val sinA = sin(angle.toDouble()).toFloat()
 
             // Outer vertex first, then inner - creates proper winding for triangle strip
             buffer
@@ -313,7 +318,7 @@ class RadialMenu :
 
         val segments = SEGMENTS_PER_ITEM * items.size
         for (i in 0..segments) {
-            val angle = Math.toRadians(360.0 * i / segments)
+            val angle = 360.0 * i / segments * RotationUtils.DEG_TO_RAD
             val cosA = cos(angle).toFloat()
             val sinA = sin(angle).toFloat()
 
@@ -331,9 +336,9 @@ class RadialMenu :
         val labelRadius = (INNER_RADIUS + OUTER_RADIUS) / 2
 
         items.forEachIndexed { index, item ->
-            val midAngle = Math.toRadians((index * anglePerItem - 90f + anglePerItem / 2).toDouble())
-            val labelX = centerX + (labelRadius * cos(midAngle)).toInt()
-            val labelY = centerY + (labelRadius * sin(midAngle)).toInt()
+            val midAngle = (index * anglePerItem - 90f + anglePerItem / 2) * RotationUtils.DEG_TO_RAD_F
+            val labelX = centerX + (labelRadius * cos(midAngle.toDouble())).toInt()
+            val labelY = centerY + (labelRadius * sin(midAngle.toDouble())).toInt()
 
             val isSelected = item == selectedItem
             val textColor = if (isSelected) COLOR_TEXT_SELECTED else COLOR_TEXT
@@ -431,8 +436,9 @@ class RadialMenu :
         }
 
         val distance = 10000.0
-        val dx = -sin(Math.toRadians(yaw.toDouble()))
-        val dz = cos(Math.toRadians(yaw.toDouble()))
+        val yawRad = yaw * RotationUtils.DEG_TO_RAD
+        val dx = -sin(yawRad)
+        val dz = cos(yawRad)
 
         val goal =
             GoalXZ(
@@ -468,6 +474,23 @@ class RadialMenu :
 
         player.connection.sendUnsignedCommand("tp ${pos.x} ${pos.y} ${pos.z}")
         log.atDebug().addKeyValue("pos", "${pos.x}, ${pos.y}, ${pos.z}").log("Teleport action executed")
+    }
+
+    private fun togglePathfindingDebug() {
+        val settings = Agent.settings()
+        val wasEnabled = settings.pathfindingDebugEnabled.value
+
+        settings.pathfindingDebugEnabled.value = !wasEnabled
+
+        // Also enable capture when enabling debug
+        if (settings.pathfindingDebugEnabled.value) {
+            settings.pathfindingDebugCapture.value = true
+        }
+
+        log
+            .atDebug()
+            .addKeyValue("enabled", settings.pathfindingDebugEnabled.value)
+            .log("Pathfinding debug toggled")
     }
 
     private fun getFreecamPosition(agent: Agent): Vec3? =

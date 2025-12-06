@@ -6,9 +6,6 @@ import maestro.api.pathing.movement.MovementStatus
 import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.RotationUtils
-import maestro.api.utils.center
-import maestro.api.utils.centerWithY
-import maestro.api.utils.centerXZ
 import maestro.pathing.BlockStateInterface
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
@@ -18,6 +15,9 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.MovementValidation
+import maestro.utils.center
+import maestro.utils.centerWithY
+import maestro.utils.centerXZ
 import maestro.utils.distanceSquaredTo
 import maestro.utils.horizontalLength
 import net.minecraft.core.BlockPos
@@ -75,7 +75,7 @@ class MovementTraverse(
 
     override fun computeIntent(ctx: PlayerContext): Intent {
         val playerPos = ctx.player().position()
-        val destCenter = dest.center
+        val destCenter = dest.toBlockPos().center
 
         // Debug: Show player position to destination line
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
@@ -127,7 +127,7 @@ class MovementTraverse(
             RotationUtils
                 .calcRotationFromVec3d(
                     ctx.playerHead(),
-                    dest.centerWithY(ctx.player().eyeY),
+                    dest.toBlockPos().centerWithY(ctx.player().eyeY),
                     ctx.playerRotations(),
                 ).yaw
 
@@ -140,7 +140,7 @@ class MovementTraverse(
             debug.block("bridge-support", dest.below().toBlockPos(), java.awt.Color.LIGHT_GRAY, 0.4f)
             debug.point(
                 "bridge-place",
-                dest.below().center,
+                dest.below().toBlockPos().center,
                 java.awt.Color.ORANGE,
                 0.2f,
             )
@@ -150,9 +150,9 @@ class MovementTraverse(
         return Intent(
             movement =
                 MovementIntent.Toward(
-                    target = dest.centerXZ,
+                    target = dest.toBlockPos().centerXZ,
                     speed = MovementSpeed.SPRINT,
-                    startPos = src.centerXZ,
+                    startPos = src.toBlockPos().centerXZ,
                 ),
             look =
                 LookIntent.Direction(

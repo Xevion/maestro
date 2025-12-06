@@ -8,10 +8,12 @@ import maestro.pathing.path.PathExecutor
 import maestro.rendering.IGoalRenderPos
 import maestro.task.MineTask
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.Vec3
 import java.awt.Color
+import java.util.EnumSet
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -29,7 +31,7 @@ data class PriorityBlock(
     val priority: Int,
     val color: Color,
     val opacity: Float,
-    val sides: SideHighlights,
+    val faces: EnumSet<Direction>,
 )
 
 /**
@@ -71,7 +73,7 @@ object BlockPriorityClassifier {
         if (goal != null && executor != null && settings.highlightOpacityActiveMining.value > 0.0f) {
             val toBreak = executor.toBreak().toSet()
             val cyanColor = Color(0, 255, 255) // Bright cyan
-            val allSides = SideHighlights.all()
+            val allFaces = EnumSet.allOf(Direction::class.java)
             val opacity = settings.highlightOpacityActiveMining.value
 
             goalPositions.filter { it in toBreak }.forEach { pos ->
@@ -81,7 +83,7 @@ object BlockPriorityClassifier {
                         0,
                         cyanColor,
                         opacity,
-                        allSides,
+                        allFaces,
                     )
             }
         }
@@ -102,7 +104,7 @@ object BlockPriorityClassifier {
                             1,
                             Color(255, 255, 0), // Bright yellow
                             settings.highlightOpacityImmediatePath.value,
-                            SideHighlights.top(),
+                            EnumSet.of(Direction.UP),
                         )
                 }
             }
@@ -111,7 +113,7 @@ object BlockPriorityClassifier {
         // Priority 2: Active actions (toBreak/toPlace/toWalkInto, excluding goals)
         if (executor != null && settings.highlightAlpha.value > 0.0f) {
             val reducedOpacity = 0.2f // Lower opacity to reduce brightness
-            val allSides = SideHighlights.all()
+            val allFaces = EnumSet.allOf(Direction::class.java)
 
             // Compute desaturated colors once to ensure grouping
             val breakColor = desaturateColor(settings.colorBlocksToBreak.value, 0.7f)
@@ -126,7 +128,7 @@ object BlockPriorityClassifier {
                         2,
                         breakColor,
                         reducedOpacity,
-                        allSides,
+                        allFaces,
                     )
             }
 
@@ -138,7 +140,7 @@ object BlockPriorityClassifier {
                         2,
                         placeColor,
                         reducedOpacity,
-                        allSides,
+                        allFaces,
                     )
             }
 
@@ -150,7 +152,7 @@ object BlockPriorityClassifier {
                         2,
                         walkIntoColor,
                         reducedOpacity,
-                        allSides,
+                        allFaces,
                     )
             }
         }
@@ -160,7 +162,7 @@ object BlockPriorityClassifier {
             val position = executor.position
             if (position + 2 < executor.path.length()) {
                 val pathColor = desaturateColor(Color(64, 224, 208), 0.8f) // Turquoise
-                val topSides = SideHighlights.top()
+                val topFaces = EnumSet.of(Direction.UP)
 
                 executor.path
                     .positions()
@@ -174,7 +176,7 @@ object BlockPriorityClassifier {
                                 3,
                                 pathColor,
                                 settings.highlightOpacityCurrentPath.value,
-                                topSides,
+                                topFaces,
                             )
                     }
             }
@@ -183,7 +185,7 @@ object BlockPriorityClassifier {
         // Priority 4: Pending goals (goal \ toBreak)
         if (goal != null && goalPositions.isNotEmpty()) {
             val goalColor = desaturateColor(Color(50, 205, 50), 0.7f) // Lime green
-            val allSides = SideHighlights.all()
+            val allFaces = EnumSet.allOf(Direction::class.java)
 
             goalPositions.filter { it !in classified }.forEach { pos ->
                 classified[pos] =
@@ -192,14 +194,14 @@ object BlockPriorityClassifier {
                         4,
                         goalColor,
                         0.2f,
-                        allSides,
+                        allFaces,
                     )
             }
         }
 
         // Priority 5: Discovered ores (NOT in goals)
         if (mineTask != null && settings.highlightOpacityDiscoveredOres.value > 0.0f) {
-            val allSides = SideHighlights.all()
+            val allFaces = EnumSet.allOf(Direction::class.java)
 
             // Cache desaturated colors for all ore types
             val oreColorCache = mutableMapOf<Block, Color>()
@@ -229,7 +231,7 @@ object BlockPriorityClassifier {
                             5,
                             desaturatedColor,
                             settings.highlightOpacityDiscoveredOres.value,
-                            allSides,
+                            allFaces,
                         )
                 }
         }
@@ -242,7 +244,7 @@ object BlockPriorityClassifier {
             val position = executor.position
             if (position > 0) {
                 val historicalColor = desaturateColor(Color(64, 224, 208), 0.7f) // Turquoise with more color
-                val topSides = SideHighlights.top()
+                val topFaces = EnumSet.of(Direction.UP)
 
                 executor.path
                     .positions()
@@ -256,7 +258,7 @@ object BlockPriorityClassifier {
                                 6,
                                 historicalColor,
                                 settings.highlightOpacityHistoricalPath.value,
-                                topSides,
+                                topFaces,
                             )
                     }
             }

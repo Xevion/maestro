@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +22,12 @@ import maestro.behavior.PathingBehavior;
 import maestro.gui.GuiClick;
 import maestro.pathing.BlockStateInterface;
 import maestro.pathing.path.PathExecutor;
+import maestro.rendering.gfx.GfxRenderer;
+import maestro.rendering.gfx.GfxVoxel;
 import maestro.utils.*;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -94,29 +98,28 @@ public final class PathRenderer implements IRenderer {
             Map<RenderKey, List<BlockPos>> grouped = groupByRenderKey(classified);
 
             // Render each group
+            GfxRenderer.INSTANCE.begin(event.modelViewStack, settings.renderGoalIgnoreDepth.value);
             for (Map.Entry<RenderKey, List<BlockPos>> entry : grouped.entrySet()) {
                 RenderKey key = entry.getKey();
-                maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                        event.modelViewStack,
-                        entry.getValue(),
-                        key.color,
-                        key.sides,
-                        key.opacity,
-                        settings.renderGoalIgnoreDepth.value);
+                int argb = colorToArgb(key.color, key.opacity);
+                GfxVoxel.INSTANCE.batch(entry.getValue(), argb, key.faces, false, true);
             }
+            GfxRenderer.INSTANCE.end();
         } else {
             // Legacy rendering (fallback)
             if (goal != null && settings.renderGoal.value) {
                 if (settings.renderGoalHighlight.value) {
                     // Highlight rendering: filled transparent boxes
                     List<BlockPos> goalPositions = extractGoalPositions(ctx, goal);
-                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                            event.modelViewStack,
+                    GfxRenderer.INSTANCE.begin(
+                            event.modelViewStack, settings.renderGoalIgnoreDepth.value);
+                    GfxVoxel.INSTANCE.batch(
                             goalPositions,
-                            settings.colorGoalBox.value,
-                            maestro.debug.SideHighlights.Companion.all(),
-                            settings.highlightAlpha.value,
-                            settings.renderGoalIgnoreDepth.value);
+                            colorToArgb(settings.colorGoalBox.value, settings.highlightAlpha.value),
+                            EnumSet.allOf(Direction.class),
+                            false,
+                            true);
+                    GfxRenderer.INSTANCE.end();
                 } else {
                     // Legacy rendering: animated line boxes
                     drawGoal(
@@ -135,27 +138,29 @@ public final class PathRenderer implements IRenderer {
             if (current != null && settings.renderSelectionBoxes.value) {
                 if (settings.renderSelectionBoxesHighlight.value) {
                     // Highlight rendering: filled transparent boxes
-                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                            event.modelViewStack,
+                    GfxRenderer.INSTANCE.begin(
+                            event.modelViewStack, settings.renderSelectionBoxesIgnoreDepth.value);
+                    EnumSet<Direction> allFaces = EnumSet.allOf(Direction.class);
+                    float alpha = settings.highlightAlpha.value;
+                    GfxVoxel.INSTANCE.batch(
                             current.toBreak(),
-                            settings.colorBlocksToBreak.value,
-                            maestro.debug.SideHighlights.Companion.all(),
-                            settings.highlightAlpha.value,
-                            settings.renderSelectionBoxesIgnoreDepth.value);
-                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                            event.modelViewStack,
+                            colorToArgb(settings.colorBlocksToBreak.value, alpha),
+                            allFaces,
+                            false,
+                            true);
+                    GfxVoxel.INSTANCE.batch(
                             current.toPlace(),
-                            settings.colorBlocksToPlace.value,
-                            maestro.debug.SideHighlights.Companion.all(),
-                            settings.highlightAlpha.value,
-                            settings.renderSelectionBoxesIgnoreDepth.value);
-                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                            event.modelViewStack,
+                            colorToArgb(settings.colorBlocksToPlace.value, alpha),
+                            allFaces,
+                            false,
+                            true);
+                    GfxVoxel.INSTANCE.batch(
                             current.toWalkInto(),
-                            settings.colorBlocksToWalkInto.value,
-                            maestro.debug.SideHighlights.Companion.all(),
-                            settings.highlightAlpha.value,
-                            settings.renderSelectionBoxesIgnoreDepth.value);
+                            colorToArgb(settings.colorBlocksToWalkInto.value, alpha),
+                            allFaces,
+                            false,
+                            true);
+                    GfxRenderer.INSTANCE.end();
                 } else {
                     // Legacy rendering: line-based selection boxes
                     drawManySelectionBoxes(
@@ -181,13 +186,16 @@ public final class PathRenderer implements IRenderer {
                 if (settings.renderPathHighlight.value) {
                     // Highlight rendering: top-side highlighting
                     List<BlockPos> pathPositions = extractPathPositions(current);
-                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                            event.modelViewStack,
+                    GfxRenderer.INSTANCE.begin(
+                            event.modelViewStack, settings.renderPathIgnoreDepth.value);
+                    GfxVoxel.INSTANCE.batch(
                             pathPositions,
-                            settings.colorCurrentPath.value,
-                            maestro.debug.SideHighlights.Companion.top(),
-                            settings.highlightAlpha.value,
-                            settings.renderPathIgnoreDepth.value);
+                            colorToArgb(
+                                    settings.colorCurrentPath.value, settings.highlightAlpha.value),
+                            EnumSet.of(Direction.UP),
+                            false,
+                            true);
+                    GfxRenderer.INSTANCE.end();
                 } else {
                     // Legacy rendering: line-based path
                     int renderBegin = Math.max(current.getPosition() - 3, 0);
@@ -224,13 +232,16 @@ public final class PathRenderer implements IRenderer {
                 if (settings.renderPathHighlight.value) {
                     // Highlight rendering: top-side highlighting
                     List<BlockPos> nextPathPositions = extractPathPositions(next);
-                    maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                            event.modelViewStack,
+                    GfxRenderer.INSTANCE.begin(
+                            event.modelViewStack, settings.renderPathIgnoreDepth.value);
+                    GfxVoxel.INSTANCE.batch(
                             nextPathPositions,
-                            settings.colorNextPath.value,
-                            maestro.debug.SideHighlights.Companion.top(),
-                            settings.highlightAlpha.value,
-                            settings.renderPathIgnoreDepth.value);
+                            colorToArgb(
+                                    settings.colorNextPath.value, settings.highlightAlpha.value),
+                            EnumSet.of(Direction.UP),
+                            false,
+                            true);
+                    GfxRenderer.INSTANCE.end();
                 } else {
                     // Legacy rendering: line-based path
                     try {
@@ -269,13 +280,16 @@ public final class PathRenderer implements IRenderer {
                 if (mineTask != null) {
                     List<BlockPos> miningBlocks = mineTask.getKnownOreLocations();
                     if (!miningBlocks.isEmpty()) {
-                        maestro.debug.BlockHighlightRenderer.INSTANCE.renderSingleColor(
-                                event.modelViewStack,
+                        GfxRenderer.INSTANCE.begin(event.modelViewStack, false);
+                        GfxVoxel.INSTANCE.batch(
                                 miningBlocks,
-                                settings.colorMiningBlocks.value,
-                                maestro.debug.SideHighlights.Companion.all(),
-                                settings.highlightAlpha.value * 0.8f,
-                                false);
+                                colorToArgb(
+                                        settings.colorMiningBlocks.value,
+                                        settings.highlightAlpha.value * 0.8f),
+                                EnumSet.allOf(Direction.class),
+                                false,
+                                true);
+                        GfxRenderer.INSTANCE.end();
                     }
                 }
             }
@@ -588,20 +602,18 @@ public final class PathRenderer implements IRenderer {
             }
             PackedBlockPos pos = movement.getSrc();
 
-            // Calculate direction vector
+            // Calculate direction vector using normalized direction utility
+            Vec3 srcCenter = BlockPosExtKt.getCenter(pos.toBlockPos());
+            Vec3 destCenter = BlockPosExtKt.getCenter(movement.getDest().toBlockPos());
             net.minecraft.world.phys.Vec3 direction =
-                    new net.minecraft.world.phys.Vec3(
-                                    movement.getDest().getX() - pos.getX(),
-                                    movement.getDest().getY() - pos.getY(),
-                                    movement.getDest().getZ() - pos.getZ())
-                            .normalize();
+                    Vec3ExtKt.normalizedDirectionTo(srcCenter, destCenter);
 
             // Set arrow color
             Color arrowColor = getArrowColor(movement);
             IRenderer.glColor(arrowColor, 0.6f);
 
             // Emit arrow at movement source position
-            Vec3 center = BlockPosExtKt.getCenter(pos.toBlockPos());
+            Vec3 center = srcCenter;
             emitChevronArrow(arrowBuffer, stack, center.x, center.y, center.z, direction, 0.4);
 
             lastArrowIndex = i;
@@ -1074,15 +1086,8 @@ public final class PathRenderer implements IRenderer {
         double tipY = y + direction.y * size;
         double tipZ = z + direction.z * size;
 
-        // Calculate perpendicular vector for wings
-        net.minecraft.world.phys.Vec3 perp;
-        if (Math.abs(direction.y) < 0.9) {
-            // Horizontal: use Y-axis cross product
-            perp = new net.minecraft.world.phys.Vec3(-direction.z, 0, direction.x).normalize();
-        } else {
-            // Vertical: use X-axis cross product
-            perp = new net.minecraft.world.phys.Vec3(0, -direction.z, direction.y).normalize();
-        }
+        // Calculate perpendicular vector for wings using utility
+        net.minecraft.world.phys.Vec3 perp = Vec3ExtKt.perpendicular(direction);
 
         // Wing points (70% back from tip, 30% spread)
         double backDist = size * 0.7;
@@ -1176,25 +1181,39 @@ public final class PathRenderer implements IRenderer {
         Map<RenderKey, List<BlockPos>> grouped = new HashMap<>();
         for (Map.Entry<BlockPos, maestro.debug.PriorityBlock> entry : classified.entrySet()) {
             maestro.debug.PriorityBlock pb = entry.getValue();
-            RenderKey key = new RenderKey(pb.getColor(), pb.getOpacity(), pb.getSides());
+            RenderKey key = new RenderKey(pb.getColor(), pb.getOpacity(), pb.getFaces());
             grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(entry.getKey());
         }
         return grouped;
     }
 
     /**
+     * Convert java.awt.Color and alpha to ARGB int.
+     *
+     * @param color The color
+     * @param alpha Alpha value (0.0-1.0)
+     * @return ARGB color int
+     */
+    private static int colorToArgb(Color color, float alpha) {
+        return ((int) (alpha * 255) << 24)
+                | (color.getRed() << 16)
+                | (color.getGreen() << 8)
+                | color.getBlue();
+    }
+
+    /**
      * Helper class for grouping blocks by render parameters. Allows batching of blocks with same
-     * color, opacity, and sides.
+     * color, opacity, and faces.
      */
     private static class RenderKey {
         final Color color;
         final float opacity;
-        final maestro.debug.SideHighlights sides;
+        final EnumSet<Direction> faces;
 
-        RenderKey(Color c, float o, maestro.debug.SideHighlights s) {
+        RenderKey(Color c, float o, EnumSet<Direction> f) {
             this.color = c;
             this.opacity = o;
-            this.sides = s;
+            this.faces = f;
         }
 
         @Override
@@ -1203,12 +1222,12 @@ public final class PathRenderer implements IRenderer {
             RenderKey r = (RenderKey) o;
             return color.equals(r.color)
                     && Math.abs(opacity - r.opacity) < 0.001f
-                    && sides.equals(r.sides);
+                    && faces.equals(r.faces);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(color, Float.floatToIntBits(opacity), sides);
+            return Objects.hash(color, Float.floatToIntBits(opacity), faces);
         }
     }
 }

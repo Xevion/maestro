@@ -27,5 +27,12 @@ public class MixinGui {
                 agent.getDebugRenderer().getHudRenderer().render(graphics, tickDelta);
             }
         }
+
+        // Render pathfinding debug HUD (independent of general debug)
+        if (Agent.getPrimaryAgent().getSettings().pathfindingDebugEnabled.value) {
+            for (Agent agent : Agent.getAllAgents()) {
+                agent.getDebugRenderer().renderPathfindingHud(graphics, tickDelta);
+            }
+        }
     }
 }

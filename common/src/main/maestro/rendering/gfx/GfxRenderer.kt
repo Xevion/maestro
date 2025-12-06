@@ -283,6 +283,52 @@ object GfxRenderer {
     ): Int = (argb and 0x00FFFFFF) or ((alpha * 255).toInt() shl 24)
 
     /**
+     * Convert java.awt.Color to ARGB int.
+     */
+    fun awtToArgb(color: java.awt.Color): Int = (color.alpha shl 24) or (color.red shl 16) or (color.green shl 8) or color.blue
+
+    /**
+     * Multiply existing alpha by a factor (0.0-1.0).
+     * Useful for applying opacity to colors with existing alpha.
+     */
+    fun multiplyAlpha(
+        argb: Int,
+        multiplier: Float,
+    ): Int {
+        val currentAlpha = alpha(argb)
+        return withAlpha(argb, currentAlpha * multiplier)
+    }
+
+    /**
+     * Extract all ARGB components as FloatArray [a, r, g, b] in range 0.0-1.0.
+     * Useful for batch color operations in rendering.
+     */
+    fun extractARGBf(argb: Int): FloatArray =
+        floatArrayOf(
+            alpha(argb),
+            red(argb),
+            green(argb),
+            blue(argb),
+        )
+
+    /**
+     * Convert AABB to camera-relative coordinates.
+     * Returns FloatArray [minX, minY, minZ, maxX, maxY, maxZ] in camera space.
+     * Useful for batch rendering operations that need camera-relative bounds.
+     */
+    fun aabbToCameraSpace(aabb: net.minecraft.world.phys.AABB): FloatArray {
+        val cam = camera
+        return floatArrayOf(
+            (aabb.minX - cam.x).toFloat(),
+            (aabb.minY - cam.y).toFloat(),
+            (aabb.minZ - cam.z).toFloat(),
+            (aabb.maxX - cam.x).toFloat(),
+            (aabb.maxY - cam.y).toFloat(),
+            (aabb.maxZ - cam.z).toFloat(),
+        )
+    }
+
+    /**
      * Convert HSV to ARGB color.
      *
      * @param h Hue (0.0-1.0)

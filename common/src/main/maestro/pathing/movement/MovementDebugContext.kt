@@ -1,10 +1,17 @@
 package maestro.pathing.movement
 
 import com.mojang.blaze3d.vertex.PoseStack
-import maestro.rendering.IRenderer
+import maestro.rendering.gfx.GfxCube
+import maestro.rendering.gfx.GfxLines
+import maestro.rendering.gfx.GfxRenderer
+import maestro.rendering.gfx.GfxRenderer.awtToArgb
+import maestro.rendering.gfx.GfxVoxel
+import maestro.rendering.gfx.PolylineJoins
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.world.phys.Vec3
 import java.awt.Color
+import java.util.EnumSet
 
 /**
  * Debug context for movement behaviors.
@@ -233,84 +240,44 @@ class ActiveDebugContext : MovementDebugContext() {
     ) {
         if (lines.isEmpty() && points.isEmpty() && blocks.isEmpty()) return
 
-        val vpX =
-            IRenderer.renderManager
-                .renderPosX()
-        val vpY =
-            IRenderer.renderManager
-                .renderPosY()
-        val vpZ =
-            IRenderer.renderManager
-                .renderPosZ()
+        GfxRenderer.begin(stack, ignoreDepth = true)
 
         // Render lines
-        if (lines.isNotEmpty()) {
-            val bufferBuilder =
-                IRenderer.startLines(
-                    Color.WHITE,
-                    2.0f,
-                    true,
-                )
-
-            lines.values.forEach { line ->
-                IRenderer.glColor(line.color, 1.0f)
-                IRenderer.emitLine(
-                    bufferBuilder,
-                    stack,
-                    line.from.x - vpX,
-                    line.from.y - vpY,
-                    line.from.z - vpZ,
-                    line.to.x - vpX,
-                    line.to.y - vpY,
-                    line.to.z - vpZ,
-                )
-            }
-
-            IRenderer.endLines(bufferBuilder, true)
+        lines.values.forEach { line ->
+            val color = awtToArgb(line.color)
+            GfxLines.line(line.from, line.to, color, thickness = 0.02f)
         }
 
         // Render points (as small boxes)
-        if (points.isNotEmpty()) {
-            val bufferBuilder =
-                IRenderer.startLines(
-                    Color.WHITE,
-                    2.0f,
-                    true,
-                )
-
-            points.values.forEach { point ->
-                IRenderer.glColor(point.color, 1.0f)
-                val halfSize = point.size.toDouble()
-                // Don't subtract camera position - emitAABB does that for us
-                val minX = point.pos.x - halfSize
-                val minY = point.pos.y - halfSize
-                val minZ = point.pos.z - halfSize
-                val maxX = point.pos.x + halfSize
-                val maxY = point.pos.y + halfSize
-                val maxZ = point.pos.z + halfSize
-
-                // Draw a small box (emitAABB handles camera offset internally)
-                val aabb =
-                    net.minecraft.world.phys
-                        .AABB(minX, minY, minZ, maxX, maxY, maxZ)
-                IRenderer.emitAABB(bufferBuilder, stack, aabb, 0.0)
-            }
-
-            IRenderer.endLines(bufferBuilder, true)
+        points.values.forEach { point ->
+            val color = awtToArgb(point.color)
+            val size = point.size.toDouble()
+            GfxCube.wireframe(point.pos, size * 2, size * 2, size * 2, color, thickness = 0.02f, joins = PolylineJoins.MITER)
         }
 
-        // Render blocks using BlockHighlightRenderer
+        // Render blocks using GfxVoxel
         if (blocks.isNotEmpty()) {
-            val blockMap = blocks.values.associate { it.pos to it.color }
-            maestro.debug.BlockHighlightRenderer.renderBlocks(
-                stack,
+            val alpha = blocks.values.first().alpha
+            val blockMap = blocks.values.associate { it.pos to awtToArgbWithAlpha(it.color, alpha) }
+            GfxVoxel.batch(
                 blockMap,
-                maestro.debug.SideHighlights.all(),
-                blocks.values.first().alpha,
-                true,
+                EnumSet.allOf(Direction::class.java),
+                respectShape = false,
+                occlusionCull = true,
             )
         }
+
+        GfxRenderer.end()
     }
+
+    private fun awtToArgbWithAlpha(
+        color: Color,
+        alpha: Float,
+    ): Int =
+        ((alpha * 255).toInt() shl 24) or
+            (color.red shl 16) or
+            (color.green shl 8) or
+            color.blue
 
     override fun clear() {
         lines.clear()

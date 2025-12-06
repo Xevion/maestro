@@ -5,9 +5,6 @@ import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.center
-import maestro.api.utils.centerXZ
-import maestro.api.utils.normalizedDirectionTo
 import maestro.pathing.BlockStateInterface
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
@@ -17,11 +14,14 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.MovementValidation
+import maestro.utils.center
+import maestro.utils.centerXZ
 import maestro.utils.distanceTo
 import maestro.utils.dot
 import maestro.utils.horizontalDistanceTo
 import maestro.utils.horizontalLength
 import maestro.utils.minus
+import maestro.utils.normalizedDirectionTo
 import maestro.utils.perpendicularDistanceTo
 import maestro.utils.plus
 import maestro.utils.projectOnto
@@ -107,7 +107,7 @@ class MovementAscend(
         cachedDistToTarget = playerXZ.distanceTo(cachedTarget!!)
 
         // Debug: Show player position to destination line
-        val destCenter = dest.center
+        val destCenter = dest.toBlockPos().center
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
 
         // Debug: Show edge target point and velocity-compensated aim point
@@ -147,8 +147,8 @@ class MovementAscend(
         val driftState = checkDrift(ctx)
 
         // Debug: Drift visualization (perpendicular distance from ideal path)
-        val srcCenter = src.centerXZ
-        val destCenter2D = dest.centerXZ
+        val srcCenter = src.toBlockPos().centerXZ
+        val destCenter2D = dest.toBlockPos().centerXZ
         val driftDist = playerXZ.perpendicularDistanceTo(srcCenter, destCenter2D)
         if (driftDist > 0.1) {
             val driftColor =
@@ -249,7 +249,7 @@ class MovementAscend(
                     target = cachedTarget!!,
                     speed = MovementSpeed.SPRINT,
                     jump = shouldJump(ctx),
-                    startPos = src.centerXZ,
+                    startPos = src.toBlockPos().centerXZ,
                 ),
             look = LookIntent.Block(dest.toBlockPos()),
             click = ClickIntent.None,
@@ -292,7 +292,7 @@ class MovementAscend(
         }
 
         // Calculate perpendicular distance from player to line segment (src -> dest)
-        val xzDrift = playerPos.xz.perpendicularDistanceTo(this.src.centerXZ, this.dest.centerXZ)
+        val xzDrift = playerPos.xz.perpendicularDistanceTo(this.src.toBlockPos().centerXZ, this.dest.toBlockPos().centerXZ)
 
         return when {
             xzDrift > 2.5 -> DriftState.SEVERE
@@ -319,11 +319,11 @@ class MovementAscend(
         val velocity = ctx.player().deltaMovement
 
         // Calculate distance to destination center
-        val destCenter = dest.centerXZ
+        val destCenter = dest.toBlockPos().centerXZ
         val distToDest = playerPos.horizontalDistanceTo(destCenter)
 
         // Calculate normalized direction from source to destination
-        val normalizedDir = src.normalizedDirectionTo(dest)
+        val normalizedDir = src.toBlockPos().centerXZ.normalizedDirectionTo(dest.toBlockPos().centerXZ)
 
         // When close to destination, target the block edge facing the source
         if (distToDest < 1.5) {
@@ -377,7 +377,7 @@ class MovementAscend(
         val playerXZ = player.position().xz
 
         // Use cached target (actual target, not dest center)
-        val target = cachedTarget ?: dest.centerXZ // Fallback to center
+        val target = cachedTarget ?: dest.toBlockPos().centerXZ // Fallback to center
 
         // Calculate if velocity is toward target
         val toTarget = target - playerXZ

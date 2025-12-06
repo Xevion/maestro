@@ -29,7 +29,7 @@ class FreecamBehavior(
     maestro: Agent,
 ) : Behavior(maestro) {
     companion object {
-        private const val MOVEMENT_VELOCITY_PER_SECOND = 22.0
+        private const val MOVEMENT_VELOCITY_PER_SECOND = 9.0
         private const val SPRINT_MULTIPLIER = 2.0
         private const val PATHFIND_HOLD_DURATION_MS = 250L
 

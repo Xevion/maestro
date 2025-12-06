@@ -11,10 +11,10 @@ import kotlin.math.sqrt
  * Uses Minecraft's native BlockPos encoding to store positions as a single long value.
  * This provides better memory efficiency than storing three separate int fields.
  *
- * **Encoding format:** `((x & 0x3FFFFFF) << 38) | ((y & 0xFFF) << 26) | (z & 0x3FFFFFF)`
- * - **X:** 26 bits (range: -33,554,432 to +33,554,431)
- * - **Y:** 12 bits (range: -2,048 to +2,047)
- * - **Z:** 26 bits (range: -33,554,432 to +33,554,431)
+ * **Encoding format (Minecraft's native):**
+ * - **X:** bits 38-63 (26 bits, range: -33,554,432 to +33,554,431)
+ * - **Z:** bits 12-37 (26 bits, range: -33,554,432 to +33,554,431)
+ * - **Y:** bits 0-11 (12 bits, range: -2,048 to +2,047)
  *
  * **Bijective mapping:** Each position has exactly one packed representation and vice versa.
  * No hash collisions are possible.
@@ -246,72 +246,4 @@ data class PackedBlockPos(
      * String representation showing coordinates.
      */
     override fun toString(): String = "PackedBlockPos($x, $y, $z)"
-}
-
-/**
- * Returns the geometric center of this packed block position.
- * Returns Vec3(x + 0.5, y + 0.5, z + 0.5).
- */
-val PackedBlockPos.center: net.minecraft.world.phys.Vec3
-    get() =
-        net.minecraft.world.phys
-            .Vec3(x + 0.5, y + 0.5, z + 0.5)
-
-/**
- * Returns the horizontal (XZ plane) center of this packed block position.
- * Returns Vec2(x + 0.5, z + 0.5) - most common for movement calculations.
- */
-val PackedBlockPos.centerXZ: net.minecraft.world.phys.Vec2
-    get() =
-        net.minecraft.world.phys
-            .Vec2(x + 0.5f, z + 0.5f)
-
-/**
- * Returns the XY plane center of this packed block position.
- * Returns Vec2(x + 0.5, y + 0.5).
- */
-val PackedBlockPos.centerXY: net.minecraft.world.phys.Vec2
-    get() =
-        net.minecraft.world.phys
-            .Vec2(x + 0.5f, y + 0.5f)
-
-/**
- * Returns the YZ plane center of this packed block position.
- * Returns Vec2(y + 0.5, z + 0.5).
- */
-val PackedBlockPos.centerYZ: net.minecraft.world.phys.Vec2
-    get() =
-        net.minecraft.world.phys
-            .Vec2(y + 0.5f, z + 0.5f)
-
-/**
- * Returns the center of this packed block position with a custom Y coordinate.
- * Useful for targeting a specific height within or near a block.
- */
-fun PackedBlockPos.centerWithY(y: Double): net.minecraft.world.phys.Vec3 =
-    net.minecraft.world.phys
-        .Vec3(x + 0.5, y, z + 0.5)
-
-/**
- * Returns the direction from this position to another position as a Vec2 (XZ plane).
- * Does not normalize - use [normalizedDirectionTo] for unit vector.
- */
-fun PackedBlockPos.directionTo(other: PackedBlockPos): net.minecraft.world.phys.Vec2 =
-    net.minecraft.world.phys
-        .Vec2((other.x - x).toFloat(), (other.z - z).toFloat())
-
-/**
- * Returns the normalized direction from this position to another position as a Vec2.
- * Returns a unit vector pointing from this position to [other] in the XZ plane.
- */
-fun PackedBlockPos.normalizedDirectionTo(other: PackedBlockPos): net.minecraft.world.phys.Vec2 {
-    val dir = directionTo(other)
-    val len = kotlin.math.sqrt((dir.x * dir.x + dir.y * dir.y).toDouble())
-    return if (len > 0.0001) {
-        net.minecraft.world.phys
-            .Vec2((dir.x / len).toFloat(), (dir.y / len).toFloat())
-    } else {
-        net.minecraft.world.phys
-            .Vec2(0f, 0f)
-    }
 }

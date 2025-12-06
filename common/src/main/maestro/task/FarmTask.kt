@@ -16,6 +16,7 @@ import maestro.api.utils.RotationUtils
 import maestro.cache.WorldScanner
 import maestro.input.Input
 import maestro.pathing.movement.MovementValidation
+import maestro.utils.centerWithY
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.world.entity.item.ItemEntity
@@ -287,7 +288,7 @@ class FarmTask(
                 RotationUtils.reachableOffset(
                     ctx,
                     pos,
-                    Vec3(pos.x + 0.5, pos.y + 1.0, pos.z + 0.5),
+                    pos.centerWithY(pos.y + 1.0),
                     blockReachDistance,
                     false,
                 )

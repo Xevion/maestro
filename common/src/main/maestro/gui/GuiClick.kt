@@ -1,7 +1,6 @@
 
 package maestro.gui
 
-import com.mojang.blaze3d.vertex.BufferBuilder
 import com.mojang.blaze3d.vertex.PoseStack
 import maestro.Agent
 import maestro.api.pathing.goals.GoalBlock
@@ -9,8 +8,10 @@ import maestro.api.utils.Helper
 import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.gui.chat.ChatMessage
-import maestro.rendering.IRenderer
 import maestro.rendering.PathRenderer
+import maestro.rendering.gfx.GfxCube
+import maestro.rendering.gfx.GfxRenderer
+import maestro.rendering.gfx.PolylineJoins
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
@@ -156,19 +157,10 @@ class GuiClick :
 
             val start = clickStart
             if (start != null && start != mouseOver) {
-                val bufferBuilder: BufferBuilder =
-                    IRenderer.startLines(
-                        Color.RED,
-                        Agent.settings().pathRenderLineWidthPixels.value,
-                        true,
-                    )
-
                 val a = PackedBlockPos(mouseOver)
                 val b = PackedBlockPos(start)
 
-                IRenderer.emitAABB(
-                    bufferBuilder,
-                    modelViewStack,
+                val aabb =
                     AABB(
                         minOf(a.x, b.x).toDouble(),
                         minOf(a.y, b.y).toDouble(),
@@ -176,10 +168,11 @@ class GuiClick :
                         maxOf(a.x, b.x).toDouble() + 1,
                         maxOf(a.y, b.y).toDouble() + 1,
                         maxOf(a.z, b.z).toDouble() + 1,
-                    ),
-                )
+                    )
 
-                IRenderer.endLines(bufferBuilder, true)
+                GfxRenderer.begin(modelViewStack, ignoreDepth = true)
+                GfxCube.wireframe(aabb, GfxRenderer.Colors.RED, thickness = 0.02f, joins = PolylineJoins.MITER)
+                GfxRenderer.end()
             }
         }
     }

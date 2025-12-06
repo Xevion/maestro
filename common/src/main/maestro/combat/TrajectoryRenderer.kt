@@ -1,17 +1,17 @@
 package maestro.combat
 
-import com.mojang.blaze3d.vertex.BufferBuilder
-import com.mojang.blaze3d.vertex.PoseStack
 import maestro.Agent
 import maestro.api.combat.TrajectoryResult
 import maestro.api.event.events.RenderEvent
-import maestro.rendering.IRenderer
+import maestro.rendering.gfx.GfxLines
+import maestro.rendering.gfx.GfxRenderer
+import maestro.rendering.gfx.GfxRenderer.awtToArgb
 import net.minecraft.world.phys.Vec3
 
 /**
  * Renders arrow trajectory paths for debugging and visualization.
  */
-object TrajectoryRenderer : IRenderer {
+object TrajectoryRenderer {
     /**
      * Render a trajectory path.
      *
@@ -28,81 +28,53 @@ object TrajectoryRenderer : IRenderer {
         val points = trajectory.points
         if (points.size < 2) return
 
-        val color = Agent.settings().trajectoryColor.value
-        val lineWidth = 2.0f
-        val ignoreDepth = true
+        val awtColor = Agent.settings().trajectoryColor.value
+        val color = awtToArgb(awtColor)
 
-        val bufferBuilder = IRenderer.startLines(color, lineWidth, ignoreDepth)
-        val stack = event.modelViewStack
+        GfxRenderer.begin(event.modelViewStack, ignoreDepth = true)
 
         // Render trajectory as connected line segments
         for (i in 0 until points.size - 1) {
             val start = points[i]
             val end = points[i + 1]
-            IRenderer.emitLine(bufferBuilder, stack, start, end)
+            GfxLines.line(start, end, color, thickness = 0.02f)
         }
-
-        IRenderer.endLines(bufferBuilder, ignoreDepth)
 
         // Render hit point marker if trajectory hit a block
         if (trajectory.hitBlock) {
-            renderHitMarker(bufferBuilder, stack, trajectory.endPoint)
+            renderHitMarker(trajectory.endPoint, color)
         }
+
+        GfxRenderer.end()
     }
 
     /**
      * Render a small marker at the trajectory end point.
      */
     private fun renderHitMarker(
-        bufferBuilder: BufferBuilder,
-        stack: PoseStack,
         point: Vec3,
+        color: Int,
     ) {
-        val color = Agent.settings().trajectoryColor.value
         val markerSize = 0.15
 
-        val vpX = IRenderer.renderManager.renderPosX()
-        val vpY = IRenderer.renderManager.renderPosY()
-        val vpZ = IRenderer.renderManager.renderPosZ()
-
-        val x = point.x - vpX
-        val y = point.y - vpY
-        val z = point.z - vpZ
-
-        val buf = IRenderer.startLines(color, 3.0f, true)
-
-        // Draw a small cross marker
-        IRenderer.emitLine(
-            buf,
-            stack,
-            x - markerSize,
-            y,
-            z,
-            x + markerSize,
-            y,
-            z,
+        // Draw a small 3D cross marker
+        GfxLines.line(
+            Vec3(point.x - markerSize, point.y, point.z),
+            Vec3(point.x + markerSize, point.y, point.z),
+            color,
+            thickness = 0.03f,
         )
-        IRenderer.emitLine(
-            buf,
-            stack,
-            x,
-            y - markerSize,
-            z,
-            x,
-            y + markerSize,
-            z,
+        GfxLines.line(
+            Vec3(point.x, point.y - markerSize, point.z),
+            Vec3(point.x, point.y + markerSize, point.z),
+            color,
+            thickness = 0.03f,
         )
-        IRenderer.emitLine(
-            buf,
-            stack,
-            x,
-            y,
-            z - markerSize,
-            x,
-            y,
-            z + markerSize,
+        GfxLines.line(
+            Vec3(point.x, point.y, point.z - markerSize),
+            Vec3(point.x, point.y, point.z + markerSize),
+            color,
+            thickness = 0.03f,
         )
-
-        IRenderer.endLines(buf, true)
     }
 }

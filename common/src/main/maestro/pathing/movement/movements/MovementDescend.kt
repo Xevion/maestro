@@ -5,8 +5,6 @@ import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.center
-import maestro.api.utils.centerXZ
 import maestro.pathing.BlockStateInterface
 import maestro.pathing.MutableMoveResult
 import maestro.pathing.movement.CalculationContext
@@ -17,6 +15,8 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.MovementValidation
+import maestro.utils.center
+import maestro.utils.centerXZ
 import maestro.utils.distanceSquaredTo
 import maestro.utils.lerp
 import maestro.utils.minus
@@ -157,7 +157,7 @@ class MovementDescend(
 
     override fun computeIntent(ctx: PlayerContext): Intent {
         val playerPos = ctx.player().position()
-        val destCenter = dest.center
+        val destCenter = dest.toBlockPos().center
 
         // Debug: Show player position to destination line
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
@@ -194,7 +194,7 @@ class MovementDescend(
         debug.status("mine", "none")
 
         // Calculate look direction
-        val direction = dest.centerXZ - src.centerXZ
+        val direction = dest.toBlockPos().centerXZ - src.toBlockPos().centerXZ
         val targetYaw =
             Math
                 .toDegrees(kotlin.math.atan2(-direction.x.toDouble(), direction.y.toDouble()))
@@ -226,7 +226,7 @@ class MovementDescend(
         // Safe mode: reduce overshoot to 83% of distance when there are obstacles
         if (isSafeMode) {
             // Aim at 83% of the way from src to dest (weighted: 17% src + 83% dest)
-            val safeTarget = src.centerXZ.lerp(dest.centerXZ, 0.83f)
+            val safeTarget = src.toBlockPos().centerXZ.lerp(dest.toBlockPos().centerXZ, 0.83f)
             val safeDest = safeTarget.toVec3XZ(dest.y.toDouble())
 
             // Debug: Safe mode targeting
@@ -238,7 +238,7 @@ class MovementDescend(
                     MovementIntent.Toward(
                         target = safeTarget,
                         speed = MovementSpeed.WALK,
-                        startPos = src.centerXZ,
+                        startPos = src.toBlockPos().centerXZ,
                     ),
                 look =
                     LookIntent.Direction(
@@ -249,7 +249,7 @@ class MovementDescend(
             )
         }
 
-        val srcCenter = src.center
+        val srcCenter = src.toBlockPos().center
         val distFromStart = playerPos.distanceSquaredTo(srcCenter)
 
         // Debug: Momentum phase visualization
@@ -263,11 +263,11 @@ class MovementDescend(
         val target =
             if (numTicks++ < 20 || distFromStart < 1.25 * 1.25) {
                 // Calculate "fakeDest" - overshoot to ensure we walk off the edge
-                val fakeDest = dest.centerXZ + dest.centerXZ - src.centerXZ
+                val fakeDest = dest.toBlockPos().centerXZ + dest.toBlockPos().centerXZ - src.toBlockPos().centerXZ
                 fakeDest
             } else {
                 // After building momentum, aim at actual destination
-                dest.centerXZ
+                dest.toBlockPos().centerXZ
             }
 
         // Debug: Target aiming line
@@ -280,7 +280,7 @@ class MovementDescend(
                 MovementIntent.Toward(
                     target = target,
                     speed = MovementSpeed.SPRINT,
-                    startPos = src.centerXZ,
+                    startPos = src.toBlockPos().centerXZ,
                 ),
             look =
                 LookIntent.Direction(

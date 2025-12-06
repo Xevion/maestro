@@ -8,6 +8,7 @@ import maestro.api.utils.Loggers
 import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.PathCalculationResult
 import maestro.api.utils.format
+import maestro.pathing.calc.distanceSqTo
 import maestro.pathing.movement.CalculationContext
 import org.slf4j.Logger
 import java.util.Optional
@@ -114,12 +115,7 @@ abstract class AbstractNodeCostSearch(
      * @param n A node
      * @return The distance, squared
      */
-    protected fun getDistFromStartSq(n: PathNode): Double {
-        val xDiff = n.x - startX
-        val yDiff = n.y - startY
-        val zDiff = n.z - startZ
-        return (xDiff * xDiff + yDiff * yDiff + zDiff * zDiff).toDouble()
-    }
+    protected fun getDistFromStartSq(n: PathNode): Double = n.distanceSqTo(startNode!!)
 
     /**
      * Attempts to search the block position hashCode long to [PathNode] map for the node
@@ -241,6 +237,14 @@ abstract class AbstractNodeCostSearch(
     fun getStart(): PackedBlockPos = PackedBlockPos(startX, startY, startZ)
 
     protected fun mapSize(): Int = map.size
+
+    /**
+     * Provides access to the internal node map for snapshot capture.
+     *
+     * This is used by [PathfindingSnapshot.capture] to capture all visited nodes
+     * after pathfinding completes. The map should not be modified externally.
+     */
+    internal fun getNodeMap(): Long2ObjectOpenHashMap<PathNode> = map
 
     companion object {
         private val log: Logger = Loggers.Path.get()

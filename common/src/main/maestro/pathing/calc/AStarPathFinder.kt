@@ -9,6 +9,9 @@ import maestro.api.utils.PackedBlockPos
 import maestro.api.utils.SettingsUtil
 import maestro.api.utils.format
 import maestro.api.utils.pack
+import maestro.debug.pathing.PathfindingSnapshot
+import maestro.debug.pathing.PathfindingSnapshotStore
+import maestro.debug.pathing.PhaseInfo
 import maestro.pathing.BetterWorldBorder
 import maestro.pathing.MutableMoveResult
 import maestro.pathing.PreferredPaths
@@ -69,6 +72,10 @@ class AStarPathFinder
             var currentPhaseIndex = 0
             var currentEpsilon = phases[0].epsilon
             var phaseStartTime = startTime
+            var phaseNodeCount = 0
+
+            // Track phase timing for debug snapshot
+            val phaseInfos = mutableListOf<PhaseInfo>()
 
             var bestNodeThisSearch: PathNode? = startNode
             var bestHeuristicThisSearch = startNode!!.estimatedCostToGoal
@@ -117,6 +124,16 @@ class AStarPathFinder
                     if (currentPhaseIndex < phases.size - 1 &&
                         now - phaseStartTime >= phases[currentPhaseIndex].durationMs
                     ) {
+                        // Record completed phase info
+                        phaseInfos.add(
+                            PhaseInfo(
+                                index = currentPhaseIndex,
+                                epsilon = currentEpsilon,
+                                durationMs = now - phaseStartTime,
+                                nodesExplored = phaseNodeCount,
+                            ),
+                        )
+
                         currentPhaseIndex++
                         val newPhase = phases[currentPhaseIndex]
 
@@ -131,6 +148,7 @@ class AStarPathFinder
 
                         currentEpsilon = newPhase.epsilon
                         phaseStartTime = now
+                        phaseNodeCount = 0
                         openSet.rebuildWithEpsilon(currentEpsilon)
 
                         log
@@ -162,13 +180,29 @@ class AStarPathFinder
                 val currentNode = openSet.removeLowest()
                 mostRecentConsidered = currentNode
                 numNodes++
+                phaseNodeCount++
 
                 if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
+                    val durationMs = System.currentTimeMillis() - startTime
                     log
                         .atInfo()
-                        .addKeyValue("duration_ms", System.currentTimeMillis() - startTime)
+                        .addKeyValue("duration_ms", durationMs)
                         .addKeyValue("movements_considered", numMovementsConsidered)
                         .log("Path found")
+
+                    // Capture snapshot for debug visualization
+                    captureSnapshot(
+                        openSet = openSet,
+                        phases = phaseInfos,
+                        currentPhaseIndex = currentPhaseIndex,
+                        currentEpsilon = currentEpsilon,
+                        phaseStartTime = phaseStartTime,
+                        phaseNodeCount = phaseNodeCount,
+                        startTime = startTime,
+                        endNode = currentNode,
+                        pathFound = true,
+                    )
+
                     return Optional.of(Path(realStart, startNode!!, currentNode, numNodes, goal, calcContext))
                 }
 
@@ -281,9 +315,8 @@ class AStarPathFinder
                             openSet.insert(neighbor)
                         }
 
-                        val heuristic = neighbor.estimatedCostToGoal * currentEpsilon + neighbor.cost
-                        if (bestHeuristicThisSearch - heuristic > minimumImprovement) {
-                            bestHeuristicThisSearch = heuristic
+                        if (bestHeuristicThisSearch - neighbor.combinedCost > minimumImprovement) {
+                            bestHeuristicThisSearch = neighbor.combinedCost
                             bestNodeThisSearch = neighbor
 
                             if (failing && getDistFromStartSq(neighbor) > 1.0) {
@@ -310,6 +343,19 @@ class AStarPathFinder
                 return Optional.empty()
             }
 
+            // Capture snapshot for debug visualization (partial path or no path)
+            captureSnapshot(
+                openSet = openSet,
+                phases = phaseInfos,
+                currentPhaseIndex = currentPhaseIndex,
+                currentEpsilon = currentEpsilon,
+                phaseStartTime = phaseStartTime,
+                phaseNodeCount = phaseNodeCount,
+                startTime = startTime,
+                endNode = bestNodeThisSearch,
+                pathFound = false,
+            )
+
             val result = bestSoFar(true, numNodes, durationMs, reason, bestNodeThisSearch)
             if (result.isPresent) {
                 log
@@ -322,6 +368,49 @@ class AStarPathFinder
                     .log("Path segment found")
             }
             return result
+        }
+
+        /**
+         * Captures pathfinding state snapshot for debug visualization.
+         * Only captures when pathfindingDebugCapture setting is enabled.
+         */
+        private fun captureSnapshot(
+            openSet: BinaryHeapOpenSet,
+            phases: MutableList<PhaseInfo>,
+            currentPhaseIndex: Int,
+            currentEpsilon: Double,
+            phaseStartTime: Long,
+            phaseNodeCount: Int,
+            startTime: Long,
+            endNode: PathNode?,
+            pathFound: Boolean,
+        ) {
+            if (!Agent.settings().pathfindingDebugCapture.value) return
+
+            val now = System.currentTimeMillis()
+
+            // Record final phase info
+            phases.add(
+                PhaseInfo(
+                    index = currentPhaseIndex,
+                    epsilon = currentEpsilon,
+                    durationMs = now - phaseStartTime,
+                    nodesExplored = phaseNodeCount,
+                ),
+            )
+
+            val snapshot =
+                PathfindingSnapshot.capture(
+                    nodeMap = getNodeMap(),
+                    startNode = startNode!!,
+                    goal = goal,
+                    phases = phases,
+                    totalDurationMs = now - startTime,
+                    endNode = endNode,
+                    pathFound = pathFound,
+                )
+
+            PathfindingSnapshotStore.store(snapshot)
         }
 
         companion object {

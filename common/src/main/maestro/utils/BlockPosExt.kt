@@ -84,10 +84,6 @@ fun Level.getBlockCenter(pos: BlockPos): Vec3 {
     return Vec3(pos.x + xDiff, pos.y + finalYDiff, pos.z + zDiff)
 }
 
-// ============================================================================
-// Entity Distance Helpers (from VecUtils.java)
-// ============================================================================
-
 /**
  * Calculates the distance from this entity to the center of a block position.
  *

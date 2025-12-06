@@ -5,8 +5,6 @@ import maestro.api.pathing.movement.ActionCosts
 import maestro.api.pathing.movement.MovementStatus
 import maestro.api.player.PlayerContext
 import maestro.api.utils.PackedBlockPos
-import maestro.api.utils.center
-import maestro.api.utils.centerXZ
 import maestro.pathing.BlockStateInterface
 import maestro.pathing.movement.CalculationContext
 import maestro.pathing.movement.ClickIntent
@@ -16,6 +14,8 @@ import maestro.pathing.movement.Movement
 import maestro.pathing.movement.MovementIntent
 import maestro.pathing.movement.MovementSpeed
 import maestro.pathing.movement.MovementValidation
+import maestro.utils.center
+import maestro.utils.centerXZ
 import maestro.utils.horizontalDistanceTo
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Blocks
@@ -58,7 +58,7 @@ class MovementDownward(
 
     override fun computeIntent(ctx: PlayerContext): Intent {
         val playerPos = ctx.player().position()
-        val destCenter = dest.center
+        val destCenter = dest.toBlockPos().center
 
         // Debug: Show player position to destination line
         debug.line("player-dest", playerPos, destCenter, java.awt.Color.GREEN)
@@ -68,7 +68,7 @@ class MovementDownward(
         val needsBreaking = !MovementValidation.canWalkThrough(ctx, dest)
 
         // Calculate horizontal distance from dest center
-        val centerXZ = dest.centerXZ
+        val centerXZ = dest.toBlockPos().centerXZ
         val distXZ = playerPos.horizontalDistanceTo(centerXZ)
 
         // Debug: Distance and velocity metrics
@@ -108,7 +108,7 @@ class MovementDownward(
                     MovementIntent.Toward(
                         target = centerXZ,
                         speed = MovementSpeed.WALK,
-                        startPos = src.centerXZ,
+                        startPos = src.toBlockPos().centerXZ,
                     ),
                 look = LookIntent.Block(dest.toBlockPos()),
                 click = if (needsBreaking) ClickIntent.LeftClick else ClickIntent.None,

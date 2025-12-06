@@ -6,6 +6,9 @@ import maestro.api.debug.IHudDebugRenderer
 import maestro.api.event.events.RenderEvent
 import maestro.api.event.listener.AbstractGameEventListener
 import maestro.debug.hud.HudDebugRenderer
+import maestro.debug.pathing.PathfindingDebugHud
+import maestro.debug.pathing.PathfindingDebugRenderer
+import net.minecraft.client.gui.GuiGraphics
 
 /**
  * Main coordinator for debug rendering system.
@@ -20,6 +23,12 @@ class DebugRenderer(
 ) : IDebugRenderer,
     AbstractGameEventListener {
     private val hudRenderer = HudDebugRenderer(agent)
+
+    /** The pathfinding debug renderer (also handles interaction) */
+    val pathfindingDebugRenderer = PathfindingDebugRenderer(agent)
+
+    /** HUD overlay for pathfinding debug info */
+    private val pathfindingHud = PathfindingDebugHud(pathfindingDebugRenderer)
 
     override fun onRenderPass(event: RenderEvent) {
         if (!Agent.settings().debugEnabled.value) return
@@ -39,6 +48,25 @@ class DebugRenderer(
                     movement.debug.render3D(event.modelViewStack, event.partialTicks)
                 }
             }
+        }
+
+        // Render pathfinding debug visualization if enabled
+        if (Agent.settings().pathfindingDebugEnabled.value) {
+            pathfindingDebugRenderer.onRenderPass(event)
+        }
+    }
+
+    /**
+     * Renders the pathfinding debug HUD overlay.
+     *
+     * Called from the GUI mixin when pathfinding debug is enabled.
+     */
+    fun renderPathfindingHud(
+        graphics: GuiGraphics,
+        tickDelta: Float,
+    ) {
+        if (Agent.settings().pathfindingDebugEnabled.value) {
+            pathfindingHud.render(graphics, tickDelta)
         }
     }
 
